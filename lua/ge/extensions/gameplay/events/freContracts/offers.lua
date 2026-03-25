@@ -116,7 +116,9 @@ local function pickContractObjective(disciplineId, tier, raceEntry, targetData, 
 
   local effectiveSecPerUnit = perUnitSec
   if not isLoopable then
-    effectiveSecPerUnit = perUnitSec * (tonumber(cfg.nonLoopEventTimeMultiplier) or 1.66)
+    local mult = tonumber(cfg.nonLoopEventTimeMultiplier) or 1.66
+    local driveBackSec = math.max(40, mult * perUnitSec)
+    effectiveSecPerUnit = perUnitSec + driveBackSec
   end
 
   local windowTbl = (cfg.timeWindowMinutesByTier or {})[tier] or {}
