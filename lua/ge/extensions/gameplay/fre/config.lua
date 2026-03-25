@@ -165,7 +165,7 @@ local defaultConfig = {
     contractVehicleRewardMultipliers = {
       experiencedOwned = 0.75,
       otherOwned = 1,
-      notOwned = 2
+      notOwned = 1.25
     },
     expiryMinutesByTier = {easy = 240, medium = 120, hard = 60},
     basePayoutMultiplier = 5,

@@ -1017,7 +1017,7 @@
         "contractVehicleRewardMultipliers": {
             "experiencedOwned": 0.75,
             "otherOwned": 1,
-            "notOwned": 2
+            "notOwned": 1.25
         },
         "expiryMinutesByTier": {
             "easy": 240,

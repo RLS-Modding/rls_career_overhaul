@@ -348,7 +348,7 @@ local function pickContractModel(disciplineId, contractCfg)
   local pm = cfg.contractVehicleRewardMultipliers or {}
   local mExp = tonumber(pm.experiencedOwned) or 0.75
   local mNov = tonumber(pm.otherOwned) or 1
-  local mRand = tonumber(pm.notOwned) or 2
+  local mRand = tonumber(pm.notOwned) or 1.25
 
   local ownedPool = getOwnedContractModelPool(disciplineId)
   local randomPool = getRandomContractModelPool(disciplineId)
