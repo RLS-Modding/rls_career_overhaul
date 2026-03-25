@@ -143,18 +143,65 @@ local function filterModelPool(models, blacklistLookup)
   return filtered
 end
 
+local filterPoolByVehicleConfigWhitelist
+
+local function getContractVehicleConfigTypeWhitelistLookup(disciplineId)
+  local cfg = freConfig.getContractConfig(disciplineId)
+  local wl = cfg and cfg.contractVehicleConfigTypeWhitelist
+  if type(wl) ~= "table" then
+    return nil
+  end
+  local lookup = {}
+  for _, entry in ipairs(wl) do
+    if type(entry) == "string" and entry ~= "" then
+      lookup[string.lower(entry)] = true
+    end
+  end
+  if not next(lookup) then
+    return nil
+  end
+  return lookup
+end
+
+local function modelHasWhitelistedConfigType(normalizedModelKey, lookup)
+  if not lookup or not core_vehicles or not core_vehicles.getModel then
+    return false
+  end
+  local modelData = core_vehicles.getModel(normalizedModelKey)
+  if type(modelData) ~= "table" then
+    return false
+  end
+  local configs = modelData.configs
+  if type(configs) ~= "table" then
+    return false
+  end
+  for _, config in pairs(configs) do
+    if type(config) == "table" then
+      local ct = config["Config Type"] or config.ConfigType
+      if type(ct) == "string" and lookup[string.lower(ct)] then
+        return true
+      end
+    end
+  end
+  return false
+end
+
 local function getOwnedContractModelPool(disciplineId)
   local blacklist = buildVehicleBlacklistLookup(disciplineId)
-  return filterModelPool(getOwnedVehicleModels(), blacklist)
+  local pool = filterModelPool(getOwnedVehicleModels(), blacklist)
+  return filterPoolByVehicleConfigWhitelist(pool, disciplineId)
 end
 
 local function getRandomContractModelPool(disciplineId)
   local blacklist = buildVehicleBlacklistLookup(disciplineId)
   local configured = getConfiguredContractModels()
+  local pool
   if #configured > 0 then
-    return filterModelPool(configured, blacklist)
+    pool = filterModelPool(configured, blacklist)
+  else
+    pool = filterModelPool(getKnownVehicleModels(), blacklist)
   end
-  return filterModelPool(getKnownVehicleModels(), blacklist)
+  return filterPoolByVehicleConfigWhitelist(pool, disciplineId)
 end
 
 local function isModelAllowedForDiscipline(disciplineId, model)
@@ -163,7 +210,10 @@ local function isModelAllowedForDiscipline(disciplineId, model)
     return false
   end
   local blacklist = buildVehicleBlacklistLookup(disciplineId)
-  return blacklist[normalized] ~= true
+  if blacklist[normalized] == true then
+    return false
+  end
+  return filterPoolByVehicleConfigWhitelist({normalized}, disciplineId)[1] ~= nil
 end
 
 local function leaderboardEntryHasStats(entry)
@@ -256,6 +306,37 @@ local function ownedModelHasDisciplineLeaderboard(disciplineId, modelKey)
     end
   end
   return false
+end
+
+local function contractModelPassesConfigWhitelist(disciplineId, normalizedModelKey)
+  local lookup = getContractVehicleConfigTypeWhitelistLookup(disciplineId)
+  if not lookup then
+    return true
+  end
+  if modelHasWhitelistedConfigType(normalizedModelKey, lookup) then
+    return true
+  end
+  if ownedModelHasDisciplineLeaderboard(disciplineId, normalizedModelKey) then
+    return true
+  end
+  return false
+end
+
+filterPoolByVehicleConfigWhitelist = function(models, disciplineId)
+  local lookup = getContractVehicleConfigTypeWhitelistLookup(disciplineId)
+  if not lookup then
+    return models
+  end
+  local out = {}
+  local seen = {}
+  for _, model in ipairs(models or {}) do
+    local n = type(model) == "string" and string.lower(model) or nil
+    if n and n ~= "" and not seen[n] and contractModelPassesConfigWhitelist(disciplineId, n) then
+      seen[n] = true
+      out[#out + 1] = n
+    end
+  end
+  return out
 end
 
 local function pickContractModel(disciplineId, contractCfg)

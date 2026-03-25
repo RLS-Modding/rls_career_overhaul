@@ -143,6 +143,9 @@
                         "maxMultiplier": 3
                     }
                 },
+                "contractVehicleConfigTypeWhitelist": [
+                    "Race"
+                ],
                 "vehicleBlacklist": []
             },
             "sponsors": {
