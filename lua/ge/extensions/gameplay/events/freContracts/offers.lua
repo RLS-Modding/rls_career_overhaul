@@ -486,6 +486,15 @@ local function generateContractOffer(disciplineId, level, now)
 
   local rawMoney = baseMoney * payoutMult * lapEventMult * variance * (tonumber(vehicleRewardMult) or 1)
   local rawXp = rawMoney * xpPct
+  local raceMods = gameplay_events_freContracts_race
+  if raceMods and raceMods.calculateRewardModifiers then
+    local computed = raceMods.calculateRewardModifiers({disciplineId})
+    local dm = computed and computed.disciplineMultipliers and computed.disciplineMultipliers[disciplineId] or {}
+    local moneyMult = tonumber(dm.moneyMultiplier) or 1
+    local xpMult = tonumber(dm.xpMultiplier) or 1
+    rawMoney = rawMoney * moneyMult
+    rawXp = rawXp * xpMult
+  end
   local rewardMoney, rewardXp = scaleContractRewardPreview(disciplineId, rawMoney, rawXp)
 
   local expiryMinutes = tonumber(contractCfg.offerExpiryMinutes) or 5
