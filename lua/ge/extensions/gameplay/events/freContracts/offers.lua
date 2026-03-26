@@ -175,6 +175,22 @@ local function pickContractObjective(disciplineId, tier, raceEntry, targetData, 
   return objectiveType, count, impliedTotalSec
 end
 
+local function contractBasePayoutMultiplier(contractCfg, tier)
+  local t = type(tier) == "string" and string.lower(tier) or "easy"
+  local byTier = contractCfg and contractCfg.basePayoutMultiplierByTier
+  if type(byTier) == "table" then
+    local m = tonumber(byTier[t])
+    if m and m > 0 then
+      return m
+    end
+  end
+  local legacy = contractCfg and tonumber(contractCfg.basePayoutMultiplier)
+  if legacy and legacy > 0 then
+    return legacy
+  end
+  return 10
+end
+
 local function scaleContractRewardPreview(disciplineId, baseMoney, baseXp)
   local money = math.max(0, math.floor(tonumber(baseMoney) or 0))
   local xp = math.max(0, math.floor(tonumber(baseXp) or 0))
@@ -459,7 +475,7 @@ local function generateContractOffer(disciplineId, level, now)
     return nil
   end
 
-  local payoutMult = tonumber(contractCfg.basePayoutMultiplier) or 5
+  local payoutMult = contractBasePayoutMultiplier(contractCfg, tier)
   local bonusPerUnit = tonumber(contractCfg.extraLapEventBonusPerUnit) or 0.33
   local lapEventMult = math.max(1, requiredCount) * bonusPerUnit
   local varCfg = contractCfg.payoutVariance or {}

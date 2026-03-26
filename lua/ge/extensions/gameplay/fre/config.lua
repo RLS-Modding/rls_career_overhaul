@@ -168,7 +168,11 @@ local defaultConfig = {
       notOwned = 1.25
     },
     expiryMinutesByTier = {easy = 240, medium = 120, hard = 60},
-    basePayoutMultiplier = 5,
+    basePayoutMultiplierByTier = {
+      easy = 10,
+      medium = 15,
+      hard = 25
+    },
     payoutVariance = {min = 0.95, max = 1.05},
     extraLapEventBonusPerUnit = 0.33,
     xpPercentOfMoney = 0.02,
