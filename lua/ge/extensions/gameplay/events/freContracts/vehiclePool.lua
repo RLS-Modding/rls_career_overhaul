@@ -346,7 +346,7 @@ local function pickContractModel(disciplineId, contractCfg)
   local wNov = math.max(0, tonumber(pw.otherOwned) or 0.3)
   local wRand = math.max(0, tonumber(pw.notOwned) or 0.2)
   local pm = cfg.contractVehicleRewardMultipliers or {}
-  local mExp = tonumber(pm.experiencedOwned) or 0.75
+  local mExp = tonumber(pm.experiencedOwned) or 1
   local mNov = tonumber(pm.otherOwned) or 1
   local mRand = tonumber(pm.notOwned) or 1.25
 

@@ -163,7 +163,7 @@ local defaultConfig = {
       notOwned = 0.2
     },
     contractVehicleRewardMultipliers = {
-      experiencedOwned = 0.75,
+      experiencedOwned = 1,
       otherOwned = 1,
       notOwned = 1.25
     },
