@@ -482,7 +482,7 @@ local function generateContractOffer(disciplineId, level, now)
   local varMin = tonumber(varCfg.min) or 0.95
   local varMax = tonumber(varCfg.max) or 1.05
   local variance = helpers.randomFloat(varMin, varMax)
-  local xpPct = tonumber(contractCfg.xpPercentOfMoney) or 0.02
+  local xpPct = tonumber(contractCfg.xpPercentOfMoney) or 0.5
 
   local rawMoney = baseMoney * payoutMult * lapEventMult * variance * (tonumber(vehicleRewardMult) or 1)
   local rawXp = rawMoney * xpPct
