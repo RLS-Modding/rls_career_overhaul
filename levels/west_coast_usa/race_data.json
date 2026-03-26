@@ -306,7 +306,7 @@
       ],
       "hotlap":25,
       "label":"Quarry Circuit",
-      "reward":200,
+      "reward":100,
       "type":[
         "rally"
       ]
@@ -355,7 +355,7 @@
         "rally1"
       ],
       "label":"Rally Stage 1",
-      "reward":400,
+      "reward":150,
       "type":[
         "rally"
       ]
@@ -387,7 +387,7 @@
         "rally2"
       ],
       "label":"Rally Stage 2",
-      "reward":800,
+      "reward":200,
       "type":[
         "rally"
       ]
@@ -427,7 +427,7 @@
         "rally3"
       ],
       "label":"Rally Stage 3",
-      "reward":900,
+      "reward":250,
       "type":[
         "rally"
       ]
@@ -458,7 +458,7 @@
         "rally4"
       ],
       "label":"Rally Stage 4 - Final",
-      "reward":800,
+      "reward":250,
       "type":[
         "rally"
       ]
