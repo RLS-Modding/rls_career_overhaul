@@ -157,18 +157,36 @@ local defaultConfig = {
     slotUnlockLevels = {baseLevel = 5, baseSlots = 2, extraLevels = {14, 29, 44}},
     offerExpiryMinutes = 5,
     offerRefreshMinutes = 2,
-    modelSourceOwnedChance = 0.5,
+    contractVehiclePickWeights = {
+      experiencedOwned = 0.5,
+      otherOwned = 0.3,
+      notOwned = 0.2
+    },
+    contractVehicleRewardMultipliers = {
+      experiencedOwned = 1,
+      otherOwned = 1,
+      notOwned = 1.25
+    },
     expiryMinutesByTier = {easy = 240, medium = 120, hard = 60},
-    basePayoutMultiplier = 5,
+    basePayoutMultiplierByTier = {
+      easy = 10,
+      medium = 15,
+      hard = 25
+    },
     payoutVariance = {min = 0.95, max = 1.05},
     extraLapEventBonusPerUnit = 0.33,
     xpPercentOfMoney = 0.02,
     timeWindowMinutesByTier = {
       easy = {min = 3, max = 9},
-      medium = {min = 4, max = 10},
-      hard = {min = 5, max = 12}
+      medium = {min = 3, max = 9},
+      hard = {min = 3, max = 9}
     },
     nonLoopEventTimeMultiplier = 1.66,
+    contractPbTimeMultipliersByTier = {
+      easy = {min = 1.025, max = 1.1},
+      medium = {min = 0.975, max = 1.025},
+      hard = {min = 0.925, max = 0.975}
+    },
     disciplinesUsingEventCountOverride = {"crawling"},
     eventCountOverrideByTier = {
       easy = {eventsMin = 2, eventsMax = 3},

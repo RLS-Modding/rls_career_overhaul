@@ -230,7 +230,7 @@ local function processSponsorQualification(dState, raceName, finishTime, driftSc
   return changed
 end
 
-local function processContractProgress(dState, disciplineId, raceName, finishTime, driftScore, damagePercentage, lapCount,
+local function processContractProgress(dState, disciplineId, raceName, finishTime, driftScore, damagePercentage,
                                        isAltRoute, vehicleModel, now)
   local rCache = gameplay_events_freContracts_raceCache
   local vPool = gameplay_events_freContracts_vehiclePool
@@ -254,20 +254,13 @@ local function processContractProgress(dState, disciplineId, raceName, finishTim
         contract.bestPerformanceRatio = performanceRatio
         changed = true
       end
-      local objectiveType = contract.objectiveType == "laps" and "laps" or "events"
       local requiredCount = math.max(1, math.floor(tonumber(contract.requiredCount) or 1))
-      local objectiveComplete = false
-
-      if objectiveType == "laps" then
-        objectiveComplete = lapCount >= requiredCount
-      else
-        local before = tonumber(contract.progress) or 0
-        contract.progress = math.min(requiredCount, (tonumber(contract.progress) or 0) + 1)
-        if contract.progress ~= before then
-          changed = true
-        end
-        objectiveComplete = contract.progress >= requiredCount
+      local before = tonumber(contract.progress) or 0
+      contract.progress = math.min(requiredCount, before + 1)
+      if contract.progress ~= before then
+        changed = true
       end
+      local objectiveComplete = contract.progress >= requiredCount
 
       if objectiveComplete then
         awardContract(contract, disciplineId)
@@ -289,7 +282,6 @@ local function onFreeroamRaceCompleted(payload)
   local now = tonumber(state.simTime) or 0
   local raceName = payload.raceName
   local finishTime = tonumber(payload.finishTime) or math.huge
-  local lapCount = math.max(0, math.floor(tonumber(payload.lapCount) or 0))
   local resultMetrics = type(payload.resultMetrics) == "table" and payload.resultMetrics or {}
   local driftScore = tonumber(resultMetrics.driftScore or payload.driftScore) or 0
   local damagePercentage = tonumber(resultMetrics.damagePercentage or payload.damagePercentage) or 0
@@ -318,7 +310,7 @@ local function onFreeroamRaceCompleted(payload)
           stateChanged = true
         end
         if not invalidLap and processContractProgress(dState, disciplineId, raceName, finishTime, driftScore, damagePercentage,
-            lapCount, isAltRoute, vehicleModel, now) then
+            isAltRoute, vehicleModel, now) then
           stateChanged = true
         end
       end

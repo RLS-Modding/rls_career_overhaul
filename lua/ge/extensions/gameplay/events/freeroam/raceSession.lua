@@ -329,7 +329,13 @@ local function shouldSkipFreContractProgressForNotify(completionMeta)
     if completionMeta and completionMeta.skipFreContractProgress == true then
         return true
     end
-    return sess().freeroamPracticeStaging ~= true
+    if sess().freeroamPracticeStaging == true then
+        return false
+    end
+    if sess().dragPracticeActive and sess().mActiveRace == "drag" then
+        return false
+    end
+    return true
 end
 
 local function notifyFreRaceCompleted(raceName, raceData, raceLabel, finishTime, vehicleId, completionMeta)
