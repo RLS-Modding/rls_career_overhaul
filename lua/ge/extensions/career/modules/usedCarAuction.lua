@@ -44,6 +44,7 @@ local constants = {
   NPC_PERSONA_COUNT = 3,
   NPC_MAX_BID_MULT_MIN = 0.55,
   NPC_MAX_BID_MULT_MAX = 1.50,
+  NPC_BID_INCREMENTS = {250, 500, 1000, 5000},
   LOT_WIN_EMITTER_DURATION = 2.0,
   AUCTION_WIN_EMITTERS_GROUP = 'auctionEmitters',
   AUCTION_ACTIVE_ASSETS_GROUP = 'auctionAssetsOn',
@@ -1745,19 +1746,62 @@ local function setNpcAsLeader(lot, persona)
   lot.highestBidderName = npcName or 'NPC'
 end
 
-local function chooseNpcBidderForLot(lot, nextBid, preferOutbid)
+local function chooseNpcBidIncrement(persona, currentBid, cap)
+  local bid = tonumber(currentBid) or 0
+  local c = tonumber(cap) or 0
+  local room = c - bid
+  if room < 250 then
+    return nil
+  end
+  local affordable = {}
+  for _, inc in ipairs(constants.NPC_BID_INCREMENTS) do
+    if inc <= room then
+      table.insert(affordable, inc)
+    end
+  end
+  if #affordable == 0 then
+    return nil
+  end
+  local readiness = tonumber(persona and persona.counterOfferReadiness) or 0.5
+  local priceMult = tonumber(persona and persona.priceMultiplier) or 1.0
+  local unpredictability = tonumber(persona and persona.unpredictability) or 0.03
+  local aggression = clampNumber(
+    0.55 + (readiness - 0.5) * 0.9 + (priceMult - 1.0) * 0.5 + unpredictability * 2.8,
+    0.25, 2.0
+  )
+  local totalW = 0
+  local weights = {}
+  for _, inc in ipairs(affordable) do
+    local w = math.max(0.01, (inc / 250) ^ aggression)
+    table.insert(weights, w)
+    totalW = totalW + w
+  end
+  local roll = math.random() * totalW
+  local acc = 0
+  for i, w in ipairs(weights) do
+    acc = acc + w
+    if roll <= acc then
+      return affordable[i]
+    end
+  end
+  return affordable[#affordable]
+end
+
+local function chooseNpcBidderForLot(lot, preferOutbid)
   if not lot then return nil end
+  local currentBid = tonumber(lot.currentBid) or 0
+  local baseline = math.max(tonumber(lot.basePrice) or 0, currentBid, 1)
   local candidates = {}
   local totalWeight = 0
 
   for _, persona in ipairs(auctionState.npcPersonas or {}) do
     local cap = tonumber(lot.npcMaxBidsByPersonaId and lot.npcMaxBidsByPersonaId[persona.id]) or 0
-    local canBid = cap >= nextBid
+    local canBid = cap >= currentBid + 250
     local sameLeader = (lot.highestBidder == 'npc' and lot.leadingNpcPersonaId == persona.id)
     if canBid and not sameLeader then
       local readiness = tonumber(persona.counterOfferReadiness) or 0.5
       local unpredictability = tonumber(persona.unpredictability) or 0.03
-      local headroom = clampNumber((cap - nextBid) / math.max(nextBid, 1), 0, 1)
+      local headroom = clampNumber((cap - currentBid) / baseline, 0, 1)
       local weight = 0.75 + readiness * 0.9 + unpredictability * 1.5 + headroom * 0.8
       if preferOutbid then
         weight = weight * 1.15
@@ -2897,19 +2941,22 @@ local function onUpdate(_, dtSim)
   end
 
   if now >= auctionState.nextNpcBidAt then
-    local nextBid = lot.currentBid + lot.minStep
     local playerLeads = lot.highestBidder == 'player'
-    local bidderPersona = chooseNpcBidderForLot(lot, nextBid, playerLeads)
+    local bidderPersona = chooseNpcBidderForLot(lot, playerLeads)
     if bidderPersona then
-      local baseChance = playerLeads and 0.65 or 0.35
-      local readiness = tonumber(bidderPersona.counterOfferReadiness) or 0.5
-      local unpredictability = tonumber(bidderPersona.unpredictability) or 0.03
-      local personaChance = baseChance * clampNumber(0.75 + readiness * 0.5 + unpredictability * 2.0, 0.6, 1.35)
-      if math.random() < clampNumber(personaChance, 0.05, 0.95) then
-        lot.currentBid = nextBid
-        setNpcAsLeader(lot, bidderPersona)
-        playBidAcceptedSound()
-        maybeExtendLotTimer(lot)
+      local cap = tonumber(lot.npcMaxBidsByPersonaId and lot.npcMaxBidsByPersonaId[bidderPersona.id]) or 0
+      local inc = chooseNpcBidIncrement(bidderPersona, lot.currentBid, cap)
+      if inc then
+        local baseChance = playerLeads and 0.65 or 0.35
+        local readiness = tonumber(bidderPersona.counterOfferReadiness) or 0.5
+        local unpredictability = tonumber(bidderPersona.unpredictability) or 0.03
+        local personaChance = baseChance * clampNumber(0.75 + readiness * 0.5 + unpredictability * 2.0, 0.6, 1.35)
+        if math.random() < clampNumber(personaChance, 0.05, 0.95) then
+          lot.currentBid = lot.currentBid + inc
+          setNpcAsLeader(lot, bidderPersona)
+          playBidAcceptedSound()
+          maybeExtendLotTimer(lot)
+        end
       end
     end
 
