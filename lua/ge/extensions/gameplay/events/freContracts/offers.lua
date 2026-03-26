@@ -75,6 +75,46 @@ local function computeBaseMoneyAtTarget(targetData, raceRow)
   return nil
 end
 
+local function contractRaceUsesTimeTarget(disciplineId, raceEntry)
+  local id = type(disciplineId) == "string" and string.lower(disciplineId) or ""
+  if id == "drift" and (tonumber(raceEntry and raceEntry.driftGoal) or 0) > 0 then
+    return false
+  end
+  if id == "crawling" or id == "trail" then
+    return false
+  end
+  return true
+end
+
+local function buildContractTargetFromPlayerPb(tier, pbSeconds, contractCfg, helpers)
+  local defaults = {
+    easy = {min = 1.025, max = 1.1},
+    medium = {min = 0.975, max = 1.025},
+    hard = {min = 0.925, max = 0.975}
+  }
+  local cfgTbl = type(contractCfg) == "table" and contractCfg.contractPbTimeMultipliersByTier or nil
+  local tbl = type(cfgTbl) == "table" and cfgTbl[tier] or nil
+  if type(tbl) ~= "table" then
+    tbl = defaults[tier] or defaults.easy
+  end
+  local multMin = tonumber(tbl.min)
+  local multMax = tonumber(tbl.max)
+  local d = defaults[tier] or defaults.easy
+  if multMin == nil or multMax == nil then
+    multMin, multMax = d.min, d.max
+  end
+  if multMax < multMin then
+    multMin, multMax = multMax, multMin
+  end
+  local mult = helpers.randomFloat(multMin, multMax)
+  local targetTime = helpers.roundTo(pbSeconds * mult, 3)
+  return {
+    targetType = "time",
+    targetTime = targetTime,
+    targetLabel = helpers.formatTimeForRequirement(targetTime)
+  }
+end
+
 local function isDisciplineCountOverride(disciplineId, targetType, contractCfg)
   local overrideList = contractCfg.disciplinesUsingEventCountOverride
   if type(overrideList) == "table" then
@@ -116,7 +156,9 @@ local function pickContractObjective(disciplineId, tier, raceEntry, targetData, 
 
   local effectiveSecPerUnit = perUnitSec
   if not isLoopable then
-    effectiveSecPerUnit = perUnitSec * (tonumber(cfg.nonLoopEventTimeMultiplier) or 1.66)
+    local mult = tonumber(cfg.nonLoopEventTimeMultiplier) or 1.66
+    local driveBackSec = math.max(60, mult * perUnitSec)
+    effectiveSecPerUnit = perUnitSec + driveBackSec
   end
 
   local windowTbl = (cfg.timeWindowMinutesByTier or {})[tier] or {}
@@ -131,6 +173,22 @@ local function pickContractObjective(disciplineId, tier, raceEntry, targetData, 
   local count = helpers.randomInt(minCount, maxCount)
   local impliedTotalSec = count * effectiveSecPerUnit
   return objectiveType, count, impliedTotalSec
+end
+
+local function contractBasePayoutMultiplier(contractCfg, tier)
+  local t = type(tier) == "string" and string.lower(tier) or "easy"
+  local byTier = contractCfg and contractCfg.basePayoutMultiplierByTier
+  if type(byTier) == "table" then
+    local m = tonumber(byTier[t])
+    if m and m > 0 then
+      return m
+    end
+  end
+  local legacy = contractCfg and tonumber(contractCfg.basePayoutMultiplier)
+  if legacy and legacy > 0 then
+    return legacy
+  end
+  return 10
 end
 
 local function scaleContractRewardPreview(disciplineId, baseMoney, baseXp)
@@ -389,10 +447,21 @@ local function generateContractOffer(disciplineId, level, now)
     return nil
   end
 
-  local targetData = rCache.buildTargetForTier(disciplineId, tier, raceEntry, contractCfg, nil, {
-    min = 1.0,
-    max = 1.1
-  }, "contract")
+  local model, modelSource, vehicleRewardMult = vPool.pickContractModel(disciplineId, contractCfg)
+  if not model or model == "" then
+    return nil
+  end
+
+  local targetData
+  local pbSeconds = vPool.getBestEventPbTimeSeconds(model, raceEntry)
+  if pbSeconds and pbSeconds > 0 and contractRaceUsesTimeTarget(disciplineId, raceEntry) then
+    targetData = buildContractTargetFromPlayerPb(tier, pbSeconds, contractCfg, helpers)
+  else
+    targetData = rCache.buildTargetForTier(disciplineId, tier, raceEntry, contractCfg, nil, {
+      min = 1.0,
+      max = 1.1
+    }, "contract")
+  end
 
   local objectiveType, requiredCount, impliedTotalSec = pickContractObjective(disciplineId, tier, raceEntry, targetData, contractCfg)
   if not objectiveType or not requiredCount then
@@ -406,7 +475,7 @@ local function generateContractOffer(disciplineId, level, now)
     return nil
   end
 
-  local payoutMult = tonumber(contractCfg.basePayoutMultiplier) or 5
+  local payoutMult = contractBasePayoutMultiplier(contractCfg, tier)
   local bonusPerUnit = tonumber(contractCfg.extraLapEventBonusPerUnit) or 0.33
   local lapEventMult = math.max(1, requiredCount) * bonusPerUnit
   local varCfg = contractCfg.payoutVariance or {}
@@ -415,15 +484,11 @@ local function generateContractOffer(disciplineId, level, now)
   local variance = helpers.randomFloat(varMin, varMax)
   local xpPct = tonumber(contractCfg.xpPercentOfMoney) or 0.02
 
-  local rawMoney = baseMoney * payoutMult * lapEventMult * variance
+  local rawMoney = baseMoney * payoutMult * lapEventMult * variance * (tonumber(vehicleRewardMult) or 1)
   local rawXp = rawMoney * xpPct
   local rewardMoney, rewardXp = scaleContractRewardPreview(disciplineId, rawMoney, rawXp)
 
   local expiryMinutes = tonumber(contractCfg.offerExpiryMinutes) or 5
-  local model, modelSource = vPool.pickContractModel(disciplineId)
-  if not model or model == "" then
-    return nil
-  end
 
   return {
     id = gameplay_events_freContracts_state.nextId("fre-contract"),
