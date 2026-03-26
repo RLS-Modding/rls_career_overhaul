@@ -180,15 +180,26 @@ local function getPlCoverageOptionValue(invVehId, coverageOptionName)
 
   local insuranceId = invVehs[invVehId].insuranceId or -1
   if insuranceId > 0 then -- if insured
+    local insurance = availableInsurances[insuranceId]
+    if not insurance or not insurance.coverageOptions or not insurance.coverageOptions[coverageOptionName] then return end
+
     local plInsuranceData = plInsurancesData and plInsurancesData[insuranceId]
     if not plInsuranceData then return end
     local valueId = nil
-    if availableCoverageOptions[coverageOptionName].isInsuranceWide then
-      valueId = plInsuranceData.coverageOptionsData.currentCoverageOptions[coverageOptionName]
+    if availableCoverageOptions[coverageOptionName] and availableCoverageOptions[coverageOptionName].isInsuranceWide then
+      if plInsuranceData.coverageOptionsData and plInsuranceData.coverageOptionsData.currentCoverageOptions then
+        valueId = plInsuranceData.coverageOptionsData.currentCoverageOptions[coverageOptionName]
+      end
     else
-      valueId = invVehs[invVehId].insuranceData.coverageOptionsData.currentCoverageOptions[coverageOptionName]
+      local insData = invVehs[invVehId].insuranceData
+      if insData and insData.coverageOptionsData and insData.coverageOptionsData.currentCoverageOptions then
+        valueId = insData.coverageOptionsData.currentCoverageOptions[coverageOptionName]
+      end
     end
-    return availableInsurances[insuranceId].coverageOptions[coverageOptionName].choices[valueId].value
+
+    local choices = insurance.coverageOptions[coverageOptionName].choices
+    if not valueId or not choices or not choices[valueId] then return end
+    return choices[valueId].value
   end
 end
 
