@@ -143,10 +143,10 @@
       "checkpointRoad":[
         "driftLoopRemaster"
       ],
-      "driftGoal":6000,
+      "driftGoal":31000,
       "hotlap":54,
       "label":"Drift Loop Remaster",
-      "reward":50,
+      "reward":200,
       "timeout":10,
       "type":[
         "drift"
@@ -166,7 +166,7 @@
       ],
       "driftGoal":8200,
       "label":"Hotrolled Drift",
-      "reward":150,
+      "reward":400,
       "type":[
         "drift"
       ]
@@ -480,7 +480,7 @@
       ],
       "driftGoal":30000,
       "label":"Redwood Drift",
-      "reward":200,
+      "reward":500,
       "type":[
         "drift"
       ]
@@ -503,7 +503,7 @@
       ],
       "driftGoal":31000,
       "label":"Redwood Drift Reverse",
-      "reward":200,
+      "reward":500,
       "type":[
         "drift"
       ]
@@ -566,7 +566,7 @@
       ],
       "driftGoal":6500,
       "label":"Sealbrik Drift",
-      "reward":100,
+      "reward":300,
       "type":[
         "drift"
       ]
