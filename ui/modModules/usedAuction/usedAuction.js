@@ -13,8 +13,16 @@ function defaultAuctionState() {
     currentLotIndex: null,
     statusMessage: '',
     purchasedCount: 0,
+    bidMessage: '',
     lots: []
   }
+}
+
+function getGameLuaApi() {
+  if (typeof bngApi !== 'undefined' && bngApi && bngApi.engineLua) return bngApi
+  if (window.bngApi && window.bngApi.engineLua) return window.bngApi
+  if (window.bridge && window.bridge.api && window.bridge.api.engineLua) return window.bridge.api
+  return null
 }
 
 angular.module('beamng.stuff')
@@ -26,7 +34,9 @@ angular.module('beamng.stuff')
   $scope.state = defaultAuctionState()
 
   function requestState() {
-    bngApi.engineLua('extensions.career_modules_usedCarAuction.requestAuctionState()', function(result) {
+    const api = getGameLuaApi()
+    if (!api) return
+    api.engineLua('career_modules_usedCarAuction.requestAuctionState()', function(result) {
       if (!result || typeof result !== 'object') return
       $scope.$evalAsync(function() {
         $scope.state = result
@@ -47,10 +57,13 @@ angular.module('beamng.stuff')
   }
 
   function callAuctionLua(fnName, args) {
-    const fn = 'extensions.career_modules_usedCarAuction.' + fnName
+    const api = getGameLuaApi()
+    if (!api) return
+    const fn = 'career_modules_usedCarAuction.' + fnName
     const argList = args && args.length ? '(' + args.join(', ') + ')' : '()'
-    bngApi.engineLua(fn + argList)
-    window.setTimeout(requestState, 35)
+    api.engineLua(fn + argList, function() {
+      requestState()
+    })
   }
 
   $scope.isEntryPrompt = function() {
@@ -94,7 +107,9 @@ angular.module('beamng.stuff')
 
   $scope.canBid = function() {
     const active = $scope.activeLot()
-    return $scope.state.phase === 'bidding' && active && active.state === 'active'
+    if (!active || active.state !== 'active' || $scope.state.phase !== 'bidding') return false
+    if (active.highestBidder === 'player') return false
+    return true
   }
 
   $scope.formatBidder = function(lot) {
@@ -139,8 +154,9 @@ angular.module('beamng.stuff')
   })
 
   const hideListener = angularRootScope.$on('UsedAuctionHide', function() {
-    if (window.bngApi && window.bngApi.engineLua) {
-      window.bngApi.engineLua('extensions.overhaul_musicPlayer.uiStop()')
+    const api = getGameLuaApi()
+    if (api) {
+      api.engineLua('extensions.overhaul_musicPlayer.uiStop()')
     }
     $scope.$evalAsync(function() {
       $scope.visible = false

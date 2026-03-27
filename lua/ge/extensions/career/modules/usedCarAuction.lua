@@ -115,7 +115,9 @@ local auctionState = {
   awaitingFinalExit = false,
   npcPersonas = {},
   winEmitterPulseToken = 0,
-  musicEnabled = true
+  musicEnabled = true,
+  bidHint = nil,
+  bidHintUntil = 0
 }
 
 local usedConfigKeys = {}
@@ -2201,6 +2203,9 @@ local function applyPlayerBidToLot(lot, bidAmount)
     return false
   end
 
+  auctionState.bidHint = nil
+  auctionState.bidHintUntil = 0
+
   lot.currentBid = bidAmount
   setPlayerAsLeader(lot)
   playBidAcceptedSound()
@@ -2235,26 +2240,40 @@ local function hasLiveTransitionLots()
   return false
 end
 
+local function getActiveAuctionLot()
+  for _, lot in ipairs(auctionState.lots or {}) do
+    if lot.state == 'active' then
+      return lot
+    end
+  end
+  return nil
+end
+
+local function setBidHint(text, seconds)
+  auctionState.bidHint = text
+  auctionState.bidHintUntil = getAuctionTime() + (tonumber(seconds) or 4)
+end
+
 local function placePlayerBidIfPossible()
   if auctionState.phase ~= 'bidding' then
+    setBidHint('Auction is not taking bids right now.', 3)
     return false
   end
 
-  local lot = auctionState.lots[auctionState.activeLotIndex]
-  if not lot or lot.state ~= 'active' or lot.highestBidder == 'player' then
+  local lot = getActiveAuctionLot()
+  if not lot or lot.state ~= 'active' then
+    setBidHint('Wait until this lot is live on the block.', 3)
+    return false
+  end
+  if lot.highestBidder == 'player' then
+    setBidHint('You already have the high bid.', 3)
     return false
   end
 
   local bidAmount = lot.currentBid + lot.minStep
-  if not hasGarageSpaceForPurchase() then
-    local now = getAuctionTime()
-    if now >= (auctionState.noSpaceWarnCooldownUntil or 0) then
-      auctionState.noSpaceWarnCooldownUntil = now + 3.5
-    end
-    return false
-  end
 
   if not canAfford(bidAmount) then
+    setBidHint('Not enough money for this bid.', 5)
     return false
   end
 
@@ -2262,17 +2281,27 @@ local function placePlayerBidIfPossible()
 end
 
 local function placePlayerBidByAmount(amount)
-  if auctionState.phase ~= 'bidding' then return false end
-  local lot = auctionState.lots[auctionState.activeLotIndex]
-  if not lot or lot.state ~= 'active' or lot.highestBidder == 'player' then
+  if auctionState.phase ~= 'bidding' then
+    setBidHint('Auction is not taking bids right now.', 3)
+    return false
+  end
+  local lot = getActiveAuctionLot()
+  if not lot or lot.state ~= 'active' then
+    setBidHint('Wait until this lot is live on the block.', 3)
+    return false
+  end
+  if lot.highestBidder == 'player' then
+    setBidHint('You already have the high bid.', 3)
     return false
   end
 
   amount = math.max(lot.minStep or 250, tonumber(amount) or 0)
   local bidAmount = lot.currentBid + amount
 
-  if not hasGarageSpaceForPurchase() then return false end
-  if not canAfford(bidAmount) then return false end
+  if not canAfford(bidAmount) then
+    setBidHint('Not enough money for this bid.', 5)
+    return false
+  end
 
   return applyPlayerBidToLot(lot, bidAmount)
 end
@@ -2303,7 +2332,8 @@ local function requestAuctionState()
     end
   end
 
-  local indexedLot = lotsOut[(auctionState.activeLotIndex or 1)]
+  local activeIdx = tonumber(auctionState.activeLotIndex)
+  local indexedLot = (activeIdx and activeIdx >= 1) and lotsOut[activeIdx] or nil
   if indexedLot and (indexedLot.state == 'queued' or indexedLot.state == 'approaching' or indexedLot.state == 'active' or indexedLot.state == 'exiting') then
     derivedCurrentLot = indexedLot
     derivedCurrentLotIndex = indexedLot.lotIndex
@@ -2316,6 +2346,11 @@ local function requestAuctionState()
   end
   if auctionState.entryPromptActive and derivedPhase == 'idle' then
     derivedPhase = 'entryPrompt'
+  end
+
+  local bidMessage = ''
+  if (auctionState.bidHintUntil or 0) > now and auctionState.bidHint and auctionState.bidHint ~= '' then
+    bidMessage = tostring(auctionState.bidHint)
   end
 
   local status = 'Enter the auction trigger to begin.'
@@ -2346,6 +2381,7 @@ local function requestAuctionState()
     purchasedCount = #(auctionState.purchasedInventoryIds or {}),
     autoBidEnabled = false,
     autoBidMax = 0,
+    bidMessage = bidMessage,
     lots = lotsOut
   }
 end
@@ -2502,7 +2538,7 @@ local function cancelTravelPrompt()
 end
 
 local function finishCurrentLot()
-  local lot = auctionState.lots[auctionState.activeLotIndex]
+  local lot = getActiveAuctionLot()
   if not lot or lot.state ~= 'active' then
     return
   end
@@ -2578,6 +2614,8 @@ local function resetAuction(keepPurchases)
   setAuctionActiveAssetsEnabled(false)
 
   auctionState.purchasedInventoryIds = {}
+  auctionState.bidHint = nil
+  auctionState.bidHintUntil = 0
 
   setIdleTriggerState()
 end
@@ -2918,8 +2956,8 @@ local function onUpdate(_, dtSim)
     return
   end
 
-  local lot = auctionState.lots[auctionState.activeLotIndex]
-  if not lot or lot.state ~= 'active' then
+  local lot = getActiveAuctionLot()
+  if not lot then
     return
   end
 

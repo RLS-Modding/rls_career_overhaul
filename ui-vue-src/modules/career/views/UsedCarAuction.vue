@@ -83,6 +83,7 @@
         <BngButton :accent="ACCENTS.primary" @click="bid(1000)">+$1000</BngButton>
         <BngButton :accent="ACCENTS.primary" @click="bid(5000)">+$5000</BngButton>
       </div>
+      <div v-if="state.bidMessage" class="bid-hint">{{ state.bidMessage }}</div>
     </div>
   </div>
 </template>
@@ -102,6 +103,7 @@ const defaultState = () => ({
   currentLotIndex: null,
   statusMessage: '',
   purchasedCount: 0,
+  bidMessage: '',
   lots: [],
 })
 
@@ -144,7 +146,10 @@ const activeLot = computed(() => {
 })
 
 const canBid = computed(() => {
-  return state.value?.phase === 'bidding' && activeLot.value && activeLot.value.state === 'active'
+  const lot = activeLot.value
+  if (!lot || lot.state !== 'active' || state.value?.phase !== 'bidding') return false
+  if (lot.highestBidder === 'player') return false
+  return true
 })
 
 const musicEnabled = computed({
@@ -449,5 +454,11 @@ onUnmounted(() => {
   min-height: 1.85rem;
   font-size: 0.76rem;
   font-weight: 800;
+}
+
+.bid-hint {
+  font-size: 0.78rem;
+  color: rgba(255, 185, 120, 0.95);
+  margin-top: 0.2rem;
 }
 </style>

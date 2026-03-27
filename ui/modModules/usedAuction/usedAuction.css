@@ -177,6 +177,12 @@
   gap: 0.35rem;
 }
 
+.ua-bid-hint {
+  font-size: 0.78rem;
+  color: rgba(255, 185, 120, 0.95);
+  margin-top: 0.2rem;
+}
+
 .ua-btn {
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 0.35rem;
