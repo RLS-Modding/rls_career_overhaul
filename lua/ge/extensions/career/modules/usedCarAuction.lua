@@ -2323,8 +2323,6 @@ end
 local function requestAuctionState()
   local now = getAuctionTime()
   local lotsOut = {}
-  local derivedCurrentLot = nil
-  local derivedCurrentLotIndex = nil
   for _, lot in ipairs(auctionState.lots or {}) do
     local lotOut = {
       lotIndex = lot.lotIndex,
@@ -2339,18 +2337,43 @@ local function requestAuctionState()
       timeLeft = math.max(0, math.ceil((lot.endTime or 0) - now))
     }
     table.insert(lotsOut, lotOut)
-
-    if not derivedCurrentLot and (lot.state == 'queued' or lot.state == 'approaching' or lot.state == 'active' or lot.state == 'exiting') then
-      derivedCurrentLot = lotOut
-      derivedCurrentLotIndex = lotOut.lotIndex
-    end
   end
 
-  local activeIdx = tonumber(auctionState.activeLotIndex)
-  local indexedLot = (activeIdx and activeIdx >= 1) and lotsOut[activeIdx] or nil
-  if indexedLot and (indexedLot.state == 'queued' or indexedLot.state == 'approaching' or indexedLot.state == 'active' or indexedLot.state == 'exiting') then
-    derivedCurrentLot = indexedLot
-    derivedCurrentLotIndex = indexedLot.lotIndex
+  local derivedCurrentLot = nil
+  local derivedCurrentLotIndex = nil
+  local lots = auctionState.lots or {}
+  for i, lot in ipairs(lots) do
+    if lot.state == 'active' then
+      derivedCurrentLot = lotsOut[i]
+      derivedCurrentLotIndex = lot.lotIndex
+      break
+    end
+  end
+  if not derivedCurrentLot then
+    for i, lot in ipairs(lots) do
+      if lot.state == 'exiting' then
+        derivedCurrentLot = lotsOut[i]
+        derivedCurrentLotIndex = lot.lotIndex
+        break
+      end
+    end
+  end
+  if not derivedCurrentLot then
+    local activeIdx = tonumber(auctionState.activeLotIndex)
+    local indexedLot = (activeIdx and activeIdx >= 1) and lotsOut[activeIdx] or nil
+    if indexedLot and (indexedLot.state == 'queued' or indexedLot.state == 'approaching' or indexedLot.state == 'active' or indexedLot.state == 'exiting') then
+      derivedCurrentLot = indexedLot
+      derivedCurrentLotIndex = indexedLot.lotIndex
+    end
+  end
+  if not derivedCurrentLot then
+    for i, lot in ipairs(lots) do
+      if lot.state == 'queued' or lot.state == 'approaching' or lot.state == 'active' or lot.state == 'exiting' then
+        derivedCurrentLot = lotsOut[i]
+        derivedCurrentLotIndex = lot.lotIndex
+        break
+      end
+    end
   end
 
   local hasLiveLot = derivedCurrentLot ~= nil

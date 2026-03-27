@@ -1379,29 +1379,6 @@ local function getPlaylistNames()
   return names
 end
 
-local function setActivePlaylist(name)
-  if type(state.playlistsByName) ~= 'table' then
-    return false
-  end
-  if type(name) ~= 'string' or name == '' then
-    return false
-  end
-  local tracks = state.playlistsByName[name]
-  if type(tracks) ~= 'table' or #tracks < 1 then
-    return false
-  end
-  local wasPlaying = state.isPlaying
-  stop()
-  state.activePlaylistName = name
-  state.tracks = deepCopy(tracks)
-  state.index = 1
-  invalidateShuffleOrder()
-  if wasPlaying then
-    uiPlay()
-  end
-  return true
-end
-
 local function getTracks()
   ensurePlaylist()
   return state.tracks
@@ -1690,6 +1667,29 @@ local function uiPlay()
     state.uiWantsAutoAdvance = true
   end
   return ok
+end
+
+local function setActivePlaylist(name)
+  if type(state.playlistsByName) ~= 'table' then
+    return false
+  end
+  if type(name) ~= 'string' or name == '' then
+    return false
+  end
+  local tracks = state.playlistsByName[name]
+  if type(tracks) ~= 'table' or #tracks < 1 then
+    return false
+  end
+  local wasPlaying = state.isPlaying
+  stop()
+  state.activePlaylistName = name
+  state.tracks = deepCopy(tracks)
+  state.index = 1
+  invalidateShuffleOrder()
+  if wasPlaying then
+    uiPlay()
+  end
+  return true
 end
 
 local function uiStop()

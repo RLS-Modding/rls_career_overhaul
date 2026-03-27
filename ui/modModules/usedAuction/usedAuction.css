@@ -95,7 +95,8 @@
   left: 1.2rem;
   width: min(30rem, calc(100vw - 2rem));
   max-height: calc(100vh - 2.4rem);
-  overflow: visible;
+  overflow-x: visible;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 0.55rem;
@@ -118,6 +119,7 @@
   user-select: none;
   padding-bottom: 0.35rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
 }
 
 .ua-header-left {
@@ -204,6 +206,7 @@
   border-radius: 0;
   background: transparent;
   pointer-events: auto;
+  flex-shrink: 0;
 }
 
 .ua-music-player .rls-mp {
@@ -220,6 +223,7 @@
   font-size: 0.78rem;
   align-self: stretch;
   box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .ua-stat-item {
@@ -256,12 +260,15 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  flex: 0 0 auto;
+  min-width: 0;
 }
 
 .ua-table-body {
   overflow-y: auto;
   overflow-x: hidden;
-  max-height: 14rem;
+  flex: 0 1 auto;
+  max-height: min(28rem, calc(100vh - 17rem));
   scroll-behavior: smooth;
 }
 
@@ -302,6 +309,8 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   position: sticky;
   top: 0;
+  flex-shrink: 0;
+  z-index: 1;
 }
 
 .ua-table-row {
@@ -408,6 +417,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
+  flex-shrink: 0;
 }
 
 .ua-bid-info {
@@ -432,6 +442,10 @@
   gap: 0.5rem;
 }
 
+.ua-bid-amount-wrap.waiting {
+  align-items: center;
+}
+
 .ua-bid-label {
   font-size: 0.65rem;
   text-transform: uppercase;
@@ -445,11 +459,22 @@
   letter-spacing: -0.01rem;
 }
 
+.ua-bid-amount.waiting {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.68);
+  letter-spacing: 0;
+}
+
 .ua-bid-leader-wrap {
   display: flex;
   align-items: center;
   gap: 0.35rem;
   font-size: 0.75rem;
+}
+
+.ua-bid-waiting-text {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.48);
 }
 
 .ua-bid-leader-indicator {
@@ -497,8 +522,8 @@
   height: 100%;
 }
 
-.ua-timer-ring circle {
-  transition: stroke-dasharray 1s linear;
+.ua-timer-ring-progress {
+  transition: stroke-dasharray 0.88s linear;
 }
 
 .ua-timer-text {
@@ -556,6 +581,18 @@
   border-radius: 0.3rem;
   background: rgba(232, 84, 84, 0.08);
   border: 1px solid rgba(232, 84, 84, 0.15);
+}
+
+/* ── Bid blocked ───────────────────────────────────────── */
+
+.ua-bid-blocked {
+  font-size: 0.78rem;
+  color: #e8a054;
+  padding: 0.45rem 0.65rem;
+  border-radius: 0.4rem;
+  background: rgba(232, 160, 84, 0.08);
+  border: 1px solid rgba(232, 160, 84, 0.18);
+  text-align: center;
 }
 
 /* ── Winning banner ────────────────────────────────────── */
