@@ -726,6 +726,45 @@ local function setVehicleFreezeSafe(veh, shouldFreeze)
   end
 end
 
+local function getDefaultGearboxBehavior()
+  local mode = settings and settings.getValue and settings.getValue('defaultGearboxBehavior') or nil
+  if mode == 'realistic' or mode == 'arcade' then
+    return mode
+  end
+  return 'arcade'
+end
+
+local function normalizePurchasedLotVehicleState(veh, lotIndex)
+  if not veh then
+    return false
+  end
+
+  stopVehicleAI(veh)
+  setVehicleFreezeSafe(veh, true)
+
+  if core_vehicleBridge and core_vehicleBridge.executeAction then
+    pcall(function() core_vehicleBridge.executeAction(veh, 'setIgnitionLevel', 0) end)
+    pcall(function() core_vehicleBridge.executeAction(veh, 'setGearboxMode', getDefaultGearboxBehavior()) end)
+  end
+
+  veh:queueLuaCommand(string.format([[
+    ai.setMode("stop")
+    if electrics then
+      electrics.setIgnitionLevel(0)
+      if electrics.setLightsState then electrics.setLightsState(0) end
+      if electrics.set_warn_signal then electrics.set_warn_signal(0) end
+      if electrics.horn then electrics.horn(false) end
+      local turnsignal = (electrics.values and electrics.values.turnsignal) or 0
+      if turnsignal > 0 and electrics.toggle_right_signal then electrics.toggle_right_signal() end
+      if turnsignal < 0 and electrics.toggle_left_signal then electrics.toggle_left_signal() end
+    end
+    input.event("parkingbrake", 1, 1)
+    obj:queueGameEngineLua("career_modules_usedCarAuction.finalizePurchasedLot(%d)")
+  ]], lotIndex))
+
+  return true
+end
+
 setLotVehicleDriveLock = function(veh, mode)
   if not veh then return end
 
@@ -2618,6 +2657,11 @@ local function finishCurrentLot()
     if not hasGarageSpaceForPurchase() then
     elseif canAfford(lot.currentBid) then
       payForVehicle(lot.currentBid, string.format('Used Auction: %s', lot.title))
+      local veh = lot.vehId and getObjectByID(lot.vehId)
+      if veh and normalizePurchasedLotVehicleState(veh, lot.lotIndex) then
+        return
+      end
+
       local inventoryId = career_modules_inventory.addVehicle(lot.vehId, nil, {owned = true})
       if inventoryId then
         if not career_modules_inventory.moveVehicleToGarage(inventoryId) then
@@ -2637,6 +2681,32 @@ local function finishCurrentLot()
 
   beginLotExit(lot)
   startNextLotAfter(lot.lotIndex)
+end
+
+local function finalizePurchasedLot(lotIndex)
+  local lot = auctionState.lots and auctionState.lots[tonumber(lotIndex or 0)]
+  if not lot then
+    return false
+  end
+
+  local inventoryId = career_modules_inventory.addVehicle(lot.vehId, nil, {owned = true})
+  if inventoryId then
+    if not career_modules_inventory.moveVehicleToGarage(inventoryId) then
+      career_modules_inventory.removeVehicle(inventoryId)
+      beginLotExit(lot)
+      startNextLotAfter(lot.lotIndex)
+      return false
+    end
+    lot.wonByPlayer = true
+    lot.wonInventoryId = inventoryId
+    table.insert(auctionState.purchasedInventoryIds, inventoryId)
+    playLotWinCelebrationSound()
+    triggerAuctionWinEmitters(constants.LOT_WIN_EMITTER_DURATION)
+  end
+
+  beginLotExit(lot)
+  startNextLotAfter(lot.lotIndex)
+  return true
 end
 
 local function resetAuction(keepPurchases)
@@ -3129,6 +3199,7 @@ M.passCurrentLot = passCurrentLot
 M.setAutoBidEnabled = setAutoBidEnabled
 M.setAutoBidMax = setAutoBidMax
 M.setAuctionMusicEnabled = setAuctionMusicEnabled
+M.finalizePurchasedLot = finalizePurchasedLot
 M.closeMenu = closeMenu
 
 return M
