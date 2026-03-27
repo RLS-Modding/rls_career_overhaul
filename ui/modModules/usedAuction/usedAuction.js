@@ -8,6 +8,7 @@ function defaultAuctionState() {
     entryPromptActive: false,
     entryFee: 1000,
     canPayEntryFee: false,
+    hasFreeGarageSlot: true,
     musicEnabled: null,
     activeLotIndex: 1,
     currentLotIndex: null,
@@ -71,6 +72,12 @@ angular.module('beamng.stuff')
   }
 
   $scope.entryPromptMessage = function() {
+    if ($scope.isEntryPrompt()) {
+      const st = ($scope.state.statusMessage || '').trim()
+      if (st) {
+        return st
+      }
+    }
     const fee = Number($scope.state.entryFee)
     const safeFee = Number.isFinite(fee) && fee >= 0 ? Math.round(fee) : 1000
     return 'Do you want to pay $' + safeFee + ' to enter The Vault?'

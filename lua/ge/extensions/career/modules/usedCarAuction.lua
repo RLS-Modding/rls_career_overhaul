@@ -2356,7 +2356,9 @@ local function requestAuctionState()
   local status = 'Enter the auction trigger to begin.'
   if derivedPhase == 'entryPrompt' then
     local fee = getAuctionEntryFee()
-    if canAffordAuctionEntry() then
+    if not hasGarageSpaceForPurchase() then
+      status = 'You need at least one free garage slot to enter the auction.'
+    elseif canAffordAuctionEntry() then
       status = string.format('Pay $%d to enter the auction.', fee)
     else
       status = string.format('Not enough money. $%d required to enter.', fee)
@@ -2373,6 +2375,7 @@ local function requestAuctionState()
     musicEnabled = auctionState.musicEnabled ~= false,
     entryFee = getAuctionEntryFee(),
     canPayEntryFee = canAffordAuctionEntry(),
+    hasFreeGarageSlot = hasGarageSpaceForPurchase(),
     activeLotIndex = auctionState.activeLotIndex,
     currentLotIndex = derivedCurrentLotIndex,
     hasLiveLot = hasLiveLot,
@@ -2449,6 +2452,9 @@ local function canStartAuctionFromPrompt()
   if not getPlayerExitSpot(layout, false) then
     return false, 'Missing spot tag: auctionPlayerExit (and no trigger fallback).'
   end
+  if not hasGarageSpaceForPurchase() then
+    return false, 'No free garage slot.'
+  end
 
   return true
 end
@@ -2492,6 +2498,10 @@ local function confirmEntryPaymentAndStartAuction()
 
   local canStart = canStartAuctionFromPrompt()
   if not canStart then
+    return false
+  end
+
+  if not hasGarageSpaceForPurchase() then
     return false
   end
 

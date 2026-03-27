@@ -32,11 +32,6 @@
   margin-bottom: 0.4rem;
 }
 
-.ua-entry-note {
-  color: #ffb9b9;
-  margin-bottom: 0.5rem;
-}
-
 .ua-entry-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

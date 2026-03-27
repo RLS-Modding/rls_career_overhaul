@@ -4,9 +4,8 @@
   <div class="ua-entry-backdrop" ng-if="isEntryPrompt()">
     <div class="ua-entry-modal">
       <div class="ua-entry-text">{{ entryPromptMessage() }}</div>
-      <div class="ua-entry-note" ng-if="!state.canPayEntryFee">Insufficient funds.</div>
       <div class="ua-entry-actions">
-        <button type="button" class="ua-btn ua-btn-primary" ng-disabled="!state.canPayEntryFee" ng-click="startAuctionFromPrompt()">Pay</button>
+        <button type="button" class="ua-btn ua-btn-primary" ng-disabled="!state.canPayEntryFee || state.hasFreeGarageSlot === false" ng-click="startAuctionFromPrompt()">Pay</button>
         <button type="button" class="ua-btn ua-btn-secondary" ng-click="cancelEntryPrompt()">Cancel</button>
       </div>
     </div>

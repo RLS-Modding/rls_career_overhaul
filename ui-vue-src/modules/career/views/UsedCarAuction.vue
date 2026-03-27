@@ -4,9 +4,12 @@
       <div class="entry-modal-backdrop">
         <div class="entry-modal">
           <div class="entry-modal-text">{{ entryPromptMessage }}</div>
-          <div v-if="!state.canPayEntryFee" class="entry-note">Insufficient funds.</div>
           <div class="entry-modal-actions">
-            <BngButton :accent="ACCENTS.primary" :disabled="!state.canPayEntryFee" @click="startAuctionFromPrompt">
+            <BngButton
+              :accent="ACCENTS.primary"
+              :disabled="!state.canPayEntryFee || state.hasFreeGarageSlot === false"
+              @click="startAuctionFromPrompt"
+            >
               Pay
             </BngButton>
             <BngButton :accent="ACCENTS.secondary" @click="cancelEntryPrompt">
@@ -99,6 +102,7 @@ const defaultState = () => ({
   entryPromptActive: false,
   entryFee: 1000,
   canPayEntryFee: false,
+  hasFreeGarageSlot: true,
   activeLotIndex: 1,
   currentLotIndex: null,
   statusMessage: '',
@@ -127,6 +131,12 @@ const entryFee = computed(() => {
 })
 
 const entryPromptMessage = computed(() => {
+  if (isEntryPrompt.value) {
+    const st = (state.value?.statusMessage || '').trim()
+    if (st) {
+      return st
+    }
+  }
   return `Do you want to pay $${Math.round(entryFee.value)} to enter The Vault?`
 })
 
@@ -329,11 +339,6 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-}
-
-.entry-note {
-  font-size: 0.76rem;
-  color: rgba(255, 182, 182, 0.95);
 }
 
 .summary {
