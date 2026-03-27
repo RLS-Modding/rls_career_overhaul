@@ -22,7 +22,9 @@ local state = {
   playbackPauseWallStart = nil,
   uiWantsAutoAdvance = false,
   repeatMode = 'all',
-  musicVolume = 1
+  musicVolume = 1,
+  shuffleOrder = nil,
+  shuffleCursor = nil
 }
 
 local musicPrefsPath = 'settings/musicPlayerPrefs.json'
@@ -284,6 +286,7 @@ local function loadPlaylistFromFile(path)
   state.mode = mode or 'sequential'
   state.playlistPath = path
   state.index = math.min(math.max(1, state.index), #state.tracks)
+  invalidateShuffleOrder()
   return true
 end
 
@@ -1120,6 +1123,7 @@ local function scanMusicLibrary(root)
     log('W', 'musicPlayer', 'Music folder not found: ' .. root)
     state.tracks = {}
     state.activePlaylistName = nil
+    invalidateShuffleOrder()
     return false
   end
   local audioGlob = '*.mp3\t*.ogg\t*.wav\t*.flac'
@@ -1169,6 +1173,7 @@ local function scanMusicLibrary(root)
     log('I', 'musicPlayer', 'No audio files under subfolders of ' .. root)
     state.tracks = {}
     state.activePlaylistName = nil
+    invalidateShuffleOrder()
     return false
   end
   local prev = state.activePlaylistName
@@ -1190,6 +1195,7 @@ local function scanMusicLibrary(root)
   if #state.tracks == 0 then
     state.index = 1
   end
+  invalidateShuffleOrder()
   return true
 end
 
@@ -1202,6 +1208,89 @@ local function ensurePlaylist()
   state.index = 1
 end
 
+local function invalidateShuffleOrder()
+  state.shuffleOrder = nil
+  state.shuffleCursor = nil
+end
+
+local function buildShuffleOrder()
+  local n = #state.tracks
+  if n < 1 then
+    state.shuffleOrder = nil
+    state.shuffleCursor = nil
+    return
+  end
+  if n == 1 then
+    state.shuffleOrder = {1}
+    state.shuffleCursor = 1
+    return
+  end
+  local order = {}
+  for i = 1, n do
+    order[i] = i
+  end
+  for i = n, 2, -1 do
+    local j = math.random(1, i)
+    order[i], order[j] = order[j], order[i]
+  end
+  state.shuffleOrder = order
+end
+
+local function findShuffleCursorForIndex(originalIndex)
+  if not state.shuffleOrder then
+    return 1
+  end
+  for i = 1, #state.shuffleOrder do
+    if state.shuffleOrder[i] == originalIndex then
+      return i
+    end
+  end
+  return 1
+end
+
+local function ensureShuffleOrder()
+  if state.mode ~= 'random' then
+    return
+  end
+  local n = #state.tracks
+  if n < 1 then
+    state.shuffleOrder = nil
+    state.shuffleCursor = nil
+    return
+  end
+  if state.shuffleOrder and #state.shuffleOrder == n then
+    return
+  end
+  buildShuffleOrder()
+  state.shuffleCursor = findShuffleCursorForIndex(state.index)
+  if state.shuffleCursor < 1 or state.shuffleCursor > n then
+    state.shuffleCursor = 1
+  end
+  state.index = state.shuffleOrder[state.shuffleCursor]
+end
+
+local function syncIndexFromShuffleCursor()
+  if state.mode ~= 'random' or not state.shuffleOrder then
+    return
+  end
+  local n = #state.shuffleOrder
+  if n < 1 then
+    return
+  end
+  local c = state.shuffleCursor
+  if not c or c < 1 or c > n then
+    c = findShuffleCursorForIndex(state.index)
+  end
+  if c < 1 then
+    c = 1
+  end
+  if c > n then
+    c = n
+  end
+  state.shuffleCursor = c
+  state.index = state.shuffleOrder[c]
+end
+
 local function pickIndexForPlay()
   ensurePlaylist()
   local n = #state.tracks
@@ -1209,7 +1298,16 @@ local function pickIndexForPlay()
     return 0
   end
   if state.mode == 'random' then
-    return math.random(1, n)
+    ensureShuffleOrder()
+    if not state.shuffleOrder or #state.shuffleOrder < 1 then
+      return 1
+    end
+    local c = state.shuffleCursor or 1
+    if c < 1 or c > #state.shuffleOrder then
+      c = 1
+      state.shuffleCursor = 1
+    end
+    return state.shuffleOrder[c]
   end
   return state.index
 end
@@ -1252,6 +1350,7 @@ local function loadPlaylist(path)
   state.musicLibraryRoot = nil
   state.playlistsByName = nil
   state.activePlaylistName = nil
+  invalidateShuffleOrder()
   return false
 end
 
@@ -1263,6 +1362,7 @@ local function loadMusicLibrary(root, preferredPlaylist)
     state.activePlaylistName = preferredPlaylist
     state.tracks = deepCopy(state.playlistsByName[preferredPlaylist])
     state.index = 1
+    invalidateShuffleOrder()
   end
   return true
 end
@@ -1290,10 +1390,15 @@ local function setActivePlaylist(name)
   if type(tracks) ~= 'table' or #tracks < 1 then
     return false
   end
+  local wasPlaying = state.isPlaying
   stop()
   state.activePlaylistName = name
   state.tracks = deepCopy(tracks)
   state.index = 1
+  invalidateShuffleOrder()
+  if wasPlaying then
+    uiPlay()
+  end
   return true
 end
 
@@ -1314,6 +1419,10 @@ local function setTrackIndex(i)
     return false
   end
   state.index = n
+  if state.mode == 'random' then
+    ensureShuffleOrder()
+    state.shuffleCursor = findShuffleCursorForIndex(n)
+  end
   return true
 end
 
@@ -1547,7 +1656,11 @@ end
 
 local function uiPlay()
   ensurePlaylist()
-  local trackIndex = state.mode == 'random' and pickIndexForPlay() or state.index
+  if state.mode == 'random' then
+    ensureShuffleOrder()
+    syncIndexFromShuffleCursor()
+  end
+  local trackIndex = state.index
   if trackIndex < 1 then
     return false
   end
@@ -1589,9 +1702,23 @@ local function uiNext()
     return false
   end
   stop()
-  state.index = state.index + 1
-  if state.index > #state.tracks then
-    state.index = 1
+  if state.mode == 'random' then
+    ensureShuffleOrder()
+    local n = #(state.shuffleOrder or {})
+    if n < 1 then
+      return false
+    end
+    local c = (state.shuffleCursor or 1) + 1
+    if c > n then
+      c = 1
+    end
+    state.shuffleCursor = c
+    state.index = state.shuffleOrder[c]
+  else
+    state.index = state.index + 1
+    if state.index > #state.tracks then
+      state.index = 1
+    end
   end
   return uiPlay()
 end
@@ -1602,9 +1729,23 @@ local function uiPrevious()
     return false
   end
   stop()
-  state.index = state.index - 1
-  if state.index < 1 then
-    state.index = #state.tracks
+  if state.mode == 'random' then
+    ensureShuffleOrder()
+    local n = #(state.shuffleOrder or {})
+    if n < 1 then
+      return false
+    end
+    local c = (state.shuffleCursor or 1) - 1
+    if c < 1 then
+      c = n
+    end
+    state.shuffleCursor = c
+    state.index = state.shuffleOrder[c]
+  else
+    state.index = state.index - 1
+    if state.index < 1 then
+      state.index = #state.tracks
+    end
   end
   return uiPlay()
 end
@@ -1612,8 +1753,11 @@ end
 local function uiToggleShuffle()
   if state.mode == 'random' then
     state.mode = 'sequential'
+    invalidateShuffleOrder()
   else
     state.mode = 'random'
+    invalidateShuffleOrder()
+    ensureShuffleOrder()
   end
 end
 
@@ -1693,14 +1837,35 @@ local function tickPlaybackAutoAdvance(dt)
     end
     return
   end
-  state.index = state.index + 1
-  if state.index > #state.tracks then
-    if state.repeatMode == 'off' then
-      state.index = #state.tracks
+  if state.mode == 'random' then
+    ensureShuffleOrder()
+    local n = #(state.shuffleOrder or {})
+    if n < 1 then
       state.uiWantsAutoAdvance = false
       return
     end
-    state.index = 1
+    local c = (state.shuffleCursor or 1) + 1
+    if c > n then
+      if state.repeatMode == 'off' then
+        state.shuffleCursor = n
+        state.index = state.shuffleOrder[n]
+        state.uiWantsAutoAdvance = false
+        return
+      end
+      c = 1
+    end
+    state.shuffleCursor = c
+    state.index = state.shuffleOrder[c]
+  else
+    state.index = state.index + 1
+    if state.index > #state.tracks then
+      if state.repeatMode == 'off' then
+        state.index = #state.tracks
+        state.uiWantsAutoAdvance = false
+        return
+      end
+      state.index = 1
+    end
   end
   if not uiPlay() then
     state.uiWantsAutoAdvance = false
