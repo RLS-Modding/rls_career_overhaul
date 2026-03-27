@@ -2399,6 +2399,8 @@ local function requestAuctionState()
     autoBidEnabled = false,
     autoBidMax = 0,
     bidMessage = bidMessage,
+    playerBalance = career_modules_playerAttributes and career_modules_playerAttributes.getAttributeValue("money") or 0,
+    totalLots = #(auctionState.lots or {}),
     lots = lotsOut
   }
 end

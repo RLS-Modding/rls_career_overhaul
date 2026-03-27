@@ -34,6 +34,8 @@ angular.module('beamng.stuff')
   $scope.visible = false
   $scope.state = defaultAuctionState()
 
+  let lastActiveLotIndex = null
+
   function requestState() {
     const api = getGameLuaApi()
     if (!api) return
@@ -41,6 +43,11 @@ angular.module('beamng.stuff')
       if (!result || typeof result !== 'object') return
       $scope.$evalAsync(function() {
         $scope.state = result
+        const newIdx = Number(result.currentLotIndex || result.activeLotIndex || 0)
+        if (newIdx && newIdx !== lastActiveLotIndex) {
+          lastActiveLotIndex = newIdx
+          window.setTimeout(scrollToActiveLot, 50)
+        }
       })
     })
   }
@@ -138,6 +145,80 @@ angular.module('beamng.stuff')
     const n = Number(amount)
     if (!Number.isFinite(n) || n < 0) return '$0'
     return '$' + Math.round(n).toLocaleString()
+  }
+
+  $scope.phaseLabel = function() {
+    const p = $scope.state.phase
+    if (p === 'bidding') return 'Bidding'
+    if (p === 'complete') return 'Complete'
+    if (p === 'starting') return 'Starting'
+    return 'Idle'
+  }
+
+  $scope.phaseClass = function() {
+    const p = $scope.state.phase
+    if (p === 'bidding') return 'phase-bidding'
+    if (p === 'complete') return 'phase-complete'
+    return ''
+  }
+
+  $scope.lotStatusLabel = function(lot) {
+    if (!lot) return ''
+    if (lot.state === 'active') return 'Live'
+    if (lot.state === 'approaching') return 'Next'
+    if (lot.state === 'exiting') return 'Closing'
+    if (lot.state === 'finished' && lot.highestBidder === 'player') return 'Won'
+    if (lot.state === 'finished') return 'Sold'
+    if (lot.state === 'failed') return 'No Sale'
+    return 'Upcoming'
+  }
+
+  $scope.lotBadgeClass = function(lot) {
+    if (!lot) return 'badge-upcoming'
+    if (lot.state === 'active') return 'badge-live'
+    if (lot.state === 'approaching') return 'badge-approaching'
+    if (lot.state === 'finished' && lot.highestBidder === 'player') return 'badge-won'
+    if (lot.state === 'finished' || lot.state === 'failed') return 'badge-sold'
+    return 'badge-upcoming'
+  }
+
+  $scope.bidLeaderClass = function() {
+    const active = $scope.activeLot()
+    if (!active) return ''
+    if (active.highestBidder === 'player') return 'leader-player'
+    return 'leader-npc'
+  }
+
+  $scope.isLotBiddable = function() {
+    const active = $scope.activeLot()
+    return active && active.state === 'active' && (Number(active.timeLeft) || 0) > 0
+  }
+
+  $scope.timerUrgencyClass = function() {
+    const active = $scope.activeLot()
+    if (!active) return 'timer-safe'
+    const t = Number(active.timeLeft) || 0
+    if (t <= 5) return 'timer-critical'
+    if (t <= 15) return 'timer-warning'
+    return 'timer-safe'
+  }
+
+  $scope.timerDash = function() {
+    const active = $scope.activeLot()
+    if (!active) return '0 100'
+    const t = Number(active.timeLeft) || 0
+    const maxTime = 30
+    const pct = Math.min(1, Math.max(0, t / maxTime))
+    const circumference = 2 * Math.PI * 16
+    const filled = pct * circumference
+    return filled.toFixed(1) + ' ' + circumference.toFixed(1)
+  }
+
+  function scrollToActiveLot() {
+    const active = $scope.activeLot()
+    if (!active) return
+    const el = document.getElementById('ua-lot-' + active.lotIndex)
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }
 
   $scope.startAuctionFromPrompt = function() {

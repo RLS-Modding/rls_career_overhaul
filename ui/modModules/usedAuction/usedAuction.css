@@ -6,37 +6,88 @@
   font-family: Overpass, Arial, sans-serif;
 }
 
+/* ── Entry prompt ──────────────────────────────────────── */
+
 .ua-entry-backdrop {
   position: fixed;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.5);
   pointer-events: auto;
 }
 
 .ua-entry-modal {
-  width: min(34rem, calc(100vw - 2rem));
-  border-radius: 0.6rem;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(8, 10, 14, 0.95);
+  width: min(28rem, calc(100vw - 2rem));
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(10, 12, 18, 0.96);
   color: #f5f7fa;
-  box-shadow: 0 0.8rem 1.8rem rgba(0, 0, 0, 0.45);
-  padding: 1rem;
+  box-shadow: 0 1.2rem 3rem rgba(0, 0, 0, 0.6);
+  padding: 1.6rem 1.4rem 1.2rem;
+  text-align: center;
+}
+
+.ua-entry-icon {
+  color: rgba(245, 122, 30, 0.85);
+  margin-bottom: 0.6rem;
+}
+
+.ua-entry-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06rem;
+  margin-bottom: 0.35rem;
 }
 
 .ua-entry-text {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.45;
+  margin-bottom: 0.8rem;
+}
+
+.ua-entry-fee {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.4rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 0.9rem;
+  font-size: 0.85rem;
+}
+
+.ua-entry-fee-label {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.ua-entry-fee-amount {
   font-weight: 700;
+  color: #f5a623;
+}
+
+.ua-entry-warning {
+  font-size: 0.78rem;
+  color: #e85454;
+  padding: 0.45rem 0.65rem;
+  border-radius: 0.4rem;
+  background: rgba(232, 84, 84, 0.1);
+  border: 1px solid rgba(232, 84, 84, 0.2);
   margin-bottom: 0.4rem;
+  text-align: left;
 }
 
 .ua-entry-actions {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.4rem;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 0.5rem;
 }
+
+/* ── Main panel ────────────────────────────────────────── */
 
 .ua-panel {
   position: fixed;
@@ -47,15 +98,17 @@
   overflow: visible;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  padding: 0.8rem;
-  border-radius: 0.55rem;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(8, 10, 14, 0.88);
+  gap: 0.55rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 0.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(8, 10, 14, 0.92);
   color: #f5f7fa;
-  box-shadow: 0 0.8rem 1.8rem rgba(0, 0, 0, 0.45);
+  box-shadow: 0 0.8rem 2.4rem rgba(0, 0, 0, 0.5);
   pointer-events: auto;
 }
+
+/* ── Header ────────────────────────────────────────────── */
 
 .ua-header {
   display: flex;
@@ -63,26 +116,84 @@
   justify-content: space-between;
   cursor: move;
   user-select: none;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ua-header-left {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
 }
 
 .ua-title {
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   font-weight: 800;
-  letter-spacing: 0.03rem;
+  letter-spacing: 0.04rem;
   text-transform: uppercase;
 }
 
-.ua-phase {
-  font-size: 0.72rem;
+.ua-subtitle {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.ua-phase-badge {
+  font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.72);
+  letter-spacing: 0.04rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.6);
 }
 
-.ua-status {
-  font-size: 0.82rem;
-  color: rgba(255, 255, 255, 0.88);
+.ua-phase-badge.phase-bidding {
+  background: rgba(245, 122, 30, 0.2);
+  color: #f5a623;
 }
+
+.ua-phase-badge.phase-complete {
+  background: rgba(80, 200, 120, 0.15);
+  color: #50c878;
+}
+
+/* ── Status bar ────────────────────────────────────────── */
+
+.ua-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.75);
+  padding: 0.3rem 0;
+}
+
+.ua-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+}
+
+.ua-status-dot.phase-bidding {
+  background: #f5a623;
+  box-shadow: 0 0 6px rgba(245, 166, 35, 0.5);
+  animation: ua-pulse 1.5s ease-in-out infinite;
+}
+
+.ua-status-dot.phase-complete {
+  background: #50c878;
+}
+
+@keyframes ua-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ── Music player passthrough ──────────────────────────── */
 
 .ua-music-player {
   display: flex;
@@ -99,72 +210,370 @@
   max-width: none;
 }
 
-.ua-summary,
-.ua-details {
-  display: grid;
-  gap: 0.35rem;
-  padding: 0.45rem 0.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.4rem;
-  background: rgba(255, 255, 255, 0.03);
-}
+/* ── Stats inline ──────────────────────────────────────── */
 
-.ua-row {
+.ua-stats-inline {
   display: flex;
-  justify-content: space-between;
-  gap: 0.7rem;
-  font-size: 0.8rem;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.15rem 0;
+  font-size: 0.78rem;
+  align-self: stretch;
+  box-sizing: border-box;
 }
 
-.ua-k {
-  color: rgba(255, 255, 255, 0.7);
+.ua-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 1;
+  justify-content: center;
 }
 
-.ua-v {
+.ua-stat-k {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02rem;
+}
+
+.ua-stat-v {
   font-weight: 700;
 }
 
+.ua-stat-sep {
+  width: 1px;
+  height: 0.85rem;
+  background: rgba(255, 255, 255, 0.12);
+  flex: none;
+}
+
+/* ── Lot table ─────────────────────────────────────────── */
+
 .ua-table {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.4rem;
-  overflow-x: hidden;
-  overflow-y: auto;
-  max-height: 16rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.45rem;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+.ua-table-body {
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 14rem;
+  scroll-behavior: smooth;
+}
+
+.ua-table-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ua-table-body::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 3px;
+}
+
+.ua-table-body::-webkit-scrollbar-thumb {
+  background: rgba(245, 122, 30, 0.45);
+  border-radius: 3px;
+}
+
+.ua-table-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 122, 30, 0.65);
 }
 
 .ua-table-head,
 .ua-table-row {
   display: grid;
-  grid-template-columns: 5.5rem 1fr 6.2rem;
-  gap: 0.4rem;
+  grid-template-columns: 2.8rem 1fr 5.5rem 4.5rem;
+  gap: 0.35rem;
   align-items: center;
-  padding: 0.35rem 0.45rem;
-  font-size: 0.78rem;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.75rem;
 }
 
 .ua-table-head {
-  font-size: 0.7rem;
+  font-size: 0.62rem;
   text-transform: uppercase;
-  letter-spacing: 0.02rem;
-  color: rgba(255, 255, 255, 0.7);
-  background: rgba(255, 255, 255, 0.05);
+  letter-spacing: 0.03rem;
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  position: sticky;
+  top: 0;
 }
 
 .ua-table-row {
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background 0.2s ease;
+}
+
+.ua-table-row:first-child {
+  border-top: none;
+}
+
+.ua-table-row:nth-child(even) {
+  background: rgba(255, 255, 255, 0.015);
 }
 
 .ua-table-row.active {
-  background: rgba(245, 122, 30, 0.16);
+  background: rgba(245, 122, 30, 0.12);
+  border-left: 3px solid #f57a1e;
+  padding-left: calc(0.5rem - 3px);
+}
+
+.ua-table-row.finished {
+  opacity: 0.5;
+}
+
+.ua-table-row.won {
+  opacity: 0.85;
+  background: rgba(80, 200, 120, 0.08);
+  border-left: 3px solid #50c878;
+  padding-left: calc(0.5rem - 3px);
+}
+
+.ua-lot-num {
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.ua-table-row.active .ua-lot-num {
+  color: #f5a623;
+}
+
+.ua-col-vehicle {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ua-col-mileage {
+  text-align: right;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.72rem;
+}
+
+.ua-col-status {
+  text-align: center;
+}
+
+.ua-lot-badge {
+  font-size: 0.58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02rem;
+  padding: 0.12rem 0.4rem;
+  border-radius: 0.8rem;
+  display: inline-block;
+}
+
+.ua-lot-badge.badge-upcoming {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.ua-lot-badge.badge-live {
+  background: rgba(245, 122, 30, 0.25);
+  color: #f5a623;
+  animation: ua-pulse 1.5s ease-in-out infinite;
+}
+
+.ua-lot-badge.badge-approaching {
+  background: rgba(245, 200, 30, 0.15);
+  color: #f5c81e;
+}
+
+.ua-lot-badge.badge-won {
+  background: rgba(80, 200, 120, 0.18);
+  color: #50c878;
+}
+
+.ua-lot-badge.badge-sold {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.35);
 }
 
 .ua-empty {
-  padding: 0.6rem;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.8rem;
+  padding: 1rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.78rem;
+  text-align: center;
 }
+
+/* ── Bidding section ───────────────────────────────────── */
+
+.ua-bidding-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.ua-bid-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.6rem;
+  border-radius: 0.45rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ua-bid-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.ua-bid-amount-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.ua-bid-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.02rem;
+}
+
+.ua-bid-amount {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.01rem;
+}
+
+.ua-bid-leader-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+}
+
+.ua-bid-leader-indicator {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ua-bid-leader-wrap.leader-player .ua-bid-leader-indicator {
+  background: #50c878;
+  box-shadow: 0 0 5px rgba(80, 200, 120, 0.6);
+}
+
+.ua-bid-leader-wrap.leader-player .ua-bid-leader-name {
+  color: #50c878;
+  font-weight: 700;
+}
+
+.ua-bid-leader-wrap.leader-npc .ua-bid-leader-indicator {
+  background: #e85454;
+  box-shadow: 0 0 5px rgba(232, 84, 84, 0.5);
+}
+
+.ua-bid-leader-wrap.leader-npc .ua-bid-leader-name {
+  color: #e8a054;
+}
+
+/* ── Timer ring ────────────────────────────────────────── */
+
+.ua-timer {
+  position: relative;
+  width: 3.2rem;
+  height: 3.2rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ua-timer-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.ua-timer-ring circle {
+  transition: stroke-dasharray 1s linear;
+}
+
+.ua-timer-text {
+  font-size: 0.82rem;
+  font-weight: 800;
+  position: relative;
+  z-index: 1;
+}
+
+.ua-timer.timer-safe {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.ua-timer.timer-warning {
+  color: #f5c81e;
+}
+
+.ua-timer.timer-critical {
+  color: #e85454;
+  animation: ua-timer-flash 0.8s ease-in-out infinite;
+}
+
+.ua-timer-waiting {
+  width: 3.2rem;
+  height: 3.2rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.ua-spinner-ring {
+  width: 100%;
+  height: 100%;
+  animation: ua-spin 1s linear infinite;
+}
+
+@keyframes ua-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes ua-timer-flash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.65; }
+}
+
+/* ── Bid hint ──────────────────────────────────────────── */
+
+.ua-bid-hint {
+  font-size: 0.75rem;
+  color: rgba(232, 84, 84, 0.9);
+  padding: 0.3rem 0.5rem;
+  border-radius: 0.3rem;
+  background: rgba(232, 84, 84, 0.08);
+  border: 1px solid rgba(232, 84, 84, 0.15);
+}
+
+/* ── Winning banner ────────────────────────────────────── */
+
+.ua-winning-banner {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 0.35rem;
+  border-radius: 0.35rem;
+  background: rgba(80, 200, 120, 0.1);
+  border: 1px solid rgba(80, 200, 120, 0.2);
+  color: #50c878;
+  text-transform: uppercase;
+  letter-spacing: 0.03rem;
+}
+
+/* ── Bid buttons ───────────────────────────────────────── */
 
 .ua-actions {
   display: grid;
@@ -172,35 +581,65 @@
   gap: 0.35rem;
 }
 
-.ua-bid-hint {
-  font-size: 0.78rem;
-  color: rgba(255, 185, 120, 0.95);
-  margin-top: 0.2rem;
-}
-
 .ua-btn {
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 0.35rem;
-  padding: 0.45rem 0.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.4rem;
+  padding: 0.5rem 0.4rem;
   color: #f5f7fa;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
   cursor: pointer;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
 }
 
 .ua-btn:disabled {
-  opacity: 0.45;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
 .ua-btn-primary {
   background: rgba(245, 122, 30, 0.3);
-  border-color: rgba(245, 122, 30, 0.55);
+  border-color: rgba(245, 122, 30, 0.5);
+  font-weight: 700;
 }
 
 .ua-btn-primary:hover:not(:disabled) {
   background: rgba(245, 122, 30, 0.45);
+  border-color: rgba(245, 122, 30, 0.7);
 }
 
 .ua-btn-secondary:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.ua-btn-bid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.5rem 0.25rem;
+  background: rgba(245, 122, 30, 0.2);
+  border-color: rgba(245, 122, 30, 0.4);
+}
+
+.ua-btn-bid:hover:not(:disabled) {
+  background: rgba(245, 122, 30, 0.38);
+  border-color: rgba(245, 122, 30, 0.65);
+  transform: translateY(-1px);
+}
+
+.ua-btn-bid:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.ua-btn-increment {
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.ua-btn-total {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.45);
 }

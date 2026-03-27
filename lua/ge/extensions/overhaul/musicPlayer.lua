@@ -27,6 +27,11 @@ local state = {
   shuffleCursor = nil
 }
 
+local function invalidateShuffleOrder()
+  state.shuffleOrder = nil
+  state.shuffleCursor = nil
+end
+
 local musicPrefsPath = 'settings/musicPlayerPrefs.json'
 
 local defaultTracks = {}
@@ -1206,11 +1211,6 @@ local function ensurePlaylist()
   state.tracks = deepCopy(defaultTracks)
   state.mode = DEFAULT_PLAY_MODE
   state.index = 1
-end
-
-local function invalidateShuffleOrder()
-  state.shuffleOrder = nil
-  state.shuffleCursor = nil
 end
 
 local function buildShuffleOrder()
