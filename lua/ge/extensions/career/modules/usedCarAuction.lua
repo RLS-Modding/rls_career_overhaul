@@ -2577,9 +2577,7 @@ local function resetAuction(keepPurchases)
   setAuctionWinEmittersEnabled(false)
   setAuctionActiveAssetsEnabled(false)
 
-  if not keepPurchases then
-    auctionState.purchasedInventoryIds = {}
-  end
+  auctionState.purchasedInventoryIds = {}
 
   setIdleTriggerState()
 end
