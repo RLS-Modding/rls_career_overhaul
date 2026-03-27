@@ -175,13 +175,6 @@ angular.module('beamng.stuff')
     return $scope.isLiveBidLot() ? 'Current Bid' : 'Awaiting Lot'
   }
 
-  $scope.bidCardValue = function() {
-    const active = $scope.activeLot()
-    if (!active) return '--'
-    if (!$scope.isLiveBidLot()) return 'Moving to block'
-    return $scope.formatCurrency(Number(active.currentBid) || 0)
-  }
-
   $scope.phaseLabel = function() {
     const p = $scope.state.phase
     if (p === 'bidding') return 'Bidding'

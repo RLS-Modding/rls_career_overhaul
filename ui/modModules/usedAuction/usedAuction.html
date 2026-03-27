@@ -91,7 +91,7 @@
         <div class="ua-bid-main">
           <div class="ua-bid-amount-wrap" ng-class="{ waiting: !isLiveBidLot() }">
             <span class="ua-bid-label">{{ bidCardLabel() }}</span>
-            <span class="ua-bid-amount" ng-class="{ waiting: !isLiveBidLot() }">{{ bidCardValue() }}</span>
+            <span class="ua-bid-amount" ng-if="isLiveBidLot()">{{ formatCurrency(Number(activeLot().currentBid) || 0) }}</span>
           </div>
           <div class="ua-bid-leader-wrap" ng-class="bidLeaderClass()" ng-if="isLiveBidLot()">
             <span class="ua-bid-leader-indicator"></span>
