@@ -10,7 +10,8 @@ M.dependencies = {
   'career_saveSystem',
   'gameplay_sites_sitesManager',
   'gameplay_traffic',
-  'util_configListGenerator'
+  'util_configListGenerator',
+  'overhaul_musicPlayer'
 }
 
 local constants = {
@@ -44,11 +45,11 @@ local constants = {
   NPC_PERSONA_COUNT = 3,
   NPC_MAX_BID_MULT_MIN = 0.55,
   NPC_MAX_BID_MULT_MAX = 1.50,
+  NPC_BID_INCREMENTS = {250, 500, 1000, 5000},
   LOT_WIN_EMITTER_DURATION = 2.0,
   AUCTION_WIN_EMITTERS_GROUP = 'auctionEmitters',
   AUCTION_ACTIVE_ASSETS_GROUP = 'auctionAssetsOn',
   AUCTION_MUSIC_EMITTER_NAME = 'SFXEmitter_2',
-  AUCTION_MUSIC_EVENT = 'event:>Music>synthwave',
   AUCTION_ENTRY_PAYMENT_SFX_EVENT = 'event:>UI>Career>Buy_01',
   AUCTION_ENTRY_FEE = 1000,
   AUCTION_SETTINGS_SAVE_FILE = 'usedCarAuctionSettings.json',
@@ -61,7 +62,8 @@ local constants = {
   AUCTION_EXIT_MARKER_SHAPE = 'art/shapes/interface/checkpoint_marker.dae',
   AUCTION_EXIT_MARKER_SCALE = 2.2,
   AUCTION_EXIT_MARKER_COLOR = '1.00 0.10 0.10 0.95',
-  AUCTION_EXIT_MARKER_Z_OFFSET = -0.8
+  AUCTION_EXIT_MARKER_Z_OFFSET = -0.8,
+  AUCTION_ENTRY_LOADING_TAG = 'usedCarAuctionEntry'
 }
 
 local fallbackPool = {
@@ -114,7 +116,9 @@ local auctionState = {
   awaitingFinalExit = false,
   npcPersonas = {},
   winEmitterPulseToken = 0,
-  musicEnabled = true
+  musicEnabled = true,
+  bidHint = nil,
+  bidHintUntil = 0
 }
 
 local usedConfigKeys = {}
@@ -355,6 +359,18 @@ local function stopFadeSafe()
   end
 end
 
+local function exitAuctionEntryLoadingScreen()
+  if not core_gamestate or not core_gamestate.requestExitLoadingScreen then
+    return
+  end
+  if core_gamestate.getLoadingStatus and not core_gamestate.getLoadingStatus(constants.AUCTION_ENTRY_LOADING_TAG) then
+    return
+  end
+  pcall(function()
+    core_gamestate.requestExitLoadingScreen(constants.AUCTION_ENTRY_LOADING_TAG)
+  end)
+end
+
 local function runFadedTransition(workFn)
   if auctionState.transitionActive then
     return
@@ -368,6 +384,7 @@ local function runFadedTransition(workFn)
     local ok, err = pcall(workFn)
 
     stopFadeSafe()
+    exitAuctionEntryLoadingScreen()
     auctionState.transitionActive = false
 
     if not ok then
@@ -485,13 +502,9 @@ local function setAuctionActiveAssetObjectEnabled(obj, enabled, musicEnabled)
     effectiveEnabled = false
   end
 
-  if isAuctionMusicEmitter and effectiveEnabled and obj.setField then
-    pcall(function() obj:setField('track', 0, constants.AUCTION_MUSIC_EVENT) end)
-  end
-
   setEmitterObjectEnabled(obj, effectiveEnabled)
 
-  if effectiveEnabled and obj.play then
+  if effectiveEnabled and obj.play and not isAuctionMusicEmitter then
     local played = pcall(function() obj:play() end)
     if not played then
       pcall(function() obj:play(-1) end)
@@ -711,6 +724,45 @@ local function setVehicleFreezeSafe(veh, shouldFreeze)
   else
     veh:queueLuaCommand(string.format('controller.setFreeze(%d)', shouldFreeze and 1 or 0))
   end
+end
+
+local function getDefaultGearboxBehavior()
+  local mode = settings and settings.getValue and settings.getValue('defaultGearboxBehavior') or nil
+  if mode == 'realistic' or mode == 'arcade' then
+    return mode
+  end
+  return 'arcade'
+end
+
+local function normalizePurchasedLotVehicleState(veh, lotIndex)
+  if not veh then
+    return false
+  end
+
+  stopVehicleAI(veh)
+  setVehicleFreezeSafe(veh, true)
+
+  if core_vehicleBridge and core_vehicleBridge.executeAction then
+    pcall(function() core_vehicleBridge.executeAction(veh, 'setIgnitionLevel', 0) end)
+    pcall(function() core_vehicleBridge.executeAction(veh, 'setGearboxMode', getDefaultGearboxBehavior()) end)
+  end
+
+  veh:queueLuaCommand(string.format([[
+    ai.setMode("stop")
+    if electrics then
+      electrics.setIgnitionLevel(0)
+      if electrics.setLightsState then electrics.setLightsState(0) end
+      if electrics.set_warn_signal then electrics.set_warn_signal(0) end
+      if electrics.horn then electrics.horn(false) end
+      local turnsignal = (electrics.values and electrics.values.turnsignal) or 0
+      if turnsignal > 0 and electrics.toggle_right_signal then electrics.toggle_right_signal() end
+      if turnsignal < 0 and electrics.toggle_left_signal then electrics.toggle_left_signal() end
+    end
+    input.event("parkingbrake", 1, 1)
+    obj:queueGameEngineLua("career_modules_usedCarAuction.finalizePurchasedLot(%d)")
+  ]], lotIndex))
+
+  return true
 end
 
 setLotVehicleDriveLock = function(veh, mode)
@@ -1745,19 +1797,62 @@ local function setNpcAsLeader(lot, persona)
   lot.highestBidderName = npcName or 'NPC'
 end
 
-local function chooseNpcBidderForLot(lot, nextBid, preferOutbid)
+local function chooseNpcBidIncrement(persona, currentBid, cap)
+  local bid = tonumber(currentBid) or 0
+  local c = tonumber(cap) or 0
+  local room = c - bid
+  if room < 250 then
+    return nil
+  end
+  local affordable = {}
+  for _, inc in ipairs(constants.NPC_BID_INCREMENTS) do
+    if inc <= room then
+      table.insert(affordable, inc)
+    end
+  end
+  if #affordable == 0 then
+    return nil
+  end
+  local readiness = tonumber(persona and persona.counterOfferReadiness) or 0.5
+  local priceMult = tonumber(persona and persona.priceMultiplier) or 1.0
+  local unpredictability = tonumber(persona and persona.unpredictability) or 0.03
+  local aggression = clampNumber(
+    0.55 + (readiness - 0.5) * 0.9 + (priceMult - 1.0) * 0.5 + unpredictability * 2.8,
+    0.25, 2.0
+  )
+  local totalW = 0
+  local weights = {}
+  for _, inc in ipairs(affordable) do
+    local w = math.max(0.01, (inc / 250) ^ aggression)
+    table.insert(weights, w)
+    totalW = totalW + w
+  end
+  local roll = math.random() * totalW
+  local acc = 0
+  for i, w in ipairs(weights) do
+    acc = acc + w
+    if roll <= acc then
+      return affordable[i]
+    end
+  end
+  return affordable[#affordable]
+end
+
+local function chooseNpcBidderForLot(lot, preferOutbid)
   if not lot then return nil end
+  local currentBid = tonumber(lot.currentBid) or 0
+  local baseline = math.max(tonumber(lot.basePrice) or 0, currentBid, 1)
   local candidates = {}
   local totalWeight = 0
 
   for _, persona in ipairs(auctionState.npcPersonas or {}) do
     local cap = tonumber(lot.npcMaxBidsByPersonaId and lot.npcMaxBidsByPersonaId[persona.id]) or 0
-    local canBid = cap >= nextBid
+    local canBid = cap >= currentBid + 250
     local sameLeader = (lot.highestBidder == 'npc' and lot.leadingNpcPersonaId == persona.id)
     if canBid and not sameLeader then
       local readiness = tonumber(persona.counterOfferReadiness) or 0.5
       local unpredictability = tonumber(persona.unpredictability) or 0.03
-      local headroom = clampNumber((cap - nextBid) / math.max(nextBid, 1), 0, 1)
+      local headroom = clampNumber((cap - currentBid) / baseline, 0, 1)
       local weight = 0.75 + readiness * 0.9 + unpredictability * 1.5 + headroom * 0.8
       if preferOutbid then
         weight = weight * 1.15
@@ -2161,6 +2256,9 @@ local function applyPlayerBidToLot(lot, bidAmount)
     return false
   end
 
+  auctionState.bidHint = nil
+  auctionState.bidHintUntil = 0
+
   lot.currentBid = bidAmount
   setPlayerAsLeader(lot)
   playBidAcceptedSound()
@@ -2195,26 +2293,40 @@ local function hasLiveTransitionLots()
   return false
 end
 
+local function getActiveAuctionLot()
+  for _, lot in ipairs(auctionState.lots or {}) do
+    if lot.state == 'active' then
+      return lot
+    end
+  end
+  return nil
+end
+
+local function setBidHint(text, seconds)
+  auctionState.bidHint = text
+  auctionState.bidHintUntil = getAuctionTime() + (tonumber(seconds) or 4)
+end
+
 local function placePlayerBidIfPossible()
   if auctionState.phase ~= 'bidding' then
+    setBidHint('Auction is not taking bids right now.', 3)
     return false
   end
 
-  local lot = auctionState.lots[auctionState.activeLotIndex]
-  if not lot or lot.state ~= 'active' or lot.highestBidder == 'player' then
+  local lot = getActiveAuctionLot()
+  if not lot or lot.state ~= 'active' then
+    setBidHint('Wait until this lot is live on the block.', 3)
+    return false
+  end
+  if lot.highestBidder == 'player' then
+    setBidHint('You already have the high bid.', 3)
     return false
   end
 
   local bidAmount = lot.currentBid + lot.minStep
-  if not hasGarageSpaceForPurchase() then
-    local now = getAuctionTime()
-    if now >= (auctionState.noSpaceWarnCooldownUntil or 0) then
-      auctionState.noSpaceWarnCooldownUntil = now + 3.5
-    end
-    return false
-  end
 
   if not canAfford(bidAmount) then
+    setBidHint('Not enough money for this bid.', 5)
     return false
   end
 
@@ -2222,17 +2334,27 @@ local function placePlayerBidIfPossible()
 end
 
 local function placePlayerBidByAmount(amount)
-  if auctionState.phase ~= 'bidding' then return false end
-  local lot = auctionState.lots[auctionState.activeLotIndex]
-  if not lot or lot.state ~= 'active' or lot.highestBidder == 'player' then
+  if auctionState.phase ~= 'bidding' then
+    setBidHint('Auction is not taking bids right now.', 3)
+    return false
+  end
+  local lot = getActiveAuctionLot()
+  if not lot or lot.state ~= 'active' then
+    setBidHint('Wait until this lot is live on the block.', 3)
+    return false
+  end
+  if lot.highestBidder == 'player' then
+    setBidHint('You already have the high bid.', 3)
     return false
   end
 
   amount = math.max(lot.minStep or 250, tonumber(amount) or 0)
   local bidAmount = lot.currentBid + amount
 
-  if not hasGarageSpaceForPurchase() then return false end
-  if not canAfford(bidAmount) then return false end
+  if not canAfford(bidAmount) then
+    setBidHint('Not enough money for this bid.', 5)
+    return false
+  end
 
   return applyPlayerBidToLot(lot, bidAmount)
 end
@@ -2240,8 +2362,6 @@ end
 local function requestAuctionState()
   local now = getAuctionTime()
   local lotsOut = {}
-  local derivedCurrentLot = nil
-  local derivedCurrentLotIndex = nil
   for _, lot in ipairs(auctionState.lots or {}) do
     local lotOut = {
       lotIndex = lot.lotIndex,
@@ -2256,17 +2376,43 @@ local function requestAuctionState()
       timeLeft = math.max(0, math.ceil((lot.endTime or 0) - now))
     }
     table.insert(lotsOut, lotOut)
-
-    if not derivedCurrentLot and (lot.state == 'queued' or lot.state == 'approaching' or lot.state == 'active' or lot.state == 'exiting') then
-      derivedCurrentLot = lotOut
-      derivedCurrentLotIndex = lotOut.lotIndex
-    end
   end
 
-  local indexedLot = lotsOut[(auctionState.activeLotIndex or 1)]
-  if indexedLot and (indexedLot.state == 'queued' or indexedLot.state == 'approaching' or indexedLot.state == 'active' or indexedLot.state == 'exiting') then
-    derivedCurrentLot = indexedLot
-    derivedCurrentLotIndex = indexedLot.lotIndex
+  local derivedCurrentLot = nil
+  local derivedCurrentLotIndex = nil
+  local lots = auctionState.lots or {}
+  for i, lot in ipairs(lots) do
+    if lot.state == 'active' then
+      derivedCurrentLot = lotsOut[i]
+      derivedCurrentLotIndex = lot.lotIndex
+      break
+    end
+  end
+  if not derivedCurrentLot then
+    for i, lot in ipairs(lots) do
+      if lot.state == 'exiting' then
+        derivedCurrentLot = lotsOut[i]
+        derivedCurrentLotIndex = lot.lotIndex
+        break
+      end
+    end
+  end
+  if not derivedCurrentLot then
+    local activeIdx = tonumber(auctionState.activeLotIndex)
+    local indexedLot = (activeIdx and activeIdx >= 1) and lotsOut[activeIdx] or nil
+    if indexedLot and (indexedLot.state == 'queued' or indexedLot.state == 'approaching' or indexedLot.state == 'active' or indexedLot.state == 'exiting') then
+      derivedCurrentLot = indexedLot
+      derivedCurrentLotIndex = indexedLot.lotIndex
+    end
+  end
+  if not derivedCurrentLot then
+    for i, lot in ipairs(lots) do
+      if lot.state == 'queued' or lot.state == 'approaching' or lot.state == 'active' or lot.state == 'exiting' then
+        derivedCurrentLot = lotsOut[i]
+        derivedCurrentLotIndex = lot.lotIndex
+        break
+      end
+    end
   end
 
   local hasLiveLot = derivedCurrentLot ~= nil
@@ -2278,10 +2424,17 @@ local function requestAuctionState()
     derivedPhase = 'entryPrompt'
   end
 
+  local bidMessage = ''
+  if (auctionState.bidHintUntil or 0) > now and auctionState.bidHint and auctionState.bidHint ~= '' then
+    bidMessage = tostring(auctionState.bidHint)
+  end
+
   local status = 'Enter the auction trigger to begin.'
   if derivedPhase == 'entryPrompt' then
     local fee = getAuctionEntryFee()
-    if canAffordAuctionEntry() then
+    if not hasGarageSpaceForPurchase() then
+      status = 'You need at least one free garage slot to enter the auction.'
+    elseif canAffordAuctionEntry() then
       status = string.format('Pay $%d to enter the auction.', fee)
     else
       status = string.format('Not enough money. $%d required to enter.', fee)
@@ -2298,6 +2451,7 @@ local function requestAuctionState()
     musicEnabled = auctionState.musicEnabled ~= false,
     entryFee = getAuctionEntryFee(),
     canPayEntryFee = canAffordAuctionEntry(),
+    hasFreeGarageSlot = hasGarageSpaceForPurchase(),
     activeLotIndex = auctionState.activeLotIndex,
     currentLotIndex = derivedCurrentLotIndex,
     hasLiveLot = hasLiveLot,
@@ -2306,6 +2460,9 @@ local function requestAuctionState()
     purchasedCount = #(auctionState.purchasedInventoryIds or {}),
     autoBidEnabled = false,
     autoBidMax = 0,
+    bidMessage = bidMessage,
+    playerBalance = career_modules_playerAttributes and career_modules_playerAttributes.getAttributeValue("money") or 0,
+    totalLots = #(auctionState.lots or {}),
     lots = lotsOut
   }
 end
@@ -2373,6 +2530,9 @@ local function canStartAuctionFromPrompt()
   if not getPlayerExitSpot(layout, false) then
     return false, 'Missing spot tag: auctionPlayerExit (and no trigger fallback).'
   end
+  if not hasGarageSpaceForPurchase() then
+    return false, 'No free garage slot.'
+  end
 
   return true
 end
@@ -2419,8 +2579,32 @@ local function confirmEntryPaymentAndStartAuction()
     return false
   end
 
+  if not hasGarageSpaceForPurchase() then
+    return false
+  end
+
   if not canAffordAuctionEntry() then
     return false
+  end
+
+  if core_gamestate and core_gamestate.requestEnterLoadingScreen then
+    playUiSound(constants.AUCTION_ENTRY_PAYMENT_SFX_EVENT)
+    core_gamestate.requestEnterLoadingScreen(constants.AUCTION_ENTRY_LOADING_TAG, function()
+      if not payAuctionEntryFee() then
+        exitAuctionEntryLoadingScreen()
+        return
+      end
+
+      if career_saveSystem and career_saveSystem.saveCurrent then
+        pcall(function() career_saveSystem.saveCurrent() end)
+      end
+
+      auctionState.entryPromptActive = false
+      if not startAuctionImmediate() then
+        exitAuctionEntryLoadingScreen()
+      end
+    end)
+    return true
   end
 
   if not payAuctionEntryFee() then
@@ -2462,7 +2646,7 @@ local function cancelTravelPrompt()
 end
 
 local function finishCurrentLot()
-  local lot = auctionState.lots[auctionState.activeLotIndex]
+  local lot = getActiveAuctionLot()
   if not lot or lot.state ~= 'active' then
     return
   end
@@ -2473,6 +2657,11 @@ local function finishCurrentLot()
     if not hasGarageSpaceForPurchase() then
     elseif canAfford(lot.currentBid) then
       payForVehicle(lot.currentBid, string.format('Used Auction: %s', lot.title))
+      local veh = lot.vehId and getObjectByID(lot.vehId)
+      if veh and normalizePurchasedLotVehicleState(veh, lot.lotIndex) then
+        return
+      end
+
       local inventoryId = career_modules_inventory.addVehicle(lot.vehId, nil, {owned = true})
       if inventoryId then
         if not career_modules_inventory.moveVehicleToGarage(inventoryId) then
@@ -2492,6 +2681,32 @@ local function finishCurrentLot()
 
   beginLotExit(lot)
   startNextLotAfter(lot.lotIndex)
+end
+
+local function finalizePurchasedLot(lotIndex)
+  local lot = auctionState.lots and auctionState.lots[tonumber(lotIndex or 0)]
+  if not lot then
+    return false
+  end
+
+  local inventoryId = career_modules_inventory.addVehicle(lot.vehId, nil, {owned = true})
+  if inventoryId then
+    if not career_modules_inventory.moveVehicleToGarage(inventoryId) then
+      career_modules_inventory.removeVehicle(inventoryId)
+      beginLotExit(lot)
+      startNextLotAfter(lot.lotIndex)
+      return false
+    end
+    lot.wonByPlayer = true
+    lot.wonInventoryId = inventoryId
+    table.insert(auctionState.purchasedInventoryIds, inventoryId)
+    playLotWinCelebrationSound()
+    triggerAuctionWinEmitters(constants.LOT_WIN_EMITTER_DURATION)
+  end
+
+  beginLotExit(lot)
+  startNextLotAfter(lot.lotIndex)
+  return true
 end
 
 local function resetAuction(keepPurchases)
@@ -2537,9 +2752,9 @@ local function resetAuction(keepPurchases)
   setAuctionWinEmittersEnabled(false)
   setAuctionActiveAssetsEnabled(false)
 
-  if not keepPurchases then
-    auctionState.purchasedInventoryIds = {}
-  end
+  auctionState.purchasedInventoryIds = {}
+  auctionState.bidHint = nil
+  auctionState.bidHintUntil = 0
 
   setIdleTriggerState()
 end
@@ -2880,8 +3095,8 @@ local function onUpdate(_, dtSim)
     return
   end
 
-  local lot = auctionState.lots[auctionState.activeLotIndex]
-  if not lot or lot.state ~= 'active' then
+  local lot = getActiveAuctionLot()
+  if not lot then
     return
   end
 
@@ -2897,19 +3112,22 @@ local function onUpdate(_, dtSim)
   end
 
   if now >= auctionState.nextNpcBidAt then
-    local nextBid = lot.currentBid + lot.minStep
     local playerLeads = lot.highestBidder == 'player'
-    local bidderPersona = chooseNpcBidderForLot(lot, nextBid, playerLeads)
+    local bidderPersona = chooseNpcBidderForLot(lot, playerLeads)
     if bidderPersona then
-      local baseChance = playerLeads and 0.65 or 0.35
-      local readiness = tonumber(bidderPersona.counterOfferReadiness) or 0.5
-      local unpredictability = tonumber(bidderPersona.unpredictability) or 0.03
-      local personaChance = baseChance * clampNumber(0.75 + readiness * 0.5 + unpredictability * 2.0, 0.6, 1.35)
-      if math.random() < clampNumber(personaChance, 0.05, 0.95) then
-        lot.currentBid = nextBid
-        setNpcAsLeader(lot, bidderPersona)
-        playBidAcceptedSound()
-        maybeExtendLotTimer(lot)
+      local cap = tonumber(lot.npcMaxBidsByPersonaId and lot.npcMaxBidsByPersonaId[bidderPersona.id]) or 0
+      local inc = chooseNpcBidIncrement(bidderPersona, lot.currentBid, cap)
+      if inc then
+        local baseChance = playerLeads and 0.65 or 0.35
+        local readiness = tonumber(bidderPersona.counterOfferReadiness) or 0.5
+        local unpredictability = tonumber(bidderPersona.unpredictability) or 0.03
+        local personaChance = baseChance * clampNumber(0.75 + readiness * 0.5 + unpredictability * 2.0, 0.6, 1.35)
+        if math.random() < clampNumber(personaChance, 0.05, 0.95) then
+          lot.currentBid = lot.currentBid + inc
+          setNpcAsLeader(lot, bidderPersona)
+          playBidAcceptedSound()
+          maybeExtendLotTimer(lot)
+        end
       end
     end
 
@@ -2981,6 +3199,7 @@ M.passCurrentLot = passCurrentLot
 M.setAutoBidEnabled = setAutoBidEnabled
 M.setAutoBidMax = setAutoBidMax
 M.setAuctionMusicEnabled = setAuctionMusicEnabled
+M.finalizePurchasedLot = finalizePurchasedLot
 M.closeMenu = closeMenu
 
 return M

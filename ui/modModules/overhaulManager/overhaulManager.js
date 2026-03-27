@@ -1,5 +1,7 @@
 'use strict'
 
+import '../rlsMusicPlayer/rlsMusicPlayer.js'
+
 angular.module('beamng.stuff')
 .controller('OverhaulManagerController', ['$scope', '$state', function($scope, $state) {
   $scope.message = 'Welcome to the RLS Career Overhaul Manager!';
@@ -54,7 +56,7 @@ angular.module('beamng.stuff')
   $scope.loadSettings();
 }])
 
-export default angular.module('overhaulManager', ['ui.router'])
+export default angular.module('overhaulManager', ['ui.router', 'rlsMusicPlayer'])
 
 .config(['$stateProvider', function($stateProvider) {
   $stateProvider.state('menu.overhaulManager', {

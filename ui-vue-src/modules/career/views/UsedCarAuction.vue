@@ -4,9 +4,12 @@
       <div class="entry-modal-backdrop">
         <div class="entry-modal">
           <div class="entry-modal-text">{{ entryPromptMessage }}</div>
-          <div v-if="!state.canPayEntryFee" class="entry-note">Insufficient funds.</div>
           <div class="entry-modal-actions">
-            <BngButton :accent="ACCENTS.primary" :disabled="!state.canPayEntryFee" @click="startAuctionFromPrompt">
+            <BngButton
+              :accent="ACCENTS.primary"
+              :disabled="!state.canPayEntryFee || state.hasFreeGarageSlot === false"
+              @click="startAuctionFromPrompt"
+            >
               Pay
             </BngButton>
             <BngButton :accent="ACCENTS.secondary" @click="cancelEntryPrompt">
@@ -83,6 +86,7 @@
         <BngButton :accent="ACCENTS.primary" @click="bid(1000)">+$1000</BngButton>
         <BngButton :accent="ACCENTS.primary" @click="bid(5000)">+$5000</BngButton>
       </div>
+      <div v-if="state.bidMessage" class="bid-hint">{{ state.bidMessage }}</div>
     </div>
   </div>
 </template>
@@ -98,10 +102,12 @@ const defaultState = () => ({
   entryPromptActive: false,
   entryFee: 1000,
   canPayEntryFee: false,
+  hasFreeGarageSlot: true,
   activeLotIndex: 1,
   currentLotIndex: null,
   statusMessage: '',
   purchasedCount: 0,
+  bidMessage: '',
   lots: [],
 })
 
@@ -125,6 +131,12 @@ const entryFee = computed(() => {
 })
 
 const entryPromptMessage = computed(() => {
+  if (isEntryPrompt.value) {
+    const st = (state.value?.statusMessage || '').trim()
+    if (st) {
+      return st
+    }
+  }
   return `Do you want to pay $${Math.round(entryFee.value)} to enter The Vault?`
 })
 
@@ -144,7 +156,10 @@ const activeLot = computed(() => {
 })
 
 const canBid = computed(() => {
-  return state.value?.phase === 'bidding' && activeLot.value && activeLot.value.state === 'active'
+  const lot = activeLot.value
+  if (!lot || lot.state !== 'active' || state.value?.phase !== 'bidding') return false
+  if (lot.highestBidder === 'player') return false
+  return true
 })
 
 const musicEnabled = computed({
@@ -326,11 +341,6 @@ onUnmounted(() => {
   justify-content: flex-start;
 }
 
-.entry-note {
-  font-size: 0.76rem;
-  color: rgba(255, 182, 182, 0.95);
-}
-
 .summary {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -449,5 +459,11 @@ onUnmounted(() => {
   min-height: 1.85rem;
   font-size: 0.76rem;
   font-weight: 800;
+}
+
+.bid-hint {
+  font-size: 0.78rem;
+  color: rgba(255, 185, 120, 0.95);
+  margin-top: 0.2rem;
 }
 </style>
