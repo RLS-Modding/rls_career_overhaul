@@ -35,7 +35,10 @@ rlsMusicPlayerModule.directive('rlsMusicPlayer', ['$interval', function($interva
       const vm = this
       vm.playlistModel = ''
       vm.playlistMenuOpen = false
+      vm.volumePanelOpen = false
+      vm.volumePercent = 100
       let flyoutEl = null
+      let volumeFlyoutEl = null
       let docClickBound = false
       let artResizeObserver = null
       let transportRow = null
@@ -94,7 +97,7 @@ rlsMusicPlayerModule.directive('rlsMusicPlayer', ['$interval', function($interva
           return
         }
         var btn = findIconFromEvent(ev)
-        if (!btn) {
+        if (!btn || (btn.classList && btn.classList.contains('rls-mp-ico-volume'))) {
           return
         }
         transportAbort()
@@ -126,9 +129,16 @@ rlsMusicPlayerModule.directive('rlsMusicPlayer', ['$interval', function($interva
         if (flyoutEl && flyoutEl.parentNode) {
           return flyoutEl
         }
-        const h = hostEl()
-        flyoutEl = (h || $element[0]).querySelector('.rls-mp-dropdown-flyout')
+        flyoutEl = $element[0].querySelector('.rls-mp-dropdown-flyout')
         return flyoutEl
+      }
+
+      function volumeFlyout() {
+        if (volumeFlyoutEl && volumeFlyoutEl.parentNode) {
+          return volumeFlyoutEl
+        }
+        volumeFlyoutEl = $element[0].querySelector('.rls-mp-volume-flyout')
+        return volumeFlyoutEl
       }
 
       function hostEl() {
@@ -141,6 +151,19 @@ rlsMusicPlayerModule.directive('rlsMusicPlayer', ['$interval', function($interva
         if (fly && host && fly.parentNode !== host) {
           host.appendChild(fly)
         }
+      }
+
+      function restoreVolumeFlyoutToHost() {
+        const fly = volumeFlyout()
+        const host = hostEl()
+        if (fly && host && fly.parentNode !== host) {
+          host.appendChild(fly)
+        }
+      }
+
+      function hideVolumePanel() {
+        vm.volumePanelOpen = false
+        restoreVolumeFlyoutToHost()
       }
 
       function teardownDocClick() {
@@ -169,12 +192,208 @@ rlsMusicPlayerModule.directive('rlsMusicPlayer', ['$interval', function($interva
         }
       }
 
+      function placeVolumeFlyout() {
+        const fly = volumeFlyout()
+        const trig = $element[0].querySelector('.rls-mp-ico-volume')
+        if (!fly || !trig) return
+        const r = trig.getBoundingClientRect()
+        const well = fly.querySelector('.rls-mp-volume-flyout-icon-well')
+        const panel = fly.querySelector('.rls-mp-volume-flyout-panel')
+        const iconH = Math.max(28, Math.ceil(r.height))
+        const iconW = Math.max(28, Math.ceil(r.width))
+        if (well) {
+          well.style.minHeight = iconH + 'px'
+        }
+        if (panel) {
+          panel.style.minWidth = Math.max(34, iconW + 2) + 'px'
+        }
+        fly.style.position = 'fixed'
+        fly.style.zIndex = '2147483646'
+        fly.style.visibility = 'hidden'
+        fly.style.top = '0px'
+        fly.style.left = '0px'
+        void fly.offsetHeight
+        const flyW = fly.offsetWidth || 54
+        const flyH = fly.offsetHeight || 96
+        let top = r.bottom - flyH
+        let left = r.left + (r.width * 0.5) - (flyW * 0.5)
+        top = Math.max(8, Math.min(top, window.innerHeight - flyH - 8))
+        left = Math.max(8, Math.min(left, window.innerWidth - flyW - 8))
+        fly.style.visibility = ''
+        fly.style.left = left + 'px'
+        fly.style.top = top + 'px'
+        void fly.offsetHeight
+        const br = fly.getBoundingClientRect()
+        const adj = r.bottom - br.bottom
+        if (Math.abs(adj) > 0.5) {
+          fly.style.top = (top + adj) + 'px'
+        }
+      }
+
       function onDocumentClick() {
         $scope.$evalAsync(function() {
           vm.playlistMenuOpen = false
+          vm.volumePanelOpen = false
           teardownDocClick()
           restoreFlyoutToHost()
+          restoreVolumeFlyoutToHost()
         })
+      }
+
+      function showVolumePanel() {
+        if (vm.volumePanelOpen) {
+          $timeout(placeVolumeFlyout, 0, false)
+          return
+        }
+        if (vm.playlistMenuOpen) {
+          vm.playlistMenuOpen = false
+          teardownDocClick()
+          restoreFlyoutToHost()
+        }
+        vm.volumePanelOpen = true
+        $timeout(function() {
+          const fly = volumeFlyout()
+          const trig = $element[0].querySelector('.rls-mp-ico-volume')
+          if (!fly || !trig) {
+            vm.volumePanelOpen = false
+            return
+          }
+          document.body.appendChild(fly)
+          placeVolumeFlyout()
+          $timeout(placeVolumeFlyout, 0, false)
+        }, 0, false)
+      }
+
+      let volumeHoverBound = null
+      let volumeSliderRoot = null
+
+      function onVolumeSliderMouseDown(ev) {
+        if (ev.button !== 0) {
+          return
+        }
+        ev.preventDefault()
+        vm.volumeSliderPointerDown(ev)
+      }
+
+      function onVolumeSliderTouchStart(ev) {
+        ev.preventDefault()
+        vm.volumeSliderPointerDown(ev)
+      }
+
+      function bindVolumeSliderInteractions() {
+        const el = $element[0].querySelector('.rls-mp-vslider')
+        if (!el) {
+          return
+        }
+        if (volumeSliderRoot && volumeSliderRoot !== el) {
+          volumeSliderRoot.removeEventListener('mousedown', onVolumeSliderMouseDown)
+          volumeSliderRoot.removeEventListener('touchstart', onVolumeSliderTouchStart)
+        }
+        if (!el._rlsVsPtrBound) {
+          el.addEventListener('mousedown', onVolumeSliderMouseDown)
+          el.addEventListener('touchstart', onVolumeSliderTouchStart, { passive: false })
+          el._rlsVsPtrBound = true
+        }
+        volumeSliderRoot = el
+      }
+
+      function unbindVolumeSliderInteractions() {
+        if (!volumeSliderRoot) {
+          return
+        }
+        volumeSliderRoot.removeEventListener('mousedown', onVolumeSliderMouseDown)
+        volumeSliderRoot.removeEventListener('touchstart', onVolumeSliderTouchStart)
+        delete volumeSliderRoot._rlsVsPtrBound
+        volumeSliderRoot = null
+      }
+
+      function volumeHotZoneHit(clientX, clientY) {
+        const flyPad = 12
+        const iconPad = 2
+        function hit(r, pad) {
+          if (!r || (r.width <= 0 && r.height <= 0)) {
+            return false
+          }
+          return clientX >= r.left - pad && clientX <= r.right + pad &&
+            clientY >= r.top - pad && clientY <= r.bottom + pad
+        }
+        const ico = $element[0].querySelector('.rls-mp-ico-volume')
+        const fly = volumeFlyout()
+        if (ico && hit(ico.getBoundingClientRect(), iconPad)) {
+          return true
+        }
+        if (vm.volumePanelOpen && fly && hit(fly.getBoundingClientRect(), flyPad)) {
+          return true
+        }
+        return false
+      }
+
+      function bindVolumeHover() {
+        unbindVolumeHover()
+        const ico = $element[0].querySelector('.rls-mp-ico-volume')
+        const fly = $element[0].querySelector('.rls-mp-volume-flyout')
+
+        function onIconEnter() {
+          $scope.$evalAsync(showVolumePanel)
+        }
+        function onFlyEnter() {
+          $scope.$evalAsync(showVolumePanel)
+        }
+        function onVolumeIconClick(ev) {
+          ev.preventDefault()
+          ev.stopPropagation()
+        }
+        function onVolumeIconMouseDown(ev) {
+          if (ev.type === 'mousedown' && ev.button !== 0) {
+            return
+          }
+          ev.preventDefault()
+        }
+        function onDocVolumeMove(ev) {
+          if (!vm.volumePanelOpen) {
+            return
+          }
+          if (volumeHotZoneHit(ev.clientX, ev.clientY)) {
+            return
+          }
+          $scope.$evalAsync(hideVolumePanel)
+        }
+
+        if (ico) {
+          ico.addEventListener('mouseenter', onIconEnter)
+          ico.addEventListener('mousedown', onVolumeIconMouseDown)
+          ico.addEventListener('click', onVolumeIconClick)
+        }
+        if (fly) {
+          fly.addEventListener('mouseenter', onFlyEnter)
+        }
+        document.addEventListener('mousemove', onDocVolumeMove, true)
+        volumeHoverBound = {
+          ico: ico,
+          fly: fly,
+          onIconEnter: onIconEnter,
+          onFlyEnter: onFlyEnter,
+          onVolumeIconClick: onVolumeIconClick,
+          onVolumeIconMouseDown: onVolumeIconMouseDown,
+          onDocVolumeMove: onDocVolumeMove
+        }
+      }
+
+      function unbindVolumeHover() {
+        if (!volumeHoverBound) {
+          return
+        }
+        const b = volumeHoverBound
+        volumeHoverBound = null
+        document.removeEventListener('mousemove', b.onDocVolumeMove, true)
+        if (b.ico) {
+          b.ico.removeEventListener('mouseenter', b.onIconEnter)
+          b.ico.removeEventListener('mousedown', b.onVolumeIconMouseDown)
+          b.ico.removeEventListener('click', b.onVolumeIconClick)
+        }
+        if (b.fly) {
+          b.fly.removeEventListener('mouseenter', b.onFlyEnter)
+        }
       }
 
       vm.togglePlaylistMenu = function(ev) {
@@ -185,6 +404,8 @@ rlsMusicPlayerModule.directive('rlsMusicPlayer', ['$interval', function($interva
           restoreFlyoutToHost()
           return
         }
+        vm.volumePanelOpen = false
+        restoreVolumeFlyoutToHost()
         $timeout(function() {
           const fly = flyout()
           const trig = $element[0].querySelector('.rls-mp-pl-trigger')
@@ -267,6 +488,9 @@ rlsMusicPlayerModule.directive('rlsMusicPlayer', ['$interval', function($interva
             vm.state.repeatMode = result.repeatMode || 'all'
             if (result.activePlaylist && vm.playlistModel !== result.activePlaylist) {
               vm.playlistModel = result.activePlaylist
+            }
+            if (!vm.volumePanelOpen && result.musicVolume != null) {
+              vm.volumePercent = Math.max(0, Math.min(100, Math.round(Number(result.musicVolume) * 100)))
             }
             scheduleArtSizeSync()
             maybeApplyStartupPlayback(result)
@@ -370,6 +594,115 @@ rlsMusicPlayerModule.directive('rlsMusicPlayer', ['$interval', function($interva
         window.setTimeout(refresh, 40)
       }
 
+      function volumeSliderClientY(ev) {
+        if (ev.touches && ev.touches.length) {
+          return ev.touches[0].clientY
+        }
+        if (ev.changedTouches && ev.changedTouches.length) {
+          return ev.changedTouches[0].clientY
+        }
+        return ev.clientY
+      }
+
+      vm.volumeSliderPointerDown = function(ev) {
+        if (ev.type === 'mousedown' && ev.button !== 0) {
+          return
+        }
+        let root = ev.currentTarget
+        if (!root || !root.querySelector) {
+          const t = ev.target
+          if (t && t.closest) {
+            root = t.closest('.rls-mp-vslider')
+          }
+        }
+        if (!root || !root.querySelector) {
+          return
+        }
+        const track = root.querySelector('.rls-mp-vslider-track')
+        if (!track) {
+          return
+        }
+        if (ev.preventDefault) {
+          ev.preventDefault()
+        }
+
+        const win = window
+        function updateFromEvent(e) {
+          if (e.type === 'touchmove' && e.cancelable) {
+            e.preventDefault()
+          }
+          const tr = track.getBoundingClientRect()
+          const h = tr.height
+          if (h <= 0) {
+            return
+          }
+          const y = volumeSliderClientY(e)
+          const t = (tr.bottom - y) / h
+          const p = Math.max(0, Math.min(100, Math.round(t * 100)))
+          $scope.$evalAsync(function() {
+            vm.volumePercent = p
+            vm.applyVolumePercent()
+          })
+        }
+
+        updateFromEvent(ev)
+
+        function move(e) {
+          updateFromEvent(e)
+        }
+        function up() {
+          win.removeEventListener('mousemove', move, true)
+          win.removeEventListener('mouseup', up, true)
+          win.removeEventListener('touchmove', move, true)
+          win.removeEventListener('touchend', up, true)
+          win.removeEventListener('touchcancel', up, true)
+        }
+        win.addEventListener('mousemove', move, true)
+        win.addEventListener('mouseup', up, true)
+        win.addEventListener('touchmove', move, { capture: true, passive: false })
+        win.addEventListener('touchend', up, true)
+        win.addEventListener('touchcancel', up, true)
+      }
+
+      vm.volumeSliderKeyDown = function(ev) {
+        const k = ev.key
+        if (k === 'Home') {
+          ev.preventDefault()
+          vm.volumePercent = 0
+          vm.applyVolumePercent()
+          return
+        }
+        if (k === 'End') {
+          ev.preventDefault()
+          vm.volumePercent = 100
+          vm.applyVolumePercent()
+          return
+        }
+        let d = 0
+        if (k === 'ArrowUp' || k === 'ArrowRight') {
+          d = 5
+        } else if (k === 'ArrowDown' || k === 'ArrowLeft') {
+          d = -5
+        }
+        if (!d) {
+          return
+        }
+        ev.preventDefault()
+        const cur = Number(vm.volumePercent)
+        const next = Math.max(0, Math.min(100, Math.round((Number.isNaN(cur) ? 100 : cur) + d)))
+        vm.volumePercent = next
+        vm.applyVolumePercent()
+      }
+
+      vm.applyVolumePercent = function() {
+        let p = Number(vm.volumePercent)
+        if (Number.isNaN(p)) p = 100
+        p = Math.max(0, Math.min(100, Math.round(p)))
+        vm.volumePercent = p
+        if (!window.bngApi || !window.bngApi.engineLua) return
+        window.bngApi.engineLua('extensions.overhaul_musicPlayer.uiSetVolume(' + (p / 100) + ')')
+      }
+
       vm.selectPlaylist = function(name) {
         if (!window.bngApi || !window.bngApi.engineLua) return
         if (!name) return
@@ -401,12 +734,18 @@ rlsMusicPlayerModule.directive('rlsMusicPlayer', ['$interval', function($interva
           transportRow.addEventListener('mousedown', transportPointerDown)
           transportRow.addEventListener('touchstart', transportPointerDown, { passive: true })
         }
+        bindVolumeHover()
+        bindVolumeSliderInteractions()
       })
 
       $scope.$on('$destroy', function() {
         vm.playlistMenuOpen = false
+        vm.volumePanelOpen = false
+        unbindVolumeHover()
+        unbindVolumeSliderInteractions()
         teardownDocClick()
         restoreFlyoutToHost()
+        restoreVolumeFlyoutToHost()
         transportAbort()
         if (transportRow) {
           transportRow.removeEventListener('mousedown', transportPointerDown)

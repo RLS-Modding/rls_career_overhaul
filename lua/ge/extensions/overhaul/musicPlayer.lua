@@ -18,9 +18,14 @@ local state = {
   isPlaying = false,
   playStartClock = nil,
   playDurationSec = 0,
+  playbackPauseAccumSec = 0,
+  playbackPauseWallStart = nil,
   uiWantsAutoAdvance = false,
-  repeatMode = 'all'
+  repeatMode = 'all',
+  musicVolume = 1
 }
+
+local musicPrefsPath = 'settings/musicPlayerPrefs.json'
 
 local defaultTracks = {}
 
@@ -59,12 +64,59 @@ local function stopEmitter(emitter)
   end
 end
 
+local function simTimePaused()
+  local st = extensions.simTimeAuthority
+  if st and st.getPause then
+    return st.getPause() == true
+  end
+  return false
+end
+
+local function resetPlaybackPauseTracking()
+  state.playbackPauseAccumSec = 0
+  state.playbackPauseWallStart = nil
+end
+
+local function syncPlaybackPauseWallClock()
+  if not state.isPlaying or not state.playStartClock then
+    resetPlaybackPauseTracking()
+    return
+  end
+  if simTimePaused() then
+    if not state.playbackPauseWallStart then
+      state.playbackPauseWallStart = os.clock()
+    end
+  else
+    if state.playbackPauseWallStart then
+      state.playbackPauseAccumSec = (state.playbackPauseAccumSec or 0) + (os.clock() - state.playbackPauseWallStart)
+      state.playbackPauseWallStart = nil
+    end
+  end
+end
+
+local function playbackPositionSec()
+  if not state.playStartClock then
+    return 0
+  end
+  local raw = os.clock() - state.playStartClock
+  local pauseTotal = state.playbackPauseAccumSec or 0
+  if state.playbackPauseWallStart then
+    pauseTotal = pauseTotal + (os.clock() - state.playbackPauseWallStart)
+  end
+  local pos = raw - pauseTotal
+  if pos < 0 then
+    pos = 0
+  end
+  return pos
+end
+
 local function stop()
   stopGuiSource()
   stopEmitter(state.lastEmitter)
   state.lastEmitter = nil
   state.isPlaying = false
   state.playStartClock = nil
+  resetPlaybackPauseTracking()
   state.uiWantsAutoAdvance = false
 end
 
@@ -109,6 +161,40 @@ local function applyTrackToEmitter(emitter, entry)
   end
 end
 
+local function clamp01(x)
+  local v = tonumber(x) or 0
+  if v < 0 then return 0 end
+  if v > 1 then return 1 end
+  return v
+end
+
+local function applyMusicVolumeToActive()
+  local v = clamp01(state.musicVolume)
+  state.musicVolume = v
+  if state.guiSourceId then
+    local snd = scenetree.findObjectById(state.guiSourceId)
+    if snd then
+      pcall(function() snd:setVolume(v) end)
+      pcall(function() snd:setVolumePitch(v, 1) end)
+    end
+  end
+  local em = state.lastEmitter
+  if em then
+    pcall(function() em:setField('scale', 0, tostring(v)) end)
+  end
+end
+
+local function loadMusicPrefs()
+  local data = jsonReadFile(musicPrefsPath)
+  if type(data) == 'table' and data.volume ~= nil then
+    state.musicVolume = clamp01(data.volume)
+  end
+end
+
+local function saveMusicPrefs()
+  jsonWriteFile(musicPrefsPath, { volume = state.musicVolume }, true)
+end
+
 local function playEmitter(emitter, entry)
   stopEmitter(emitter)
   applyTrackToEmitter(emitter, entry)
@@ -119,6 +205,7 @@ local function playEmitter(emitter, entry)
       pcall(function() emitter:play() end)
     end
   end
+  applyMusicVolumeToActive()
 end
 
 local function playCreateSource(entry, channel)
@@ -140,6 +227,7 @@ local function playCreateSource(entry, channel)
   if snd and snd.play then
     pcall(function() snd:play(-1) end)
   end
+  applyMusicVolumeToActive()
   return true
 end
 
@@ -1411,6 +1499,7 @@ local function uiSetOutput(emitterName, useGui, channel)
 end
 
 local function getUiState()
+  syncPlaybackPauseWallClock()
   ensurePlaylist()
   local tracksOut = {}
   for i, t in ipairs(state.tracks) do
@@ -1434,9 +1523,10 @@ local function getUiState()
   local pos = 0
   local dur = state.playDurationSec or 0
   if state.isPlaying and state.playStartClock and dur > 0 then
-    pos = os.clock() - state.playStartClock
-    if pos < 0 then pos = 0 end
-    if pos > dur then pos = dur end
+    pos = playbackPositionSec()
+    if pos > dur then
+      pos = dur
+    end
   end
   return {
     tracks = tracksOut,
@@ -1450,7 +1540,8 @@ local function getUiState()
     playlistNames = getPlaylistNames(),
     activePlaylist = state.activePlaylistName or '',
     shuffle = state.mode == 'random',
-    repeatMode = state.repeatMode or 'all'
+    repeatMode = state.repeatMode or 'all',
+    musicVolume = clamp01(state.musicVolume)
   }
 end
 
@@ -1479,6 +1570,10 @@ local function uiPlay()
     state.isPlaying = true
     state.playStartClock = os.clock()
     state.playDurationSec = dur
+    resetPlaybackPauseTracking()
+    if simTimePaused() then
+      state.playbackPauseWallStart = os.clock()
+    end
     state.uiWantsAutoAdvance = true
   end
   return ok
@@ -1532,6 +1627,12 @@ local function uiToggleRepeat()
   end
 end
 
+local function uiSetVolume(v)
+  state.musicVolume = clamp01(v)
+  saveMusicPrefs()
+  applyMusicVolumeToActive()
+end
+
 local function tickPlaybackAutoAdvance(dt)
   if not state.isPlaying or not state.uiWantsAutoAdvance then
     return
@@ -1540,11 +1641,10 @@ local function tickPlaybackAutoAdvance(dt)
   if dur <= 0 then
     return
   end
-  local start = state.playStartClock
-  if not start then
+  if not state.playStartClock then
     return
   end
-  if os.clock() - start < dur - 0.08 then
+  if playbackPositionSec() < dur - 0.08 then
     return
   end
   state.isPlaying = false
@@ -1552,6 +1652,7 @@ local function tickPlaybackAutoAdvance(dt)
   stopEmitter(state.lastEmitter)
   state.lastEmitter = nil
   state.playStartClock = nil
+  resetPlaybackPauseTracking()
   if #state.tracks < 1 then
     return
   end
@@ -1580,6 +1681,10 @@ local function tickPlaybackAutoAdvance(dt)
       state.isPlaying = true
       state.playStartClock = os.clock()
       state.playDurationSec = dur
+      resetPlaybackPauseTracking()
+      if simTimePaused() then
+        state.playbackPauseWallStart = os.clock()
+      end
       state.uiWantsAutoAdvance = true
       return
     end
@@ -1603,6 +1708,7 @@ local function tickPlaybackAutoAdvance(dt)
 end
 
 local function onUpdate(dt)
+  syncPlaybackPauseWallClock()
   tickPlaybackAutoAdvance(dt)
 end
 
@@ -1626,10 +1732,13 @@ M.uiNext = uiNext
 M.uiPrevious = uiPrevious
 M.uiToggleShuffle = uiToggleShuffle
 M.uiToggleRepeat = uiToggleRepeat
+M.uiSetVolume = uiSetVolume
 M.onUpdate = onUpdate
 M.onExtensionUnloaded = onExtensionUnloaded
 M.getAllPlaylistSongNames = getAllPlaylistSongNames
 M.getSongDurationSec = getSongDurationSec
 M.getCurrentSongLengthSec = getCurrentSongLengthSec
+
+loadMusicPrefs()
 
 return M

@@ -1,0 +1,23 @@
+{
+  "domElement": "<music-player-ui-app></music-player-ui-app>",
+  "appName": "musicPlayer",
+  "name": "Music Player",
+  "types": [
+    "ui.apps.categories.info"
+  ],
+  "description": "Plays music from your /music folder.",
+  "css": {
+    "left": "16px",
+    "bottom": "16px",
+    "width": "440px",
+    "height": "200px",
+    "min-width": "320px",
+    "min-height": "148px"
+  },
+  "author": "RLS Career Overhaul",
+  "version": "1",
+  "directive": "musicPlayerUiApp",
+  "category": "General",
+  "isAuxiliary": false,
+  "interactive": "yes"
+}
