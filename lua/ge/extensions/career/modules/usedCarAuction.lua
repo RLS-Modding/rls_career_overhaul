@@ -10,7 +10,8 @@ M.dependencies = {
   'career_saveSystem',
   'gameplay_sites_sitesManager',
   'gameplay_traffic',
-  'util_configListGenerator'
+  'util_configListGenerator',
+  'overhaul_musicPlayer'
 }
 
 local constants = {
@@ -49,7 +50,6 @@ local constants = {
   AUCTION_WIN_EMITTERS_GROUP = 'auctionEmitters',
   AUCTION_ACTIVE_ASSETS_GROUP = 'auctionAssetsOn',
   AUCTION_MUSIC_EMITTER_NAME = 'SFXEmitter_2',
-  AUCTION_MUSIC_EVENT = 'event:>Music>synthwave',
   AUCTION_ENTRY_PAYMENT_SFX_EVENT = 'event:>UI>Career>Buy_01',
   AUCTION_ENTRY_FEE = 1000,
   AUCTION_SETTINGS_SAVE_FILE = 'usedCarAuctionSettings.json',
@@ -486,13 +486,9 @@ local function setAuctionActiveAssetObjectEnabled(obj, enabled, musicEnabled)
     effectiveEnabled = false
   end
 
-  if isAuctionMusicEmitter and effectiveEnabled and obj.setField then
-    pcall(function() obj:setField('track', 0, constants.AUCTION_MUSIC_EVENT) end)
-  end
-
   setEmitterObjectEnabled(obj, effectiveEnabled)
 
-  if effectiveEnabled and obj.play then
+  if effectiveEnabled and obj.play and not isAuctionMusicEmitter then
     local played = pcall(function() obj:play() end)
     if not played then
       pcall(function() obj:play(-1) end)

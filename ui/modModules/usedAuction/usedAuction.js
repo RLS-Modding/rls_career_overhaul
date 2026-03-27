@@ -1,12 +1,14 @@
 'use strict'
 
+import '../rlsMusicPlayer/rlsMusicPlayer.js'
+
 function defaultAuctionState() {
   return {
     phase: 'idle',
-    musicEnabled: true,
     entryPromptActive: false,
     entryFee: 1000,
     canPayEntryFee: false,
+    musicEnabled: null,
     activeLotIndex: 1,
     currentLotIndex: null,
     statusMessage: '',
@@ -42,10 +44,6 @@ angular.module('beamng.stuff')
     if (!pollTimer) return
     window.clearInterval(pollTimer)
     pollTimer = null
-  }
-
-  function boolToLua(value) {
-    return value ? 'true' : 'false'
   }
 
   function callAuctionLua(fnName, args) {
@@ -133,10 +131,6 @@ angular.module('beamng.stuff')
     callAuctionLua('placeBid', [String(n)])
   }
 
-  $scope.setMusicEnabled = function(enabled) {
-    callAuctionLua('setAuctionMusicEnabled', [boolToLua(enabled === true)])
-  }
-
   const showListener = angularRootScope.$on('UsedAuctionShow', function() {
     $scope.$evalAsync(function() {
       $scope.visible = true
@@ -145,6 +139,9 @@ angular.module('beamng.stuff')
   })
 
   const hideListener = angularRootScope.$on('UsedAuctionHide', function() {
+    if (window.bngApi && window.bngApi.engineLua) {
+      window.bngApi.engineLua('extensions.overhaul_musicPlayer.uiStop()')
+    }
     $scope.$evalAsync(function() {
       $scope.visible = false
       $scope.state = defaultAuctionState()
@@ -221,7 +218,7 @@ angular.module('beamng.stuff')
   }
 }])
 
-const usedAuctionModule = angular.module('usedAuction', ['ui.router'])
+const usedAuctionModule = angular.module('usedAuction', ['ui.router', 'rlsMusicPlayer'])
 
 .run(['$rootScope', function() {
   function initializeAuctionOverlay() {

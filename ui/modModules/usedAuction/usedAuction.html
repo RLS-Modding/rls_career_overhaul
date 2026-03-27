@@ -20,11 +20,13 @@
 
     <div class="ua-status">{{ state.statusMessage || 'Auction service unavailable.' }}</div>
 
-    <div class="ua-music">
-      <label>
-        <input type="checkbox" ng-model="state.musicEnabled" ng-change="setMusicEnabled(state.musicEnabled)" />
-        <span>(Music Coming Soon)</span>
-      </label>
+    <div class="ua-music-player">
+      <rls-music-player
+        ng-if="state.musicEnabled !== null"
+        emitter-name="SFXEmitter_2"
+        music-root="/music"
+        start-playing="{{ state.musicEnabled !== false }}"
+        poll-ms="400"></rls-music-player>
     </div>
 
     <div class="ua-summary">

@@ -49,7 +49,7 @@
   left: 1.2rem;
   width: min(30rem, calc(100vw - 2rem));
   max-height: calc(100vh - 2.4rem);
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
@@ -87,6 +87,20 @@
 .ua-status {
   font-size: 0.82rem;
   color: rgba(255, 255, 255, 0.88);
+}
+
+.ua-music-player {
+  display: flex;
+  flex-direction: column;
+  padding: 0.45rem 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.4rem;
+  background: rgba(255, 255, 255, 0.03);
+  pointer-events: auto;
+}
+
+.ua-music-player .rls-mp {
+  max-width: none;
 }
 
 .ua-summary,
