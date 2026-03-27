@@ -4498,7 +4498,6 @@
     "reputationLevels": [
       {
         "stock": 5,
-        "hiddenFromDealerList": true,
         "testDrive": {
           "abandonFees": 500,
           "timeLimit": 60,
@@ -4507,7 +4506,6 @@
       },
       {
         "stock": 7,
-        "hiddenFromDealerList": true,
         "testDrive": {
           "abandonFees": 500,
           "timeLimit": 90,

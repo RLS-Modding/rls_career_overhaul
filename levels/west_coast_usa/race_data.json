@@ -84,7 +84,7 @@
         "yearMax":2022,
         "yearMin":1933
       },
-      "reward":50,
+      "reward":75,
       "tuningShop":{
         "commute":120,
         "decimalPlaces":1,
@@ -143,10 +143,10 @@
       "checkpointRoad":[
         "driftLoopRemaster"
       ],
-      "driftGoal":6000,
+      "driftGoal":31000,
       "hotlap":54,
       "label":"Drift Loop Remaster",
-      "reward":50,
+      "reward":200,
       "timeout":10,
       "type":[
         "drift"
@@ -166,7 +166,7 @@
       ],
       "driftGoal":8200,
       "label":"Hotrolled Drift",
-      "reward":150,
+      "reward":400,
       "type":[
         "drift"
       ]
@@ -306,7 +306,7 @@
       ],
       "hotlap":25,
       "label":"Quarry Circuit",
-      "reward":200,
+      "reward":100,
       "type":[
         "rally"
       ]
@@ -355,7 +355,7 @@
         "rally1"
       ],
       "label":"Rally Stage 1",
-      "reward":400,
+      "reward":150,
       "type":[
         "rally"
       ]
@@ -387,7 +387,7 @@
         "rally2"
       ],
       "label":"Rally Stage 2",
-      "reward":800,
+      "reward":200,
       "type":[
         "rally"
       ]
@@ -427,7 +427,7 @@
         "rally3"
       ],
       "label":"Rally Stage 3",
-      "reward":900,
+      "reward":250,
       "type":[
         "rally"
       ]
@@ -458,7 +458,7 @@
         "rally4"
       ],
       "label":"Rally Stage 4 - Final",
-      "reward":800,
+      "reward":250,
       "type":[
         "rally"
       ]
@@ -480,7 +480,7 @@
       ],
       "driftGoal":30000,
       "label":"Redwood Drift",
-      "reward":200,
+      "reward":500,
       "type":[
         "drift"
       ]
@@ -503,7 +503,7 @@
       ],
       "driftGoal":31000,
       "label":"Redwood Drift Reverse",
-      "reward":200,
+      "reward":500,
       "type":[
         "drift"
       ]
@@ -566,7 +566,7 @@
       ],
       "driftGoal":6500,
       "label":"Sealbrik Drift",
-      "reward":100,
+      "reward":300,
       "type":[
         "drift"
       ]

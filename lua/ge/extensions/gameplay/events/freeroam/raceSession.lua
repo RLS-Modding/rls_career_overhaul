@@ -887,6 +887,17 @@ function M.payoutDragRace(raceName, finishTime, finishSpeed, vehId)
             totalDisciplineXp = totalDisciplineXp + (tonumber(rewardInfo.amount) or 0)
         end
     end
+    for _, rewardInfo in pairs(disciplineXpRewards) do
+        if type(rewardInfo) == "table" and rewardInfo.amount ~= nil then
+            rewardInfo.amount = math.max(0, math.floor((tonumber(rewardInfo.amount) or 0) * 2))
+        end
+    end
+    for _, info in pairs(disciplineXpBreakdown) do
+        if type(info) == "table" and info.amount ~= nil then
+            info.amount = math.max(0, math.floor((tonumber(info.amount) or 0) * 2))
+        end
+    end
+    totalDisciplineXp = math.max(0, math.floor((tonumber(totalDisciplineXp) or 0) * 2))
     local completionMeta = {
         disciplineIds = disciplineIds,
         invalidLap = false,
