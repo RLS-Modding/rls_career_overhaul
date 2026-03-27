@@ -62,7 +62,8 @@ local constants = {
   AUCTION_EXIT_MARKER_SHAPE = 'art/shapes/interface/checkpoint_marker.dae',
   AUCTION_EXIT_MARKER_SCALE = 2.2,
   AUCTION_EXIT_MARKER_COLOR = '1.00 0.10 0.10 0.95',
-  AUCTION_EXIT_MARKER_Z_OFFSET = -0.8
+  AUCTION_EXIT_MARKER_Z_OFFSET = -0.8,
+  AUCTION_ENTRY_LOADING_TAG = 'usedCarAuctionEntry'
 }
 
 local fallbackPool = {
@@ -358,6 +359,18 @@ local function stopFadeSafe()
   end
 end
 
+local function exitAuctionEntryLoadingScreen()
+  if not core_gamestate or not core_gamestate.requestExitLoadingScreen then
+    return
+  end
+  if core_gamestate.getLoadingStatus and not core_gamestate.getLoadingStatus(constants.AUCTION_ENTRY_LOADING_TAG) then
+    return
+  end
+  pcall(function()
+    core_gamestate.requestExitLoadingScreen(constants.AUCTION_ENTRY_LOADING_TAG)
+  end)
+end
+
 local function runFadedTransition(workFn)
   if auctionState.transitionActive then
     return
@@ -371,6 +384,7 @@ local function runFadedTransition(workFn)
     local ok, err = pcall(workFn)
 
     stopFadeSafe()
+    exitAuctionEntryLoadingScreen()
     auctionState.transitionActive = false
 
     if not ok then
@@ -2507,6 +2521,26 @@ local function confirmEntryPaymentAndStartAuction()
 
   if not canAffordAuctionEntry() then
     return false
+  end
+
+  if core_gamestate and core_gamestate.requestEnterLoadingScreen then
+    playUiSound(constants.AUCTION_ENTRY_PAYMENT_SFX_EVENT)
+    core_gamestate.requestEnterLoadingScreen(constants.AUCTION_ENTRY_LOADING_TAG, function()
+      if not payAuctionEntryFee() then
+        exitAuctionEntryLoadingScreen()
+        return
+      end
+
+      if career_saveSystem and career_saveSystem.saveCurrent then
+        pcall(function() career_saveSystem.saveCurrent() end)
+      end
+
+      auctionState.entryPromptActive = false
+      if not startAuctionImmediate() then
+        exitAuctionEntryLoadingScreen()
+      end
+    end)
+    return true
   end
 
   if not payAuctionEntryFee() then
