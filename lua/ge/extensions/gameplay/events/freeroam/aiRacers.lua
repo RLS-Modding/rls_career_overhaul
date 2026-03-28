@@ -52,6 +52,8 @@ local DEFAULT_CONFIG = {
     -- AI pool power filter: only spawn models with power <= refHp * (1 + aiPowerExceedCapPct). No lower bound. Set false to skip filtering.
     filterPoolByPowerMeetOrExceed = true,
     aiPowerExceedCapPct = 0.25,
+    -- vehiclePool: only spawn AI configs with HP in (player, player + this]; if none, 1× next-higher pool car + player clones for the rest.
+    aiPoolCloseAboveHp = 50,
     -- overrideAI: multiplies lateral/longitudinal grip budget in raceplanAhead (1.0 = default, >1 = faster in corners).
     raceAccelScale = 1.1,
     raceThrottleKp = 1.12,
@@ -650,31 +652,162 @@ local function pickVehiclePoolStrongestDiverse(withPower, requestedCount)
     return picked
 end
 
--- All vehiclePool tiers concatenated (deduped), for sanctioned HP=0 fallback.
-local function mergeAllVehiclePoolTiers(vehiclePool)
-    return mergeVehiclePoolFromClassUpward(vehiclePool, "stock")
-end
+-- Build slot plan: each { model, config } from pool or { clonePlayer = true }. Only AI with HP in (playerHp, playerHp+closeAboveHp]; else one next-higher + clones.
+local function buildVehiclePoolCloseAboveSlotPlan(available, playerHp, requestedCount, closeAboveHp)
+    local plan = {}
+    if type(available) ~= "table" or type(requestedCount) ~= "number" or requestedCount < 1 then return plan end
+    local ph = type(playerHp) == "number" and playerHp or 0
+    if ph < 0 then ph = 0 end
+    local cap = tonumber(closeAboveHp) or 50
+    if cap < 1 then cap = 1 end
 
--- Player HP unknown: strongest configs whose peakHp lies in sanctioned [classHpMin, classHpMax].
-local function tryPickVehiclePoolSanctionedPowerZeroFallback(cfg, vehiclePool, sanctionedCtx, requestedCount)
-    if type(vehiclePool) ~= "table" or type(sanctionedCtx) ~= "table" then return nil end
-    local lo = tonumber(sanctionedCtx.classHpMin) or 0
-    local hi = tonumber(sanctionedCtx.classHpMax)
-    if not hi or hi <= 0 or lo > hi then return nil end
-    if type(requestedCount) ~= "number" or requestedCount < 1 then return nil end
-    local merged = mergeAllVehiclePoolTiers(vehiclePool)
-    local available = filterVehiclePoolToAvailable(merged)
-    local candidates = {}
+    local rows = {}
     for _, entry in ipairs(available) do
-        local model = entry.model
-        local config = entry.config
-        local aiHp = getPowerHpForPoolEntry(entry, model, config)
-        if type(aiHp) == "number" and aiHp > 0 and aiHp >= lo and aiHp <= hi then
-            table.insert(candidates, { model = model, config = config, powerHp = aiHp })
+        local model = type(entry) == "table" and (entry.model or entry.vehicleModel) or nil
+        local config = type(entry) == "table" and entry.config or nil
+        if type(model) == "string" and type(config) == "string" and config ~= "" then
+            local aiHp = getPowerHpForPoolEntry(entry, model, config)
+            if type(aiHp) == "number" and aiHp > 0 then
+                table.insert(rows, { model = model, config = config, powerHp = aiHp })
+            end
         end
     end
-    if #candidates == 0 then return nil end
-    return pickVehiclePoolStrongestDiverse(candidates, requestedCount)
+
+    local band = {}
+    for _, r in ipairs(rows) do
+        if r.powerHp > ph and r.powerHp <= ph + cap then
+            table.insert(band, r)
+        end
+    end
+    table.sort(band, function(a, b)
+        if a.powerHp ~= b.powerHp then return a.powerHp < b.powerHp end
+        return (a.model or "") < (b.model or "")
+    end)
+
+    local seen = {}
+    local unique = {}
+    for _, r in ipairs(band) do
+        local k = (r.model or "") .. "\0" .. (r.config or "")
+        if not seen[k] then
+            seen[k] = true
+            table.insert(unique, r)
+        end
+    end
+
+    if #unique >= 1 then
+        for i = 1, requestedCount do
+            local r = unique[((i - 1) % #unique) + 1]
+            table.insert(plan, { model = r.model, config = r.config })
+        end
+        return plan
+    end
+
+    local above = {}
+    for _, r in ipairs(rows) do
+        if r.powerHp > ph then
+            table.insert(above, r)
+        end
+    end
+    if #above == 0 then
+        for _ = 1, requestedCount do
+            table.insert(plan, { clonePlayer = true })
+        end
+        return plan
+    end
+    table.sort(above, function(a, b)
+        if a.powerHp ~= b.powerHp then return a.powerHp < b.powerHp end
+        return (a.model or "") < (b.model or "")
+    end)
+    local pick = above[1]
+    table.insert(plan, { model = pick.model, config = pick.config })
+    for _ = 2, requestedCount do
+        table.insert(plan, { clonePlayer = true })
+    end
+    return plan
+end
+
+local function resolvePlayerCloneConfig()
+    local vehId = be and be.getPlayerVehicleID and be:getPlayerVehicleID(0)
+    if vehId and career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId and career_modules_inventory.getVehicle then
+        local inventoryId = career_modules_inventory.getInventoryIdFromVehicleId(vehId)
+        if inventoryId then
+            local vehInfo = career_modules_inventory.getVehicle(inventoryId)
+            if vehInfo and vehInfo.model and vehInfo.config then
+                return vehInfo.model, vehInfo.config
+            end
+        end
+    end
+    return M.getPlayerVehicleModelAndConfig()
+end
+
+-- Spawn staging AI from a plan of pool rows or player-clone slots (inventory config when available).
+local function spawnStagingFromSlotPlan(raceName, race, facilityName, slotPlan, playerModel, playerConfigOrObj)
+    local cfg = getCurrentLevelConfig()
+    if cfg.enabled == false then return 0 end
+    if type(slotPlan) ~= "table" or #slotPlan == 0 then return 0 end
+    cancelDelayedDespawn()
+    local spots = loadStagingSpots()
+    if not spots or #spots == 0 then return 0 end
+    local requestedCount = (race and race.aiCount) or cfg.maxSpawnCount or 1
+    local n = math.max(0, math.min(#spots, requestedCount, #slotPlan))
+    if n <= 0 then return 0 end
+
+    local function configForPlayerSpawn(modelKey, configKeyOrObj)
+        if type(configKeyOrObj) == "table" then
+            if configKeyOrObj.partConfigFilename and type(configKeyOrObj.partConfigFilename) == "string" then
+                return configKeyOrObj.partConfigFilename
+            elseif configKeyOrObj.format == 4 then
+                return configKeyOrObj
+            end
+        end
+        local configOpt = (type(configKeyOrObj) == "string" and configKeyOrObj ~= "") and configKeyOrObj or "default"
+        return "vehicles/" .. modelKey .. "/" .. configOpt .. ".pc"
+    end
+
+    local spawned = 0
+    for i = 1, n do
+        local spec = slotPlan[i]
+        local spot = spots[i]
+        if spec and spot and spot.pos and spot.rot then
+            local modelKey, configForSpawn
+            if spec.clonePlayer then
+                modelKey = playerModel
+                if type(modelKey) == "string" and modelKey ~= "" then
+                    configForSpawn = configForPlayerSpawn(modelKey, playerConfigOrObj)
+                end
+            elseif type(spec.model) == "string" and spec.model ~= "" and type(spec.config) == "string" and spec.config ~= "" then
+                modelKey = spec.model
+                configForSpawn = "vehicles/" .. modelKey .. "/" .. spec.config .. ".pc"
+            end
+            if modelKey and configForSpawn then
+                local pos = vec3(spot.pos[1], spot.pos[2], spot.pos[3])
+                local rot = quat(spot.rot[1], spot.rot[2], spot.rot[3], spot.rot[4])
+                local spawnOptions = { pos = pos, rot = rot, config = configForSpawn, autoEnterVehicle = false }
+                local ok, veh = pcall(function() return core_vehicles.spawnNewVehicle(modelKey, spawnOptions) end)
+                if ok and veh and veh.getID then
+                    local vehId = veh:getID()
+                    table.insert(mSpawnedAiVehicleIds, vehId)
+                    spawned = spawned + 1
+                    if extensions.core_vehicle_colors and extensions.core_vehicle_colors.setVehicleColor then
+                        pcall(function()
+                            extensions.core_vehicle_colors.setVehicleColor(0, pickRandomAiColor(), vehId)
+                        end)
+                    end
+                    local vehObj = be:getObjectByID(vehId)
+                    if vehObj then
+                        vehObj:queueLuaCommand("if not driver then extensions.load('driver') end")
+                        vehObj:queueLuaCommand("if not ai then extensions.load('ai') end")
+                        vehObj:queueLuaCommand("if ai and ai.setMode then ai.setMode('stop') end")
+                        vehObj:queueLuaCommand("input.event('parkingbrake', 1, 1)")
+                        if cfg.startEngineOnSpawn ~= false then
+                            queueEngineStart(vehObj)
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return spawned
 end
 
 -- Pick N entries from class pool: sort by closest power to playerHp, then one per model first, then fill. Random among ties. Returns list of { model, config }.
@@ -923,11 +1056,11 @@ function M.spawnForStaging(raceName, race, facilityName)
     return spawnWithPool(raceName, race, facilityName, rawPool)
 end
 
--- Spawn AI with similar power to the player vehicle: reads player HP via getPlayerVehiclePowerReliable, picks HP class (D/C/B/A), then spawns from vehiclePoolByHpClass[class] or defaultVehiclePool. Calls callback(spawnedCount).
--- When cfg.vehiclePool is set: merges pool tiers from the player's tier upward (stock/modified/super/open), picks opponents at >= player HP (closest above first), respects aiPowerExceedCapPct when possible, spawns model+config with variety.
+-- Spawn AI with similar power to the player vehicle: reads player HP via getPlayerVehiclePowerReliable, then legacy D/C/B/A pool if no vehiclePool.
+-- When cfg.vehiclePool is set: merge tiers from effective HP class upward; spawn only configs with HP in (player, player+aiPoolCloseAboveHp], cycling distinct configs to fill aiCount; if none in band, 1× next-higher pool car + player clones (inventory config when available).
 -- When spawnSameVehicleAsPlayer is true: spawns the player's exact model+config.
--- poolReferenceHp: optional HP when player power cannot be read and there is no sanctioned spawn context (e.g. freeroam); not used as fake player HP when sanctionedSpawnCtx is set.
--- sanctionedSpawnCtx: from sanctioned racing offer { classHpMin, classHpMax }; when player HP is unknown, pick strongest pool entries in that bracket (requires peakHp on entries or core_vehicles power).
+-- poolReferenceHp: optional HP when player power cannot be read and there is no sanctioned spawn context (e.g. freeroam).
+-- sanctionedSpawnCtx: when player HP unknown, effective HP = classHpMax for the same vehiclePool close-above rule (full pool merged from stock).
 function M.spawnForStagingWithPlayerHp(raceName, race, facilityName, callback, poolReferenceHp, sanctionedSpawnCtx)
     if type(callback) ~= "function" then return end
     local cfg = race and getMergedConfigForRace(race) or getCurrentLevelConfig()
@@ -960,34 +1093,28 @@ function M.spawnForStagingWithPlayerHp(raceName, race, facilityName, callback, p
     local function spawnFromPowerHp(powerHp)
         local hp = type(powerHp) == "number" and powerHp or 0
         local requestedCount = (race and race.aiCount) or cfg.maxSpawnCount or 4
-        if hp <= 0 and type(sanctionedSpawnCtx) == "table" then
-            local hi = tonumber(sanctionedSpawnCtx.classHpMax)
-            if hi and hi > 0 and type(cfg.vehiclePool) == "table" and type(cfg.vehiclePool.stock) == "table" then
-                local list = tryPickVehiclePoolSanctionedPowerZeroFallback(cfg, cfg.vehiclePool, sanctionedSpawnCtx, requestedCount)
-                if list and #list > 0 then
-                    local spawned = spawnWithModelConfigList(raceName, race, facilityName, list)
-                    callback(spawned)
-                    return
+        local closeAbove = tonumber(cfg.aiPoolCloseAboveHp) or tonumber(DEFAULT_CONFIG.aiPoolCloseAboveHp) or 50
+        local pModel, pConfig = resolvePlayerCloneConfig()
+
+        if type(cfg.vehiclePool) == "table" and type(cfg.vehiclePool.stock) == "table" then
+            local effHp = hp
+            if effHp <= 0 and type(sanctionedSpawnCtx) == "table" then
+                local hi = tonumber(sanctionedSpawnCtx.classHpMax)
+                if hi and hi > 0 then
+                    effHp = hi
                 end
             end
-        end
-        if type(cfg.vehiclePool) == "table" and type(cfg.vehiclePool.stock) == "table" then
-            local startClass = getClassFromHpForVehiclePool(hp)
-            local merged = mergeVehiclePoolFromClassUpward(cfg.vehiclePool, startClass)
-            local available = filterVehiclePoolToAvailable(merged)
-            if #available > 0 then
-                local eligible = filterVehiclePoolMeetOrExceedHp(available, hp, cfg)
-                local list
-                if #eligible > 0 then
-                    list = pickVehiclePoolMeetOrExceedDiverse(eligible, hp, requestedCount)
-                else
-                    local strongest = buildVehiclePoolStrongestEntries(available)
-                    list = pickVehiclePoolStrongestDiverse(strongest, requestedCount)
-                end
-                if list and #list > 0 then
-                    local spawned = spawnWithModelConfigList(raceName, race, facilityName, list)
-                    callback(spawned)
-                    return
+            if effHp > 0 then
+                local startClass = getClassFromHpForVehiclePool(effHp)
+                local merged = mergeVehiclePoolFromClassUpward(cfg.vehiclePool, startClass)
+                local available = filterVehiclePoolToAvailable(merged)
+                if #available > 0 then
+                    local plan = buildVehiclePoolCloseAboveSlotPlan(available, effHp, requestedCount, closeAbove)
+                    if #plan > 0 then
+                        local spawned = spawnStagingFromSlotPlan(raceName, race, facilityName, plan, pModel, pConfig)
+                        callback(spawned)
+                        return
+                    end
                 end
             end
         end
