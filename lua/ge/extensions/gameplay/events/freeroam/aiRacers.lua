@@ -396,6 +396,18 @@ local function getPowerForModelConfig(modelKey, configKey)
     return getPowerHpFromConfig(config)
 end
 
+-- peakHp (or hp / powerHp) on aiRacingConfig vehiclePool entries overrides core_vehicles lookup for matching and sanctioned fallback.
+local function getPowerHpForPoolEntry(entry, model, config)
+    if type(entry) == "table" then
+        local d = tonumber(entry.peakHp) or tonumber(entry.hp) or tonumber(entry.powerHp)
+        if d and d > 0 then return d end
+    end
+    if type(model) == "string" and type(config) == "string" then
+        return getPowerForModelConfig(model, config)
+    end
+    return nil
+end
+
 -- Filter raw pool to models with power <= playerPowerHp * (1 + capPct). Any amount below that is allowed; none over the cap.
 local function filterPoolByPower(rawPool, playerPowerHp, cfg)
     if type(rawPool) ~= "table" or #rawPool == 0 then return rawPool end
@@ -457,10 +469,212 @@ local function filterVehiclePoolToAvailable(rawPool)
         local model = type(entry) == "table" and (entry.model or entry.vehicleModel) or nil
         local config = type(entry) == "table" and entry.config or nil
         if type(model) == "string" and available[model] and type(config) == "string" and config ~= "" then
-            table.insert(out, { model = model, config = config })
+            local row = { model = model, config = config }
+            if type(entry) == "table" then
+                local pk = tonumber(entry.peakHp) or tonumber(entry.hp) or tonumber(entry.powerHp)
+                if pk and pk > 0 then row.peakHp = pk end
+            end
+            table.insert(out, row)
         end
     end
     return out
+end
+
+-- Order of cfg.vehiclePool tiers when merging upward for AI power matching (soft class ceiling).
+local VEHICLE_POOL_CLASS_ORDER = { "stock", "modified", "super", "open" }
+
+local function vehiclePoolClassOrderIndex(class)
+    if type(class) ~= "string" then return 1 end
+    for i, c in ipairs(VEHICLE_POOL_CLASS_ORDER) do
+        if c == class then return i end
+    end
+    return 1
+end
+
+-- Concatenate vehiclePool entries from startClass through open, deduped by model+config.
+local function mergeVehiclePoolFromClassUpward(vehiclePool, startClass)
+    local out = {}
+    if type(vehiclePool) ~= "table" then return out end
+    local seen = {}
+    local from = vehiclePoolClassOrderIndex(startClass)
+    for i = from, #VEHICLE_POOL_CLASS_ORDER do
+        local tier = VEHICLE_POOL_CLASS_ORDER[i]
+        local tierPool = vehiclePool[tier]
+        if type(tierPool) == "table" then
+            for _, entry in ipairs(tierPool) do
+                local model = type(entry) == "table" and (entry.model or entry.vehicleModel) or nil
+                local config = type(entry) == "table" and entry.config or nil
+                if type(model) == "string" and type(config) == "string" and config ~= "" then
+                    local key = model .. "\0" .. config
+                    if not seen[key] then
+                        seen[key] = true
+                        table.insert(out, entry)
+                    end
+                end
+            end
+        end
+    end
+    return out
+end
+
+-- Entries must be { model, config }; returns { model, config, powerHp } with aiHp >= playerHp.
+-- If filterPoolByPowerMeetOrExceed: prefer aiHp <= playerHp * (1+cap). If none in band, keep all >= player (never under).
+local function filterVehiclePoolMeetOrExceedHp(flatPool, playerHp, cfg)
+    local out = {}
+    if type(flatPool) ~= "table" or #flatPool == 0 then return out end
+    local ph = type(playerHp) == "number" and playerHp or 0
+    if ph < 0 then ph = 0 end
+    local useCap = cfg and cfg.filterPoolByPowerMeetOrExceed == true
+    local capPct = cfg and tonumber(cfg.aiPowerExceedCapPct)
+    if not capPct or capPct < 0 then capPct = tonumber(DEFAULT_CONFIG.aiPowerExceedCapPct) or 0.25 end
+    local maxHp = ph * (1 + capPct)
+    local meet = {}
+    for _, entry in ipairs(flatPool) do
+        local model = type(entry) == "table" and (entry.model or entry.vehicleModel) or nil
+        local config = type(entry) == "table" and entry.config or nil
+        if type(model) == "string" and type(config) == "string" then
+            local aiHp = getPowerHpForPoolEntry(entry, model, config)
+            if type(aiHp) == "number" and aiHp > 0 and aiHp >= ph then
+                table.insert(meet, { model = model, config = config, powerHp = aiHp })
+            end
+        end
+    end
+    if #meet == 0 then return out end
+    if not useCap then return meet end
+    local inBand = {}
+    for _, e in ipairs(meet) do
+        if e.powerHp <= maxHp then table.insert(inBand, e) end
+    end
+    if #inBand > 0 then return inBand end
+    return meet
+end
+
+-- Strongest configs when nothing meets or exceeds player (degraded). flatPool = { model, config }.
+local function buildVehiclePoolStrongestEntries(flatPool)
+    local withPower = {}
+    if type(flatPool) ~= "table" then return withPower end
+    for _, entry in ipairs(flatPool) do
+        local model = type(entry) == "table" and (entry.model or entry.vehicleModel) or nil
+        local config = type(entry) == "table" and entry.config or nil
+        if type(model) == "string" and type(config) == "string" then
+            local hp = getPowerHpForPoolEntry(entry, model, config)
+            if type(hp) == "number" and hp > 0 then
+                table.insert(withPower, { model = model, config = config, powerHp = hp })
+            end
+        end
+    end
+    if #withPower == 0 then return withPower end
+    for i = #withPower, 2, -1 do
+        local j = math.random(1, i)
+        withPower[i], withPower[j] = withPower[j], withPower[i]
+    end
+    table.sort(withPower, function(a, b)
+        return (a.powerHp or 0) > (b.powerHp or 0)
+    end)
+    return withPower
+end
+
+-- Pick N from withPower ({ model, config, powerHp }): smallest excess over player first, then variety (one model then up to 2 per model).
+local function pickVehiclePoolMeetOrExceedDiverse(withPower, playerPowerHp, requestedCount)
+    if type(withPower) ~= "table" or #withPower == 0 or type(requestedCount) ~= "number" or requestedCount < 1 then return {} end
+    local ph = type(playerPowerHp) == "number" and playerPowerHp or 0
+    for i = #withPower, 2, -1 do
+        local j = math.random(1, i)
+        withPower[i], withPower[j] = withPower[j], withPower[i]
+    end
+    table.sort(withPower, function(a, b)
+        local ahp = a.powerHp or ph
+        local bhp = b.powerHp or ph
+        local da = ahp - ph
+        local db = bhp - ph
+        if da ~= db then return da < db end
+        if ahp ~= bhp then return ahp < bhp end
+        return (a.model or "") < (b.model or "")
+    end)
+    local picked = {}
+    local usedModel = {}
+    for _, e in ipairs(withPower) do
+        if not usedModel[e.model] then
+            usedModel[e.model] = true
+            table.insert(picked, { model = e.model, config = e.config })
+            if #picked >= requestedCount then return picked end
+        end
+    end
+    for _, e in ipairs(withPower) do
+        if #picked >= requestedCount then break end
+        local already = 0
+        for _, p in ipairs(picked) do if p.model == e.model then already = already + 1 end end
+        if already < 2 then
+            table.insert(picked, { model = e.model, config = e.config })
+        end
+    end
+    while #picked < requestedCount and #withPower > 0 do
+        table.insert(picked, { model = withPower[1].model, config = withPower[1].config })
+    end
+    return picked
+end
+
+-- Same variety rules as pickVehiclePoolMeetOrExceedDiverse but prefer highest power (no player tie-break).
+local function pickVehiclePoolStrongestDiverse(withPower, requestedCount)
+    if type(withPower) ~= "table" or #withPower == 0 or type(requestedCount) ~= "number" or requestedCount < 1 then return {} end
+    for i = #withPower, 2, -1 do
+        local j = math.random(1, i)
+        withPower[i], withPower[j] = withPower[j], withPower[i]
+    end
+    table.sort(withPower, function(a, b)
+        local ahp = a.powerHp or 0
+        local bhp = b.powerHp or 0
+        if ahp ~= bhp then return ahp > bhp end
+        return (a.model or "") < (b.model or "")
+    end)
+    local picked = {}
+    local usedModel = {}
+    for _, e in ipairs(withPower) do
+        if not usedModel[e.model] then
+            usedModel[e.model] = true
+            table.insert(picked, { model = e.model, config = e.config })
+            if #picked >= requestedCount then return picked end
+        end
+    end
+    for _, e in ipairs(withPower) do
+        if #picked >= requestedCount then break end
+        local already = 0
+        for _, p in ipairs(picked) do if p.model == e.model then already = already + 1 end end
+        if already < 2 then
+            table.insert(picked, { model = e.model, config = e.config })
+        end
+    end
+    while #picked < requestedCount and #withPower > 0 do
+        table.insert(picked, { model = withPower[1].model, config = withPower[1].config })
+    end
+    return picked
+end
+
+-- All vehiclePool tiers concatenated (deduped), for sanctioned HP=0 fallback.
+local function mergeAllVehiclePoolTiers(vehiclePool)
+    return mergeVehiclePoolFromClassUpward(vehiclePool, "stock")
+end
+
+-- Player HP unknown: strongest configs whose peakHp lies in sanctioned [classHpMin, classHpMax].
+local function tryPickVehiclePoolSanctionedPowerZeroFallback(cfg, vehiclePool, sanctionedCtx, requestedCount)
+    if type(vehiclePool) ~= "table" or type(sanctionedCtx) ~= "table" then return nil end
+    local lo = tonumber(sanctionedCtx.classHpMin) or 0
+    local hi = tonumber(sanctionedCtx.classHpMax)
+    if not hi or hi <= 0 or lo > hi then return nil end
+    if type(requestedCount) ~= "number" or requestedCount < 1 then return nil end
+    local merged = mergeAllVehiclePoolTiers(vehiclePool)
+    local available = filterVehiclePoolToAvailable(merged)
+    local candidates = {}
+    for _, entry in ipairs(available) do
+        local model = entry.model
+        local config = entry.config
+        local aiHp = getPowerHpForPoolEntry(entry, model, config)
+        if type(aiHp) == "number" and aiHp > 0 and aiHp >= lo and aiHp <= hi then
+            table.insert(candidates, { model = model, config = config, powerHp = aiHp })
+        end
+    end
+    if #candidates == 0 then return nil end
+    return pickVehiclePoolStrongestDiverse(candidates, requestedCount)
 end
 
 -- Pick N entries from class pool: sort by closest power to playerHp, then one per model first, then fill. Random among ties. Returns list of { model, config }.
@@ -710,10 +924,11 @@ function M.spawnForStaging(raceName, race, facilityName)
 end
 
 -- Spawn AI with similar power to the player vehicle: reads player HP via getPlayerVehiclePowerReliable, picks HP class (D/C/B/A), then spawns from vehiclePoolByHpClass[class] or defaultVehiclePool. Calls callback(spawnedCount).
--- When cfg.vehiclePool is set: uses stock/modified/super by HP (<320, 320-550, >550), picks closest match with one per model then fill, spawns model+config.
+-- When cfg.vehiclePool is set: merges pool tiers from the player's tier upward (stock/modified/super/open), picks opponents at >= player HP (closest above first), respects aiPowerExceedCapPct when possible, spawns model+config with variety.
 -- When spawnSameVehicleAsPlayer is true: spawns the player's exact model+config.
--- poolReferenceHp: optional HP (not watts); when set, skip live player read and use this for class / pool matching (e.g. sanctioned class HP max).
-function M.spawnForStagingWithPlayerHp(raceName, race, facilityName, callback, poolReferenceHp)
+-- poolReferenceHp: optional HP when player power cannot be read and there is no sanctioned spawn context (e.g. freeroam); not used as fake player HP when sanctionedSpawnCtx is set.
+-- sanctionedSpawnCtx: from sanctioned racing offer { classHpMin, classHpMax }; when player HP is unknown, pick strongest pool entries in that bracket (requires peakHp on entries or core_vehicles power).
+function M.spawnForStagingWithPlayerHp(raceName, race, facilityName, callback, poolReferenceHp, sanctionedSpawnCtx)
     if type(callback) ~= "function" then return end
     local cfg = race and getMergedConfigForRace(race) or getCurrentLevelConfig()
     if cfg.enabled == false then
@@ -744,16 +959,36 @@ function M.spawnForStagingWithPlayerHp(raceName, race, facilityName, callback, p
     end
     local function spawnFromPowerHp(powerHp)
         local hp = type(powerHp) == "number" and powerHp or 0
+        local requestedCount = (race and race.aiCount) or cfg.maxSpawnCount or 4
+        if hp <= 0 and type(sanctionedSpawnCtx) == "table" then
+            local hi = tonumber(sanctionedSpawnCtx.classHpMax)
+            if hi and hi > 0 and type(cfg.vehiclePool) == "table" and type(cfg.vehiclePool.stock) == "table" then
+                local list = tryPickVehiclePoolSanctionedPowerZeroFallback(cfg, cfg.vehiclePool, sanctionedSpawnCtx, requestedCount)
+                if list and #list > 0 then
+                    local spawned = spawnWithModelConfigList(raceName, race, facilityName, list)
+                    callback(spawned)
+                    return
+                end
+            end
+        end
         if type(cfg.vehiclePool) == "table" and type(cfg.vehiclePool.stock) == "table" then
-            local class = getClassFromHpForVehiclePool(hp)
-            local classPool = cfg.vehiclePool[class] or cfg.vehiclePool.stock
-            local available = type(classPool) == "table" and classPool or {}
+            local startClass = getClassFromHpForVehiclePool(hp)
+            local merged = mergeVehiclePoolFromClassUpward(cfg.vehiclePool, startClass)
+            local available = filterVehiclePoolToAvailable(merged)
             if #available > 0 then
-                local requestedCount = (race and race.aiCount) or cfg.maxSpawnCount or 4
-                local list = pickVehiclePoolByClosestWithVariety(available, hp, requestedCount)
-                local spawned = spawnWithModelConfigList(raceName, race, facilityName, list)
-                callback(spawned)
-                return
+                local eligible = filterVehiclePoolMeetOrExceedHp(available, hp, cfg)
+                local list
+                if #eligible > 0 then
+                    list = pickVehiclePoolMeetOrExceedDiverse(eligible, hp, requestedCount)
+                else
+                    local strongest = buildVehiclePoolStrongestEntries(available)
+                    list = pickVehiclePoolStrongestDiverse(strongest, requestedCount)
+                end
+                if list and #list > 0 then
+                    local spawned = spawnWithModelConfigList(raceName, race, facilityName, list)
+                    callback(spawned)
+                    return
+                end
             end
         end
         local class = getClassFromHp(hp)
@@ -762,13 +997,14 @@ function M.spawnForStagingWithPlayerHp(raceName, race, facilityName, callback, p
         local spawned = spawnWithPool(raceName, race, facilityName, pool)
         callback(spawned)
     end
-    if type(poolReferenceHp) == "number" and poolReferenceHp > 0 then
-        spawnFromPowerHp(poolReferenceHp)
-        return
-    end
     M.getPlayerVehiclePowerReliable(function(powerWatts, weight)
         local powerHp = (type(powerWatts) == "number" and powerWatts > 0) and powerWattsToHp(powerWatts) or nil
-        spawnFromPowerHp(powerHp or 0)
+        local hp = powerHp
+        local sanctionedActive = type(sanctionedSpawnCtx) == "table" and tonumber(sanctionedSpawnCtx.classHpMax) and tonumber(sanctionedSpawnCtx.classHpMax) > 0
+        if (not hp or hp <= 0) and not sanctionedActive and type(poolReferenceHp) == "number" and poolReferenceHp > 0 then
+            hp = poolReferenceHp
+        end
+        spawnFromPowerHp(hp or 0)
     end)
 end
 

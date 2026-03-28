@@ -526,6 +526,10 @@ function M.prepareFreeroamAiForTrack(poolReferenceHpOverride, deferCountdown)
     if not refHp and gameplay_events_freContracts_sanctionedRacing and gameplay_events_freContracts_sanctionedRacing.getAiPoolReferenceHp then
         refHp = gameplay_events_freContracts_sanctionedRacing.getAiPoolReferenceHp()
     end
+    local sanctionedSpawnCtx = nil
+    if gameplay_events_freContracts_sanctionedRacing and gameplay_events_freContracts_sanctionedRacing.getAiSpawnSanctionedContext then
+        sanctionedSpawnCtx = gameplay_events_freContracts_sanctionedRacing.getAiSpawnSanctionedContext()
+    end
     local function afterAiSpawnCommit()
         mCompetitiveAwaitingAiSpawn = false
         mTrackGridAiSpawnWaitDeadline = nil
@@ -548,7 +552,7 @@ function M.prepareFreeroamAiForTrack(poolReferenceHpOverride, deferCountdown)
                 end
             end
             afterAiSpawnCommit()
-        end, refHp)
+        end, refHp, sanctionedSpawnCtx)
     elseif aiRacers.spawnForStaging then
         local spawned = tonumber(aiRacers.spawnForStaging(M.TRACK_RACE_ID, raceForAi, M.TRACK_RACE_ID)) or 0
         if spawned <= 0 then

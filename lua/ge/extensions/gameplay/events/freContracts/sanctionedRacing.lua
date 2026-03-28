@@ -997,6 +997,39 @@ function M.getAiPoolReferenceHp()
   return hi
 end
 
+-- For AI spawn fallback when player HP cannot be read: bracket limits + branch (same phase guards as getAiPoolReferenceHp).
+function M.getAiSpawnSanctionedContext()
+  if not gameplay_events_freContracts_state.isCareerActive() then
+    return nil
+  end
+  local state = gameplay_events_freContracts_state.getState()
+  local sr = ensureSrState(state)
+  local o = sr.offer
+  if not o or type(o.raceName) ~= "string" or not isSanctionedRaceNameConfigured(o.raceName) then
+    return nil
+  end
+  if o.phase ~= "committed" and o.phase ~= "racing" then
+    return nil
+  end
+  local lo = tonumber(o.classHpMin)
+  local hi = tonumber(o.classHpMax)
+  if not hi or hi <= 0 then
+    return nil
+  end
+  if not lo or lo < 0 then
+    lo = 0
+  end
+  local branch = o.hpBracketBranch
+  if type(branch) ~= "string" or branch == "" then
+    branch = nil
+  end
+  return {
+    classHpMin = lo,
+    classHpMax = hi,
+    hpBracketBranch = branch,
+  }
+end
+
 function M.getSanctionedOfferLapCount()
   if not gameplay_events_freContracts_state.isCareerActive() then
     return nil
