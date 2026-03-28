@@ -178,6 +178,7 @@ jobs:
             levels/
             lua/
             mod_info/
+            music/
             scripts/
             ui/
             vehicles/

@@ -1,0 +1,91 @@
+<link rel="stylesheet" type="text/css" href="/ui/modModules/rlsMusicPlayer/rlsMusicPlayer.css" />
+
+<div class="rls-mp-host">
+<div class="rls-mp">
+  <div class="rls-mp-row-main">
+    <div class="rls-mp-art">
+      <img ng-if="vm.state.currentCover" ng-src="{{ vm.state.currentCover }}" alt="" />
+      <div class="rls-mp-art-ph" ng-if="!vm.state.currentCover"></div>
+    </div>
+    <div class="rls-mp-main-col">
+      <div class="rls-mp-title-row">
+        <div class="rls-mp-title">{{ vm.state.currentTitle || '—' }}</div>
+        <div class="rls-mp-title-pl" ng-if="vm.state.playlistNames && vm.state.playlistNames.length">
+          <button
+            type="button"
+            class="rls-mp-pl-trigger"
+            ng-click="vm.togglePlaylistMenu($event)"
+            ng-attr-aria-expanded="{{ vm.playlistMenuOpen ? 'true' : 'false' }}"
+            aria-label="Change playlist">
+            <span class="rls-mp-pl-trigger-text">{{ vm.playlistModel || '—' }}</span>
+            <span class="rls-mp-pl-trigger-chev" ng-class="{ open: vm.playlistMenuOpen }"></span>
+          </button>
+        </div>
+      </div>
+      <div class="rls-mp-time-row">
+        <span class="rls-mp-time">{{ vm.fmt(vm.state.positionSec) }}</span>
+        <div class="rls-mp-bar">
+          <div class="rls-mp-bar-fill" ng-style="{ width: (vm.pct() + '%') }"></div>
+        </div>
+        <span class="rls-mp-time">{{ vm.fmt(vm.state.durationSec) }}</span>
+      </div>
+      <div class="rls-mp-row-ctrl">
+        <span class="rls-mp-ctrl-spacer" aria-hidden="true"></span>
+        <div class="rls-mp-ctrl-center">
+          <button type="button" class="rls-mp-icon rls-mp-icon-sm rls-mp-ico-shuffle" ng-click="vm.toggleShuffle()" ng-class="{ active: vm.state.shuffle }" aria-label="Shuffle"></button>
+          <button type="button" class="rls-mp-icon rls-mp-ico-prev" ng-click="vm.prev()" aria-label="Previous"></button>
+          <button type="button" class="rls-mp-icon rls-mp-icon-play" ng-class="{ 'rls-mp-ico-pause': vm.state.isPlaying, 'rls-mp-ico-play': !vm.state.isPlaying }" ng-click="vm.togglePlayStop()" ng-attr-aria-label="{{ vm.state.isPlaying ? 'Stop' : 'Play' }}"></button>
+          <button type="button" class="rls-mp-icon rls-mp-ico-next" ng-click="vm.next()" aria-label="Next"></button>
+          <button type="button" class="rls-mp-icon rls-mp-icon-sm rls-mp-ico-repeat" ng-click="vm.toggleRepeat()" ng-class="{ active: vm.state.repeatMode !== 'off', 'rls-mp-ico-repeat-one': vm.state.repeatMode === 'one' }" aria-label="Repeat"></button>
+        </div>
+        <div class="rls-mp-ctrl-vol">
+          <button type="button" class="rls-mp-icon rls-mp-ico-volume" tabindex="-1" ng-attr-aria-expanded="{{ vm.volumePanelOpen ? 'true' : 'false' }}" aria-label="Volume"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <div
+    class="rls-mp-dropdown-flyout"
+    ng-show="vm.playlistMenuOpen"
+    ng-mousedown="$event.stopPropagation()"
+    ng-click="$event.stopPropagation()">
+    <button
+      type="button"
+      class="rls-mp-dd-item"
+      ng-repeat="n in vm.state.playlistNames track by n"
+      ng-class="{ active: n === vm.playlistModel }"
+      ng-click="vm.pickPlaylist(n, $event)">
+      {{ n }}
+    </button>
+  </div>
+
+  <div
+    class="rls-mp-volume-flyout"
+    ng-show="vm.volumePanelOpen"
+    ng-mousedown="$event.stopPropagation()"
+    ng-click="$event.stopPropagation()">
+    <div class="rls-mp-volume-flyout-panel">
+      <div class="rls-mp-volume-flyout-slider-region">
+        <div class="rls-mp-volume-slider-wrap">
+          <div
+            class="rls-mp-vslider"
+            role="slider"
+            tabindex="0"
+            ng-attr-aria-valuemin="0"
+            ng-attr-aria-valuemax="100"
+            ng-attr-aria-valuenow="{{ vm.volumePercent }}"
+            aria-label="Volume"
+            ng-keydown="vm.volumeSliderKeyDown($event)">
+            <div class="rls-mp-vslider-track">
+              <div class="rls-mp-vslider-fill" ng-style="{ height: vm.volumePercent + '%' }"></div>
+              <div class="rls-mp-vslider-thumb" ng-style="{ bottom: 'calc(' + vm.volumePercent + '% - 0.43rem)' }"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="rls-mp-volume-flyout-icon-well" aria-hidden="true"></div>
+    </div>
+  </div>
+</div>

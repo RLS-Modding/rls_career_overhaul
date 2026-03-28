@@ -146,7 +146,7 @@ local defaultConfig = {
     mudding = "mudding"
   },
   rewardScaling = {
-    levelPercentPerLevelUp = 0.1,
+    levelPercentPerLevelUp = 0.02,
     maxLevel = 50,
     sponsorBonusCap = 2.0
   },
@@ -175,7 +175,7 @@ local defaultConfig = {
     },
     payoutVariance = {min = 0.95, max = 1.05},
     extraLapEventBonusPerUnit = 0.33,
-    xpPercentOfMoney = 0.02,
+    xpPercentOfMoney = 0.5,
     timeWindowMinutesByTier = {
       easy = {min = 3, max = 9},
       medium = {min = 3, max = 9},

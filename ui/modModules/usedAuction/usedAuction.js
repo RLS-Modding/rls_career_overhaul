@@ -1,33 +1,60 @@
 'use strict'
 
+import '../rlsMusicPlayer/rlsMusicPlayer.js'
+
 function defaultAuctionState() {
   return {
     phase: 'idle',
-    musicEnabled: true,
     entryPromptActive: false,
     entryFee: 1000,
     canPayEntryFee: false,
+    hasFreeGarageSlot: true,
+    musicEnabled: null,
     activeLotIndex: 1,
     currentLotIndex: null,
     statusMessage: '',
     purchasedCount: 0,
+    bidMessage: '',
     lots: []
   }
+}
+
+function getGameLuaApi() {
+  if (typeof bngApi !== 'undefined' && bngApi && bngApi.engineLua) return bngApi
+  if (window.bngApi && window.bngApi.engineLua) return window.bngApi
+  if (window.bridge && window.bridge.api && window.bridge.api.engineLua) return window.bridge.api
+  return null
 }
 
 angular.module('beamng.stuff')
 .controller('UsedAuctionController', ['$scope', '$rootScope', function($scope, $rootScope) {
   let pollTimer = null
   const angularRootScope = window.globalAngularRootScope || $rootScope
+  let timerPeakByLot = Object.create(null)
+  let timerRingPrev = { lotIdx: null, t: null }
+
+  function resetAuctionTimerUi() {
+    timerPeakByLot = Object.create(null)
+    timerRingPrev = { lotIdx: null, t: null }
+  }
 
   $scope.visible = false
   $scope.state = defaultAuctionState()
 
+  let lastActiveLotIndex = null
+
   function requestState() {
-    bngApi.engineLua('extensions.career_modules_usedCarAuction.requestAuctionState()', function(result) {
+    const api = getGameLuaApi()
+    if (!api) return
+    api.engineLua('career_modules_usedCarAuction.requestAuctionState()', function(result) {
       if (!result || typeof result !== 'object') return
       $scope.$evalAsync(function() {
         $scope.state = result
+        const newIdx = Number(result.currentLotIndex || result.activeLotIndex || 0)
+        if (newIdx && newIdx !== lastActiveLotIndex) {
+          lastActiveLotIndex = newIdx
+          window.setTimeout(scrollToActiveLot, 50)
+        }
       })
     })
   }
@@ -44,15 +71,14 @@ angular.module('beamng.stuff')
     pollTimer = null
   }
 
-  function boolToLua(value) {
-    return value ? 'true' : 'false'
-  }
-
   function callAuctionLua(fnName, args) {
-    const fn = 'extensions.career_modules_usedCarAuction.' + fnName
+    const api = getGameLuaApi()
+    if (!api) return
+    const fn = 'career_modules_usedCarAuction.' + fnName
     const argList = args && args.length ? '(' + args.join(', ') + ')' : '()'
-    bngApi.engineLua(fn + argList)
-    window.setTimeout(requestState, 35)
+    api.engineLua(fn + argList, function() {
+      requestState()
+    })
   }
 
   $scope.isEntryPrompt = function() {
@@ -60,6 +86,12 @@ angular.module('beamng.stuff')
   }
 
   $scope.entryPromptMessage = function() {
+    if ($scope.isEntryPrompt()) {
+      const st = ($scope.state.statusMessage || '').trim()
+      if (st) {
+        return st
+      }
+    }
     const fee = Number($scope.state.entryFee)
     const safeFee = Number.isFinite(fee) && fee >= 0 ? Math.round(fee) : 1000
     return 'Do you want to pay $' + safeFee + ' to enter The Vault?'
@@ -68,6 +100,12 @@ angular.module('beamng.stuff')
   $scope.activeLot = function() {
     const lots = ($scope.state && $scope.state.lots) || []
     if (!lots.length) return null
+
+    for (let i = 0; i < lots.length; i++) {
+      if (lots[i].state === 'active') {
+        return lots[i]
+      }
+    }
 
     const currentLotIndex = Number($scope.state.currentLotIndex || $scope.state.activeLotIndex || 0)
     if (currentLotIndex > 0) {
@@ -79,8 +117,14 @@ angular.module('beamng.stuff')
     }
 
     for (let j = 0; j < lots.length; j++) {
+      if (lots[j].state === 'exiting') {
+        return lots[j]
+      }
+    }
+
+    for (let j = 0; j < lots.length; j++) {
       const lotState = lots[j].state
-      if (lotState === 'queued' || lotState === 'approaching' || lotState === 'active' || lotState === 'exiting') {
+      if (lotState === 'queued' || lotState === 'approaching') {
         return lots[j]
       }
     }
@@ -96,7 +140,9 @@ angular.module('beamng.stuff')
 
   $scope.canBid = function() {
     const active = $scope.activeLot()
-    return $scope.state.phase === 'bidding' && active && active.state === 'active'
+    if (!active || active.state !== 'active' || $scope.state.phase !== 'bidding') return false
+    if (active.highestBidder === 'player') return false
+    return true
   }
 
   $scope.formatBidder = function(lot) {
@@ -120,6 +166,121 @@ angular.module('beamng.stuff')
     return '$' + Math.round(n).toLocaleString()
   }
 
+  $scope.isLiveBidLot = function() {
+    const active = $scope.activeLot()
+    return !!(active && active.state === 'active')
+  }
+
+  $scope.bidCardLabel = function() {
+    return $scope.isLiveBidLot() ? 'Current Bid' : 'Awaiting Lot'
+  }
+
+  $scope.phaseLabel = function() {
+    const p = $scope.state.phase
+    if (p === 'bidding') return 'Bidding'
+    if (p === 'complete') return 'Complete'
+    if (p === 'starting') return 'Starting'
+    return 'Idle'
+  }
+
+  $scope.phaseClass = function() {
+    const p = $scope.state.phase
+    if (p === 'bidding') return 'phase-bidding'
+    if (p === 'complete') return 'phase-complete'
+    return ''
+  }
+
+  $scope.lotStatusLabel = function(lot) {
+    if (!lot) return ''
+    if (lot.state === 'active') return 'Live'
+    if (lot.state === 'approaching') return 'Next'
+    if (lot.state === 'exiting') return 'Closing'
+    if (lot.state === 'finished' && lot.highestBidder === 'player') return 'Won'
+    if (lot.state === 'finished') return 'Sold'
+    if (lot.state === 'failed') return 'No Sale'
+    return 'Upcoming'
+  }
+
+  $scope.lotBadgeClass = function(lot) {
+    if (!lot) return 'badge-upcoming'
+    if (lot.state === 'active') return 'badge-live'
+    if (lot.state === 'approaching') return 'badge-approaching'
+    if (lot.state === 'finished' && lot.highestBidder === 'player') return 'badge-won'
+    if (lot.state === 'finished' || lot.state === 'failed') return 'badge-sold'
+    return 'badge-upcoming'
+  }
+
+  $scope.bidLeaderClass = function() {
+    const active = $scope.activeLot()
+    if (!active) return ''
+    if (active.highestBidder === 'player') return 'leader-player'
+    return 'leader-npc'
+  }
+
+  $scope.bidTotalAfter = function(increment) {
+    const active = $scope.activeLot()
+    if (!active) return 0
+    return (Number(active.currentBid) || 0) + (Number(increment) || 0)
+  }
+
+  $scope.canAffordBid = function(increment) {
+    const active = $scope.activeLot()
+    if (!active) return false
+    const totalCost = $scope.bidTotalAfter(increment)
+    const balance = Number($scope.state.playerBalance) || 0
+    return balance >= totalCost
+  }
+
+  $scope.isLotBiddable = function() {
+    const active = $scope.activeLot()
+    return active && active.state === 'active' && (Number(active.timeLeft) || 0) > 0
+  }
+
+  $scope.timerUrgencyClass = function() {
+    const active = $scope.activeLot()
+    if (!active) return 'timer-safe'
+    const t = Number(active.timeLeft) || 0
+    if (t <= 5) return 'timer-critical'
+    if (t <= 15) return 'timer-warning'
+    return 'timer-safe'
+  }
+
+  $scope.timerDash = function() {
+    const active = $scope.activeLot()
+    if (!active) return '0 100'
+    const t = Number(active.timeLeft) || 0
+    const idx = Number(active.lotIndex) || 0
+    if (idx > 0) {
+      const prevPeak = timerPeakByLot[idx] || 0
+      timerPeakByLot[idx] = Math.max(prevPeak, t)
+    }
+    const peak = idx > 0 ? Math.max(timerPeakByLot[idx] || 0, 1) : Math.max(t, 1)
+    const pct = Math.min(1, Math.max(0, t / peak))
+    const circumference = 2 * Math.PI * 16
+    const filled = pct * circumference
+    return filled.toFixed(1) + ' ' + circumference.toFixed(1)
+  }
+
+  $scope.timerProgressStyle = function() {
+    const active = $scope.activeLot()
+    if (!active) return {}
+    const idx = Number(active.lotIndex) || 0
+    const t = Number(active.timeLeft) || 0
+    const gained = timerRingPrev.lotIdx === idx && timerRingPrev.t !== null && t > timerRingPrev.t + 0.35
+    timerRingPrev.lotIdx = idx
+    timerRingPrev.t = t
+    return {
+      transition: gained ? 'stroke-dasharray 0.14s ease-out' : 'stroke-dasharray 0.88s linear'
+    }
+  }
+
+  function scrollToActiveLot() {
+    const active = $scope.activeLot()
+    if (!active) return
+    const el = document.getElementById('ua-lot-' + active.lotIndex)
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }
+
   $scope.startAuctionFromPrompt = function() {
     callAuctionLua('startAuction')
   }
@@ -133,11 +294,8 @@ angular.module('beamng.stuff')
     callAuctionLua('placeBid', [String(n)])
   }
 
-  $scope.setMusicEnabled = function(enabled) {
-    callAuctionLua('setAuctionMusicEnabled', [boolToLua(enabled === true)])
-  }
-
   const showListener = angularRootScope.$on('UsedAuctionShow', function() {
+    resetAuctionTimerUi()
     $scope.$evalAsync(function() {
       $scope.visible = true
     })
@@ -145,6 +303,11 @@ angular.module('beamng.stuff')
   })
 
   const hideListener = angularRootScope.$on('UsedAuctionHide', function() {
+    const api = getGameLuaApi()
+    if (api) {
+      api.engineLua('extensions.overhaul_musicPlayer.uiStop()')
+    }
+    resetAuctionTimerUi()
     $scope.$evalAsync(function() {
       $scope.visible = false
       $scope.state = defaultAuctionState()
@@ -221,7 +384,7 @@ angular.module('beamng.stuff')
   }
 }])
 
-const usedAuctionModule = angular.module('usedAuction', ['ui.router'])
+const usedAuctionModule = angular.module('usedAuction', ['ui.router', 'rlsMusicPlayer'])
 
 .run(['$rootScope', function() {
   function initializeAuctionOverlay() {

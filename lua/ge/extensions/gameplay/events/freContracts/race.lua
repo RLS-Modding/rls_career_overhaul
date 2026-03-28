@@ -87,8 +87,13 @@ local function calculateRewardModifiers(disciplineIds)
 end
 
 local function calculateContractAwardXp(contract, disciplineId)
-  local tier = (type(contract) == "table" and contract.tier) or "easy"
   local contractCfg = freConfig.getContractConfig(disciplineId) or {}
+  local money = tonumber(contract and contract.rewardMoney) or tonumber(contract and contract.rewardMoneyBase) or 0
+  local pct = tonumber(contractCfg.xpPercentOfMoney) or 0.5
+  if money > 0 and pct > 0 then
+    return math.max(0, math.floor(money * pct + 0.5))
+  end
+  local tier = (type(contract) == "table" and contract.tier) or "easy"
   local curveCfg = ((contractCfg.xpByTier or {})[tier]) or {}
   local normalized = tonumber(contract and contract.bestPerformanceRatio) or 0
   if normalized <= 0 then

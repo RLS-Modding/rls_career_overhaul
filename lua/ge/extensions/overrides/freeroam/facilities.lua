@@ -46,14 +46,37 @@ local function fileExistsDefault(path, fallbackPath)
   return fallbackPath
 end
 
+-- Previews that are only a filename live under /facilities/images/.
+-- Paths with their own folder (e.g. previews/ next to the json) stay relative to fileDir.
+local function resolveFacilityPreview(raw, fileDir, levelDir, facilitiesBaseDir)
+  if not raw or raw == '' then return raw end
+  if raw:sub(1, 1) == '/' then
+    return fileExistsDefault({raw}, missingPreview)
+  end
+  local candidates = {}
+  local sharedName = nil
+  if not raw:find("/", 1, true) then
+    sharedName = raw
+  end
+  if sharedName then
+    table.insert(candidates, facilitiesBaseDir .. "images/" .. sharedName)
+  end
+  if raw:sub(1, 7) == "images/" then
+    table.insert(candidates, facilitiesBaseDir .. raw)
+  end
+  table.insert(candidates, fileDir .. raw)
+  table.insert(candidates, levelDir .. raw)
+  return fileExistsDefault(candidates, missingPreview)
+end
+
 
 -- parses and sanitizes a singular facility entry and adds it to the facilitiesTypeList.
-local function parseFacility(f, facilityType, facilitiesTypeList, levelDir, fileDir, fileName, index)
+local function parseFacility(f, facilityType, facilitiesTypeList, levelDir, fileDir, fileName, index, facilitiesBaseDir)
   -- sanitize
   f.id = f.id or (string.format("%s%s-%s-%d",fileDir, fileName, facilityType, index))
   f.type = facilityType
   f.preview = f.preview or 'defaultFacility.jpg'
-  f.preview = fileExistsDefault({fileDir..f.preview, levelDir.. f.preview}, missingPreview)
+  f.preview = resolveFacilityPreview(f.preview, fileDir, levelDir, facilitiesBaseDir)
   f.sitesFile = f.sitesFile or "facilities.sites.json"
   if type(f.sitesFile) == "table" then
     for index, file in ipairs(f.sitesFile) do
@@ -69,13 +92,13 @@ local function parseFacility(f, facilityType, facilitiesTypeList, levelDir, file
 end
 
 -- this funcion can parse *.facilities.json, but also the info.json in a level folder.
-local function parseFacilitiyFile(file, facilities, levelDir)
+local function parseFacilitiyFile(file, facilities, levelDir, facilitiesBaseDir)
   if not FS:fileExists(file) then return end
   local fileDir, fn, _ = path.split(file, true)
   local data = jsonReadFile(file)
   for type, listKey in pairs(facilityTypeToListName) do
     for i, f in ipairs(data[listKey] or {}) do
-      parseFacility(f, type, facilities[listKey], levelDir, fileDir, fn, i)
+      parseFacility(f, type, facilities[listKey], levelDir, fileDir, fn, i, facilitiesBaseDir)
     end
   end
 end
@@ -94,11 +117,12 @@ local function getFacilities(levelName)
     -- parse info.json of the level
     local levelInfo = core_levels.getLevelByName(levelName)
     if levelInfo then
-      parseFacilitiyFile(levelInfo.dir.."/info.json", facilitiesByLevel[levelName], levelInfo.misFilePath)
+      local facilitiesBaseDir = levelInfo.dir .. "/facilities/"
+      parseFacilitiyFile(levelInfo.dir.."/info.json", facilitiesByLevel[levelName], levelInfo.misFilePath, facilitiesBaseDir)
 
       -- parse any other facility files inside the levels /facilities folder
       for _,file in ipairs(FS:findFiles(levelInfo.dir.."/facilities/", '*.facilities.json', -1, false, true)) do
-        parseFacilitiyFile(file, facilitiesByLevel[levelName], levelInfo.misFilePath)
+        parseFacilitiyFile(file, facilitiesByLevel[levelName], levelInfo.misFilePath, facilitiesBaseDir)
       end
     end
     log("D","",string.format("Loaded facilities on level %s (%d garages, %d gasStations, %d dealerships)",levelName, #facilitiesByLevel[levelName].garages, #facilitiesByLevel[levelName].gasStations, #facilitiesByLevel[levelName].dealerships))
