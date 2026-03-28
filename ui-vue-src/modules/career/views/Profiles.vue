@@ -91,8 +91,8 @@ provide("validateName", validateName)
 function isAnyModalOpen() {
   const creator = document.querySelector('.ccm-overlay')
   const detailer = document.querySelector('.cdm-overlay')
-  const difficultyDropdown = document.querySelector('.difficulty-dropdown-content')
-  const mapDropdown = document.querySelector('.map-dropdown-content')
+  const difficultyDropdown = document.querySelector('.pcc-mode-content')
+  const mapDropdown = document.querySelector('.pcc-map-content')
   if (creator) {
     const style = window.getComputedStyle(creator)
     if (style.display !== 'none' && style.visibility !== 'hidden') return true
