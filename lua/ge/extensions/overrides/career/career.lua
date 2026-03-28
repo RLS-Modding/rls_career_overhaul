@@ -538,6 +538,143 @@ local function getBeamXPLevel(xp)
   return level, curLvlProgress, neededForNext
 end
 
+local SKILL_DOMAINS_DIRS = {
+  "/gameplay/domains/careerSkills/skills/",
+}
+
+local skillAttributeKeyAliases = {
+  ["police"] = "careerSkills-police",
+  ["delivery"] = "logistics-delivery",
+  ["vehicleDelivery"] = "logistics-delivery",
+  ["materials"] = "logistics-delivery",
+}
+
+local menuSkillCache = nil
+
+local function menuSkillCalcLevel(value, thresholds)
+  local level = 0
+  local prevT, nextT = 0, nil
+  for i, threshold in ipairs(thresholds) do
+    if value >= threshold then
+      level = i
+      prevT = threshold
+    else
+      nextT = threshold
+      break
+    end
+  end
+  local curProg, needNext = 0, 1
+  if nextT then
+    needNext = math.max(1, nextT - prevT)
+    curProg = math.max(0, value - prevT)
+  elseif level > 0 then
+    curProg, needNext = 1, 1
+  end
+  return level, curProg, needNext
+end
+
+local function menuSkillDiscoverAll()
+  if menuSkillCache then return menuSkillCache end
+  menuSkillCache = {}
+  local seen = {}
+  for _, dir in ipairs(SKILL_DOMAINS_DIRS) do
+    local files = FS:findFiles(dir, "info.json", 1, false, false)
+    for _, filePath in ipairs(files or {}) do
+      local info = jsonReadFile(filePath)
+      if type(info) == "table" and info.isSkill == true and type(info.levels) == "table" and info.levels[1] then
+        local name = info.name or ""
+        if name:lower():find("coming soon") then goto skipSkill end
+
+        local folderId = filePath:match("/([^/]+)/info%.json$")
+        if not folderId then goto skipSkill end
+
+        local attKey = info.attributeKey
+        if not attKey or attKey == "" then
+          attKey = skillAttributeKeyAliases[folderId] or ("careerSkills-" .. folderId)
+        end
+        if seen[attKey] then goto skipSkill end
+        seen[attKey] = true
+
+        local thresholds = {}
+        for _, entry in ipairs(info.levels) do
+          local rv = tonumber(entry.requiredValue)
+          if rv then table.insert(thresholds, rv) end
+        end
+        table.sort(thresholds)
+
+        table.insert(menuSkillCache, {
+          id = folderId,
+          label = name,
+          attributeKey = attKey,
+          icon = info.icon or "racing",
+          color = info.color or nil,
+          order = tonumber(info.order) or 9999,
+          thresholds = thresholds,
+        })
+        ::skipSkill::
+      end
+    end
+  end
+  table.sort(menuSkillCache, function(a, b) return a.order < b.order end)
+  return menuSkillCache
+end
+
+local function menuSkillReadValue(attData, attKey, useLive)
+  if useLive then
+    if career_modules_playerAttributes and career_modules_playerAttributes.getAttributeValue then
+      return tonumber(career_modules_playerAttributes.getAttributeValue(attKey)) or 0
+    end
+    return 0
+  end
+  if type(attData) ~= "table" or type(attKey) ~= "string" then return 0 end
+  local sk = attKey
+  if career_branches and career_branches.newAttributeNamesToOldNames then
+    sk = career_branches.newAttributeNamesToOldNames[attKey] or attKey
+  end
+  local tryKeys = { sk, attKey }
+  if skillAttributeKeyAliases[attKey] then
+    table.insert(tryKeys, skillAttributeKeyAliases[attKey])
+  end
+  for alias, canonical in pairs(skillAttributeKeyAliases) do
+    if canonical == attKey then table.insert(tryKeys, alias) end
+  end
+  for _, key in ipairs(tryKeys) do
+    local blob = attData[key]
+    if type(blob) == "table" then return tonumber(blob.value) or 0 end
+    if type(blob) == "number" then return blob end
+  end
+  return 0
+end
+
+local function fillMenuProfileSkills(data, attData, useLive)
+  data.freSkills = {}
+  local allSkills = menuSkillDiscoverAll()
+  for _, sk in ipairs(allSkills) do
+    local value = menuSkillReadValue(attData, sk.attributeKey, useLive)
+    local level, curProg, needNext = menuSkillCalcLevel(value, sk.thresholds)
+    local icon, color = sk.icon, sk.color
+    if career_branches then
+      local b = career_branches.getBranchById(sk.attributeKey) or career_branches.getBranchByPath(sk.attributeKey)
+      if type(b) == "table" then
+        if b.icon then icon = b.icon end
+        if b.color then color = b.color end
+      end
+    end
+    table.insert(data.freSkills, {
+      id = sk.id,
+      label = sk.label,
+      skillKey = sk.attributeKey,
+      icon = icon,
+      color = color,
+      level = level,
+      value = value,
+      curLvlProgress = curProg,
+      neededForNext = needNext,
+      levelLabel = { txt = 'ui.career.lvlLabel', context = { lvl = level } },
+    })
+  end
+end
+
 local function formatSaveSlotForUi(saveSlot)
   local data = {}
   data.id = saveSlot
@@ -615,6 +752,7 @@ local function formatSaveSlotForUi(saveSlot)
         data[attKey] = brData
       end
     end
+    fillMenuProfileSkills(data, nil, true)
     data.currentVehicle = career_modules_inventory.getCurrentVehicle() and career_modules_inventory.getVehicles()[career_modules_inventory.getCurrentVehicle()]
     data.vehicleCount = #career_modules_inventory.getVehicles()
   else
@@ -651,6 +789,9 @@ local function formatSaveSlotForUi(saveSlot)
           data[attKey] = brData
         end
       end
+      fillMenuProfileSkills(data, attData, false)
+    else
+      data.freSkills = {}
     end
 
     if inventoryData and inventoryData.currentVehicle then

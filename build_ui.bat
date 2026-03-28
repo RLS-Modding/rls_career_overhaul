@@ -24,7 +24,16 @@ if %ERRORLEVEL% neq 0 (
 
 :: 2. Create and prepare build directory
 echo [1/4] Preparing build directory...
-mkdir "%BUILD_DIR%"
+if exist "%BUILD_DIR%" (
+    echo   Removing previous ui-build-temp ^(stale node_modules causes missing vite^)...
+    rmdir /s /q "%BUILD_DIR%" 2>nul
+)
+mkdir "%BUILD_DIR%" 2>nul
+if not exist "%BUILD_DIR%" (
+    echo Error: Could not create %BUILD_DIR%
+    pause
+    exit /b 1
+)
 :: Copy baseUI to temp build directory
 robocopy "%BASE_UI%" "%BUILD_DIR%" /E /MT /NFL /NDL /NJH /NJS /nc /ns /np
 
@@ -42,25 +51,31 @@ if exist "%BASE_UI%\node_modules" (
     robocopy "%BASE_UI%\node_modules" "node_modules" /E /MT /NFL /NDL /NJH /NJS /nc /ns /np >nul
 )
 
-:: Check if npm install is needed
-if not exist "node_modules" (
-    echo   node_modules not found, running npm install...
+:: Install deps if missing or incomplete ^(folder can exist without vite after a bad run^)
+if not exist "node_modules\vite\package.json" (
+    echo   Running npm install...
     call npm install
+    if errorlevel 1 (
+        echo Error: npm install failed.
+        popd
+        pause
+        exit /b 1
+    )
 ) else (
-    echo   node_modules already present, skipping npm install...
+    echo   node_modules OK, skipping npm install...
 )
 
-if %ERRORLEVEL% neq 0 (
-    echo Error: npm install failed.
+if not exist "node_modules\vite\bin\vite.js" (
+    echo Error: vite is not installed ^(node_modules\vite\bin\vite.js missing^).
     popd
     pause
     exit /b 1
 )
 
-echo   Running npx vite build...
-call npx vite build
+echo   Running vite build...
+call node "node_modules\vite\bin\vite.js" build
 if %ERRORLEVEL% neq 0 (
-    echo Error: npm build failed.
+    echo Error: vite build failed.
     popd
     pause
     exit /b 1
