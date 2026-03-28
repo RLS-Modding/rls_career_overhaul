@@ -369,7 +369,6 @@ function closeCard() {
   color: #fff;
   border-radius: calc-ui-rem(1);
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
   background: #0b0f19;
 }
 

@@ -271,16 +271,14 @@ function onInputBlur() {
   color: #fff;
   border-radius: calc-ui-rem(1);
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
   cursor: default;
 
   &:hover, &.pc--hover {
     transform: translateY(-3px);
-    box-shadow: 0 16px 44px rgba(0, 0, 0, 0.55);
-    transition: transform 0.22s ease-out, box-shadow 0.22s ease-out;
+    transition: transform 0.22s ease-out;
   }
 
-  transition: transform 0.22s ease-out, box-shadow 0.22s ease-out;
+  transition: transform 0.22s ease-out;
 
   &.pc--outdated {
     filter: grayscale(0.7);
