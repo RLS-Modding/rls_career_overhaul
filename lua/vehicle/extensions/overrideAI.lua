@@ -3268,41 +3268,47 @@ local function raceplanAhead(route, baseRoute, pmode)
     if k1 <= k0 then k1 = k0 + 1e-4 end
     local roadWidthMargin = ego.width * 0.8
     local laneWidthMargin = ego.width * 0.8
-    for i = 2, plan.planCount - 1 do
-      local n = plan[i]
-      local np = plan[i + 1]
-      if np and n.vec and np.vec then
-        local cInst = abs(inCurvature(n.vec, np.vec))
-        local kRef = max(cInst, abs(n.curvature or 0))
-        local t = clamp((kRef - k0) / (k1 - k0), 0, 1)
-        if t > 0 then
-          tmpVec:setSub2(n.dirVec, np.dirVec)
-          local tl = tmpVec:length()
-          if tl > 1e-5 then
-            tmpVec:setScaled(1 / tl)
-            local widenSign = -sign2(tmpVec:dot(n.normal))
-            local delta = t * liftMax * widenSign
-            local roadHalfWidth = n.halfWidth
-            local roadLimRight = max(0, roadHalfWidth - roadWidthMargin)
-            local limL = max(n.laneLimLeft + laneWidthMargin, -roadLimRight) + max(0, plan.offset or 0)
-            local limR = min(n.laneLimRight - laneWidthMargin, roadLimRight) + min(0, plan.offset or 0)
-            local newLat = clamp(n.lateralXnorm + delta, limL, limR)
-            if newLat ~= n.lateralXnorm then
-              n.lateralXnorm = newLat
-              n.pos:setScaled2(n.normal, newLat)
-              n.pos:setAdd(n.posOrig)
+    local function raceCornerLineLiftApply(liftPlan)
+      if not liftPlan or not liftPlan[2] or (liftPlan.planCount or 0) < 2 then return end
+      for i = 2, liftPlan.planCount - 1 do
+        local n = liftPlan[i]
+        local np = liftPlan[i + 1]
+        if np and n.vec and np.vec then
+          local cInst = abs(inCurvature(n.vec, np.vec))
+          local kRef = max(cInst, abs(n.curvature or 0))
+          local t = clamp((kRef - k0) / (k1 - k0), 0, 1)
+          if t > 0 then
+            tmpVec:setSub2(n.dirVec, np.dirVec)
+            local tl = tmpVec:length()
+            if tl > 1e-5 then
+              tmpVec:setScaled(1 / tl)
+              local widenSign = -sign2(tmpVec:dot(n.normal))
+              local delta = t * liftMax * widenSign
+              local roadHalfWidth = n.halfWidth
+              local roadLimRight = max(0, roadHalfWidth - roadWidthMargin)
+              local limL = max(n.laneLimLeft + laneWidthMargin, -roadLimRight) + max(0, liftPlan.offset or 0)
+              local limR = min(n.laneLimRight - laneWidthMargin, roadLimRight) + min(0, liftPlan.offset or 0)
+              local newLat = clamp(n.lateralXnorm + delta, limL, limR)
+              if newLat ~= n.lateralXnorm then
+                n.lateralXnorm = newLat
+                n.pos:setScaled2(n.normal, newLat)
+                n.pos:setAdd(n.posOrig)
+              end
             end
           end
         end
       end
+      for i = 2, liftPlan.planCount do
+        liftPlan[i].vec:setSub2(liftPlan[i - 1].pos, liftPlan[i].pos)
+        liftPlan[i].vec.z = 0
+        liftPlan[i].dirVec:set(liftPlan[i].vec)
+        liftPlan[i].dirVec:normalize()
+      end
+      updatePlanLen(liftPlan, 2, liftPlan.planCount)
     end
-    for i = 2, plan.planCount do
-      plan[i].vec:setSub2(plan[i - 1].pos, plan[i].pos)
-      plan[i].vec.z = 0
-      plan[i].dirVec:set(plan[i].vec)
-      plan[i].dirVec:normalize()
-    end
-    updatePlanLen(plan, 2, plan.planCount)
+    raceCornerLineLiftApply(plan)
+    if route.planL then raceCornerLineLiftApply(route.planL) end
+    if route.planR then raceCornerLineLiftApply(route.planR) end
   end
 
   -------########## Error Distribution ##########---------
@@ -3403,11 +3409,16 @@ local function raceplanAhead(route, baseRoute, pmode)
   plan.originaltargetSpeed = plan.targetSpeed -- save target speed computed by geometry only
   local geoTS = plan.targetSpeed
   local mergedTS = min(geoTS, plan.trafficTargetSpeed)
-  -- Racing: when clearly wide of the plan, ease traffic cap toward geometric speed (never above geoTS).
+  -- Racing: when clearly wide of the intended line, ease traffic cap toward geometric speed (never above geoTS).
+  -- latMag always uses route.plan (main) so planL/planR scoring measures lateral error vs intended path, not offset polylines.
   if opt.racing and type(parameters.raceWideLineTrafficBlend) == 'number' and parameters.raceWideLineTrafficBlend > 0 then
-    local es = plan.egoSeg or 1
-    local pn = plan[es]
-    local pn1 = plan[es + 1]
+    local refPlan = route.plan
+    local es = (refPlan and type(refPlan.egoSeg) == 'number' and refPlan.egoSeg) or plan.egoSeg or 1
+    if refPlan and refPlan.planCount and es > refPlan.planCount - 1 then
+      es = max(1, refPlan.planCount - 1)
+    end
+    local pn = refPlan and refPlan[es]
+    local pn1 = refPlan and refPlan[es + 1]
     if pn and pn1 then
       local p1, p2 = pn.pos, pn1.pos
       local xn = ego.pos:xnormOnLine(p1, p2)
