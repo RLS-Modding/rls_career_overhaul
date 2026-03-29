@@ -3259,6 +3259,52 @@ local function raceplanAhead(route, baseRoute, pmode)
 
   updatePlanLen(plan, 2, plan.planCount)
 
+  -- Racing: bias lateral position toward the outside of tight corners (wider arc, more human line sacrifice).
+  -- Uses geometry + previous-frame curvature; reclamps to lane/road limits. State-based slip/TCS handles stability.
+  if opt.racing and not pmode and type(parameters.raceCornerLineLiftMaxM) == 'number' and parameters.raceCornerLineLiftMaxM > 0 then
+    local liftMax = parameters.raceCornerLineLiftMaxM * clamp((type(parameters.raceCornerLineLiftScale) == 'number' and parameters.raceCornerLineLiftScale) or 1, 0, 1.5)
+    local k0 = (type(parameters.raceCornerCurvStart) == 'number' and parameters.raceCornerCurvStart) or 0.022
+    local k1 = (type(parameters.raceCornerCurvEnd) == 'number' and parameters.raceCornerCurvEnd) or 0.10
+    if k1 <= k0 then k1 = k0 + 1e-4 end
+    local roadWidthMargin = ego.width * 0.8
+    local laneWidthMargin = ego.width * 0.8
+    for i = 2, plan.planCount - 1 do
+      local n = plan[i]
+      local np = plan[i + 1]
+      if np and n.vec and np.vec then
+        local cInst = abs(inCurvature(n.vec, np.vec))
+        local kRef = max(cInst, abs(n.curvature or 0))
+        local t = clamp((kRef - k0) / (k1 - k0), 0, 1)
+        if t > 0 then
+          tmpVec:setSub2(n.dirVec, np.dirVec)
+          local tl = tmpVec:length()
+          if tl > 1e-5 then
+            tmpVec:setScaled(1 / tl)
+            local widenSign = -sign2(tmpVec:dot(n.normal))
+            local delta = t * liftMax * widenSign
+            local roadHalfWidth = n.halfWidth
+            local roadLimRight = max(0, roadHalfWidth - roadWidthMargin)
+            local limL = max(n.laneLimLeft + laneWidthMargin, -roadLimRight) + max(0, plan.offset or 0)
+            local limR = min(n.laneLimRight - laneWidthMargin, roadLimRight) + min(0, plan.offset or 0)
+            local newLat = clamp(n.lateralXnorm + delta, limL, limR)
+            if newLat ~= n.lateralXnorm then
+              n.lateralXnorm = newLat
+              n.pos:setScaled2(n.normal, newLat)
+              n.pos:setAdd(n.posOrig)
+            end
+          end
+        end
+      end
+    end
+    for i = 2, plan.planCount do
+      plan[i].vec:setSub2(plan[i - 1].pos, plan[i].pos)
+      plan[i].vec.z = 0
+      plan[i].dirVec:set(plan[i].vec)
+      plan[i].dirVec:normalize()
+    end
+    updatePlanLen(plan, 2, plan.planCount)
+  end
+
   -------########## Error Distribution ##########---------
   --profilerPopEvent("ai_error_smoother")
   if not pmode then -- adjust plan error for main plan

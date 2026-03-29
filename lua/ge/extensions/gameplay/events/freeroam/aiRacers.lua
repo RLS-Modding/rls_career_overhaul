@@ -54,7 +54,7 @@ local DEFAULT_CONFIG = {
     aiPowerExceedCapPct = 0.25,
     -- vehiclePool: only spawn AI configs with HP in (player, player + this]; if none, 1× next-higher pool car + player clones for the rest.
     aiPoolCloseAboveHp = 75,
-    -- On-screen ui_message after staging AI spawn: HP reads, band logic, plan. Set true in level aiRacers.json to enable.
+    -- On-screen ui_message after staging AI spawn (HP, pool plan, etc.). Per-level aiRacers.json overrides; false = off.
     aiSpawnDebugUi = false,
     -- overrideAI: multiplies lateral/longitudinal grip budget in raceplanAhead (1.0 = default, >1 = faster in corners).
     raceAccelScale = 1.1,
@@ -70,6 +70,11 @@ local DEFAULT_CONFIG = {
     raceWideLineLateralEndM = 2.6,
     -- Soften understeer throttle lift when wide — keeps commitment on an alternate line.
     raceWideLineUndersteerRelax = 0.45,
+    -- Corner line sacrifice (overrideAI): shift plan nodes outward in tight bends (curvature ~1/m). 0 = off.
+    raceCornerLineLiftMaxM = 0.22,
+    raceCornerCurvStart = 0.022,
+    raceCornerCurvEnd = 0.10,
+    raceCornerLineLiftScale = 1.0,
 }
 
 local mSpawnedAiVehicleIds = {}
@@ -130,21 +135,6 @@ local function showAiSpawnDebugUi(cfg, lines)
     pcall(function()
         ui_message(text, 30, "AI spawn debug")
     end)
-end
-
-local function formatAiSpawnPlanForDebug(plan)
-    if type(plan) ~= "table" or #plan == 0 then return "(empty)" end
-    local parts = {}
-    for i, spec in ipairs(plan) do
-        if type(spec) == "table" and spec.clonePlayer then
-            parts[i] = "#" .. i .. "=clone(you)"
-        elseif type(spec) == "table" and type(spec.model) == "string" then
-            parts[i] = string.format("#%d=%s/%s", i, spec.model, tostring(spec.config or "?"))
-        else
-            parts[i] = "#" .. i .. "=?"
-        end
-    end
-    return table.concat(parts, " ")
 end
 
 local function shallowCopyDefaults(defaults, fromFile)
@@ -231,7 +221,8 @@ local function getMergedConfigForRace(race)
         "raceAccelScale", "raceThrottleKp",
         "raceThrottleRateMult", "raceThrottleRecoveryMult", "targetSpeedSmootherRate",
         "raceWideLineTrafficBlend", "raceWideLineLateralStartM", "raceWideLineLateralEndM",
-        "raceWideLineUndersteerRelax", "raceThrottleFloor", "raceHighSpeedThreshold", "raceHighSpeedThrottleFloor"
+        "raceWideLineUndersteerRelax", "raceThrottleFloor", "raceHighSpeedThreshold", "raceHighSpeedThrottleFloor",
+        "raceCornerLineLiftMaxM", "raceCornerCurvStart", "raceCornerCurvEnd", "raceCornerLineLiftScale"
     }
     for _, k in ipairs(raceKeys) do
         if race[k] ~= nil then merged[k] = race[k] end
@@ -459,6 +450,109 @@ local function getPowerHpForPoolEntry(entry, model, config)
         return getPowerForModelConfig(model, config)
     end
     return nil
+end
+
+local STAGING_DEBUG_AI_SLOTS = 4
+
+local function stagingDebugConfigKeyFromPlayerSpawn(configKeyOrObj)
+    if type(configKeyOrObj) == "string" and configKeyOrObj ~= "" then
+        return configKeyOrObj
+    end
+    if type(configKeyOrObj) == "table" and type(configKeyOrObj.partConfigFilename) == "string" then
+        local fn = configKeyOrObj.partConfigFilename:match("([^/\\]+)%.pc$")
+        return fn or "default"
+    end
+    return nil
+end
+
+local function stagingDebugLivePlayerLine(powerDbg)
+    if type(powerDbg.liveWatts) == "number" and powerDbg.liveWatts > 0 then
+        local liveHp = powerWattsToHp(powerDbg.liveWatts)
+        if type(liveHp) == "number" and liveHp > 0 then
+            return string.format("live player power read = %.0f HP", liveHp)
+        end
+    end
+    if type(powerDbg.syncDetailsHp) == "number" and powerDbg.syncDetailsHp > 0 then
+        return string.format("live player power read = %.0f HP", powerDbg.syncDetailsHp)
+    end
+    return "live player power read = n/a"
+end
+
+local function stagingDebugHpForPlanSlot(spec, pModel, pConfigOrObj, powerDbg)
+    if type(spec) ~= "table" then return 0 end
+    if spec.clonePlayer then
+        local ck = stagingDebugConfigKeyFromPlayerSpawn(pConfigOrObj)
+        if type(pModel) == "string" and pModel ~= "" and ck then
+            local h = getPowerForModelConfig(pModel, ck)
+            if type(h) == "number" and h > 0 then return h end
+        end
+        if type(powerDbg.syncDetailsHp) == "number" and powerDbg.syncDetailsHp > 0 then
+            return powerDbg.syncDetailsHp
+        end
+        return 0
+    end
+    local ph = tonumber(spec.powerHp)
+    if ph and ph > 0 then return ph end
+    if type(spec.model) == "string" and type(spec.config) == "string" then
+        local h = getPowerForModelConfig(spec.model, spec.config)
+        if type(h) == "number" and h > 0 then return h end
+    end
+    return 0
+end
+
+local function stagingDebugConfigLabelForPlanSlot(spec, pModel, pConfigOrObj)
+    if type(spec) ~= "table" then return "—" end
+    if spec.clonePlayer then
+        local ck = stagingDebugConfigKeyFromPlayerSpawn(pConfigOrObj) or "default"
+        local m = (type(pModel) == "string" and pModel ~= "") and pModel or "player"
+        return string.format("%s/%s (clone)", m, ck)
+    end
+    if type(spec.model) == "string" and type(spec.config) == "string" then
+        return spec.model .. "/" .. spec.config
+    end
+    return "—"
+end
+
+local function buildStagingSpawnDebugLinesFromPlan(powerDbg, plan, pModel, pConfigOrObj)
+    local lines = { stagingDebugLivePlayerLine(powerDbg) }
+    for i = 1, STAGING_DEBUG_AI_SLOTS do
+        local spec = plan and plan[i]
+        if spec then
+            local label = stagingDebugConfigLabelForPlanSlot(spec, pModel, pConfigOrObj)
+            local h = stagingDebugHpForPlanSlot(spec, pModel, pConfigOrObj, powerDbg)
+            lines[#lines + 1] = string.format("AI %d = %s, %.0f HP", i, label, h)
+        else
+            lines[#lines + 1] = string.format("AI %d = —", i)
+        end
+    end
+    return lines
+end
+
+local function buildStagingSpawnDebugLinesFromRecentSpawned(powerDbg, spawnedCount)
+    local lines = { stagingDebugLivePlayerLine(powerDbg) }
+    local total = type(mSpawnedAiVehicleIds) == "table" and #mSpawnedAiVehicleIds or 0
+    local n = math.max(0, tonumber(spawnedCount) or 0)
+    local startIdx = (n > 0) and (total - n + 1) or (total + 1)
+    for i = 1, STAGING_DEBUG_AI_SLOTS do
+        local vehIdx = startIdx + i - 1
+        local vehId = mSpawnedAiVehicleIds[vehIdx]
+        if vehId and core_vehicles and core_vehicles.getVehicleDetails then
+            local details = core_vehicles.getVehicleDetails(vehId)
+            local model = details and details.current and details.current.key
+            local ckey = details and details.current and details.current.config_key
+            local hp = 0
+            if type(model) == "string" and type(ckey) == "string" then
+                hp = tonumber(getPowerForModelConfig(model, ckey)) or 0
+            end
+            if hp <= 0 and details and details.configs then
+                hp = tonumber(getPowerHpFromConfig(details.configs)) or 0
+            end
+            lines[#lines + 1] = string.format("AI %d = %s/%s, %.0f HP", i, tostring(model or "?"), tostring(ckey or "?"), hp)
+        else
+            lines[#lines + 1] = string.format("AI %d = —", i)
+        end
+    end
+    return lines
 end
 
 -- Filter raw pool to models with power <= playerPowerHp * (1 + capPct). Any amount below that is allowed; none over the cap.
@@ -778,7 +872,7 @@ local function buildCloseAbovePlan(available, playerHp, requestedCount, closeAbo
         dbg.branch = "band_cycle"
         for i = 1, requestedCount do
             local r = unique[((i - 1) % #unique) + 1]
-            table.insert(plan, { model = r.model, config = r.config })
+            table.insert(plan, { model = r.model, config = r.config, powerHp = r.powerHp })
         end
         return plan, dbg
     end
@@ -803,7 +897,7 @@ local function buildCloseAbovePlan(available, playerHp, requestedCount, closeAbo
     local pick = above[1]
     dbg.branch = "fallback_one_pool_rest_clones"
     dbg.nextCar = string.format("%s/%s %.0fHP", pick.model, pick.config, pick.powerHp)
-    table.insert(plan, { model = pick.model, config = pick.config })
+    table.insert(plan, { model = pick.model, config = pick.config, powerHp = pick.powerHp })
     for _ = 2, requestedCount do
         table.insert(plan, { clonePlayer = true })
     end
@@ -1181,29 +1275,13 @@ function M.spawnForStagingWithPlayerHp(raceName, race, facilityName, callback, p
         local requestedCount = (race and race.aiCount) or cfg.maxSpawnCount or 4
         local closeAbove = tonumber(cfg.aiPoolCloseAboveHp) or tonumber(DEFAULT_CONFIG.aiPoolCloseAboveHp) or 50
         local pModel, pConfig = resolvePlayerCloneSpawn()
-        local dbgLines
-
-        local function dbg(msg)
-            if not aiSpawnDebugEnabled(cfg) then return end
-            dbgLines = dbgLines or {}
-            table.insert(dbgLines, msg)
-        end
-
-        local function flushDebug()
-            if dbgLines and #dbgLines > 0 then
-                showAiSpawnDebugUi(cfg, dbgLines)
-                dbgLines = nil
-            end
-        end
 
         if type(cfg.vehiclePool) == "table" and type(cfg.vehiclePool.stock) == "table" then
             local effHp = hp
-            local usedSanctionedMax = false
             if effHp <= 0 and type(sanctionedSpawnCtx) == "table" then
                 local hi = tonumber(sanctionedSpawnCtx.classHpMax)
                 if hi and hi > 0 then
                     effHp = hi
-                    usedSanctionedMax = true
                 end
             end
             if effHp > 0 then
@@ -1211,65 +1289,16 @@ function M.spawnForStagingWithPlayerHp(raceName, race, facilityName, callback, p
                 local merged = mergeVehiclePoolFromClassUpward(cfg.vehiclePool, startClass)
                 local available = filterVehiclePoolToAvailable(merged)
                 if #available > 0 then
-                    local plan, planDbg = buildCloseAbovePlan(available, effHp, requestedCount, closeAbove)
-                    if aiSpawnDebugEnabled(cfg) then
-                        dbg("[Competitive AI spawn debug]")
-                        local liveHpStr = "nil"
-                        if type(powerDbg.liveWatts) == "number" and powerDbg.liveWatts > 0 then
-                            liveHpStr = string.format("%.0f HP", powerWattsToHp(powerDbg.liveWatts))
-                        end
-                        dbg(string.format("Live read (preferLive): %s  |  sync getVehicleDetails: %s",
-                            liveHpStr,
-                            (type(powerDbg.syncDetailsHp) == "number") and string.format("%.0f HP", powerDbg.syncDetailsHp) or "nil"))
-                        dbg(string.format("HP after callback/fallbacks: %.0f  |  poolReferenceHp used: %s",
-                            hp, powerDbg.usedPoolRefHp and "yes" or "no"))
-                        if type(poolReferenceHp) == "number" then
-                            dbg(string.format("poolReferenceHp arg: %.0f", poolReferenceHp))
-                        end
-                        dbg(string.format("effHp for matching: %.0f  |  sanctioned classMax fill: %s",
-                            effHp, usedSanctionedMax and "yes" or "no"))
-                        if type(sanctionedSpawnCtx) == "table" and tonumber(sanctionedSpawnCtx.classHpMax) then
-                            dbg(string.format("sanctioned ctx classHpMin/Max: %s / %s",
-                                tostring(sanctionedSpawnCtx.classHpMin), tostring(sanctionedSpawnCtx.classHpMax)))
-                        end
-                        dbg(string.format("Pool tier start: %s  |  merged size: %d  |  after model filter: %d",
-                            tostring(startClass), #merged, #available))
-                        dbg(string.format("closeAboveHp: %.0f  |  band window: %s  |  logic: %s",
-                            closeAbove, planDbg.bandWindow or "?", planDbg.branch or "?"))
-                        dbg(string.format("Resolved pool rows (power): %d", planDbg.resolvedRowCount or 0))
-                        if type(planDbg.bandList) == "table" and #planDbg.bandList > 0 then
-                            dbg("In-band (unique): " .. table.concat(planDbg.bandList, ", "))
-                        else
-                            dbg("In-band (unique): (none - fallback_one_pool_rest_clones if any row above player)")
-                        end
-                        if planDbg.nextCar then
-                            dbg("Fallback next pool car: " .. planDbg.nextCar)
-                        end
-                        if type(planDbg.resolvedSample) == "table" and #planDbg.resolvedSample > 0 then
-                            dbg("Sample resolved: " .. table.concat(planDbg.resolvedSample, " | "))
-                        end
-                        dbg("Plan: " .. formatAiSpawnPlanForDebug(plan))
-                    end
+                    local plan = buildCloseAbovePlan(available, effHp, requestedCount, closeAbove)
                     if #plan > 0 then
                         local spawned = spawnStagingPlan(raceName, race, facilityName, plan, pModel, pConfig)
-                        dbg(string.format("Spawn result: %d AI (requested slots %d)", spawned, requestedCount))
-                        flushDebug()
+                        if aiSpawnDebugEnabled(cfg) then
+                            showAiSpawnDebugUi(cfg, buildStagingSpawnDebugLinesFromPlan(powerDbg, plan, pModel, pConfig))
+                        end
                         callback(spawned)
                         return
                     end
-                    if aiSpawnDebugEnabled(cfg) then
-                        dbg("vehiclePool plan empty — trying legacy D/C/B/A pool")
-                        flushDebug()
-                    end
-                elseif aiSpawnDebugEnabled(cfg) then
-                    dbg("[Competitive AI spawn debug] vehiclePool: nothing left after model filter")
-                    dbg(string.format("effHp %.0f  |  merged %d  |  available 0", effHp, #merged))
-                    flushDebug()
                 end
-            elseif aiSpawnDebugEnabled(cfg) then
-                dbg("[Competitive AI spawn debug] effHp is 0; skipping vehiclePool close-above")
-                dbg(string.format("raw hp from power chain: %.0f", hp))
-                flushDebug()
             end
         end
         local class = getClassFromHp(hp)
@@ -1277,12 +1306,7 @@ function M.spawnForStagingWithPlayerHp(raceName, race, facilityName, callback, p
         local pool = filterPoolByPower(rawPool, hp, cfg)
         local spawned = spawnWithPool(raceName, race, facilityName, pool)
         if aiSpawnDebugEnabled(cfg) then
-            dbgLines = {
-                "[AI spawn debug] Legacy D/C/B/A pool path",
-                string.format("class %s  |  raw pool %d  |  after power filter %d  |  spawned %d",
-                    tostring(class), type(rawPool) == "table" and #rawPool or 0, type(pool) == "table" and #pool or 0, spawned),
-            }
-            flushDebug()
+            showAiSpawnDebugUi(cfg, buildStagingSpawnDebugLinesFromRecentSpawned(powerDbg, spawned))
         end
         callback(spawned)
     end
@@ -1423,6 +1447,15 @@ local function getRacingParameters(cfg, race)
                 params.raceHighSpeedThrottleFloor = hif
             end
         end
+    end
+    local rcl = tonumber(cfg.raceCornerLineLiftMaxM)
+    if rcl == nil then rcl = tonumber(DEFAULT_CONFIG.raceCornerLineLiftMaxM) or 0.22 end
+    if rcl > 0 then
+        params.raceCornerLineLiftMaxM = rcl
+        params.raceCornerCurvStart = tonumber(cfg.raceCornerCurvStart) or tonumber(DEFAULT_CONFIG.raceCornerCurvStart) or 0.022
+        params.raceCornerCurvEnd = tonumber(cfg.raceCornerCurvEnd) or tonumber(DEFAULT_CONFIG.raceCornerCurvEnd) or 0.10
+        local rcs = tonumber(cfg.raceCornerLineLiftScale)
+        if rcs ~= nil then params.raceCornerLineLiftScale = rcs end
     end
     return params
 end
