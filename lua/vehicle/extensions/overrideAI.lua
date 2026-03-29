@@ -568,6 +568,21 @@ local function driveToTarget(targetPos, throttle, brake, targetSpeed)
       local steerCoef = outDeviation * absegoSpeed * absegoSpeed * min(1, dirAngle * dirAngle * 4)
       local understeerCoef = max(0, steerCoef) * min(1, abs(ego.vel:dot(p2p1DirVec) * 3))
       local noUndersteerCoef = max(0, 1 - understeerCoef)
+      -- Racing: when wide of centerline, do not lift as hard for "understeer" — keeps pace on alternate lines.
+      if opt.racing and type(parameters.raceWideLineUndersteerRelax) == 'number' and parameters.raceWideLineUndersteerRelax > 0 and plan[plan.egoSeg or 1] and plan[(plan.egoSeg or 1) + 1] then
+        local es = plan.egoSeg or 1
+        local a, b = plan[es].pos, plan[es + 1].pos
+        local xn = ego.pos:xnormOnLine(a, b)
+        if xn < 0 then xn = 0 elseif xn > 1 then xn = 1 end
+        local onL = a + (b - a) * xn
+        local latMag = abs((ego.pos - onL):dot(plan[es].normal))
+        local lat0 = (type(parameters.raceWideLineLateralStartM) == 'number' and parameters.raceWideLineLateralStartM) or 0.85
+        local lat1 = (type(parameters.raceWideLineLateralEndM) == 'number' and parameters.raceWideLineLateralEndM) or 2.5
+        if lat1 <= lat0 then lat1 = lat0 + 0.01 end
+        local tWide = clamp((latMag - lat0) / (lat1 - lat0), 0, 1)
+        local relax = tWide * clamp(parameters.raceWideLineUndersteerRelax, 0, 1)
+        noUndersteerCoef = noUndersteerCoef + (1 - noUndersteerCoef) * relax
+      end
       throttleUnderCoef = noUndersteerCoef
       brakeUnderCoef = min(brakeUnderCoef, max(0, 1 - understeerCoef * understeerCoef))
     end
@@ -3340,7 +3355,28 @@ local function raceplanAhead(route, baseRoute, pmode)
   calculateTrafficTargetSpeed(plan, traffic.trafficTable)
 
   plan.originaltargetSpeed = plan.targetSpeed -- save target speed computed by geometry only
-  plan.targetSpeed = min(plan.targetSpeed, plan.trafficTargetSpeed)
+  local geoTS = plan.targetSpeed
+  local mergedTS = min(geoTS, plan.trafficTargetSpeed)
+  -- Racing: when clearly wide of the plan, ease traffic cap toward geometric speed (never above geoTS).
+  if opt.racing and type(parameters.raceWideLineTrafficBlend) == 'number' and parameters.raceWideLineTrafficBlend > 0 then
+    local es = plan.egoSeg or 1
+    local pn = plan[es]
+    local pn1 = plan[es + 1]
+    if pn and pn1 then
+      local p1, p2 = pn.pos, pn1.pos
+      local xn = ego.pos:xnormOnLine(p1, p2)
+      if xn < 0 then xn = 0 elseif xn > 1 then xn = 1 end
+      local onL = p1 + (p2 - p1) * xn
+      local latMag = abs((ego.pos - onL):dot(pn.normal))
+      local lat0 = (type(parameters.raceWideLineLateralStartM) == 'number' and parameters.raceWideLineLateralStartM) or 0.85
+      local lat1 = (type(parameters.raceWideLineLateralEndM) == 'number' and parameters.raceWideLineLateralEndM) or 2.5
+      if lat1 <= lat0 then lat1 = lat0 + 0.01 end
+      local tWide = clamp((latMag - lat0) / (lat1 - lat0), 0, 1)
+      local relief = tWide * clamp(parameters.raceWideLineTrafficBlend, 0, 1)
+      mergedTS = mergedTS + relief * (geoTS - mergedTS)
+    end
+  end
+  plan.targetSpeed = mergedTS
 
   ------######## Return #########--------
   return route

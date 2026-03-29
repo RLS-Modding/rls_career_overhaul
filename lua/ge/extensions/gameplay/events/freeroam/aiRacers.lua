@@ -64,6 +64,12 @@ local DEFAULT_CONFIG = {
     raceThrottleRecoveryMult = 1.9,
     -- driveUsingPath setParameters: higher = plan.targetSpeed follows planner faster (exit / straights).
     targetSpeedSmootherRate = 18,
+    -- Wide-line racing (overrideAI): when lateral offset from plan exceeds start→end (m), blend traffic-limited speed back toward geometric cap (never above it).
+    raceWideLineTrafficBlend = 0.4,
+    raceWideLineLateralStartM = 0.9,
+    raceWideLineLateralEndM = 2.6,
+    -- Soften understeer throttle lift when wide — keeps commitment on an alternate line.
+    raceWideLineUndersteerRelax = 0.45,
 }
 
 local mSpawnedAiVehicleIds = {}
@@ -223,7 +229,9 @@ local function getMergedConfigForRace(race)
         "filterPoolByPowerMeetOrExceed", "aiPowerExceedCapPct", "aiPoolCloseAboveHp", "aiSpawnDebugUi",
         "pathRoad",
         "raceAccelScale", "raceThrottleKp",
-        "raceThrottleRateMult", "raceThrottleRecoveryMult", "targetSpeedSmootherRate"
+        "raceThrottleRateMult", "raceThrottleRecoveryMult", "targetSpeedSmootherRate",
+        "raceWideLineTrafficBlend", "raceWideLineLateralStartM", "raceWideLineLateralEndM",
+        "raceWideLineUndersteerRelax", "raceThrottleFloor", "raceHighSpeedThreshold", "raceHighSpeedThrottleFloor"
     }
     for _, k in ipairs(raceKeys) do
         if race[k] ~= nil then merged[k] = race[k] end
@@ -1380,12 +1388,43 @@ local function getRacingParameters(cfg, race)
     if trc == nil or trc <= 0 then
         trc = 1.9
     end
-    return {
+    local params = {
         raceAccelScale = scale,
         raceThrottleKp = kp,
         raceThrottleRateMult = trm,
         raceThrottleRecoveryMult = trc
     }
+    local rwt = tonumber(cfg.raceWideLineTrafficBlend)
+    if rwt == nil then rwt = tonumber(DEFAULT_CONFIG.raceWideLineTrafficBlend) or 0.4 end
+    if rwt > 0 then
+        params.raceWideLineTrafficBlend = rwt
+        local s = tonumber(cfg.raceWideLineLateralStartM)
+        params.raceWideLineLateralStartM = (s ~= nil and s > 0) and s or (tonumber(DEFAULT_CONFIG.raceWideLineLateralStartM) or 0.9)
+        local e = tonumber(cfg.raceWideLineLateralEndM)
+        params.raceWideLineLateralEndM = (e ~= nil and e > 0) and e or (tonumber(DEFAULT_CONFIG.raceWideLineLateralEndM) or 2.6)
+    end
+    local rur = tonumber(cfg.raceWideLineUndersteerRelax)
+    if rur == nil then rur = tonumber(DEFAULT_CONFIG.raceWideLineUndersteerRelax) or 0.45 end
+    if rur > 0 then
+        params.raceWideLineUndersteerRelax = rur
+        if not params.raceWideLineLateralStartM then
+            params.raceWideLineLateralStartM = tonumber(cfg.raceWideLineLateralStartM) or tonumber(DEFAULT_CONFIG.raceWideLineLateralStartM) or 0.9
+            params.raceWideLineLateralEndM = tonumber(cfg.raceWideLineLateralEndM) or tonumber(DEFAULT_CONFIG.raceWideLineLateralEndM) or 2.6
+        end
+    end
+    local floor = tonumber(cfg.raceThrottleFloor)
+    if floor ~= nil and floor > 0 and floor < 1 then
+        params.raceThrottleFloor = floor
+        local hi = tonumber(cfg.raceHighSpeedThreshold)
+        if hi ~= nil and hi > 0 then
+            params.raceHighSpeedThreshold = hi
+            local hif = tonumber(cfg.raceHighSpeedThrottleFloor)
+            if hif ~= nil and hif > 0 and hif < 1 then
+                params.raceHighSpeedThrottleFloor = hif
+            end
+        end
+    end
+    return params
 end
 
 -- Freeze or unfreeze the player vehicle (e.g. during countdown until GO, same moment as AI release). Uses same pattern as bus.lua.
