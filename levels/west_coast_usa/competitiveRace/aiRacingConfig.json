@@ -16,10 +16,12 @@
       { "model": "bx", "config": "AI_200bx_modified", "peakHp": 436 },
       { "model": "covet", "config": "AI_Covet_modified", "peakHp": 469 },
       { "model": "bastion", "config": "AI_Bastion_modified2", "peakHp": 497 },
+      { "model": "etk", "config": "AI_ETK-k_modified", "peakHp": 518},
       { "model": "midsize", "config": "AI_Pessima_modified", "peakHp": 523 }
     ],
     "super": [
       { "model": "etkc", "config": "AI_ETK-k_super", "peakHp": 556 },
+      { "model": "sbr", "config": "AI_SB4_super", "peakHp": 566},
       { "model": "scintilla", "config": "AI_Scintilla_super", "peakHp": 610 },
       { "model": "bx", "config": "AI_200bx_super", "peakHp": 686 }
     ],
