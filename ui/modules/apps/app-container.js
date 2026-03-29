@@ -3,7 +3,7 @@
 angular.module('beamng.apps')
 .run(['$rootScope', function ($rootScope) {
   var api = (typeof bngApi !== 'undefined' && bngApi && bngApi.activeObjectLua && bngApi.engineLua) ? bngApi : (window.bngApi && window.bngApi.activeObjectLua && window.bngApi.engineLua ? window.bngApi : null)
-  var LuaPower = '(function() local engines = powertrain.getDevicesByCategory("engine") if engines and engines[1] then return engines[1].maxPower or 0 end return 0 end)()'
+  var LuaPower = '(function() local engines = powertrain.getDevicesByCategory("engine") local pmax = 0 if engines then for _, e in ipairs(engines) do local mp = (e and e.maxPower) or 0 if mp > pmax then pmax = mp end end end return pmax end)()'
   $rootScope.$on('careerRequestPlayerPower', function () {
     if (!api || !api.activeObjectLua || !api.engineLua) return
     api.activeObjectLua(LuaPower, function (power) {

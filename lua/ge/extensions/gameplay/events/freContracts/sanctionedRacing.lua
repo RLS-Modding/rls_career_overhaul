@@ -796,13 +796,14 @@ function M.onRaceBegin(raceName)
   runtime.dispatchUiActive = false
   runtime.suppressFrePayouts = true
   runtime.podiumEligible = true
-  local hp = nil
-  if career_modules_competitiveRace_aiRacers and career_modules_competitiveRace_aiRacers.getPlayerVehiclePower then
-    hp = career_modules_competitiveRace_aiRacers.getPlayerVehiclePower()
-  end
+  -- Class cap / podium: only disqualify on a trusted live HP sample (staging refresh or spawn read).
+  -- Stale sync getVehicleDetails can read high incorrectly; fail open if no fresh live sample.
   local hMax = tonumber(offer.classHpMax)
-  if type(hp) == "number" and hMax and hMax > 0 and hp > hMax then
-    runtime.podiumEligible = false
+  if hMax and hMax > 0 and career_modules_competitiveRace_aiRacers and career_modules_competitiveRace_aiRacers.getPlayerVehiclePowerForPodiumCapCheck then
+    local hpLive = career_modules_competitiveRace_aiRacers.getPlayerVehiclePowerForPodiumCapCheck()
+    if type(hpLive) == "number" and hpLive > hMax then
+      runtime.podiumEligible = false
+    end
   end
 end
 
