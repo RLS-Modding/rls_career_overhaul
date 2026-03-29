@@ -73,7 +73,7 @@
     "bx_exhaust_v8":"bx_exhaust_v8",
     "bx_fender_L_popup":"bx_fender_L_popup_wide",
     "bx_fender_R_popup":"bx_fender_R_popup_wide",
-    "bx_finaldrive_R":"bx_finaldrive_R_408",
+    "bx_finaldrive_R":"bx_finaldrive_R_369",
     "bx_flywheel":"bx_flywheel_light",
     "bx_fueltank":"bx_fueltank",
     "bx_gauges_lhd":"bx_gauges_lhd",
