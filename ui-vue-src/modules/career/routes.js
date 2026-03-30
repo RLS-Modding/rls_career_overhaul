@@ -70,6 +70,7 @@ import LevelSwitch from "./views/LevelSwitch.vue"
 import ChallengeComplete from "./views/ChallengeComplete.vue"
 import BusinessComputerMain from "./views/BusinessComputerMain.vue"
 import CardTester from "./views/CardTester.vue"
+import CardGames from "./views/CardGames.vue"
 export default [
   // Career Pause
   {
@@ -632,6 +633,17 @@ export default [
         path: "card-tester",
         name: "card-tester",
         component: CardTester,
+        meta: {
+          uiApps: {
+            shown: false,
+          },
+        },
+      },
+
+      {
+        path: "card-games",
+        name: "card-games",
+        component: CardGames,
         meta: {
           uiApps: {
             shown: false,

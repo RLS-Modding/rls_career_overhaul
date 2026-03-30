@@ -14,7 +14,7 @@
 
 <script setup>
 import { ref, watch, onMounted } from "vue"
-import { fetchSvg, initCard, setRank, swapSuit, setCorners, showSide, toggleSide, setCardTheme } from "./cardController"
+import { fetchSvg, namespaceSvgIds, initCard, setRank, swapSuit, setCorners, showSide, toggleSide, setCardTheme } from "./cardController"
 
 const FLIP_SOUND_URL = "/ui/entrypoints/main/cardSounds/Flip.mp3"
 const FLIP_DURATION = 744
@@ -74,13 +74,19 @@ function flip() {
 onMounted(async () => {
   const svgText = await fetchSvg()
   if (!cardRef.value) return
-  cardRef.value.innerHTML = svgText
+  const parser = new DOMParser()
+  const svgDoc = parser.parseFromString(svgText, "image/svg+xml")
+  const parsedRoot = svgDoc.documentElement
+  if (!parsedRoot || parsedRoot.tagName.toLowerCase() !== "svg") return
+
+  namespaceSvgIds(parsedRoot)
+  cardRef.value.replaceChildren(document.importNode(parsedRoot, true))
   svgRoot = cardRef.value.querySelector("svg")
-  if (svgRoot) {
-    initCard(svgRoot, props.rank, props.suit, props.faceUp)
-    setCardTheme(svgRoot, props.theme)
-    internalFaceUp = props.faceUp
-  }
+  if (!svgRoot) return
+
+  initCard(svgRoot, props.rank, props.suit, props.faceUp)
+  setCardTheme(svgRoot, props.theme)
+  internalFaceUp = props.faceUp
 })
 
 watch(

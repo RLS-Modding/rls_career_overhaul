@@ -2,6 +2,7 @@ const SVG_URL = "/ui/entrypoints/main/rls_playingCards.svg"
 const SVG_NS = "http://www.w3.org/2000/svg"
 
 let svgCachePromise = null
+let svgInstanceId = 0
 
 const RANK_GROUPS = {
   A: "Ace",
@@ -62,7 +63,46 @@ function fetchSvg() {
 }
 
 function q(root, selector) {
-  return root.querySelector(selector)
+  const scopedSelector = selector.replace(/#([A-Za-z_][\w-]*)/g, '[data-card-id="$1"]')
+  return root.querySelector(scopedSelector)
+}
+
+function namespaceSvgIds(root) {
+  const prefix = `pc-${svgInstanceId++}-`
+  const idMap = new Map()
+
+  for (const el of root.querySelectorAll("[id]")) {
+    const oldId = el.getAttribute("id")
+    if (!oldId) continue
+    idMap.set(oldId, `${prefix}${oldId}`)
+    el.setAttribute("data-card-id", oldId)
+  }
+
+  for (const el of root.querySelectorAll("[id]")) {
+    const oldId = el.getAttribute("data-card-id")
+    if (!oldId) continue
+    el.setAttribute("id", idMap.get(oldId))
+  }
+
+  for (const el of root.querySelectorAll("*")) {
+    for (const attrName of el.getAttributeNames()) {
+      const value = el.getAttribute(attrName)
+      if (!value) continue
+
+      let nextValue = value.replace(/url\(#([^)]+)\)/g, (_, id) => `url(#${idMap.get(id) || id})`)
+
+      if (nextValue.startsWith("#")) {
+        const refId = nextValue.slice(1)
+        if (idMap.has(refId)) {
+          nextValue = `#${idMap.get(refId)}`
+        }
+      }
+
+      if (nextValue !== value) {
+        el.setAttribute(attrName, nextValue)
+      }
+    }
+  }
 }
 
 function hide(el) {
@@ -308,4 +348,4 @@ function initCard(root, rank, suit, faceUp) {
   setCorners(root, rank, suit)
 }
 
-export { fetchSvg, initCard, setRank, swapSuit, setCorners, toggleSide, showSide, setCardTheme }
+export { fetchSvg, namespaceSvgIds, initCard, setRank, swapSuit, setCorners, toggleSide, showSide, setCardTheme }

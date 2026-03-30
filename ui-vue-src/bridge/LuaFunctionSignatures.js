@@ -1673,6 +1673,16 @@ export default {
     switchMap: (level) => {}
   },
 
+  gameplay_cardGames: {
+    open: gameId => String,
+    close: () => {},
+    setBet: amount => Number,
+    confirmBet: () => {},
+    action: (name, payload) => [String, Any],
+    newRound: () => {},
+    requestSync: () => {},
+  },
+
   career_modules_business_tuningShopKits: {
     loadBusinessKits: businessId => Object,
     createKit: (businessId, jobId, kitName) => [Boolean],
