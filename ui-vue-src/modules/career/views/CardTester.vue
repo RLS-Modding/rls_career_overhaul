@@ -1,7 +1,7 @@
 <template>
   <div class="card-tester">
     <div class="card-display">
-      <PlayingCard ref="cardRef" :rank="rank" :suit="suit" :face-up="faceUp" />
+      <PlayingCard ref="cardRef" :rank="rank" :suit="suit" :face-up="faceUp" :theme="cardTheme" />
     </div>
 
     <div class="controls">
@@ -10,6 +10,23 @@
         <div class="buttons">
           <button @click="flipCard">Flip</button>
           <button @click="randomize">Random</button>
+        </div>
+      </div>
+
+      <div class="control-row">
+        <span class="label">Theme</span>
+        <div class="buttons">
+          <button :class="{ active: cardTheme === 'light' }" @click="cardTheme = 'light'">Light</button>
+          <button :class="{ active: cardTheme === 'dark' }" @click="cardTheme = 'dark'">Dark</button>
+        </div>
+      </div>
+
+      <div class="control-row">
+        <span class="label">Sounds</span>
+        <div class="buttons">
+          <button v-for="s in cardSounds" :key="s.id" @click="playCardSound(s.url)">
+            {{ s.label }}
+          </button>
         </div>
       </div>
 
@@ -46,6 +63,15 @@
 const suits = ["spades", "hearts", "clubs", "diamonds"]
 const ranks = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
 const suitLabels = { spades: "Spades", hearts: "Hearts", clubs: "Clubs", diamonds: "Diamonds" }
+
+const CARD_SOUNDS_BASE = "/ui/entrypoints/main/cardSounds"
+const cardSounds = [
+  { id: "flip", label: "Flip", url: `${CARD_SOUNDS_BASE}/Flip.mp3` },
+  { id: "shuffle", label: "Shuffle", url: `${CARD_SOUNDS_BASE}/Shuffle.mp3` },
+  { id: "deal", label: "Deal", url: `${CARD_SOUNDS_BASE}/Deal.mp3` },
+  { id: "place", label: "Place", url: `${CARD_SOUNDS_BASE}/Place.mp3` },
+  { id: "hit", label: "Hit", url: `${CARD_SOUNDS_BASE}/Hit.mp3` },
+]
 </script>
 
 <script setup>
@@ -56,6 +82,7 @@ const cardRef = ref(null)
 const rank = ref("A")
 const suit = ref("spades")
 const faceUp = ref(true)
+const cardTheme = ref("light")
 
 function flipCard() {
   faceUp.value = !faceUp.value
@@ -65,6 +92,14 @@ function randomize() {
   rank.value = ranks[Math.floor(Math.random() * ranks.length)]
   suit.value = suits[Math.floor(Math.random() * suits.length)]
   faceUp.value = true
+}
+
+function playCardSound(url) {
+  try {
+    const audio = new Audio(url)
+    audio.volume = 0.5
+    audio.play()
+  } catch (_) {}
 }
 </script>
 

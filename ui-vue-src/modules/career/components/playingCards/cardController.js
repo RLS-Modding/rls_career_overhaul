@@ -266,6 +266,27 @@ function roundRects(root) {
   }
 }
 
+function parseStyleFill(styleAttr) {
+  const m = (styleAttr || "").match(/fill:\s*([^;]+)/i)
+  return m ? m[1].trim() : "white"
+}
+
+function setCardTheme(root, theme) {
+  const rect = root.querySelector("#Face > g > rect")
+  if (!rect) return
+  if (!rect.hasAttribute("data-theme-orig-fill")) {
+    rect.setAttribute("data-theme-orig-fill", parseStyleFill(rect.getAttribute("style")))
+  }
+  const orig = rect.getAttribute("data-theme-orig-fill")
+  const fill = theme === "dark" ? "black" : orig
+  const style = rect.getAttribute("style") || ""
+  if (/fill:\s*[^;]+/i.test(style)) {
+    rect.setAttribute("style", style.replace(/fill:\s*[^;]+;?/i, `fill:${fill};`))
+  } else {
+    rect.setAttribute("style", style ? `${style};fill:${fill}` : `fill:${fill}`)
+  }
+}
+
 function initCard(root, rank, suit, faceUp) {
   roundRects(root)
 
@@ -287,4 +308,4 @@ function initCard(root, rank, suit, faceUp) {
   setCorners(root, rank, suit)
 }
 
-export { fetchSvg, initCard, setRank, swapSuit, setCorners, toggleSide, showSide }
+export { fetchSvg, initCard, setRank, swapSuit, setCorners, toggleSide, showSide, setCardTheme }
