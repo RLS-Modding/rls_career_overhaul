@@ -1,0 +1,177 @@
+{
+  "etkc_brakelight": {
+    "name": "etkc_brakelight",
+    "mapTo": "etkc_brakelight",
+    "class": "Material",
+    "Stages": [
+      {
+        "diffuseColor": [
+          0.800000072,
+          0.365075201,
+          0,
+          1
+        ]
+      },
+      {
+        "diffuseColor": null
+      },
+      {
+        "diffuseColor": null
+      },
+      {
+        "diffuseColor": null
+      }
+    ],
+    "translucentBlendOp": "None"
+  },
+  "etkc_foglight": {
+    "name": "etkc_foglight",
+    "mapTo": "etkc_foglight",
+    "class": "Material",
+    "Stages": [
+      {
+        "diffuseColor": [
+          0.800000012,
+          0.800000012,
+          0.800000012,
+          1
+        ]
+      },
+      {
+        "diffuseColor": null
+      },
+      {
+        "diffuseColor": null
+      },
+      {
+        "diffuseColor": null
+      }
+    ],
+    "translucentBlendOp": "None"
+  },
+  "etkc_signal_L": {
+    "name": "etkc_signal_L",
+    "mapTo": "etkc_signal_L",
+    "class": "Material",
+    "Stages": [
+      {
+        "diffuseColor": [
+          0.800000012,
+          0.800000012,
+          0.800000012,
+          1
+        ]
+      },
+      {
+        "diffuseColor": null
+      },
+      {
+        "diffuseColor": null
+      },
+      {
+        "diffuseColor": null
+      }
+    ],
+    "translucentBlendOp": "None"
+  },
+  "etkc_signal_R": {
+    "name": "etkc_signal_R",
+    "mapTo": "etkc_signal_R",
+    "class": "Material",
+    "Stages": [
+      {
+        "diffuseColor": [
+          0.800000012,
+          0.800000012,
+          0.800000012,
+          1
+        ]
+      },
+      {
+        "diffuseColor": null
+      },
+      {
+        "diffuseColor": null
+      },
+      {
+        "diffuseColor": null
+      }
+    ],
+    "translucentBlendOp": "None"
+  },
+  "etkc_taillight": {
+    "name": "etkc_taillight",
+    "mapTo": "etkc_taillight",
+    "class": "Material",
+    "Stages": [
+      {
+        "diffuseColor": [
+          0.800000072,
+          0,
+          0.00161773805,
+          1
+        ]
+      },
+      {
+        "diffuseColor": null
+      },
+      {
+        "diffuseColor": null
+      },
+      {
+        "diffuseColor": null
+      }
+    ],
+    "translucentBlendOp": "None"
+  },
+  "etkc_taillight_L": {
+    "name": "etkc_taillight_L",
+    "mapTo": "etkc_taillight_L",
+    "class": "Material",
+    "Stages": [
+      {
+        "diffuseColor": [
+          0.800000072,
+          0,
+          0.572294474,
+          1
+        ]
+      },
+      {
+        "diffuseColor": null
+      },
+      {
+        "diffuseColor": null
+      },
+      {
+        "diffuseColor": null
+      }
+    ],
+    "translucentBlendOp": "None"
+  },
+  "etkc_taillight_R": {
+    "name": "etkc_taillight_R",
+    "mapTo": "etkc_taillight_R",
+    "class": "Material",
+    "Stages": [
+      {
+        "diffuseColor": [
+          0.800000012,
+          0.800000012,
+          0.800000012,
+          1
+        ]
+      },
+      {
+        "diffuseColor": null
+      },
+      {
+        "diffuseColor": null
+      },
+      {
+        "diffuseColor": null
+      }
+    ],
+    "translucentBlendOp": "None"
+  }
+}

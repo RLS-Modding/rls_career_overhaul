@@ -1,29 +1,37 @@
 {
-  "_comment": "sanctioned: optional hpBrackets, classPayoutMultipliers { stock, modified, super, open } (defaults in Lua: 1 / 1.35 / 1.85 / 2.35). AI uses bracket classHpMax after commit; player may use any HP up to that max.",
+  "_comment": "vehiclePool tiers by HP: stock ≤319, modified 320–549, super 550–699, open 700+. peakHp is used for AI matching and sanctioned power-unknown fallback; entries sorted ascending by peakHp within each tier.",
   "vehiclePool": {
     "stock": [
-      { "model": "covet", "config": "AI_Covet_stock" },
-      { "model": "midsize", "config": "AI_Pessima_stock" },
-      { "model": "covet", "config": "AI_Covet_modified" },
-      { "model": "midsize", "config": "AI_Pessima_modified" },
-      { "model": "sbr", "config": "AI_SB4_stock" },
-      { "model": "etkc", "config": "AI_ETK-k_stock" }
+      { "model": "covet", "config": "AI_Covet_stock", "peakHp": 128 },
+      { "model": "bx", "config": "AI_200bx_stock", "peakHp": 151 },
+      { "model": "midsize", "config": "AI_Pessima_stock", "peakHp": 165 },
+      { "model": "covet", "config": "AI_Covet_stock_2", "peakHp": 183 },
+      { "model": "sbr", "config": "AI_SB4_stock", "peakHp": 210 },
+      { "model": "midsize", "config": "AI_Pessima_stock_2", "peakHp": 277 },
+      { "model": "etkc", "config": "AI_ETK-k_stock", "peakHp": 313 }
     ],
     "modified": [
-      { "model": "covet", "config": "AI_Covet_super" },
-      { "model": "midsize", "config": "AI_Pessima_super" },
-      { "model": "sbr", "config": "AI_SB4_modified" },
-      { "model": "bastion", "config": "AI_Bastion_stock" },
-      { "model": "sbr", "config": "AI_SB4_super" },
-      { "model": "scintilla", "config": "AI_Scintilla_stock" }
+      { "model": "sbr", "config": "AI_SB4_modified", "peakHp": 365 },
+      { "model": "bastion", "config": "AI_Bastion_modified", "peakHp": 375 },
+      { "model": "bx", "config": "AI_200bx_modified", "peakHp": 436 },
+      { "model": "covet", "config": "AI_Covet_modified", "peakHp": 469 },
+      { "model": "bastion", "config": "AI_Bastion_modified2", "peakHp": 497 },
+      { "model": "etk", "config": "AI_ETK-k_modified", "peakHp": 518},
+      { "model": "midsize", "config": "AI_Pessima_modified", "peakHp": 523 }
     ],
     "super": [
-      { "model": "etkc", "config": "AI_ETK-k_modified" },
-      { "model": "etkc", "config": "AI_ETK-k_super" },
-      { "model": "bastion", "config": "AI_Bastion_modified" },
-      { "model": "scintilla", "config": "AI_Scintilla_modified" },
-      { "model": "bastion", "config": "AI_Bastion_super" },
-      { "model": "scintilla", "config": "AI_Scintilla_super" }
+      { "model": "etkc", "config": "AI_ETK-k_super", "peakHp": 556 },
+      { "model": "sbr", "config": "AI_SB4_super", "peakHp": 566},
+      { "model": "scintilla", "config": "AI_Scintilla_super", "peakHp": 610 },
+      { "model": "bx", "config": "AI_200bx_super", "peakHp": 686 }
+    ],
+    "open": [
+      { "model": "etkc", "config": "AI_ETK-k_open", "peakHp": 705 },
+      { "model": "scintilla", "config": "AI_Scintilla_open", "peakHp": 743 },
+      { "model": "sbr", "config": "AI_SB4_open", "peakHp": 758 },
+      { "model": "bx", "config": "AI_200bx_open", "peakHp": 1033 },
+      { "model": "scintilla", "config": "AI_Scintilla_open_high", "peakHp": 1681 },
+      { "model": "bastion", "config": "AI_Bastion_open", "peakHp": 1994 }
     ]
   },
   "byRace": {
@@ -41,7 +49,7 @@
         "routeType": "main",
         "stageNumber": 4,
         "pickWeight": 1,
-        "offerRefreshMinutes": 20,
+        "offerRefreshMinutes": 0.25,
         "startDeadlineMinutes": 60
       }
     },
@@ -60,7 +68,7 @@
         "routeType": "alt",
         "stageNumber": 4,
         "pickWeight": 1,
-        "offerRefreshMinutes": 20,
+        "offerRefreshMinutes": 0.25,
         "startDeadlineMinutes": 60
       }
     }

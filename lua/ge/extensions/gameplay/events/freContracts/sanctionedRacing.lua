@@ -796,13 +796,14 @@ function M.onRaceBegin(raceName)
   runtime.dispatchUiActive = false
   runtime.suppressFrePayouts = true
   runtime.podiumEligible = true
-  local hp = nil
-  if career_modules_competitiveRace_aiRacers and career_modules_competitiveRace_aiRacers.getPlayerVehiclePower then
-    hp = career_modules_competitiveRace_aiRacers.getPlayerVehiclePower()
-  end
+  -- Class cap / podium: only disqualify on a trusted live HP sample (staging refresh or spawn read).
+  -- Stale sync getVehicleDetails can read high incorrectly; fail open if no fresh live sample.
   local hMax = tonumber(offer.classHpMax)
-  if type(hp) == "number" and hMax and hMax > 0 and hp > hMax then
-    runtime.podiumEligible = false
+  if hMax and hMax > 0 and career_modules_competitiveRace_aiRacers and career_modules_competitiveRace_aiRacers.getPlayerVehiclePowerForPodiumCapCheck then
+    local hpLive = career_modules_competitiveRace_aiRacers.getPlayerVehiclePowerForPodiumCapCheck()
+    if type(hpLive) == "number" and hpLive > hMax then
+      runtime.podiumEligible = false
+    end
   end
 end
 
@@ -995,6 +996,39 @@ function M.getAiPoolReferenceHp()
     return nil
   end
   return hi
+end
+
+-- For AI spawn fallback when player HP cannot be read: bracket limits + branch (same phase guards as getAiPoolReferenceHp).
+function M.getAiSpawnSanctionedContext()
+  if not gameplay_events_freContracts_state.isCareerActive() then
+    return nil
+  end
+  local state = gameplay_events_freContracts_state.getState()
+  local sr = ensureSrState(state)
+  local o = sr.offer
+  if not o or type(o.raceName) ~= "string" or not isSanctionedRaceNameConfigured(o.raceName) then
+    return nil
+  end
+  if o.phase ~= "committed" and o.phase ~= "racing" then
+    return nil
+  end
+  local lo = tonumber(o.classHpMin)
+  local hi = tonumber(o.classHpMax)
+  if not hi or hi <= 0 then
+    return nil
+  end
+  if not lo or lo < 0 then
+    lo = 0
+  end
+  local branch = o.hpBracketBranch
+  if type(branch) ~= "string" or branch == "" then
+    branch = nil
+  end
+  return {
+    classHpMin = lo,
+    classHpMax = hi,
+    hpBracketBranch = branch,
+  }
 end
 
 function M.getSanctionedOfferLapCount()
