@@ -14,6 +14,7 @@ local FULL_DECK_SIZE = #RANKS * #SUITS
 
 local shoe = {}
 local shoeSize = FULL_DECK_SIZE
+local session
 
 local function buildShoe()
   shoe = {}
@@ -32,28 +33,33 @@ local function shuffleShoe()
   end
 end
 
+local function rebuildAndShuffleShoe()
+  buildShoe()
+  shuffleShoe()
+  session.shuffleCounter = (session.shuffleCounter or 0) + 1
+end
+
 local function needsReshuffle()
   return #shoe < math.floor(shoeSize * RESHUFFLE_THRESHOLD)
 end
 
 local function ensureShoe()
   if #shoe == 0 or needsReshuffle() then
-    buildShoe()
-    shuffleShoe()
+    rebuildAndShuffleShoe()
   end
 end
 
 local function draw()
   if #shoe == 0 then
-    buildShoe()
-    shuffleShoe()
+    rebuildAndShuffleShoe()
   end
   return table.remove(shoe)
 end
 
-local session = {
+session = {
   bet = 100,
   phase = "idle",
+  shuffleCounter = 0,
 }
 
 local modeRegistry = {}
@@ -92,6 +98,7 @@ local function pushState()
     gameId = activeGameId,
     phase = session.phase,
     bet = session.bet,
+    shuffleCounter = session.shuffleCounter,
     mode = modeState,
   }
   guihooks.trigger("cardGamesState", state)

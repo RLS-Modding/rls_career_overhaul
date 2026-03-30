@@ -16,6 +16,10 @@ local bet = 0
 local result = nil
 local timerDeadline = nil
 local lastFlipTime = nil
+local revealDeadline = nil
+local pendingChoiceCorrect = nil
+
+local REVEAL_DELAY = 0.82
 
 local function draw()
   return gameplay_cardGames.draw()
@@ -29,6 +33,8 @@ local function reset()
   result = nil
   timerDeadline = nil
   lastFlipTime = nil
+  revealDeadline = nil
+  pendingChoiceCorrect = nil
 end
 
 local function startTimer()
@@ -59,6 +65,9 @@ end
 
 local function getCollectAmount()
   local cleared = getRoundsCleared()
+  if cleared == 0 and (phase == "choosing" or result == "forfeit") then
+    return bet
+  end
   local multiplier = ROUND_MULTIPLIERS[cleared] or 0
   return bet * multiplier
 end
@@ -116,7 +125,7 @@ local function resolveChoice(choiceKind, choice, card, prevCard)
     local v2 = RANK_VALUES[cards[2].rank]
     local lo = math.min(v1, v2)
     local hi = math.max(v1, v2)
-    if choice == "inside" then return rv > lo and rv < hi
+    if choice == "inside" then return rv >= lo and rv <= hi
     elseif choice == "outside" then return rv < lo or rv > hi
     end
     return false
@@ -134,23 +143,22 @@ local function choose(choice)
   local card = cards[currentRound]
   if not card then return end
 
+  timerDeadline = nil
   card.faceUp = true
   lastFlipTime = os.clock()
 
   local choiceKind = ROUND_KINDS[currentRound]
   local prevCard = currentRound > 1 and cards[currentRound - 1] or nil
-  local correct = resolveChoice(choiceKind, choice, card, prevCard)
-
-  if correct then
-    advanceRound()
-  else
-    phase = "resolved"
-    result = "lose"
-  end
+  pendingChoiceCorrect = resolveChoice(choiceKind, choice, card, prevCard)
+  phase = "revealing"
+  revealDeadline = os.clock() + REVEAL_DELAY
 end
 
 local function endGame()
   if phase == "resolved" or phase == "idle" then return end
+  timerDeadline = nil
+  revealDeadline = nil
+  pendingChoiceCorrect = nil
   phase = "resolved"
   result = "forfeit"
 end
@@ -206,6 +214,22 @@ local function onAction(name, payload)
 end
 
 local function onUpdate(dtReal, dtSim, dtRaw)
+  if phase == "revealing" and revealDeadline and os.clock() >= revealDeadline then
+    revealDeadline = nil
+    local correct = pendingChoiceCorrect
+    pendingChoiceCorrect = nil
+
+    if correct then
+      advanceRound()
+    else
+      phase = "resolved"
+      result = "lose"
+    end
+
+    if gameplay_cardGames then gameplay_cardGames.pushState() end
+    return
+  end
+
   if phase == "choosing" and timerDeadline then
     if os.clock() >= timerDeadline then
       timerDeadline = nil

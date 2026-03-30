@@ -22,8 +22,8 @@
           :suit="card.suit"
           :face-up="card.faceUp"
           :theme="cardTheme"
-          class="table-card"
-          :style="playerCardStyle(i)"
+          :class="['table-card', { 'table-card--dealing': isCardDealing(`bj-p-${i}`) }]"
+          :style="animatedCardStyle(`bj-p-${i}`, playerCardStyle(i))"
         />
         <PlayingCard
           v-for="(card, i) in state.mode.dealerCards"
@@ -32,8 +32,8 @@
           :suit="card.suit"
           :face-up="card.faceUp"
           :theme="cardTheme"
-          class="table-card"
-          :style="dealerCardStyle(i)"
+          :class="['table-card', { 'table-card--dealing': isCardDealing(`bj-d-${i}`) }]"
+          :style="animatedCardStyle(`bj-d-${i}`, dealerCardStyle(i))"
         />
       </template>
 
@@ -46,8 +46,8 @@
           :suit="card.suit"
           :face-up="card.faceUp"
           :theme="cardTheme"
-          class="table-card"
-          :style="rtbCardStyle(i)"
+          :class="['table-card', { 'table-card--dealing': isCardDealing(`rtb-${i}`) }]"
+          :style="animatedCardStyle(`rtb-${i}`, rtbCardStyle(i))"
         />
       </template>
     </div>
@@ -101,7 +101,7 @@
     <div v-if="state.gameId === 'rideTheBus' && state.mode && state.mode.phase === 'resolved'" class="game-controls rtb-result">
       <div class="bj-result-modal">
         <div class="result-text bj-result-text">{{ rtbResultLabel }}</div>
-        <div class="rtb-result-amount">{{ rtbResultAmountLabel }}</div>
+        <div v-if="rtbResultAmountLabel" class="rtb-result-amount">{{ rtbResultAmountLabel }}</div>
         <div class="bj-result-actions">
           <button class="game-btn" @click="newRound">Play Again</button>
           <button class="game-btn" @click="switchGames">Switch Games</button>
@@ -152,10 +152,25 @@ import PlayingCard from "../components/playingCards/PlayingCard.vue"
 
 const SVG_URL = "/ui/entrypoints/main/cardGames.svg"
 const SVG_VIEWBOX = { w: 3600, h: 2400 }
+const CARD_SOUNDS_BASE = "/ui/entrypoints/main/cardSounds"
+const DEAL_SOUND_URL = `${CARD_SOUNDS_BASE}/Deal.mp3`
+const SHUFFLE_SOUND_URL = `${CARD_SOUNDS_BASE}/Shuffle.mp3`
+const HIT_SOUND_URL = `${CARD_SOUNDS_BASE}/Hit.mp3`
+const PLACE_SOUND_URL = `${CARD_SOUNDS_BASE}/Place.mp3`
+const SHUFFLE_SOUND_VOLUME = 0.22
+const DEAL_SOUND_VOLUME = 0.22
+const HIT_SOUND_VOLUME = 0.22
+const PLACE_SOUND_VOLUME = 0.16
+const SHUFFLE_DELAY_MS = 1150
+const HIT_SOUND_LEAD_MS = 140
+const DEAL_ANIMATION_MS = 460
+const DEAL_STAGGER_MS = 500
+const PLACE_SOUND_LEAD_MS = 70
 
 const CARD_W = 473.005
 const CARD_H = 661.017
 const CARD_GAP = 120
+const DEALER_CARD_GAP = 380
 
 const PLAYER_ANCHOR = { x: 1589.629, y: 1555.031 }
 const DEALER_ANCHOR = { x: 1382.888, y: 182.865 }
@@ -191,9 +206,15 @@ const svgRef = ref(null)
 const svgReady = ref(false)
 const cardTheme = "light"
 const lastTableGameId = ref(null)
+const lastShuffleCounter = ref(null)
 const liveTimerRemaining = ref(null)
 const betInput = ref("100")
 const betInputFocused = ref(false)
+const dealAnimations = reactive({})
+const dealtCardKeys = new Set()
+const dealAnimationTimers = []
+let pendingShuffleState = null
+let shuffleDelayTimer = null
 let timerInterval = null
 
 const state = reactive({
@@ -269,6 +290,10 @@ function cardStyle(vbX, vbY) {
   }
 }
 
+function parsePx(value) {
+  return Number.parseFloat(value || "0") || 0
+}
+
 function cardStyleFromSvgId(id, fallbackX, fallbackY) {
   if (!svgRef.value || !rootRef.value) {
     return cardStyle(fallbackX, fallbackY)
@@ -300,7 +325,7 @@ function playerCardStyle(index) {
 }
 
 function dealerCardStyle(index) {
-  const x = DEALER_ANCHOR.x + index * CARD_W
+  const x = DEALER_ANCHOR.x + index * DEALER_CARD_GAP
   return cardStyle(x, DEALER_ANCHOR.y)
 }
 
@@ -308,6 +333,186 @@ function rtbCardStyle(index) {
   const slot = RTB_SLOTS[index] || RTB_SLOTS[RTB_SLOTS.length - 1]
   return cardStyleFromSvgId(`Round-${index + 1}`, slot.x, slot.y)
 }
+
+function playCardSound(url, volume = 1) {
+  try {
+    const audio = new Audio(url)
+    audio.volume = volume
+    void audio.play().catch(() => {})
+  } catch {
+    // Ignore audio playback failures.
+  }
+}
+
+function clearDealAnimationTimers() {
+  while (dealAnimationTimers.length) {
+    clearTimeout(dealAnimationTimers.pop())
+  }
+}
+
+function clearShuffleDelayTimer() {
+  if (shuffleDelayTimer) {
+    clearTimeout(shuffleDelayTimer)
+    shuffleDelayTimer = null
+  }
+}
+
+function resetDealAnimations() {
+  clearDealAnimationTimers()
+  for (const key of Object.keys(dealAnimations)) {
+    delete dealAnimations[key]
+  }
+  dealtCardKeys.clear()
+}
+
+function animatedCardStyle(key, baseStyle) {
+  const animationStyle = dealAnimations[key]
+  return animationStyle ? { ...baseStyle, ...animationStyle } : baseStyle
+}
+
+function isCardDealing(key) {
+  return Boolean(dealAnimations[key])
+}
+
+function scheduleDealAnimation(key, targetStyle, delayMs, options = {}) {
+  const {
+    preSoundUrl = null,
+    preSoundVolume = 1,
+    preSoundLeadMs = 0,
+    startSoundUrl = DEAL_SOUND_URL,
+    startVolume = DEAL_SOUND_VOLUME,
+  } = options
+  const deckStyle = deckCardStyle.value
+  const fromX = parsePx(deckStyle.left) - parsePx(targetStyle.left)
+  const fromY = parsePx(deckStyle.top) - parsePx(targetStyle.top)
+  const animationStartMs = delayMs + preSoundLeadMs
+
+  dealAnimations[key] = {
+    "--deal-duration": `${DEAL_ANIMATION_MS}ms`,
+    "--deal-delay": `${animationStartMs}ms`,
+    "--deal-from-x": `${fromX}px`,
+    "--deal-from-y": `${fromY}px`,
+    zIndex: 15 + Math.round(delayMs / DEAL_STAGGER_MS),
+  }
+
+  if (preSoundUrl) {
+    dealAnimationTimers.push(window.setTimeout(() => {
+      playCardSound(preSoundUrl, preSoundVolume)
+    }, delayMs))
+  }
+
+  dealAnimationTimers.push(window.setTimeout(() => {
+    playCardSound(startSoundUrl, startVolume)
+  }, animationStartMs))
+
+  dealAnimationTimers.push(window.setTimeout(() => {
+    playCardSound(PLACE_SOUND_URL, PLACE_SOUND_VOLUME)
+  }, animationStartMs + Math.max(0, DEAL_ANIMATION_MS - PLACE_SOUND_LEAD_MS)))
+
+  dealAnimationTimers.push(window.setTimeout(() => {
+    delete dealAnimations[key]
+  }, animationStartMs + DEAL_ANIMATION_MS))
+}
+
+function queueDealAnimations(data) {
+  if (!data.gameId || !data.mode) return
+
+  const pendingAnimations = []
+
+  if (data.gameId === "blackjack") {
+    const playerCards = data.mode.playerCards || []
+    const dealerCards = data.mode.dealerCards || []
+    const count = Math.max(playerCards.length, dealerCards.length)
+
+    for (let i = 0; i < count; i += 1) {
+      if (playerCards[i]) {
+        const key = `bj-p-${i}`
+        if (!dealtCardKeys.has(key)) {
+          dealtCardKeys.add(key)
+          pendingAnimations.push({
+            key,
+            style: playerCardStyle(i),
+            preSoundUrl: i >= 2 ? HIT_SOUND_URL : null,
+            preSoundVolume: HIT_SOUND_VOLUME,
+            preSoundLeadMs: i >= 2 ? HIT_SOUND_LEAD_MS : 0,
+            startSoundUrl: DEAL_SOUND_URL,
+            startVolume: DEAL_SOUND_VOLUME,
+          })
+        }
+      }
+
+      if (dealerCards[i]) {
+        const key = `bj-d-${i}`
+        if (!dealtCardKeys.has(key)) {
+          dealtCardKeys.add(key)
+          pendingAnimations.push({ key, style: dealerCardStyle(i), startSoundUrl: DEAL_SOUND_URL, startVolume: DEAL_SOUND_VOLUME })
+        }
+      }
+    }
+  } else if (data.gameId === "rideTheBus") {
+    const cards = data.mode.cards || []
+
+    for (let i = 0; i < cards.length; i += 1) {
+      const key = `rtb-${i}`
+      if (!dealtCardKeys.has(key)) {
+        dealtCardKeys.add(key)
+        pendingAnimations.push({ key, style: rtbCardStyle(i), startSoundUrl: DEAL_SOUND_URL, startVolume: DEAL_SOUND_VOLUME })
+      }
+    }
+  }
+
+  pendingAnimations.forEach((entry, index) => {
+    scheduleDealAnimation(
+      entry.key,
+      entry.style,
+      index * DEAL_STAGGER_MS,
+      entry
+    )
+  })
+}
+
+function applyStateData(data) {
+  if (!data.gameId || data.phase === "idle" || data.phase === "betting") {
+    resetDealAnimations()
+  }
+
+  const prevGameId = state.gameId
+  state.gameId = data.gameId
+  state.phase = data.phase
+  state.bet = data.bet
+  state.mode = data.mode
+  if (!betInputFocused.value) {
+    betInput.value = String(data.bet ?? 100)
+  }
+
+  if (data.phase === "idle" && !data.gameId && prevGameId) {
+    lastTableGameId.value = prevGameId
+  } else if (data.gameId) {
+    lastTableGameId.value = data.gameId
+  }
+
+  applyGameSvgVisibility()
+  updateSvgHandValue()
+  syncTimerFromState()
+  queueDealAnimations(data)
+}
+
+function applyShufflePendingState(data) {
+  state.gameId = data.gameId
+  state.phase = data.phase
+  state.bet = data.bet
+
+  if (!betInputFocused.value) {
+    betInput.value = String(data.bet ?? 100)
+  }
+
+  if (data.gameId) {
+    lastTableGameId.value = data.gameId
+  }
+
+  applyGameSvgVisibility()
+}
+
 
 const bjResultLabel = computed(() => {
   if (!state.mode) return ""
@@ -321,10 +526,13 @@ const rtbResultLabel = computed(() => {
 
 const rtbResultAmountLabel = computed(() => {
   const amount = state.mode?.collectAmount || 0
+  if (state.mode?.result === "win") {
+    return `Won $${amount}`
+  }
   if (state.mode?.result === "forfeit") {
     return `Collected $${amount}`
   }
-  return `Won $${amount}`
+  return ""
 })
 
 const timerDisplay = computed(() => {
@@ -397,24 +605,37 @@ function syncTimerFromState() {
 }
 
 function handleState(data) {
-  const prevGameId = state.gameId
-  state.gameId = data.gameId
-  state.phase = data.phase
-  state.bet = data.bet
-  state.mode = data.mode
-  if (!betInputFocused.value) {
-    betInput.value = String(data.bet ?? 100)
+  const shuffleIncreased =
+    typeof data.shuffleCounter === "number" &&
+    lastShuffleCounter.value !== null &&
+    data.shuffleCounter > lastShuffleCounter.value
+
+  if (typeof data.shuffleCounter === "number") {
+    lastShuffleCounter.value = data.shuffleCounter
   }
 
-  if (data.phase === "idle" && !data.gameId && prevGameId) {
-    lastTableGameId.value = prevGameId
-  } else if (data.gameId) {
-    lastTableGameId.value = data.gameId
+  if (shuffleIncreased) {
+    applyShufflePendingState(data)
+    playCardSound(SHUFFLE_SOUND_URL, SHUFFLE_SOUND_VOLUME)
+    pendingShuffleState = data
+    clearShuffleDelayTimer()
+    shuffleDelayTimer = window.setTimeout(() => {
+      const nextState = pendingShuffleState
+      pendingShuffleState = null
+      shuffleDelayTimer = null
+      if (nextState) {
+        applyStateData(nextState)
+      }
+    }, SHUFFLE_DELAY_MS)
+    return
   }
 
-  applyGameSvgVisibility()
-  updateSvgHandValue()
-  syncTimerFromState()
+  if (shuffleDelayTimer) {
+    pendingShuffleState = data
+    return
+  }
+
+  applyStateData(data)
 }
 
 function openGame(gameId) {
@@ -513,6 +734,9 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  resetDealAnimations()
+  clearShuffleDelayTimer()
+  pendingShuffleState = null
   if (timerInterval) {
     clearInterval(timerInterval)
     timerInterval = null
@@ -553,6 +777,29 @@ onUnmounted(() => {
 .table-card {
   pointer-events: none;
   transition: left 0.3s ease, top 0.3s ease;
+  will-change: transform, left, top;
+}
+
+.table-card--dealing {
+  animation-name: card-deal;
+  animation-duration: var(--deal-duration, 325ms);
+  animation-delay: var(--deal-delay, 0ms);
+  animation-fill-mode: both;
+  animation-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@keyframes card-deal {
+  0% {
+    transform: translate(var(--deal-from-x), var(--deal-from-y)) scale(0.96);
+  }
+
+  82% {
+    transform: translate(0, 0) scale(1.015);
+  }
+
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
 }
 
 .hand-value-label {

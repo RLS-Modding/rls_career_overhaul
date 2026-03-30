@@ -5,6 +5,13 @@ local dealerHand = {}
 local phase = "idle"
 local bet = 0
 local result = nil
+local pendingAction = nil
+local pendingDeadline = nil
+
+local INITIAL_DEAL_DELAY = 2.05
+local PLAYER_HIT_DELAY = 0.52
+local DEALER_REVEAL_DELAY = 0.82
+local DEALER_HIT_DELAY = 0.52
 
 local function cardValue(card)
   local r = card.rank
@@ -61,6 +68,8 @@ local function reset()
   phase = "idle"
   bet = 0
   result = nil
+  pendingAction = nil
+  pendingDeadline = nil
 end
 
 local function resolveResult()
@@ -73,15 +82,58 @@ local function resolveResult()
   return "push"
 end
 
-local function dealerPlay()
-  for _, c in ipairs(dealerHand) do c.faceUp = true end
-  while shouldDealerHit(dealerHand) do
+local function schedule(action, delay)
+  pendingAction = action
+  pendingDeadline = os.clock() + delay
+end
+
+local function clearPending()
+  pendingAction = nil
+  pendingDeadline = nil
+end
+
+local function startDealerReveal()
+  if dealerHand[2] then
+    dealerHand[2].faceUp = true
+  end
+  phase = "dealer_reveal"
+  schedule("dealer_continue", DEALER_REVEAL_DELAY)
+end
+
+local function continueDealerTurn()
+  if shouldDealerHit(dealerHand) then
     local c = draw()
     c.faceUp = true
     table.insert(dealerHand, c)
+    phase = "dealer_hit"
+    schedule("dealer_continue", DEALER_HIT_DELAY)
+    return
   end
+
   phase = "resolved"
   result = resolveResult()
+end
+
+local function finishInitialDeal()
+  if handValue(playerHand, false) == 21 then
+    startDealerReveal()
+    return
+  end
+
+  phase = "player_turn"
+end
+
+local function finishPlayerHit()
+  if handValue(playerHand, false) > 21 then
+    for _, dc in ipairs(dealerHand) do
+      dc.faceUp = true
+    end
+    phase = "resolved"
+    result = "bust"
+    return
+  end
+
+  phase = "player_turn"
 end
 
 local function deal(betAmount)
@@ -89,6 +141,7 @@ local function deal(betAmount)
   playerHand = {}
   dealerHand = {}
   result = nil
+  clearPending()
 
   local p1 = draw(); p1.faceUp = true
   table.insert(playerHand, p1)
@@ -102,16 +155,8 @@ local function deal(betAmount)
   local d2 = draw(); d2.faceUp = false
   table.insert(dealerHand, d2)
 
-  phase = "player_turn"
-
-  if handValue(playerHand, false) == 21 then
-    dealerPlay()
-    if result == "push" then
-      result = "push"
-    else
-      result = "blackjack"
-    end
-  end
+  phase = "dealing"
+  schedule("finish_initial_deal", INITIAL_DEAL_DELAY)
 end
 
 local function hit()
@@ -119,16 +164,14 @@ local function hit()
   local c = draw()
   c.faceUp = true
   table.insert(playerHand, c)
-  if handValue(playerHand, false) > 21 then
-    phase = "resolved"
-    result = "bust"
-    for _, dc in ipairs(dealerHand) do dc.faceUp = true end
-  end
+  phase = "player_settle"
+  schedule("finish_player_hit", PLAYER_HIT_DELAY)
 end
 
 local function stand()
   if phase ~= "player_turn" then return end
-  dealerPlay()
+  clearPending()
+  startDealerReveal()
 end
 
 local function serializeHand(hand)
@@ -147,7 +190,7 @@ end
 local function getState()
   local pv = handValue(playerHand, false)
   local pvLabel = nil
-  if #playerHand > 0 then
+  if #playerHand > 0 and phase ~= "dealing" and phase ~= "player_settle" then
     if pv > 21 then
       pvLabel = "Bust"
     else
@@ -181,6 +224,31 @@ local function onAction(name, payload)
   end
 end
 
+local function onUpdate(dtReal, dtSim, dtRaw)
+  if not pendingAction or not pendingDeadline then return end
+  if os.clock() < pendingDeadline then return end
+
+  local action = pendingAction
+  clearPending()
+
+  if action == "finish_initial_deal" then
+    finishInitialDeal()
+  elseif action == "finish_player_hit" then
+    finishPlayerHit()
+  elseif action == "dealer_continue" then
+    continueDealerTurn()
+    if result == "dealer_bust" or result == "win" or result == "lose" or result == "push" then
+      if handValue(playerHand, false) == 21 and #playerHand == 2 and result ~= "push" then
+        result = "blackjack"
+      end
+    end
+  end
+
+  if gameplay_cardGames and gameplay_cardGames.pushState then
+    gameplay_cardGames.pushState()
+  end
+end
+
 local function onExtensionLoaded()
   if gameplay_cardGames and gameplay_cardGames.register then
     gameplay_cardGames.register("blackjack", M)
@@ -191,6 +259,7 @@ M.reset = reset
 M.deal = deal
 M.getState = getState
 M.onAction = onAction
+M.onUpdate = onUpdate
 M.onExtensionLoaded = onExtensionLoaded
 
 return M
