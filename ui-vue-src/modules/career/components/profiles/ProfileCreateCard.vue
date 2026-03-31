@@ -17,6 +17,7 @@
             <label class="pcc-label">Profile Name</label>
             <div :class="['pcc-input-wrap', { 'pcc-input-wrap--error': nameError }]">
               <input
+                v-bng-text-input
                 v-model="profileName"
                 :maxlength="PROFILE_NAME_MAX_LENGTH"
                 class="pcc-input"
@@ -119,7 +120,7 @@
 
 <script setup>
 import { inject, nextTick, ref, watch, computed, onMounted, onBeforeUnmount } from "vue"
-import { vBngOnUiNav, vBngScopedNav, vBngSoundClass } from "@/common/directives"
+import { vBngOnUiNav, vBngScopedNav, vBngSoundClass, vBngTextInput } from "@/common/directives"
 import { PROFILE_NAME_MAX_LENGTH } from "../../stores/profilesStore"
 import { setFocus } from "@/services/uiNavFocus"
 import { lua } from "@/bridge"
