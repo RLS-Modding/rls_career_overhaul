@@ -42,6 +42,9 @@
               </div>
             </button>
           </div>
+          <p v-if="selectedType === 'savings'" class="apy-footnote">
+            *5% APY: interest on your balance in sim time (5% per 6 sim hours, paid to the account every 30 sim minutes). Rates and timing are not real-world annual yields.
+          </p>
         </div>
 
         <div class="form-group">
@@ -107,7 +110,7 @@ const accountTypes = [
     value: 'savings',
     label: 'Savings',
     iconClass: 'icon-savings',
-    description: 'For saving money'
+    description: 'For saving money · 5% APY*'
   }
 ]
 
@@ -289,6 +292,13 @@ onMounted(async () => {
   font-size: 0.8rem;
   color: #64748b;
   margin-top: 4px;
+}
+
+.apy-footnote {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin: 8px 0 0 0;
+  line-height: 1.35;
 }
 
 .account-types {
