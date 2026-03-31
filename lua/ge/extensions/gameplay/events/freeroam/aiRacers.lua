@@ -126,6 +126,7 @@ local function aiSpawnDebugEnabled(cfg)
 end
 
 local function showAiSpawnDebugUi(cfg, lines)
+    --[[ Staging debug overlay: live player power read + AI slot picks. Uncomment to restore; set aiSpawnDebugUi: true in level competitiveRace/aiRacers.json.
     if not aiSpawnDebugEnabled(cfg) or type(lines) ~= "table" or #lines == 0 then return end
     if type(ui_message) ~= "function" then return end
     local text = table.concat(lines, "\n")
@@ -135,6 +136,7 @@ local function showAiSpawnDebugUi(cfg, lines)
     pcall(function()
         ui_message(text, 30, "AI spawn debug")
     end)
+    --]]
 end
 
 local function shallowCopyDefaults(defaults, fromFile)
