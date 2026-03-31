@@ -78,6 +78,7 @@ export default {
     saveCurrent: () => {},
     removeSaveSlot: id => String,
     renameSaveSlot: (name, newName) => [String, String],
+    duplicateSaveSlot: (sourceName, newName) => [String, String],
   },
 
   career_challengeModes: {
