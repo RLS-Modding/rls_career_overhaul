@@ -130,8 +130,24 @@
           <button class="bet-btn" @click="adjustBet(100)">+100</button>
           <button class="bet-btn" @click="doubleBet">x2</button>
         </div>
-        <button class="game-btn game-btn--primary deal-btn" @click="confirmBet">Deal</button>
+        <div v-if="state.careerActive && state.betError === 'insufficientFunds'" class="bet-error-hint">
+          Not enough balance for this bet.
+        </div>
+        <button
+          class="game-btn game-btn--primary deal-btn"
+          :disabled="!canConfirmBet"
+          @click="confirmBet"
+        >
+          Deal
+        </button>
       </div>
+    </div>
+
+    <div
+      v-if="state.careerActive && state.balance != null"
+      class="card-games-balance"
+    >
+      Balance ${{ formatMoney(state.balance) }}
     </div>
 
     <!-- Game selector when idle -->
@@ -198,7 +214,6 @@ const RTB_RESULTS = {
   win: "You Rode the Bus!",
   lose: "Wrong Guess!",
   timeout: "Time's Up!",
-  forfeit: "Cashed Out",
 }
 
 const router = useRouter()
@@ -224,6 +239,26 @@ const state = reactive({
   phase: "idle",
   bet: 100,
   mode: null,
+  careerActive: false,
+  balance: null,
+  maxBet: 1000,
+  betError: null,
+})
+
+function formatMoney(n) {
+  const v = Math.floor(Number(n) || 0)
+  return v.toLocaleString()
+}
+
+const canConfirmBet = computed(() => {
+  if (state.phase !== "betting") return false
+  if (!state.careerActive) return true
+  const bal = Number(state.balance)
+  const bet = Number(state.bet)
+  if (!Number.isFinite(bal) || !Number.isFinite(bet)) return false
+  if (bet < 50) return false
+  if (bet > bal) return false
+  return state.betError !== "insufficientFunds"
 })
 
 const PLACEHOLDER_IDS = [
@@ -488,6 +523,10 @@ function applyStateData(data) {
   state.phase = data.phase
   state.bet = data.bet
   state.mode = data.mode
+  state.careerActive = Boolean(data.careerActive)
+  state.balance = typeof data.balance === "number" ? data.balance : null
+  state.maxBet = typeof data.maxBet === "number" ? data.maxBet : 1000
+  state.betError = data.betError ?? null
   if (!betInputFocused.value) {
     betInput.value = String(data.bet ?? 100)
   }
@@ -508,6 +547,10 @@ function applyShufflePendingState(data) {
   state.gameId = data.gameId
   state.phase = data.phase
   state.bet = data.bet
+  state.careerActive = Boolean(data.careerActive)
+  state.balance = typeof data.balance === "number" ? data.balance : null
+  state.maxBet = typeof data.maxBet === "number" ? data.maxBet : 1000
+  state.betError = data.betError ?? null
 
   if (!betInputFocused.value) {
     betInput.value = String(data.bet ?? 100)
@@ -544,24 +587,33 @@ const bjPayoutLabel = computed(() => {
     else if (r === "push") total = stake
     else total = 0
   }
-  if (r === "blackjack") return `Blackjack pays $${total} (3:2)`
-  if (r === "win" || r === "dealer_bust") return `Collected $${total}`
+  if (r === "blackjack") return `You won $${total} Blackjack!`
+  if (r === "win" || r === "dealer_bust") return `You Won $${total}!`
   if (r === "push") return `Bet returned $${total}`
   return ""
 })
 
 const rtbResultLabel = computed(() => {
   if (!state.mode) return ""
-  return RTB_RESULTS[state.mode.result] || state.mode.result || ""
+  const r = state.mode.result
+  if (r === "forfeit") {
+    const cleared = Number(state.mode.roundsCleared) || 0
+    if (cleared === 0) return "Bet returned"
+    return "You won!"
+  }
+  return RTB_RESULTS[r] || r || ""
 })
 
 const rtbResultAmountLabel = computed(() => {
-  const amount = state.mode?.collectAmount || 0
-  if (state.mode?.result === "win") {
-    return `Won $${amount}`
+  const amount = state.mode?.collectAmount ?? 0
+  const r = state.mode?.result
+  if (r === "win") {
+    return `You won $${formatMoney(amount)}!`
   }
-  if (state.mode?.result === "forfeit") {
-    return `Collected $${amount}`
+  if (r === "forfeit") {
+    const cleared = Number(state.mode.roundsCleared) || 0
+    if (cleared === 0) return ""
+    return `You won $${formatMoney(amount)}!`
   }
   return ""
 })
@@ -1042,6 +1094,36 @@ onUnmounted(() => {
   background: linear-gradient(90deg, #ff7a1a, #e85f00);
   color: #fff;
   font-weight: 500;
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    filter: none;
+  }
+}
+
+.bet-error-hint {
+  font-size: 0.85rem;
+  color: #f87171;
+  font-weight: 400;
+  text-align: center;
+}
+
+.card-games-balance {
+  position: absolute;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  z-index: 25;
+  padding: 0.65rem 1rem;
+  background: rgba(11, 15, 25, 0.92);
+  border: 1px solid rgba(71, 85, 105, 0.4);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.95rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  pointer-events: none;
 }
 
 .game-selector {

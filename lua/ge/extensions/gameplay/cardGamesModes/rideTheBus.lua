@@ -18,8 +18,10 @@ local timerDeadline = nil
 local lastFlipTime = nil
 local revealDeadline = nil
 local pendingChoiceCorrect = nil
+local dealFinishDeadline = nil
 
 local REVEAL_DELAY = 0.82
+local INITIAL_DEAL_DELAY = 2.15
 
 local function draw()
   return gameplay_cardGames.draw()
@@ -35,6 +37,7 @@ local function reset()
   lastFlipTime = nil
   revealDeadline = nil
   pendingChoiceCorrect = nil
+  dealFinishDeadline = nil
 end
 
 local function startTimer()
@@ -96,8 +99,9 @@ local function deal(betAmount)
     table.insert(cards, c)
   end
 
-  phase = "dealt"
-  advanceRound()
+  phase = "dealing"
+  timerDeadline = nil
+  dealFinishDeadline = os.clock() + INITIAL_DEAL_DELAY
 end
 
 local function isRed(suit)
@@ -154,11 +158,30 @@ local function choose(choice)
   revealDeadline = os.clock() + REVEAL_DELAY
 end
 
+local function revealOneCardOnForfeit()
+  local idx = nil
+  if phase == "dealing" then
+    idx = 1
+  elseif phase == "choosing" and currentRound >= 1 and currentRound <= 4 then
+    idx = currentRound
+  elseif phase == "revealing" then
+    idx = currentRound + 1
+    if idx > 4 then
+      idx = nil
+    end
+  end
+  if idx and cards[idx] and not cards[idx].faceUp then
+    cards[idx].faceUp = true
+  end
+end
+
 local function endGame()
   if phase == "resolved" or phase == "idle" then return end
   timerDeadline = nil
   revealDeadline = nil
   pendingChoiceCorrect = nil
+  dealFinishDeadline = nil
+  revealOneCardOnForfeit()
   phase = "resolved"
   result = "forfeit"
 end
@@ -214,6 +237,15 @@ local function onAction(name, payload)
 end
 
 local function onUpdate(dtReal, dtSim, dtRaw)
+  if phase == "dealing" and dealFinishDeadline and os.clock() >= dealFinishDeadline then
+    dealFinishDeadline = nil
+    advanceRound()
+    if gameplay_cardGames and gameplay_cardGames.pushState then
+      gameplay_cardGames.pushState()
+    end
+    return
+  end
+
   if phase == "revealing" and revealDeadline and os.clock() >= revealDeadline then
     revealDeadline = nil
     local correct = pendingChoiceCorrect

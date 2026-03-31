@@ -16,6 +16,147 @@ local shoe = {}
 local shoeSize = FULL_DECK_SIZE
 local session
 
+local function careerMoneyApplies()
+  if not career_career or not career_career.isActive or not career_career.isActive() then
+    return false
+  end
+  if not career_modules_playerAttributes or not career_modules_playerAttributes.getAttributeValue then
+    return false
+  end
+  return true
+end
+
+local function getWallet()
+  if not careerMoneyApplies() then
+    return 0
+  end
+  return math.floor(tonumber(career_modules_playerAttributes.getAttributeValue("money")) or 0)
+end
+
+local function computeCareerPayout(modeState)
+  if not modeState or not modeState.gameId then
+    return 0
+  end
+  if modeState.gameId == "blackjack" then
+    return math.floor(tonumber(modeState.payout) or 0)
+  end
+  if modeState.gameId == "rideTheBus" then
+    return math.floor(tonumber(modeState.collectAmount) or 0)
+  end
+  return 0
+end
+
+local function careerBetLabel()
+  if activeGameId == "blackjack" then
+    return "Blackjack bet"
+  end
+  if activeGameId == "rideTheBus" then
+    return "Ride the Bus bet"
+  end
+  return "Card games bet"
+end
+
+local function careerRefundLabel()
+  if activeGameId == "blackjack" then
+    return "Blackjack bet refund"
+  end
+  if activeGameId == "rideTheBus" then
+    return "Ride the Bus bet refund"
+  end
+  return "Card games bet refund"
+end
+
+local function careerPayoutLabel(modeState)
+  if not modeState or not modeState.gameId then
+    return "Card games payout"
+  end
+  local r = modeState.result
+  if modeState.gameId == "blackjack" then
+    if r == "blackjack" then
+      return "Blackjack win (natural)"
+    end
+    if r == "win" or r == "dealer_bust" then
+      return "Blackjack win"
+    end
+    if r == "push" then
+      return "Blackjack push"
+    end
+    if r == "bust" then
+      return "Blackjack bust"
+    end
+    if r == "lose" then
+      return "Blackjack lose"
+    end
+    return "Blackjack payout"
+  end
+  if modeState.gameId == "rideTheBus" then
+    if r == "win" then
+      return "Ride the Bus win"
+    end
+    if r == "forfeit" then
+      return "Ride the Bus cash out"
+    end
+    if r == "lose" then
+      return "Ride the Bus lose"
+    end
+    if r == "timeout" then
+      return "Ride the Bus timeout"
+    end
+    return "Ride the Bus payout"
+  end
+  return "Card games payout"
+end
+
+local function careerRefundUnsettled()
+  if careerMoneyApplies() then
+    if session.careerChargedThisRound and not session.careerPaidThisRound then
+      career_modules_playerAttributes.addAttributes(
+        { money = session.careerChargedThisRound },
+        { label = careerRefundLabel(), tags = { "cardGames" } }
+      )
+    end
+  end
+  session.careerChargedThisRound = nil
+  session.careerPaidThisRound = false
+end
+
+local function careerTrySettle(modeState)
+  if not careerMoneyApplies() then
+    return
+  end
+  if session.phase ~= "playing" then
+    return
+  end
+  if not modeState or modeState.phase ~= "resolved" then
+    return
+  end
+  if not session.careerChargedThisRound or session.careerPaidThisRound then
+    return
+  end
+  local payout = computeCareerPayout(modeState)
+  if payout > 0 then
+    career_modules_playerAttributes.addAttributes(
+      { money = payout },
+      { label = careerPayoutLabel(modeState), tags = { "cardGames" } }
+    )
+  end
+  session.careerPaidThisRound = true
+end
+
+local function clampBetForCareer()
+  if not careerMoneyApplies() then
+    return
+  end
+  local maxBet = math.min(MAX_BET, math.max(0, getWallet()))
+  if maxBet < MIN_BET then
+    session.bet = math.max(0, maxBet)
+    session.betError = "insufficientFunds"
+    return
+  end
+  session.bet = math.max(MIN_BET, math.min(maxBet, session.bet))
+  session.betError = nil
+end
+
 local function buildShoe()
   shoe = {}
   for _, suit in ipairs(SUITS) do
@@ -60,6 +201,9 @@ session = {
   bet = 100,
   phase = "idle",
   shuffleCounter = 0,
+  careerChargedThisRound = nil,
+  careerPaidThisRound = false,
+  betError = nil,
 }
 
 local modeRegistry = {}
@@ -94,12 +238,26 @@ local function pushState()
     modeState = activeMode.getState()
   end
 
+  careerTrySettle(modeState)
+
+  local careerActive = careerMoneyApplies()
+  local balance = nil
+  local maxBetForUi = MAX_BET
+  if careerActive then
+    balance = getWallet()
+    maxBetForUi = math.min(MAX_BET, math.max(0, balance))
+  end
+
   local state = {
     gameId = activeGameId,
     phase = session.phase,
     bet = session.bet,
     shuffleCounter = session.shuffleCounter,
     mode = modeState,
+    careerActive = careerActive,
+    balance = balance,
+    maxBet = maxBetForUi,
+    betError = session.betError,
   }
   guihooks.trigger("cardGamesState", state)
 end
@@ -114,33 +272,70 @@ local function open(gameId)
     log("E", "cardGames", "Unknown game: " .. tostring(gameId))
     return
   end
+  careerRefundUnsettled()
   activeGameId = gameId
   activeMode = api
   session.phase = "betting"
   session.bet = 100
+  session.betError = nil
+  session.careerChargedThisRound = nil
+  session.careerPaidThisRound = false
   if activeMode.reset then activeMode.reset() end
+  clampBetForCareer()
   pushState()
 end
 
 local function close()
+  careerRefundUnsettled()
   if activeMode and activeMode.reset then activeMode.reset() end
   activeGameId = nil
   activeMode = nil
   session.phase = "idle"
+  session.betError = nil
+  session.careerChargedThisRound = nil
+  session.careerPaidThisRound = false
   pushState()
 end
 
 local function setBet(amount)
   if session.phase ~= "betting" then return end
   amount = math.floor(tonumber(amount) or session.bet)
-  amount = math.max(MIN_BET, math.min(MAX_BET, amount))
+  local maxBet = MAX_BET
+  if careerMoneyApplies() then
+    maxBet = math.min(MAX_BET, math.max(0, getWallet()))
+  end
+  if careerMoneyApplies() and maxBet < MIN_BET then
+    session.bet = math.max(0, maxBet)
+    session.betError = "insufficientFunds"
+    pushState()
+    return
+  end
+  amount = math.max(MIN_BET, math.min(maxBet, amount))
   session.bet = amount
+  session.betError = nil
   pushState()
 end
 
 local function confirmBet()
   if session.phase ~= "betting" then return end
   if not activeMode then return end
+
+  session.betError = nil
+  if careerMoneyApplies() then
+    local w = getWallet()
+    if session.bet < MIN_BET or session.bet > w then
+      session.betError = "insufficientFunds"
+      pushState()
+      return
+    end
+    career_modules_playerAttributes.addAttributes(
+      { money = -session.bet },
+      { label = careerBetLabel(), tags = { "cardGames" } }
+    )
+    session.careerChargedThisRound = session.bet
+    session.careerPaidThisRound = false
+  end
+
   ensureShoe()
   session.phase = "playing"
   if activeMode.deal then activeMode.deal(session.bet) end
@@ -157,8 +352,11 @@ end
 
 local function newRound()
   if not activeMode then return end
+  careerRefundUnsettled()
   session.phase = "betting"
+  session.betError = nil
   if activeMode.reset then activeMode.reset() end
+  clampBetForCareer()
   pushState()
 end
 

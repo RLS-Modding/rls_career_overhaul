@@ -124,12 +124,18 @@ local function finishInitialDeal()
 end
 
 local function finishPlayerHit()
-  if handValue(playerHand, false) > 21 then
+  local pv = handValue(playerHand, false)
+  if pv > 21 then
     for _, dc in ipairs(dealerHand) do
       dc.faceUp = true
     end
     phase = "resolved"
     result = "bust"
+    return
+  end
+
+  if pv == 21 then
+    startDealerReveal()
     return
   end
 
