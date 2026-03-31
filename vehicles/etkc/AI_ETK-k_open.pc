@@ -1,15 +1,15 @@
 {
   "format":2,
-  "licenseName":"TBK-6077",
+  "licenseName":"QGU-7244",
   "mainPartName":"etkc",
   "mainPartPath":"/etkc",
   "model":"etkc",
   "paints":[
     {
       "baseColor":[
-        0.734,
-        0.121,
-        0.023,
+        0.23,
+        0.23,
+        0.23,
         1.2
       ],
       "clearcoat":1,
@@ -43,7 +43,6 @@
     }
   ],
   "parts":{
-    "HMT_v8_eden_filters":"HMT_eden_filters_grey",
     "brakepad_F":"brakepad_F_race",
     "brakepad_R":"brakepad_R_race",
     "digidash_branding":"digidash_branding_grd",
@@ -73,7 +72,7 @@
     "etk_enginemounts":"etk_enginemounts_ultra",
     "etk_exhaust_v8_4.4_petrol":"etk_exhaust_v8_4.4_petrol_ttSport",
     "etk_finaldrive_R":"etk_finaldrive_R_391",
-    "etk_intake_v8_4.4_petrol":"etk_intake_v8_4.4_petrol_HMT_eden_I",
+    "etk_intake_v8_4.4_petrol":"etk_intake_v8_4.4_petrol_turbo_ttSport",
     "etk_oilpan_v8":"etk_oilpan_v8_race",
     "etk_transfer_case":"etk_transfer_case_RWD",
     "etk_transmission":"etk_transmission_7DCT",
@@ -96,7 +95,7 @@
     "etkc_doorpanel_L":"etkc_doorpanel_L_race",
     "etkc_doorpanel_R":"etkc_doorpanel_R_race",
     "etkc_driveshaft_R":"etkc_driveshaft_R",
-    "etkc_exhausttips":"etkc_exhausttips",
+    "etkc_exhausttips":"etkc_exhausttips_sport",
     "etkc_fender_L":"etkc_fender_L_sport",
     "etkc_fender_R":"etkc_fender_R_sport",
     "etkc_fenderflare_bumper_R":"",
@@ -156,7 +155,7 @@
     "linelock":"",
     "load_seat_R":"",
     "n2o_system":"",
-    "paint_design":"etkc_skin_signaturestripes",
+    "paint_design":"etkc_skin_race",
     "race_seat_FL":"race_seat_FL",
     "skin_interior":"etkc_skin_interior_alcantara",
     "skin_race_seat_FL":"skin_race_seat_FL_gray",

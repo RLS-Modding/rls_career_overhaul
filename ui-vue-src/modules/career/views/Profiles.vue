@@ -77,13 +77,14 @@
             v-for="(profile, index) of filteredProfiles"
             v-bng-popover="profile.incompatibleVersion ? 'tooltip-outdated-message' : null"
             v-bind="profile"
-            v-bng-disabled="isManage && selectedCard !== index"
+            v-bng-disabled="(isManage && selectedCard !== null && selectedCard !== index) || (isBackup && backupCardIndex !== null && backupCardIndex !== index)"
             :key="profile.id"
             :active="activeProfileId === profile.id"
             :forceCloseManage="selectedCard === -1"
             class="profile-card"
             @card:activate="value => onCardActivated(value, index)"
             @manage:change="value => onManageChange(value, index)"
+            @backup:change="active => onBackupChange(active, index)"
             @load="onLoad" />
         </div>
       </div>
@@ -115,6 +116,8 @@ const activeProfileId = ref(null)
 
 const selectedCard = ref(null)
 const isManage = ref(false)
+const isBackup = ref(false)
+const backupCardIndex = ref(null)
 const newProfileName = ref(null)
 const createCardActive = ref(false)
 
@@ -324,6 +327,11 @@ function onManageChange(active, index) {
   isManage.value = active
 }
 
+function onBackupChange(active, index) {
+  isBackup.value = active
+  backupCardIndex.value = active ? index : null
+}
+
 onMounted(() => {
   events.on("allCareerSaveSlots", onProfilesReceived)
   lua.career_career.sendAllCareerSaveSlotsData()
@@ -364,6 +372,7 @@ const navigateToMainMenu = () => {
 const onDeactivate = (event) => {
   if (event?.detail?.force) return
   if (createCardActive.value) return
+  if (isBackup.value) return
   if (isAnyModalOpen()) return
 
   if (isLoading) {

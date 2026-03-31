@@ -52,6 +52,10 @@ local DEFAULT_CONFIG = {
     -- AI pool power filter: only spawn models with power <= refHp * (1 + aiPowerExceedCapPct). No lower bound. Set false to skip filtering.
     filterPoolByPowerMeetOrExceed = true,
     aiPowerExceedCapPct = 0.25,
+    -- vehiclePool: only spawn AI configs with HP in (player, player + this]; if none, 1× next-higher pool car + player clones for the rest.
+    aiPoolCloseAboveHp = 75,
+    -- On-screen ui_message after staging AI spawn (HP, pool plan, etc.). Per-level aiRacers.json overrides; false = off.
+    aiSpawnDebugUi = false,
     -- overrideAI: multiplies lateral/longitudinal grip budget in raceplanAhead (1.0 = default, >1 = faster in corners).
     raceAccelScale = 1.1,
     raceThrottleKp = 1.12,
@@ -60,6 +64,17 @@ local DEFAULT_CONFIG = {
     raceThrottleRecoveryMult = 1.9,
     -- driveUsingPath setParameters: higher = plan.targetSpeed follows planner faster (exit / straights).
     targetSpeedSmootherRate = 18,
+    -- Wide-line racing (overrideAI): when lateral offset from plan exceeds start→end (m), blend traffic-limited speed back toward geometric cap (never above it).
+    raceWideLineTrafficBlend = 0.4,
+    raceWideLineLateralStartM = 0.9,
+    raceWideLineLateralEndM = 2.6,
+    -- Soften understeer throttle lift when wide — keeps commitment on an alternate line.
+    raceWideLineUndersteerRelax = 0.45,
+    -- Corner line sacrifice (overrideAI): shift plan nodes outward in tight bends (curvature ~1/m). 0 = off.
+    raceCornerLineLiftMaxM = 0.22,
+    raceCornerCurvStart = 0.022,
+    raceCornerCurvEnd = 0.10,
+    raceCornerLineLiftScale = 1.0,
 }
 
 local mSpawnedAiVehicleIds = {}
@@ -104,6 +119,24 @@ local AI_COLOR_PALETTE = {
 local function pickRandomAiColor()
     local idx = math.random(1, #AI_COLOR_PALETTE)
     return AI_COLOR_PALETTE[idx]
+end
+
+local function aiSpawnDebugEnabled(cfg)
+    return type(cfg) == "table" and cfg.aiSpawnDebugUi == true
+end
+
+local function showAiSpawnDebugUi(cfg, lines)
+    --[[ Staging debug overlay: live player power read + AI slot picks. Uncomment to restore; set aiSpawnDebugUi: true in level competitiveRace/aiRacers.json.
+    if not aiSpawnDebugEnabled(cfg) or type(lines) ~= "table" or #lines == 0 then return end
+    if type(ui_message) ~= "function" then return end
+    local text = table.concat(lines, "\n")
+    if #text > 1400 then
+        text = text:sub(1, 1400) .. "..."
+    end
+    pcall(function()
+        ui_message(text, 30, "AI spawn debug")
+    end)
+    --]]
 end
 
 local function shallowCopyDefaults(defaults, fromFile)
@@ -185,10 +218,13 @@ local function getMergedConfigForRace(race)
         "recoveryStuckSeconds", "recoveryCooldownSeconds", "despawnWreckedEnabled", "despawnWreckedDuringRace",
         "despawnUpsideDownSeconds", "despawnAfterRecoveries", "despawnTerminalStuckSeconds", "despawnAlwaysStuckSeconds",
         "delayedDespawnDefaultSeconds", "delayedDespawnStaggerSeconds",
-        "filterPoolByPowerMeetOrExceed", "aiPowerExceedCapPct",
+        "filterPoolByPowerMeetOrExceed", "aiPowerExceedCapPct", "aiPoolCloseAboveHp", "aiSpawnDebugUi",
         "pathRoad",
         "raceAccelScale", "raceThrottleKp",
-        "raceThrottleRateMult", "raceThrottleRecoveryMult", "targetSpeedSmootherRate"
+        "raceThrottleRateMult", "raceThrottleRecoveryMult", "targetSpeedSmootherRate",
+        "raceWideLineTrafficBlend", "raceWideLineLateralStartM", "raceWideLineLateralEndM",
+        "raceWideLineUndersteerRelax", "raceThrottleFloor", "raceHighSpeedThreshold", "raceHighSpeedThrottleFloor",
+        "raceCornerLineLiftMaxM", "raceCornerCurvStart", "raceCornerCurvEnd", "raceCornerLineLiftScale"
     }
     for _, k in ipairs(raceKeys) do
         if race[k] ~= nil then merged[k] = race[k] end
@@ -351,12 +387,22 @@ local function getVehiclePoolForHpClass(cfg, class)
     return cfg.defaultVehiclePool or DEFAULT_CONFIG.defaultVehiclePool
 end
 
--- Power unit conversion: vehicle Lua engine.maxPower is watts; we compare in HP. 1 mechanical HP = 745.7 W.
+-- Power unit conversion. 1 mechanical HP = 745.7 W.
 local WATTS_PER_HP = 745.7
 local function powerWattsToHp(watts)
     local w = tonumber(watts)
     if not w or w < 0 then return nil end
     return w / WATTS_PER_HP
+end
+
+-- Vehicle Lua engine.maxPower (and UI activeObjectLua) often returns HP-scale numbers (~400); large values are SI watts.
+-- Same >10000 threshold as getPowerHpFromConfig. Callbacks expect watts.
+local function liveMaxPowerRawToWatts(raw)
+    local r = tonumber(raw)
+    if not r or r < 0 then return nil end
+    if r == 0 then return 0 end
+    if r > 10000 then return r end
+    return r * WATTS_PER_HP
 end
 
 -- Extract power in HP from a config table. Uses top-level config["Power"] (like vehiclePerformance), then config.aggregates.Power.
@@ -394,6 +440,121 @@ local function getPowerForModelConfig(modelKey, configKey)
     if not configKey then return nil end
     local config = core_vehicles.getConfig(modelKey, configKey)
     return getPowerHpFromConfig(config)
+end
+
+-- peakHp (or hp / powerHp) on aiRacingConfig vehiclePool entries overrides core_vehicles lookup for matching and sanctioned fallback.
+local function getPowerHpForPoolEntry(entry, model, config)
+    if type(entry) == "table" then
+        local d = tonumber(entry.peakHp) or tonumber(entry.hp) or tonumber(entry.powerHp)
+        if d and d > 0 then return d end
+    end
+    if type(model) == "string" and type(config) == "string" then
+        return getPowerForModelConfig(model, config)
+    end
+    return nil
+end
+
+local STAGING_DEBUG_AI_SLOTS = 4
+
+local function stagingDebugConfigKeyFromPlayerSpawn(configKeyOrObj)
+    if type(configKeyOrObj) == "string" and configKeyOrObj ~= "" then
+        return configKeyOrObj
+    end
+    if type(configKeyOrObj) == "table" and type(configKeyOrObj.partConfigFilename) == "string" then
+        local fn = configKeyOrObj.partConfigFilename:match("([^/\\]+)%.pc$")
+        return fn or "default"
+    end
+    return nil
+end
+
+local function stagingDebugLivePlayerLine(powerDbg)
+    if type(powerDbg.liveWatts) == "number" and powerDbg.liveWatts > 0 then
+        local liveHp = powerWattsToHp(powerDbg.liveWatts)
+        if type(liveHp) == "number" and liveHp > 0 then
+            return string.format("live player power read = %.0f HP", liveHp)
+        end
+    end
+    if type(powerDbg.syncDetailsHp) == "number" and powerDbg.syncDetailsHp > 0 then
+        return string.format("live player power read = %.0f HP", powerDbg.syncDetailsHp)
+    end
+    return "live player power read = n/a"
+end
+
+local function stagingDebugHpForPlanSlot(spec, pModel, pConfigOrObj, powerDbg)
+    if type(spec) ~= "table" then return 0 end
+    if spec.clonePlayer then
+        local ck = stagingDebugConfigKeyFromPlayerSpawn(pConfigOrObj)
+        if type(pModel) == "string" and pModel ~= "" and ck then
+            local h = getPowerForModelConfig(pModel, ck)
+            if type(h) == "number" and h > 0 then return h end
+        end
+        if type(powerDbg.syncDetailsHp) == "number" and powerDbg.syncDetailsHp > 0 then
+            return powerDbg.syncDetailsHp
+        end
+        return 0
+    end
+    local ph = tonumber(spec.powerHp)
+    if ph and ph > 0 then return ph end
+    if type(spec.model) == "string" and type(spec.config) == "string" then
+        local h = getPowerForModelConfig(spec.model, spec.config)
+        if type(h) == "number" and h > 0 then return h end
+    end
+    return 0
+end
+
+local function stagingDebugConfigLabelForPlanSlot(spec, pModel, pConfigOrObj)
+    if type(spec) ~= "table" then return "—" end
+    if spec.clonePlayer then
+        local ck = stagingDebugConfigKeyFromPlayerSpawn(pConfigOrObj) or "default"
+        local m = (type(pModel) == "string" and pModel ~= "") and pModel or "player"
+        return string.format("%s/%s (clone)", m, ck)
+    end
+    if type(spec.model) == "string" and type(spec.config) == "string" then
+        return spec.model .. "/" .. spec.config
+    end
+    return "—"
+end
+
+local function buildStagingSpawnDebugLinesFromPlan(powerDbg, plan, pModel, pConfigOrObj)
+    local lines = { stagingDebugLivePlayerLine(powerDbg) }
+    for i = 1, STAGING_DEBUG_AI_SLOTS do
+        local spec = plan and plan[i]
+        if spec then
+            local label = stagingDebugConfigLabelForPlanSlot(spec, pModel, pConfigOrObj)
+            local h = stagingDebugHpForPlanSlot(spec, pModel, pConfigOrObj, powerDbg)
+            lines[#lines + 1] = string.format("AI %d = %s, %.0f HP", i, label, h)
+        else
+            lines[#lines + 1] = string.format("AI %d = —", i)
+        end
+    end
+    return lines
+end
+
+local function buildStagingSpawnDebugLinesFromRecentSpawned(powerDbg, spawnedCount)
+    local lines = { stagingDebugLivePlayerLine(powerDbg) }
+    local total = type(mSpawnedAiVehicleIds) == "table" and #mSpawnedAiVehicleIds or 0
+    local n = math.max(0, tonumber(spawnedCount) or 0)
+    local startIdx = (n > 0) and (total - n + 1) or (total + 1)
+    for i = 1, STAGING_DEBUG_AI_SLOTS do
+        local vehIdx = startIdx + i - 1
+        local vehId = mSpawnedAiVehicleIds[vehIdx]
+        if vehId and core_vehicles and core_vehicles.getVehicleDetails then
+            local details = core_vehicles.getVehicleDetails(vehId)
+            local model = details and details.current and details.current.key
+            local ckey = details and details.current and details.current.config_key
+            local hp = 0
+            if type(model) == "string" and type(ckey) == "string" then
+                hp = tonumber(getPowerForModelConfig(model, ckey)) or 0
+            end
+            if hp <= 0 and details and details.configs then
+                hp = tonumber(getPowerHpFromConfig(details.configs)) or 0
+            end
+            lines[#lines + 1] = string.format("AI %d = %s/%s, %.0f HP", i, tostring(model or "?"), tostring(ckey or "?"), hp)
+        else
+            lines[#lines + 1] = string.format("AI %d = —", i)
+        end
+    end
+    return lines
 end
 
 -- Filter raw pool to models with power <= playerPowerHp * (1 + capPct). Any amount below that is allowed; none over the cap.
@@ -457,10 +618,244 @@ local function filterVehiclePoolToAvailable(rawPool)
         local model = type(entry) == "table" and (entry.model or entry.vehicleModel) or nil
         local config = type(entry) == "table" and entry.config or nil
         if type(model) == "string" and available[model] and type(config) == "string" and config ~= "" then
-            table.insert(out, { model = model, config = config })
+            local row = { model = model, config = config }
+            if type(entry) == "table" then
+                local pk = tonumber(entry.peakHp) or tonumber(entry.hp) or tonumber(entry.powerHp)
+                if pk and pk > 0 then row.peakHp = pk end
+            end
+            table.insert(out, row)
         end
     end
     return out
+end
+
+-- Order of cfg.vehiclePool tiers when merging upward for AI power matching (soft class ceiling).
+local VEHICLE_POOL_CLASS_ORDER = { "stock", "modified", "super", "open" }
+
+local function vehiclePoolClassOrderIndex(class)
+    if type(class) ~= "string" then return 1 end
+    for i, c in ipairs(VEHICLE_POOL_CLASS_ORDER) do
+        if c == class then return i end
+    end
+    return 1
+end
+
+-- Concatenate vehiclePool entries from startClass through open, deduped by model+config.
+local function mergeVehiclePoolFromClassUpward(vehiclePool, startClass)
+    local out = {}
+    if type(vehiclePool) ~= "table" then return out end
+    local seen = {}
+    local from = vehiclePoolClassOrderIndex(startClass)
+    for i = from, #VEHICLE_POOL_CLASS_ORDER do
+        local tier = VEHICLE_POOL_CLASS_ORDER[i]
+        local tierPool = vehiclePool[tier]
+        if type(tierPool) == "table" then
+            for _, entry in ipairs(tierPool) do
+                local model = type(entry) == "table" and (entry.model or entry.vehicleModel) or nil
+                local config = type(entry) == "table" and entry.config or nil
+                if type(model) == "string" and type(config) == "string" and config ~= "" then
+                    local key = model .. "\0" .. config
+                    if not seen[key] then
+                        seen[key] = true
+                        table.insert(out, entry)
+                    end
+                end
+            end
+        end
+    end
+    return out
+end
+
+-- buildCloseAbovePlan: slot list of { model, config } or { clonePlayer = true }. HP in (playerHp, playerHp+closeAboveHp]; else one next-higher + clones.
+-- Second return is debug metadata for aiSpawnDebugUi.
+local function buildCloseAbovePlan(available, playerHp, requestedCount, closeAboveHp)
+    local plan = {}
+    local dbg = {
+        branch = "none",
+        availableCount = type(available) == "table" and #available or 0,
+        playerHpUsed = 0,
+        closeAboveCap = tonumber(closeAboveHp) or 50,
+        bandWindow = "",
+        bandUniqueCount = 0,
+        bandList = {},
+        resolvedRowCount = 0,
+        resolvedSample = {},
+        nextCar = nil,
+    }
+    if type(available) ~= "table" or type(requestedCount) ~= "number" or requestedCount < 1 then
+        dbg.branch = "invalid_args"
+        return plan, dbg
+    end
+    local ph = type(playerHp) == "number" and playerHp or 0
+    if ph < 0 then ph = 0 end
+    dbg.playerHpUsed = ph
+    local cap = tonumber(closeAboveHp) or 50
+    if cap < 1 then cap = 1 end
+    dbg.closeAboveCap = cap
+    dbg.bandWindow = string.format("(%.0f, %.0f]", ph, ph + cap)
+
+    local rows = {}
+    for _, entry in ipairs(available) do
+        local model = type(entry) == "table" and (entry.model or entry.vehicleModel) or nil
+        local config = type(entry) == "table" and entry.config or nil
+        if type(model) == "string" and type(config) == "string" and config ~= "" then
+            local aiHp = getPowerHpForPoolEntry(entry, model, config)
+            if type(aiHp) == "number" and aiHp > 0 then
+                table.insert(rows, { model = model, config = config, powerHp = aiHp })
+            end
+        end
+    end
+    dbg.resolvedRowCount = #rows
+    for i = 1, math.min(#rows, 14) do
+        local r = rows[i]
+        table.insert(dbg.resolvedSample, string.format("%s/%s=%.0f", r.model, r.config, r.powerHp))
+    end
+    if #rows > 14 then
+        table.insert(dbg.resolvedSample, string.format("... +%d more", #rows - 14))
+    end
+
+    local band = {}
+    for _, r in ipairs(rows) do
+        if r.powerHp > ph and r.powerHp <= ph + cap then
+            table.insert(band, r)
+        end
+    end
+    table.sort(band, function(a, b)
+        if a.powerHp ~= b.powerHp then return a.powerHp < b.powerHp end
+        return (a.model or "") < (b.model or "")
+    end)
+
+    local seen = {}
+    local unique = {}
+    for _, r in ipairs(band) do
+        local k = (r.model or "") .. "\0" .. (r.config or "")
+        if not seen[k] then
+            seen[k] = true
+            table.insert(unique, r)
+            table.insert(dbg.bandList, string.format("%s/%s %.0fHP", r.model, r.config, r.powerHp))
+        end
+    end
+    dbg.bandUniqueCount = #unique
+
+    if #unique >= 1 then
+        dbg.branch = "band_cycle"
+        for i = 1, requestedCount do
+            local r = unique[((i - 1) % #unique) + 1]
+            table.insert(plan, { model = r.model, config = r.config, powerHp = r.powerHp })
+        end
+        return plan, dbg
+    end
+
+    local above = {}
+    for _, r in ipairs(rows) do
+        if r.powerHp > ph then
+            table.insert(above, r)
+        end
+    end
+    if #above == 0 then
+        dbg.branch = "all_clones_no_pool_above"
+        for _ = 1, requestedCount do
+            table.insert(plan, { clonePlayer = true })
+        end
+        return plan, dbg
+    end
+    table.sort(above, function(a, b)
+        if a.powerHp ~= b.powerHp then return a.powerHp < b.powerHp end
+        return (a.model or "") < (b.model or "")
+    end)
+    local pick = above[1]
+    dbg.branch = "fallback_one_pool_rest_clones"
+    dbg.nextCar = string.format("%s/%s %.0fHP", pick.model, pick.config, pick.powerHp)
+    table.insert(plan, { model = pick.model, config = pick.config, powerHp = pick.powerHp })
+    for _ = 2, requestedCount do
+        table.insert(plan, { clonePlayer = true })
+    end
+    return plan, dbg
+end
+
+-- Model + config for spawning AI clones (inventory table when available).
+local function resolvePlayerCloneSpawn()
+    local vehId = be and be.getPlayerVehicleID and be:getPlayerVehicleID(0)
+    if vehId and career_modules_inventory and career_modules_inventory.getInventoryIdFromVehicleId and career_modules_inventory.getVehicle then
+        local inventoryId = career_modules_inventory.getInventoryIdFromVehicleId(vehId)
+        if inventoryId then
+            local vehInfo = career_modules_inventory.getVehicle(inventoryId)
+            if vehInfo and vehInfo.model and vehInfo.config then
+                return vehInfo.model, vehInfo.config
+            end
+        end
+    end
+    return M.getPlayerVehicleModelAndConfig()
+end
+
+-- Execute a staging plan: pool .pc rows or player-clone slots (inventory config when available).
+local function spawnStagingPlan(raceName, race, facilityName, slotPlan, playerModel, playerConfigOrObj)
+    local cfg = getCurrentLevelConfig()
+    if cfg.enabled == false then return 0 end
+    if type(slotPlan) ~= "table" or #slotPlan == 0 then return 0 end
+    cancelDelayedDespawn()
+    local spots = loadStagingSpots()
+    if not spots or #spots == 0 then return 0 end
+    local requestedCount = (race and race.aiCount) or cfg.maxSpawnCount or 1
+    local n = math.max(0, math.min(#spots, requestedCount, #slotPlan))
+    if n <= 0 then return 0 end
+
+    local function configForPlayerSpawn(modelKey, configKeyOrObj)
+        if type(configKeyOrObj) == "table" then
+            if configKeyOrObj.partConfigFilename and type(configKeyOrObj.partConfigFilename) == "string" then
+                return configKeyOrObj.partConfigFilename
+            elseif configKeyOrObj.format == 4 then
+                return configKeyOrObj
+            end
+        end
+        local configOpt = (type(configKeyOrObj) == "string" and configKeyOrObj ~= "") and configKeyOrObj or "default"
+        return "vehicles/" .. modelKey .. "/" .. configOpt .. ".pc"
+    end
+
+    local spawned = 0
+    for i = 1, n do
+        local spec = slotPlan[i]
+        local spot = spots[i]
+        if spec and spot and spot.pos and spot.rot then
+            local modelKey, configForSpawn
+            if spec.clonePlayer then
+                modelKey = playerModel
+                if type(modelKey) == "string" and modelKey ~= "" then
+                    configForSpawn = configForPlayerSpawn(modelKey, playerConfigOrObj)
+                end
+            elseif type(spec.model) == "string" and spec.model ~= "" and type(spec.config) == "string" and spec.config ~= "" then
+                modelKey = spec.model
+                configForSpawn = "vehicles/" .. modelKey .. "/" .. spec.config .. ".pc"
+            end
+            if modelKey and configForSpawn then
+                local pos = vec3(spot.pos[1], spot.pos[2], spot.pos[3])
+                local rot = quat(spot.rot[1], spot.rot[2], spot.rot[3], spot.rot[4])
+                local spawnOptions = { pos = pos, rot = rot, config = configForSpawn, autoEnterVehicle = false }
+                local ok, veh = pcall(function() return core_vehicles.spawnNewVehicle(modelKey, spawnOptions) end)
+                if ok and veh and veh.getID then
+                    local vehId = veh:getID()
+                    table.insert(mSpawnedAiVehicleIds, vehId)
+                    spawned = spawned + 1
+                    if extensions.core_vehicle_colors and extensions.core_vehicle_colors.setVehicleColor then
+                        pcall(function()
+                            extensions.core_vehicle_colors.setVehicleColor(0, pickRandomAiColor(), vehId)
+                        end)
+                    end
+                    local vehObj = be:getObjectByID(vehId)
+                    if vehObj then
+                        vehObj:queueLuaCommand("if not driver then extensions.load('driver') end")
+                        vehObj:queueLuaCommand("if not ai then extensions.load('ai') end")
+                        vehObj:queueLuaCommand("if ai and ai.setMode then ai.setMode('stop') end")
+                        vehObj:queueLuaCommand("input.event('parkingbrake', 1, 1)")
+                        if cfg.startEngineOnSpawn ~= false then
+                            queueEngineStart(vehObj)
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return spawned
 end
 
 -- Pick N entries from class pool: sort by closest power to playerHp, then one per model first, then fill. Random among ties. Returns list of { model, config }.
@@ -709,11 +1104,12 @@ function M.spawnForStaging(raceName, race, facilityName)
     return spawnWithPool(raceName, race, facilityName, rawPool)
 end
 
--- Spawn AI with similar power to the player vehicle: reads player HP via getPlayerVehiclePowerReliable, picks HP class (D/C/B/A), then spawns from vehiclePoolByHpClass[class] or defaultVehiclePool. Calls callback(spawnedCount).
--- When cfg.vehiclePool is set: uses stock/modified/super by HP (<320, 320-550, >550), picks closest match with one per model then fill, spawns model+config.
+-- Spawn AI with similar power to the player vehicle: live HP via getPlayerVehiclePowerReliable(..., { preferLive = true }), then legacy D/C/B/A pool if no vehiclePool.
+-- When cfg.vehiclePool is set: merge tiers from effective HP class upward; spawn only configs with HP in (player, player+aiPoolCloseAboveHp], cycling distinct configs to fill aiCount; if none in band, 1× next-higher pool car + player clones (inventory config when available).
 -- When spawnSameVehicleAsPlayer is true: spawns the player's exact model+config.
--- poolReferenceHp: optional HP (not watts); when set, skip live player read and use this for class / pool matching (e.g. sanctioned class HP max).
-function M.spawnForStagingWithPlayerHp(raceName, race, facilityName, callback, poolReferenceHp)
+-- poolReferenceHp: optional HP when player power cannot be read and there is no sanctioned spawn context (e.g. freeroam).
+-- sanctionedSpawnCtx: when player HP unknown, effective HP = classHpMax for the same vehiclePool close-above rule (full pool merged from stock).
+function M.spawnForStagingWithPlayerHp(raceName, race, facilityName, callback, poolReferenceHp, sanctionedSpawnCtx)
     if type(callback) ~= "function" then return end
     local cfg = race and getMergedConfigForRace(race) or getCurrentLevelConfig()
     if cfg.enabled == false then
@@ -742,34 +1138,62 @@ function M.spawnForStagingWithPlayerHp(raceName, race, facilityName, callback, p
             return
         end
     end
-    local function spawnFromPowerHp(powerHp)
+    local function spawnFromPowerHp(powerHp, powerDbg)
+        powerDbg = type(powerDbg) == "table" and powerDbg or {}
         local hp = type(powerHp) == "number" and powerHp or 0
+        local requestedCount = (race and race.aiCount) or cfg.maxSpawnCount or 4
+        local closeAbove = tonumber(cfg.aiPoolCloseAboveHp) or tonumber(DEFAULT_CONFIG.aiPoolCloseAboveHp) or 50
+        local pModel, pConfig = resolvePlayerCloneSpawn()
+
         if type(cfg.vehiclePool) == "table" and type(cfg.vehiclePool.stock) == "table" then
-            local class = getClassFromHpForVehiclePool(hp)
-            local classPool = cfg.vehiclePool[class] or cfg.vehiclePool.stock
-            local available = type(classPool) == "table" and classPool or {}
-            if #available > 0 then
-                local requestedCount = (race and race.aiCount) or cfg.maxSpawnCount or 4
-                local list = pickVehiclePoolByClosestWithVariety(available, hp, requestedCount)
-                local spawned = spawnWithModelConfigList(raceName, race, facilityName, list)
-                callback(spawned)
-                return
+            local effHp = hp
+            if effHp <= 0 and type(sanctionedSpawnCtx) == "table" then
+                local hi = tonumber(sanctionedSpawnCtx.classHpMax)
+                if hi and hi > 0 then
+                    effHp = hi
+                end
+            end
+            if effHp > 0 then
+                local startClass = getClassFromHpForVehiclePool(effHp)
+                local merged = mergeVehiclePoolFromClassUpward(cfg.vehiclePool, startClass)
+                local available = filterVehiclePoolToAvailable(merged)
+                if #available > 0 then
+                    local plan = buildCloseAbovePlan(available, effHp, requestedCount, closeAbove)
+                    if #plan > 0 then
+                        local spawned = spawnStagingPlan(raceName, race, facilityName, plan, pModel, pConfig)
+                        if aiSpawnDebugEnabled(cfg) then
+                            showAiSpawnDebugUi(cfg, buildStagingSpawnDebugLinesFromPlan(powerDbg, plan, pModel, pConfig))
+                        end
+                        callback(spawned)
+                        return
+                    end
+                end
             end
         end
         local class = getClassFromHp(hp)
         local rawPool = getVehiclePoolForHpClass(cfg, class)
         local pool = filterPoolByPower(rawPool, hp, cfg)
         local spawned = spawnWithPool(raceName, race, facilityName, pool)
+        if aiSpawnDebugEnabled(cfg) then
+            showAiSpawnDebugUi(cfg, buildStagingSpawnDebugLinesFromRecentSpawned(powerDbg, spawned))
+        end
         callback(spawned)
-    end
-    if type(poolReferenceHp) == "number" and poolReferenceHp > 0 then
-        spawnFromPowerHp(poolReferenceHp)
-        return
     end
     M.getPlayerVehiclePowerReliable(function(powerWatts, weight)
         local powerHp = (type(powerWatts) == "number" and powerWatts > 0) and powerWattsToHp(powerWatts) or nil
-        spawnFromPowerHp(powerHp or 0)
-    end)
+        local hp = powerHp
+        local powerDbg = {
+            liveWatts = powerWatts,
+            syncDetailsHp = M.getPlayerVehiclePower(),
+            usedPoolRefHp = false,
+        }
+        local sanctionedActive = type(sanctionedSpawnCtx) == "table" and tonumber(sanctionedSpawnCtx.classHpMax) and tonumber(sanctionedSpawnCtx.classHpMax) > 0
+        if (not hp or hp <= 0) and not sanctionedActive and type(poolReferenceHp) == "number" and poolReferenceHp > 0 then
+            hp = poolReferenceHp
+            powerDbg.usedPoolRefHp = true
+        end
+        spawnFromPowerHp(hp or 0, powerDbg)
+    end, { preferLive = true })
 end
 
 -- Build script path: first point = vehicle position + dir + up (so game does not move the car). Then track points from nearest, close loop.
@@ -857,12 +1281,52 @@ local function getRacingParameters(cfg, race)
     if trc == nil or trc <= 0 then
         trc = 1.9
     end
-    return {
+    local params = {
         raceAccelScale = scale,
         raceThrottleKp = kp,
         raceThrottleRateMult = trm,
         raceThrottleRecoveryMult = trc
     }
+    local rwt = tonumber(cfg.raceWideLineTrafficBlend)
+    if rwt == nil then rwt = tonumber(DEFAULT_CONFIG.raceWideLineTrafficBlend) or 0.4 end
+    if rwt > 0 then
+        params.raceWideLineTrafficBlend = rwt
+        local s = tonumber(cfg.raceWideLineLateralStartM)
+        params.raceWideLineLateralStartM = (s ~= nil and s > 0) and s or (tonumber(DEFAULT_CONFIG.raceWideLineLateralStartM) or 0.9)
+        local e = tonumber(cfg.raceWideLineLateralEndM)
+        params.raceWideLineLateralEndM = (e ~= nil and e > 0) and e or (tonumber(DEFAULT_CONFIG.raceWideLineLateralEndM) or 2.6)
+    end
+    local rur = tonumber(cfg.raceWideLineUndersteerRelax)
+    if rur == nil then rur = tonumber(DEFAULT_CONFIG.raceWideLineUndersteerRelax) or 0.45 end
+    if rur > 0 then
+        params.raceWideLineUndersteerRelax = rur
+        if not params.raceWideLineLateralStartM then
+            params.raceWideLineLateralStartM = tonumber(cfg.raceWideLineLateralStartM) or tonumber(DEFAULT_CONFIG.raceWideLineLateralStartM) or 0.9
+            params.raceWideLineLateralEndM = tonumber(cfg.raceWideLineLateralEndM) or tonumber(DEFAULT_CONFIG.raceWideLineLateralEndM) or 2.6
+        end
+    end
+    local floor = tonumber(cfg.raceThrottleFloor)
+    if floor ~= nil and floor > 0 and floor < 1 then
+        params.raceThrottleFloor = floor
+        local hi = tonumber(cfg.raceHighSpeedThreshold)
+        if hi ~= nil and hi > 0 then
+            params.raceHighSpeedThreshold = hi
+            local hif = tonumber(cfg.raceHighSpeedThrottleFloor)
+            if hif ~= nil and hif > 0 and hif < 1 then
+                params.raceHighSpeedThrottleFloor = hif
+            end
+        end
+    end
+    local rcl = tonumber(cfg.raceCornerLineLiftMaxM)
+    if rcl == nil then rcl = tonumber(DEFAULT_CONFIG.raceCornerLineLiftMaxM) or 0.22 end
+    if rcl > 0 then
+        params.raceCornerLineLiftMaxM = rcl
+        params.raceCornerCurvStart = tonumber(cfg.raceCornerCurvStart) or tonumber(DEFAULT_CONFIG.raceCornerCurvStart) or 0.022
+        params.raceCornerCurvEnd = tonumber(cfg.raceCornerCurvEnd) or tonumber(DEFAULT_CONFIG.raceCornerCurvEnd) or 0.10
+        local rcs = tonumber(cfg.raceCornerLineLiftScale)
+        if rcs ~= nil then params.raceCornerLineLiftScale = rcs end
+    end
+    return params
 end
 
 -- Freeze or unfreeze the player vehicle (e.g. during countdown until GO, same moment as AI release). Uses same pattern as bus.lua.
@@ -1432,18 +1896,82 @@ local XP_FOR_CLASS = { D = 0, C = 1500, B = 5000, A = 15000 }
 local pendingPowerCallback = nil
 local pendingPowerVehId = nil  -- used by Option B retry so we can re-queue on same vehicle
 local POWER_REQUEST_MAX_RETRIES = 20
--- Vehicle script: read engine.maxPower (watts); if 0 and retry < max, vehicle calls onPlayerVehiclePowerWeightRetry(retry) so GE re-queues (Option B).
+
+-- Fresh live HP (from vehicle VM) for staging UI and podium cap; never use stale sync alone for podium.
+local mCachedLivePlayerHp = nil
+local mCachedLivePlayerVehId = nil
+local mCachedLivePlayerClock = nil
+local LIVE_HP_CACHE_STALE_SEC = 90
+
+local function invalidateLiveHpCacheIfVehicleChanged()
+    if not be or not be.getPlayerVehicleID then return end
+    local pid = be:getPlayerVehicleID(0)
+    if not pid or not mCachedLivePlayerVehId or pid ~= mCachedLivePlayerVehId then
+        mCachedLivePlayerHp = nil
+        mCachedLivePlayerVehId = nil
+        mCachedLivePlayerClock = nil
+    end
+end
+
+local function liveHpSampleIsTrusted()
+    invalidateLiveHpCacheIfVehicleChanged()
+    if type(mCachedLivePlayerHp) ~= "number" or mCachedLivePlayerHp <= 0 then return false end
+    if not mCachedLivePlayerClock then return false end
+    local clk = (os and os.clock) and os.clock() or 0
+    return (clk - mCachedLivePlayerClock) < LIVE_HP_CACHE_STALE_SEC
+end
+
+local function storeLiveHpCacheForVehicle(vehId, powerWatts)
+    if not vehId or not be or not be.getPlayerVehicleID or vehId ~= be:getPlayerVehicleID(0) then return end
+    if type(powerWatts) ~= "number" or powerWatts <= 0 then return end
+    local hp = powerWattsToHp(powerWatts)
+    if type(hp) ~= "number" or hp <= 0 then return end
+    mCachedLivePlayerHp = hp
+    mCachedLivePlayerVehId = vehId
+    mCachedLivePlayerClock = os.clock()
+end
+-- Vehicle script: max maxPower over all "engine" devices (raw may be HP-scale or watts; GE normalizes in onPlayerVehiclePowerWeight), beam stats weight, both required before success.
+-- Retries until power>0 and weight>0 or max retries (then report last values).
 M._powerRequestScriptTemplate = [[
 local retry = %d
+local maxR = %d
 local power, weight = 0, 0
-local engine = powertrain.getDevicesByCategory("engine")[1]
+local engines = powertrain.getDevicesByCategory("engine")
+if engines then
+  for _, eng in ipairs(engines) do
+    if eng and eng.maxPower then
+      local mp = eng.maxPower or 0
+      if mp > power then power = mp end
+    end
+  end
+end
 local stats = obj:calcBeamStats()
-if engine then power = engine.maxPower or 0 end
 if stats and stats.total_weight then weight = stats.total_weight end
-if power > 0 or retry >= %d then
+local ready = power > 0 and weight > 0
+if ready or retry >= maxR then
   obj:queueGameEngineLua("(function() local g = _G.career_modules_competitiveRace_aiRacers if g and type(g.onPlayerVehiclePowerWeight) == \"function\" then g.onPlayerVehiclePowerWeight(" .. tostring(power) .. "," .. tostring(weight) .. ") end end)()")
 else
   obj:queueGameEngineLua("(function() local g = _G.career_modules_competitiveRace_aiRacers if g and type(g.onPlayerVehiclePowerWeightRetry) == \"function\" then g.onPlayerVehiclePowerWeightRetry(" .. tostring(retry) .. ") end end)()")
+end
+]]
+
+-- One-shot VM read for staging UI refresh; does not use pendingPowerCallback (safe alongside AI spawn).
+M._livePowerCacheScript = [[
+local power, weight = 0, 0
+local engines = powertrain.getDevicesByCategory("engine")
+if engines then
+  for _, eng in ipairs(engines) do
+    if eng and eng.maxPower then
+      local mp = eng.maxPower or 0
+      if mp > power then power = mp end
+    end
+  end
+end
+local stats = obj:calcBeamStats()
+if stats and stats.total_weight then weight = stats.total_weight end
+if power > 0 and weight > 0 then
+  local vid = obj:getID()
+  obj:queueGameEngineLua("(function() local g=_G.career_modules_competitiveRace_aiRacers if g and type(g.ingestLivePowerCacheSample)==\"function\" then g.ingestLivePowerCacheSample(" .. tostring(vid) .. "," .. tostring(power) .. "," .. tostring(weight) .. ") end end)()")
 end
 ]]
 
@@ -1481,6 +2009,45 @@ function M.getPlayerVehicleModelAndConfig()
     return modelKey, configKey
 end
 
+-- GE entry from vehicle VM: updates live HP cache only (no pendingPowerCallback).
+function M.ingestLivePowerCacheSample(vid, powerRaw, weightRaw)
+    vid = tonumber(vid)
+    if not vid or not be or not be.getPlayerVehicleID or vid ~= be:getPlayerVehicleID(0) then return end
+    local pRaw = tonumber(powerRaw)
+    local wRaw = tonumber(weightRaw)
+    if not pRaw or not wRaw or wRaw <= 0 then return end
+    local p = liveMaxPowerRawToWatts(pRaw)
+    if not p or p <= 0 then return end
+    storeLiveHpCacheForVehicle(vid, p)
+end
+
+-- Staging UI: prefer fresh live sample; fall back to sync getVehicleDetails (display only).
+function M.getPlayerVehiclePowerForStagingUi()
+    if liveHpSampleIsTrusted() then
+        return mCachedLivePlayerHp, "live"
+    end
+    return M.getPlayerVehiclePower(), "sync"
+end
+
+-- Podium class cap: only when a trusted live sample exists; otherwise nil (fail open — do not use stale sync).
+function M.getPlayerVehiclePowerForPodiumCapCheck()
+    if liveHpSampleIsTrusted() then
+        return mCachedLivePlayerHp
+    end
+    return nil
+end
+
+-- Throttled from competitiveTrackFlow while staging UI is open; skipped if a reliable power request is in flight.
+function M.requestStagingUiLivePowerRefresh()
+    if pendingPowerCallback ~= nil then return end
+    if not be or not be.getPlayerVehicleID or not be.getObjectByID then return end
+    local vehId = be:getPlayerVehicleID(0)
+    if not vehId then return end
+    local vehObj = be:getObjectByID(vehId)
+    if not vehObj or not vehObj.queueLuaCommand then return end
+    vehObj:queueLuaCommand(M._livePowerCacheScript)
+end
+
 -- Sync: may return nil if power cannot be read (e.g. no vehicle). Returns power in HP (same as filter/comparison).
 function M.getPlayerVehiclePower()
     if not be or not be.getPlayerVehicleID then return nil end
@@ -1502,14 +2069,19 @@ function M.getPlayerVehiclePowerAndClass()
 end
 
 -- Called from vehicle Lua (queueGameEngineLua) or from UI (careerRequestPlayerPower response) with live power/weight.
+-- Power may be HP-scale or watts; normalize to watts before callback (see liveMaxPowerRawToWatts).
 function M.onPlayerVehiclePowerWeight(power, weight)
     M._powerRequestUiFallbackTimer = nil
     local cb = pendingPowerCallback
+    local vidForCache = pendingPowerVehId
     pendingPowerCallback = nil
     pendingPowerVehId = nil
     if type(cb) == "function" then
-        local p = (type(power) == "number") and power or nil
+        local p = (type(power) == "number") and liveMaxPowerRawToWatts(power) or nil
         local w = (type(weight) == "number") and weight or nil
+        if vidForCache and p and p > 0 then
+            storeLiveHpCacheForVehicle(vidForCache, p)
+        end
         cb(p, w)
     end
 end
@@ -1529,8 +2101,9 @@ function M.onPlayerVehiclePowerWeightRetry(retryCount)
     end
 end
 
--- Request live power/weight: try sync (Option A) first; else async with vehicle retry until engine ready (Option B). Always calls callback.
-function M.getPlayerVehiclePowerReliable(callback)
+-- Request live power/weight. opts.preferLive: skip sync getVehicleDetails; use vehicle queueLuaCommand only (tuning-shop style, no UI activeObjectLua).
+-- Default: Option A sync first, then Option C (UI) with vehicle fallback timer, else Option B vehicle-only.
+function M.getPlayerVehiclePowerReliable(callback, opts)
     if type(callback) ~= "function" then return end
     if not be or not be.getPlayerVehicleID or not be.getObjectByID then
         callback(nil, nil)
@@ -1542,21 +2115,24 @@ function M.getPlayerVehiclePowerReliable(callback)
         return
     end
 
-    -- Option A: try sync power from vehicle details first (no vehicle Lua / powertrain dependency).
-    local powerHp = M.getPlayerVehiclePower()
-    if type(powerHp) == "number" and powerHp > 0 then
-        local details = core_vehicles and core_vehicles.getVehicleDetails and core_vehicles.getVehicleDetails(vehId)
-        local weight = (details and details.configs and details.configs.total_weight) or (details and details.aggregates and details.aggregates.total_weight) or nil
-        callback(powerHp * WATTS_PER_HP, weight)
-        return
+    local preferLive = type(opts) == "table" and opts.preferLive == true
+
+    -- Option A: sync from vehicle details (fast but can be stale after parts/tuning until details refresh).
+    if not preferLive then
+        local powerHp = M.getPlayerVehiclePower()
+        if type(powerHp) == "number" and powerHp > 0 then
+            local details = core_vehicles and core_vehicles.getVehicleDetails and core_vehicles.getVehicleDetails(vehId)
+            local weight = (details and details.configs and details.configs.total_weight) or (details and details.aggregates and details.aggregates.total_weight) or nil
+            callback(powerHp * WATTS_PER_HP, weight)
+            return
+        end
     end
 
-    -- Option C: ask UI to read via bngApi.activeObjectLua (same as Doinks); UI calls onPlayerVehiclePowerWeight with result.
-    if guihooks and guihooks.trigger then
+    -- Option C: UI activeObjectLua (skipped for preferLive — unreliable vs explicit vehObj:queueLuaCommand on player id).
+    if not preferLive and guihooks and guihooks.trigger then
         pendingPowerCallback = callback
         pendingPowerVehId = vehId
         guihooks.trigger("careerRequestPlayerPower")
-        -- Fallback to Option B after delay in case UI is not loaded or does not respond.
         M._powerRequestUiFallbackTimer = os.clock()
         return
     end

@@ -26,6 +26,7 @@
   "scriptBootstrapDistance": 6,
   "filterPoolByPowerMeetOrExceed": true,
   "aiPowerExceedCapPct": 0.25,
+  "aiSpawnDebugUi": false,
   "raceAccelScale": 1.1,
   "raceThrottleKp": 1.12,
   "raceThrottleRateMult": 4,

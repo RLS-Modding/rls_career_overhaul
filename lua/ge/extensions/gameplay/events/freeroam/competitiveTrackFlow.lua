@@ -25,8 +25,10 @@ local mCompetitiveCountdownCancel = false
 local mPlayerStagingSpot = nil
 
 local SANCTIONED_PARKING_UI_PUSH_INTERVAL = 0.2
+local SANCTIONED_PARKING_LIVE_HP_REFRESH_INTERVAL = 2
 local mSanctionedParkingUiPhase = "hidden"
 local mSanctionedParkingUiPushClock = nil
+local mSanctionedParkingLiveRefreshClock = nil
 
 local PLAYER_STAGING_SPOT_NAME = "player_stage_track"
 local mPlayerStagingCornerMarkers = {}
@@ -378,6 +380,7 @@ end
 function M.leaveTrackFlowAfterRace()
     mSanctionedParkingUiPhase = "hidden"
     mSanctionedParkingUiPushClock = nil
+    mSanctionedParkingLiveRefreshClock = nil
     if guihooks and guihooks.trigger then
         guihooks.trigger("SanctionedParkingStagingUi", { visible = false })
     end
@@ -526,6 +529,10 @@ function M.prepareFreeroamAiForTrack(poolReferenceHpOverride, deferCountdown)
     if not refHp and gameplay_events_freContracts_sanctionedRacing and gameplay_events_freContracts_sanctionedRacing.getAiPoolReferenceHp then
         refHp = gameplay_events_freContracts_sanctionedRacing.getAiPoolReferenceHp()
     end
+    local sanctionedSpawnCtx = nil
+    if gameplay_events_freContracts_sanctionedRacing and gameplay_events_freContracts_sanctionedRacing.getAiSpawnSanctionedContext then
+        sanctionedSpawnCtx = gameplay_events_freContracts_sanctionedRacing.getAiSpawnSanctionedContext()
+    end
     local function afterAiSpawnCommit()
         mCompetitiveAwaitingAiSpawn = false
         mTrackGridAiSpawnWaitDeadline = nil
@@ -548,7 +555,7 @@ function M.prepareFreeroamAiForTrack(poolReferenceHpOverride, deferCountdown)
                 end
             end
             afterAiSpawnCommit()
-        end, refHp)
+        end, refHp, sanctionedSpawnCtx)
     elseif aiRacers.spawnForStaging then
         local spawned = tonumber(aiRacers.spawnForStaging(M.TRACK_RACE_ID, raceForAi, M.TRACK_RACE_ID)) or 0
         if spawned <= 0 then
@@ -670,15 +677,20 @@ end
 
 function M.buildSanctionedParkingUiPayload()
     local sr = gameplay_events_freContracts_sanctionedRacing
-    local hp = nil
-    if career_modules_competitiveRace_aiRacers and career_modules_competitiveRace_aiRacers.getPlayerVehiclePower then
-        hp = career_modules_competitiveRace_aiRacers.getPlayerVehiclePower()
+    local hp, hpSource = nil, nil
+    local ar = career_modules_competitiveRace_aiRacers
+    if ar and ar.getPlayerVehiclePowerForStagingUi then
+        hp, hpSource = ar.getPlayerVehiclePowerForStagingUi()
+    elseif ar and ar.getPlayerVehiclePower then
+        hp = ar.getPlayerVehiclePower()
+        hpSource = "sync"
     end
     local out = {
         phase = mSanctionedParkingUiPhase,
         awaitingSpawn = mCompetitiveAwaitingAiSpawn,
         spawnedAiCount = M.spawnedTrackAiCount(),
         playerHp = hp,
+        playerHpSource = hpSource,
     }
     if not sr or not sr.getOfferUiSnapshot then
         return out
@@ -710,6 +722,7 @@ function M.sanctionedParkingAbortStaging()
     if mSanctionedParkingUiPhase == "hidden" then return end
     mSanctionedParkingUiPhase = "hidden"
     mSanctionedParkingUiPushClock = nil
+    mSanctionedParkingLiveRefreshClock = nil
     if guihooks and guihooks.trigger then
         guihooks.trigger("SanctionedParkingStagingUi", { visible = false })
     end
@@ -723,6 +736,7 @@ end
 function M.clearSanctionedParkingStagingUi()
     mSanctionedParkingUiPhase = "hidden"
     mSanctionedParkingUiPushClock = nil
+    mSanctionedParkingLiveRefreshClock = nil
     if guihooks and guihooks.trigger then
         guihooks.trigger("SanctionedParkingStagingUi", { visible = false })
     end
@@ -770,6 +784,7 @@ function M.sanctionedParkingStartEvent()
     end
     mSanctionedParkingUiPhase = "hidden"
     mSanctionedParkingUiPushClock = nil
+    mSanctionedParkingLiveRefreshClock = nil
     if guihooks and guihooks.trigger then
         guihooks.trigger("SanctionedParkingStagingUi", { visible = false })
     end
@@ -825,6 +840,13 @@ function M.onUpdateParkingLoop()
             mSanctionedParkingUiPhase = "prompt"
         end
         local clk = (os and os.clock) and os.clock() or 0
+        if not mSanctionedParkingLiveRefreshClock or (clk - mSanctionedParkingLiveRefreshClock) >= SANCTIONED_PARKING_LIVE_HP_REFRESH_INTERVAL then
+            mSanctionedParkingLiveRefreshClock = clk
+            local ar = career_modules_competitiveRace_aiRacers
+            if ar and ar.requestStagingUiLivePowerRefresh then
+                ar.requestStagingUiLivePowerRefresh()
+            end
+        end
         if not mSanctionedParkingUiPushClock or (clk - mSanctionedParkingUiPushClock) >= SANCTIONED_PARKING_UI_PUSH_INTERVAL then
             mSanctionedParkingUiPushClock = clk
             pushSanctionedParkingGui()

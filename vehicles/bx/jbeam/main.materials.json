@@ -1,0 +1,41 @@
+{
+  "bx_headlight": {
+    "name": "bx_headlight",
+    "mapTo": "bx_headlight",
+    "class": "Material",
+    "Stages": [
+      {
+        "colorMap": "bx_lights_b.color"
+      },
+      {},
+      {},
+      {}
+    ],
+    "translucentBlendOp": "None"
+  },
+  "jv_bx_belts_chains": {
+    "name": "jv_bx_belts_chains",
+    "mapTo": "jv_bx_belts_chains",
+    "class": "Material",
+    "Stages": [
+      {
+        "diffuseColor": [
+          0.800000012,
+          0.800000012,
+          0.800000012,
+          1
+        ]
+      },
+      {
+        "diffuseColor": null
+      },
+      {
+        "diffuseColor": null
+      },
+      {
+        "diffuseColor": null
+      }
+    ],
+    "translucentBlendOp": "None"
+  }
+}
