@@ -184,6 +184,7 @@ end
 M.draw = draw
 M.ensureShoe = ensureShoe
 M.getShoeCount = function() return #shoe end
+M.getSessionBet = function() return session.bet end
 M.register = register
 M.open = open
 M.close = close

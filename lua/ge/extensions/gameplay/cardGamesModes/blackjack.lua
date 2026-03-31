@@ -174,6 +174,19 @@ local function stand()
   startDealerReveal()
 end
 
+local function stakeAmount()
+  if bet > 0 then
+    return bet
+  end
+  if phase == "resolved" and gameplay_cardGames and gameplay_cardGames.getSessionBet then
+    local s = gameplay_cardGames.getSessionBet()
+    if type(s) == "number" and s > 0 then
+      return s
+    end
+  end
+  return bet
+end
+
 local function serializeHand(hand)
   local out = {}
   for i, c in ipairs(hand) do
@@ -206,6 +219,16 @@ local function getState()
     dvLabel = tostring(handValue(dealerHand, true))
   end
 
+  local stake = stakeAmount()
+  local payout = 0
+  if result == "blackjack" then
+    payout = math.floor(stake * 2.5)
+  elseif result == "win" or result == "dealer_bust" then
+    payout = stake * 2
+  elseif result == "push" then
+    payout = stake
+  end
+
   return {
     gameId = "blackjack",
     phase = phase,
@@ -214,7 +237,8 @@ local function getState()
     playerHandValue = pvLabel,
     dealerHandValue = dvLabel,
     result = result,
-    bet = bet,
+    bet = stake,
+    payout = payout,
   }
 end
 

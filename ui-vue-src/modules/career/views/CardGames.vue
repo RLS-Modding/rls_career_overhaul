@@ -54,7 +54,7 @@
 
     <!-- Blackjack controls -->
     <div v-if="state.gameId === 'blackjack' && state.mode && state.mode.phase === 'player_turn'" class="game-controls bj-controls">
-      <button class="game-btn" @click="doAction('hit')">Hit</button>
+      <button class="game-btn game-btn--primary" @click="doAction('hit')">Hit</button>
       <button class="game-btn" @click="doAction('stand')">Stand</button>
     </div>
 
@@ -62,8 +62,9 @@
     <div v-if="state.gameId === 'blackjack' && state.mode && state.mode.phase === 'resolved'" class="game-controls bj-result">
       <div class="bj-result-modal">
         <div class="result-text bj-result-text">{{ bjResultLabel }}</div>
+        <div v-if="bjPayoutLabel" class="rtb-result-amount">{{ bjPayoutLabel }}</div>
         <div class="bj-result-actions">
-          <button class="game-btn" @click="newRound">New Round</button>
+          <button class="game-btn game-btn--primary" @click="newRound">New Round</button>
           <button class="game-btn" @click="switchGames">Switch Games</button>
           <button class="game-btn" @click="leaveTable">Leave Table</button>
         </div>
@@ -76,22 +77,22 @@
       <div class="choice-timer" v-if="timerDisplay !== null">{{ timerDisplay }}s</div>
       <div class="choice-buttons">
         <template v-if="state.mode.choiceKind === 'redblack'">
-          <button class="game-btn" @click="doAction('choose', 'red')">Red</button>
-          <button class="game-btn" @click="doAction('choose', 'black')">Black</button>
+          <button class="game-btn game-btn--primary" @click="doAction('choose', 'red')">Red</button>
+          <button class="game-btn game-btn--primary" @click="doAction('choose', 'black')">Black</button>
         </template>
         <template v-else-if="state.mode.choiceKind === 'highlow'">
-          <button class="game-btn" @click="doAction('choose', 'higher')">Higher</button>
-          <button class="game-btn" @click="doAction('choose', 'lower')">Lower</button>
+          <button class="game-btn game-btn--primary" @click="doAction('choose', 'higher')">Higher</button>
+          <button class="game-btn game-btn--primary" @click="doAction('choose', 'lower')">Lower</button>
         </template>
         <template v-else-if="state.mode.choiceKind === 'inout'">
-          <button class="game-btn" @click="doAction('choose', 'inside')">Inside</button>
-          <button class="game-btn" @click="doAction('choose', 'outside')">Outside</button>
+          <button class="game-btn game-btn--primary" @click="doAction('choose', 'inside')">Inside</button>
+          <button class="game-btn game-btn--primary" @click="doAction('choose', 'outside')">Outside</button>
         </template>
         <template v-else-if="state.mode.choiceKind === 'suit'">
-          <button class="game-btn" @click="doAction('choose', 'spades')">Spades</button>
-          <button class="game-btn" @click="doAction('choose', 'hearts')">Hearts</button>
-          <button class="game-btn" @click="doAction('choose', 'clubs')">Clubs</button>
-          <button class="game-btn" @click="doAction('choose', 'diamonds')">Diamonds</button>
+          <button class="game-btn game-btn--primary" @click="doAction('choose', 'spades')">Spades</button>
+          <button class="game-btn game-btn--primary" @click="doAction('choose', 'hearts')">Hearts</button>
+          <button class="game-btn game-btn--primary" @click="doAction('choose', 'clubs')">Clubs</button>
+          <button class="game-btn game-btn--primary" @click="doAction('choose', 'diamonds')">Diamonds</button>
         </template>
       </div>
       <button class="game-btn end-btn" @click="doAction('endGame')">{{ rtbForfeitLabel }}</button>
@@ -103,7 +104,7 @@
         <div class="result-text bj-result-text">{{ rtbResultLabel }}</div>
         <div v-if="rtbResultAmountLabel" class="rtb-result-amount">{{ rtbResultAmountLabel }}</div>
         <div class="bj-result-actions">
-          <button class="game-btn" @click="newRound">Play Again</button>
+          <button class="game-btn game-btn--primary" @click="newRound">Play Again</button>
           <button class="game-btn" @click="switchGames">Switch Games</button>
           <button class="game-btn" @click="leaveTable">{{ rtbExitLabel }}</button>
         </div>
@@ -129,15 +130,15 @@
           <button class="bet-btn" @click="adjustBet(100)">+100</button>
           <button class="bet-btn" @click="doubleBet">x2</button>
         </div>
-        <button class="game-btn deal-btn" @click="confirmBet">Deal</button>
+        <button class="game-btn game-btn--primary deal-btn" @click="confirmBet">Deal</button>
       </div>
     </div>
 
     <!-- Game selector when idle -->
     <div v-if="state.phase === 'idle' && !state.gameId" class="game-selector">
       <div class="selector-buttons">
-        <button class="game-btn" @click="openGame('blackjack')">Blackjack</button>
-        <button class="game-btn" @click="openGame('rideTheBus')">Ride the Bus</button>
+        <button class="game-btn game-btn--primary" @click="openGame('blackjack')">Blackjack</button>
+        <button class="game-btn game-btn--primary" @click="openGame('rideTheBus')">Ride the Bus</button>
       </div>
       <button class="game-btn leave-table-btn" @click="leaveTable">Leave Table</button>
     </div>
@@ -171,6 +172,7 @@ const CARD_W = 473.005
 const CARD_H = 661.017
 const CARD_GAP = 120
 const DEALER_CARD_GAP = 380
+const DEALER_HIT_OVERLAP = 80
 
 const PLAYER_ANCHOR = { x: 1589.629, y: 1555.031 }
 const DEALER_ANCHOR = { x: 1382.888, y: 182.865 }
@@ -325,7 +327,12 @@ function playerCardStyle(index) {
 }
 
 function dealerCardStyle(index) {
-  const x = DEALER_ANCHOR.x + index * DEALER_CARD_GAP
+  let x
+  if (index <= 1) {
+    x = DEALER_ANCHOR.x + index * DEALER_CARD_GAP
+  } else {
+    x = DEALER_ANCHOR.x + DEALER_CARD_GAP + (index - 1) * DEALER_HIT_OVERLAP
+  }
   return cardStyle(x, DEALER_ANCHOR.y)
 }
 
@@ -519,6 +526,30 @@ const bjResultLabel = computed(() => {
   return BJ_RESULTS[state.mode.result] || state.mode.result || ""
 })
 
+function bjStakeAmount() {
+  const mb = Number(state.mode?.bet)
+  if (Number.isFinite(mb) && mb > 0) return mb
+  const sb = Number(state.bet)
+  return Number.isFinite(sb) && sb > 0 ? sb : 0
+}
+
+const bjPayoutLabel = computed(() => {
+  if (!state.mode || !state.mode.result) return ""
+  const stake = bjStakeAmount()
+  const r = state.mode.result
+  let total = Number(state.mode.payout)
+  if (!Number.isFinite(total) || total <= 0) {
+    if (r === "blackjack") total = Math.floor(stake * 2.5)
+    else if (r === "win" || r === "dealer_bust") total = stake * 2
+    else if (r === "push") total = stake
+    else total = 0
+  }
+  if (r === "blackjack") return `Blackjack pays $${total} (3:2)`
+  if (r === "win" || r === "dealer_bust") return `Collected $${total}`
+  if (r === "push") return `Bet returned $${total}`
+  return ""
+})
+
 const rtbResultLabel = computed(() => {
   if (!state.mode) return ""
   return RTB_RESULTS[state.mode.result] || state.mode.result || ""
@@ -684,10 +715,12 @@ function onBetInput() {
 
 function onBetInputFocus() {
   betInputFocused.value = true
+  try { lua.setCEFTyping(true) } catch (_) {}
 }
 
 function commitBetInput() {
   betInputFocused.value = false
+  try { lua.setCEFTyping(false) } catch (_) {}
   const val = parseInt(betInput.value, 10)
   if (isNaN(val)) {
     betInput.value = String(state.bet || 100)
@@ -811,7 +844,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.6rem;
   z-index: 10;
 }
 
@@ -820,6 +853,7 @@ onUnmounted(() => {
   left: 50%;
   transform: translateX(-50%);
   flex-direction: row;
+  gap: 0.6rem;
 }
 
 .bj-result {
@@ -831,24 +865,27 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
-  min-width: 24rem;
-  padding: 1.5rem 2rem;
-  background: rgba(20, 20, 40, 0.92);
-  border: 1px solid rgba(239, 198, 109, 0.35);
+  gap: 1.2rem;
+  min-width: 22rem;
+  padding: 2rem 2.5rem;
+  background: rgba(11, 15, 25, 0.94);
+  border: 1px solid rgba(71, 85, 105, 0.4);
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
 }
 
 .bj-result-text {
-  font-size: 2rem;
+  font-size: 1.8rem;
+  font-weight: 500;
+  color: #fff;
+  letter-spacing: 0.01em;
 }
 
 .bj-result-actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 0.75rem;
+  gap: 0.55rem;
 }
 
 .rtb-controls {
@@ -863,66 +900,69 @@ onUnmounted(() => {
 }
 
 .choice-label {
-  font-size: 1.2rem;
-  color: #efc66d;
-  font-weight: bold;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 400;
   text-align: center;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .choice-timer {
-  font-size: 2rem;
-  color: #ff6b6b;
-  font-weight: bold;
+  font-size: 2.2rem;
+  color: #f87171;
+  font-weight: 500;
   text-align: center;
 }
 
 .choice-buttons {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.55rem;
   flex-wrap: wrap;
   justify-content: center;
 }
 
 .result-text {
-  font-size: 1.6rem;
-  color: #efc66d;
-  font-weight: bold;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+  font-size: 1.5rem;
+  color: #fff;
+  font-weight: 500;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5);
 }
 
 .rtb-result-amount {
-  font-size: 1.1rem;
-  color: #fff;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.7);
   text-align: center;
+  font-weight: 400;
 }
 
 .game-btn {
-  padding: 0.6rem 1.5rem;
-  border: 1px solid #7f6825;
-  border-radius: 6px;
-  background: #4f6b2d;
-  color: #efc66d;
-  font-size: 1rem;
-  font-weight: 600;
+  padding: 0.55rem 1.4rem;
+  border: 0;
+  border-radius: 8px;
+  background: #374151;
+  color: #f3f4f6;
+  font-size: 0.92rem;
+  font-weight: 400;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition: filter 0.15s;
 
-  &:hover {
-    background: #617f38;
-    border-color: #efc66d;
-  }
+  &:hover { filter: brightness(1.15); }
+  &:active { filter: brightness(0.92); }
+}
+
+.game-btn--primary {
+  background: linear-gradient(90deg, #ff7a1a, #e85f00);
+  color: #fff;
+  font-weight: 500;
 }
 
 .end-btn {
-  margin-top: 0.5rem;
-  color: #fff;
-  border-color: #24548c;
-  background: #2f6eb5;
+  margin-top: 0.35rem;
+  background: rgba(71, 85, 105, 0.45);
+  color: rgba(255, 255, 255, 0.85);
 
-  &:hover {
-    background: #3b82d1;
-    border-color: #4b97ea;
-  }
+  &:hover { filter: brightness(1.2); }
 }
 
 .betting-overlay {
@@ -931,7 +971,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.55);
   z-index: 20;
 }
 
@@ -939,17 +979,19 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.2rem;
-  padding: 2rem 3rem;
-  background: rgba(20, 20, 40, 0.95);
-  border: 1px solid rgba(239, 198, 109, 0.3);
+  gap: 1.4rem;
+  padding: 2rem 2.8rem;
+  background: rgba(11, 15, 25, 0.95);
+  border: 1px solid rgba(71, 85, 105, 0.4);
   border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
 }
 
 .bet-title {
-  font-size: 1.4rem;
-  color: #efc66d;
-  font-weight: bold;
+  font-size: 1.2rem;
+  color: #fff;
+  font-weight: 500;
+  letter-spacing: 0.01em;
 }
 
 .bet-controls {
@@ -959,30 +1001,34 @@ onUnmounted(() => {
 }
 
 .bet-btn {
-  padding: 0.5rem 1rem;
-  border: 1px solid #7f6825;
-  border-radius: 4px;
-  background: #4f6b2d;
-  color: #efc66d;
-  font-size: 0.95rem;
+  padding: 0.5rem 0.9rem;
+  border: 0;
+  border-radius: 8px;
+  background: #374151;
+  color: #f3f4f6;
+  font-size: 0.88rem;
+  font-weight: 400;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: filter 0.15s;
 
-  &:hover {
-    background: #617f38;
-  }
+  &:hover { filter: brightness(1.15); }
+  &:active { filter: brightness(0.92); }
 }
 
 .bet-input {
   width: 100px;
-  padding: 0.5rem;
-  border: 1px solid rgba(239, 198, 109, 0.4);
-  border-radius: 4px;
-  background: rgba(0, 0, 0, 0.5);
-  color: #efc66d;
-  font-size: 1.1rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid rgba(71, 85, 105, 0.5);
+  border-radius: 8px;
+  background: rgba(5, 8, 15, 0.7);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 400;
   text-align: center;
+  outline: none;
   -moz-appearance: textfield;
+
+  &:focus { border-color: rgba(148, 163, 184, 0.5); }
 
   &::-webkit-inner-spin-button,
   &::-webkit-outer-spin-button {
@@ -991,8 +1037,11 @@ onUnmounted(() => {
 }
 
 .deal-btn {
-  font-size: 1.1rem;
-  padding: 0.7rem 2.5rem;
+  font-size: 1rem;
+  padding: 0.6rem 2.4rem;
+  background: linear-gradient(90deg, #ff7a1a, #e85f00);
+  color: #fff;
+  font-weight: 500;
 }
 
 .game-selector {
@@ -1003,16 +1052,18 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: 0.8rem;
   z-index: 20;
 }
 
 .selector-buttons {
   display: flex;
-  gap: 2rem;
+  gap: 0.8rem;
 }
 
 .leave-table-btn {
-  min-width: 12rem;
+  min-width: 10rem;
+  background: rgba(71, 85, 105, 0.45);
+  color: rgba(255, 255, 255, 0.85);
 }
 </style>
