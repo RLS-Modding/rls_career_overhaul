@@ -110,8 +110,8 @@
         </div>
 
         <div class="pcc-btns">
-          <button ref="startButton" class="pcc-btn pcc-btn--primary" :disabled="nameError !== null" @click="load">Start Game</button>
           <button ref="cancelButton" class="pcc-btn pcc-btn--secondary" @click="closeCard">Cancel</button>
+          <button ref="startButton" class="pcc-btn pcc-btn--primary" :disabled="nameError !== null" @click="load">Start Game</button>
         </div>
       </div>
     </template>
