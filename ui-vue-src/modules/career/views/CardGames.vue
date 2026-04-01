@@ -130,6 +130,9 @@
           <button class="bet-btn" @click="adjustBet(100)">+100</button>
           <button class="bet-btn" @click="doubleBet">x2</button>
         </div>
+        <div v-if="state.careerActive" class="bet-cap-hint">
+          Max bet: ${{ formatMoney(effectiveMaxBet) }}
+        </div>
         <div v-if="state.careerActive && state.betError === 'insufficientFunds'" class="bet-error-hint">
           Not enough balance for this bet.
         </div>
@@ -252,13 +255,20 @@ function formatMoney(n) {
   return v.toLocaleString()
 }
 
+const effectiveMaxBet = computed(() => {
+  const m = Number(state.maxBet)
+  return Number.isFinite(m) && m > 0 ? m : 1000
+})
+
 const canConfirmBet = computed(() => {
   if (state.phase !== "betting") return false
   if (!state.careerActive) return true
   const bal = Number(state.balance)
   const bet = Number(state.bet)
+  const cap = effectiveMaxBet.value
   if (!Number.isFinite(bal) || !Number.isFinite(bet)) return false
   if (bet < 50) return false
+  if (bet > cap) return false
   if (bet > bal) return false
   return state.betError !== "insufficientFunds"
 })
@@ -755,12 +765,14 @@ function newRound() {
 }
 
 function adjustBet(delta) {
-  const clamped = Math.max(50, Math.min(1000, (state.bet || 100) + delta))
+  const cap = effectiveMaxBet.value
+  const clamped = Math.max(50, Math.min(cap, (state.bet || 100) + delta))
   lua.gameplay_cardGames.setBet(clamped)
 }
 
 function doubleBet() {
-  const clamped = Math.min(1000, (state.bet || 100) * 2)
+  const cap = effectiveMaxBet.value
+  const clamped = Math.min(cap, (state.bet || 100) * 2)
   lua.gameplay_cardGames.setBet(clamped)
 }
 
@@ -783,7 +795,8 @@ function commitBetInput() {
     return
   }
 
-  const clamped = Math.max(50, Math.min(1000, val))
+  const cap = effectiveMaxBet.value
+  const clamped = Math.max(50, Math.min(cap, val))
   betInput.value = String(clamped)
   lua.gameplay_cardGames.setBet(clamped)
 }
@@ -1092,6 +1105,14 @@ onUnmounted(() => {
     cursor: not-allowed;
     filter: none;
   }
+}
+
+.bet-cap-hint {
+  font-size: 0.8rem;
+  color: rgba(148, 163, 184, 0.95);
+  font-weight: 400;
+  text-align: center;
+  margin-top: -0.25rem;
 }
 
 .bet-error-hint {

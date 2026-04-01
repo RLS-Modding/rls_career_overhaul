@@ -5,8 +5,23 @@ local activeGameId = nil
 local activeMode = nil
 
 local MIN_BET = 50
-local MAX_BET = 1000
 local RESHUFFLE_THRESHOLD = 0.5
+
+local GAMBLING_SKILL_ATTRIBUTE_KEY = "careerSkills-gambling"
+local GAMBLING_SKILL_XP_PER_DOLLAR_WIN = 9 / 130
+local GAMBLING_DEFAULT_MAX_BET = 1000
+local GAMBLING_BET_CAP_THRESHOLDS = {
+  { xp = 301350, cap = 50000 },
+  { xp = 224620, cap = 30000 },
+  { xp = 162240, cap = 25000 },
+  { xp = 112710, cap = 20000 },
+  { xp = 74530,  cap = 15000 },
+  { xp = 46200,  cap = 10000 },
+  { xp = 26220,  cap = 5000 },
+  { xp = 13090,  cap = 2500 },
+  { xp = 5310,   cap = 2000 },
+  { xp = 1380,   cap = 1500 },
+}
 
 local RANKS = {"A","2","3","4","5","6","7","8","9","10","J","Q","K"}
 local SUITS = {"spades","hearts","clubs","diamonds"}
@@ -133,6 +148,15 @@ local function getWallet()
   return math.floor(tonumber(career_modules_playerAttributes.getAttributeValue("money")) or 0)
 end
 
+local function getGamblingMaxBet()
+  if not careerMoneyApplies() then return GAMBLING_DEFAULT_MAX_BET end
+  local value = tonumber(career_modules_playerAttributes.getAttributeValue(GAMBLING_SKILL_ATTRIBUTE_KEY)) or 0
+  for _, entry in ipairs(GAMBLING_BET_CAP_THRESHOLDS) do
+    if value >= entry.xp then return entry.cap end
+  end
+  return GAMBLING_DEFAULT_MAX_BET
+end
+
 local function computeCareerPayout(modeState)
   if not modeState or not modeState.gameId then
     return 0
@@ -218,6 +242,7 @@ local function careerRefundUnsettled()
   end
   session.careerChargedThisRound = nil
   session.careerPaidThisRound = false
+  session.gamblingSkillXpGranted = false
 end
 
 local function careerTrySettle(modeState)
@@ -241,13 +266,31 @@ local function careerTrySettle(modeState)
     )
   end
   session.careerPaidThisRound = true
+
+  if not session.gamblingSkillXpGranted then
+    local charged = session.careerChargedThisRound or 0
+    local net = payout - charged
+    local xp = 0
+    if net > 0 then
+      xp = math.floor(GAMBLING_SKILL_XP_PER_DOLLAR_WIN * net)
+    elseif net < 0 then
+      xp = math.floor(0.30 * GAMBLING_SKILL_XP_PER_DOLLAR_WIN * math.abs(net))
+    end
+    if xp > 0 then
+      career_modules_playerAttributes.addAttributes(
+        { [GAMBLING_SKILL_ATTRIBUTE_KEY] = xp },
+        { tags = { "cardGames", "gambling" } }
+      )
+    end
+    session.gamblingSkillXpGranted = true
+  end
 end
 
 local function clampBetForCareer()
   if not careerMoneyApplies() then
     return
   end
-  local maxBet = math.min(MAX_BET, math.max(0, getWallet()))
+  local maxBet = math.min(getGamblingMaxBet(), math.max(0, getWallet()))
   if maxBet < MIN_BET then
     session.bet = math.max(0, maxBet)
     session.betError = "insufficientFunds"
@@ -303,6 +346,7 @@ session = {
   shuffleCounter = 0,
   careerChargedThisRound = nil,
   careerPaidThisRound = false,
+  gamblingSkillXpGranted = false,
   betError = nil,
 }
 
@@ -342,10 +386,10 @@ local function pushState()
 
   local careerActive = careerMoneyApplies()
   local balance = nil
-  local maxBetForUi = MAX_BET
+  local maxBetForUi = getGamblingMaxBet()
   if careerActive then
     balance = getWallet()
-    maxBetForUi = math.min(MAX_BET, math.max(0, balance))
+    maxBetForUi = math.min(maxBetForUi, math.max(0, balance))
   end
 
   local state = {
@@ -380,6 +424,7 @@ local function open(gameId)
   session.betError = nil
   session.careerChargedThisRound = nil
   session.careerPaidThisRound = false
+  session.gamblingSkillXpGranted = false
   if activeMode.reset then activeMode.reset() end
   clampBetForCareer()
   pushState()
@@ -394,15 +439,16 @@ local function close()
   session.betError = nil
   session.careerChargedThisRound = nil
   session.careerPaidThisRound = false
+  session.gamblingSkillXpGranted = false
   pushState()
 end
 
 local function setBet(amount)
   if session.phase ~= "betting" then return end
   amount = math.floor(tonumber(amount) or session.bet)
-  local maxBet = MAX_BET
+  local maxBet = getGamblingMaxBet()
   if careerMoneyApplies() then
-    maxBet = math.min(MAX_BET, math.max(0, getWallet()))
+    maxBet = math.min(maxBet, math.max(0, getWallet()))
   end
   if careerMoneyApplies() and maxBet < MIN_BET then
     session.bet = math.max(0, maxBet)
@@ -434,6 +480,7 @@ local function confirmBet()
     )
     session.careerChargedThisRound = session.bet
     session.careerPaidThisRound = false
+    session.gamblingSkillXpGranted = false
   end
 
   ensureShoe()
