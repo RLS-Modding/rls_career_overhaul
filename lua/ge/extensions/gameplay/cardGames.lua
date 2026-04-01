@@ -16,6 +16,106 @@ local shoe = {}
 local shoeSize = FULL_DECK_SIZE
 local session
 
+local walkCamWorldUp = vec3(0, 0, 1)
+local gamblingTriggerPos = nil
+
+local walkTurnAnim = {
+  active = false,
+  elapsed = 0,
+  duration = 0.75,
+  startDir3 = nil,
+  endDir3 = nil,
+}
+
+local function triggerLookTargetWorldPos(triggerObj)
+  if not triggerObj then return nil end
+  local tid = triggerObj:getID()
+  if tid and be:getObjectOOBBIsInitialized(tid) then
+    return vec3(be:getObjectOOBBCenterXYZ(tid))
+  end
+  return vec3(triggerObj:getPosition())
+end
+
+local function updateWalkTurnAnim(dtReal)
+  if not walkTurnAnim.active then return end
+  if not gameplay_walk or not gameplay_walk.isWalking or not gameplay_walk.isWalking() then
+    walkTurnAnim.active = false
+    return
+  end
+  if not gameplay_walk.setRot then
+    walkTurnAnim.active = false
+    return
+  end
+  local sd, ed = walkTurnAnim.startDir3, walkTurnAnim.endDir3
+  if not sd or not ed then
+    walkTurnAnim.active = false
+    return
+  end
+
+  walkTurnAnim.elapsed = walkTurnAnim.elapsed + dtReal
+  local t = math.min(1, walkTurnAnim.elapsed / walkTurnAnim.duration)
+  if t >= 1 then
+    gameplay_walk.setRot(ed, walkCamWorldUp)
+    walkTurnAnim.active = false
+    return
+  end
+
+  local q0 = quatFromDir(sd, walkCamWorldUp)
+  local q1 = quatFromDir(ed, walkCamWorldUp)
+  local q = q0:nlerp(q1, t)
+  local lookDir = vec3(q * vec3(0, 1, 0))
+  if lookDir:length() > 1e-6 then
+    lookDir = lookDir / lookDir:length()
+    gameplay_walk.setRot(lookDir, walkCamWorldUp)
+  end
+end
+
+local gamblingPromptLock = {
+  frozenVehId = nil,
+  inputBlocked = false,
+}
+local GAMBLING_PROMPT_FILTER = "cardGamesGamblingPrompt"
+local gamblingPromptBlockedTemplate
+
+local function getGamblingPromptBlockedTemplate()
+  if gamblingPromptBlockedTemplate then return gamblingPromptBlockedTemplate end
+  if not core_input_actionFilter or not core_input_actionFilter.createActionTemplate then return nil end
+  gamblingPromptBlockedTemplate = core_input_actionFilter.createActionTemplate({"gameCam", "walkingMode"})
+  return gamblingPromptBlockedTemplate
+end
+
+local function applyGamblingPromptPlayerLock()
+  if gamblingPromptLock.frozenVehId then return end
+  if not gameplay_walk or not gameplay_walk.isWalking or not gameplay_walk.isWalking() then return end
+  local veh = getPlayerVehicle(0)
+  if not veh or not veh.getJBeamFilename or veh:getJBeamFilename() ~= "unicycle" then return end
+
+  gamblingPromptLock.frozenVehId = veh:getID()
+  veh:queueLuaCommand("controller.setFreeze(1)")
+
+  local tmpl = getGamblingPromptBlockedTemplate()
+  if tmpl then
+    core_input_actionFilter.setGroup(GAMBLING_PROMPT_FILTER, tmpl)
+    core_input_actionFilter.addAction(0, GAMBLING_PROMPT_FILTER, true)
+    gamblingPromptLock.inputBlocked = true
+  end
+end
+
+local function clearGamblingPromptPlayerLock()
+  if gamblingPromptLock.inputBlocked then
+    core_input_actionFilter.addAction(0, GAMBLING_PROMPT_FILTER, false)
+    gamblingPromptLock.inputBlocked = false
+  end
+
+  if gamblingPromptLock.frozenVehId then
+    local frozen = getObjectByID(gamblingPromptLock.frozenVehId)
+    if frozen then
+      frozen:queueLuaCommand("controller.setFreeze(0)")
+    end
+    gamblingPromptLock.frozenVehId = nil
+  end
+end
+
 local function careerMoneyApplies()
   if not career_career or not career_career.isActive or not career_career.isActive() then
     return false
@@ -365,9 +465,101 @@ local function requestSync()
 end
 
 local function onUpdate(dtReal, dtSim, dtRaw)
+  updateWalkTurnAnim(dtReal)
   if activeMode and activeMode.onUpdate then
     activeMode.onUpdate(dtReal, dtSim, dtRaw)
   end
+end
+
+local function startOrientWalkingTowardTrigger(triggerObj)
+  if not gameplay_walk or not gameplay_walk.isWalking or not gameplay_walk.isWalking() then return end
+  if not gameplay_walk.setRot or not core_camera or not core_camera.getQuat or not core_camera.getPosition then return end
+  if not triggerObj then return end
+  if not getPlayerVehicle(0) then return end
+
+  local tpos = triggerLookTargetWorldPos(triggerObj)
+  if not tpos then return end
+
+  local camPos = vec3(core_camera.getPosition())
+  local endDir3 = tpos - camPos
+  local elen = endDir3:length()
+  if elen < 1e-3 then return end
+  endDir3 = endDir3 / elen
+
+  local cq = core_camera.getQuat()
+  local startDir3 = vec3(cq * vec3(0, 1, 0))
+  local slen = startDir3:length()
+  if slen < 1e-3 then return end
+  startDir3 = startDir3 / slen
+
+  if 1 - startDir3:dot(endDir3) < 1e-6 then
+    gameplay_walk.setRot(endDir3, walkCamWorldUp)
+    walkTurnAnim.active = false
+    walkTurnAnim.startDir3 = nil
+    walkTurnAnim.endDir3 = nil
+    return
+  end
+
+  walkTurnAnim.startDir3 = startDir3
+  walkTurnAnim.endDir3 = endDir3
+  walkTurnAnim.elapsed = 0
+  walkTurnAnim.active = true
+end
+
+local function onBeamNGTrigger(data)
+  if data.event ~= "enter" then return end
+  if not data.triggerName or not data.triggerName:match("^cardGames_") then return end
+  if data.subjectID ~= be:getPlayerVehicleID(0) then return end
+  local triggerObj = (data.triggerID and scenetree.findObjectById(data.triggerID))
+    or (data.triggerName and scenetree.findObject(data.triggerName))
+  if not triggerObj then return end
+
+  gamblingTriggerPos = vec3(triggerObj:getPosition())
+  applyGamblingPromptPlayerLock()
+  startOrientWalkingTowardTrigger(triggerObj)
+  guihooks.trigger("CardGamesGamblingPromptShow")
+end
+
+local gamblingCameraActive = false
+
+local function restoreGamblingPromptWorld()
+  gamblingCameraActive = false
+  commands.setGameCamera()
+  clearGamblingPromptPlayerLock()
+end
+
+local function stopGambleCameraAnim()
+  restoreGamblingPromptWorld()
+end
+
+local function leaveTableFromUi()
+  close()
+  restoreGamblingPromptWorld()
+  gamblingTriggerPos = nil
+end
+
+local function startGambleCameraAnim()
+  if not gamblingTriggerPos then return end
+
+  local sq = core_camera.getQuat()
+  local tpos = vec3(gamblingTriggerPos)
+  local ep = vec3(tpos.x, tpos.y, tpos.z + 0.5)
+
+  local horizFwd = vec3(sq * vec3(0, 1, 0))
+  horizFwd = vec3(horizFwd.x, horizFwd.y, 0)
+  if horizFwd:length() < 1e-3 then horizFwd = vec3(0, 1, 0) end
+  horizFwd = horizFwd / horizFwd:length()
+
+  local lookDir = tpos - ep
+  if lookDir:length() < 1e-3 then lookDir = vec3(0, 0, -1) end
+  lookDir = lookDir / lookDir:length()
+  local eq = quatFromDir(lookDir, horizFwd)
+
+  commands.setFreeCamera()
+  core_camera.setPosition(0, ep)
+  core_camera.setRotation(0, eq)
+  core_camera.resetCamera(0)
+  gamblingCameraActive = true
 end
 
 local function onExtensionLoaded()
@@ -375,6 +567,9 @@ local function onExtensionLoaded()
 end
 
 local function onExtensionUnloaded()
+  walkTurnAnim.active = false
+  gamblingTriggerPos = nil
+  stopGambleCameraAnim()
   close()
   unloadExtensions()
 end
@@ -393,7 +588,12 @@ M.newRound = newRound
 M.requestSync = requestSync
 M.pushState = pushState
 M.onUpdate = onUpdate
+M.onBeamNGTrigger = onBeamNGTrigger
 M.onExtensionLoaded = onExtensionLoaded
 M.onExtensionUnloaded = onExtensionUnloaded
+M.clearGamblingPromptPlayerLock = clearGamblingPromptPlayerLock
+M.startGambleCameraAnim = startGambleCameraAnim
+M.stopGambleCameraAnim = stopGambleCameraAnim
+M.leaveTable = leaveTableFromUi
 
 return M

@@ -133,13 +133,17 @@
         <div v-if="state.careerActive && state.betError === 'insufficientFunds'" class="bet-error-hint">
           Not enough balance for this bet.
         </div>
-        <button
-          class="game-btn game-btn--primary deal-btn"
-          :disabled="!canConfirmBet"
-          @click="confirmBet"
-        >
-          Deal
-        </button>
+        <div class="betting-actions">
+          <button type="button" class="game-btn betting-cancel-btn" @click="closeGame">Cancel</button>
+          <button
+            type="button"
+            class="game-btn game-btn--primary deal-btn"
+            :disabled="!canConfirmBet"
+            @click="confirmBet"
+          >
+            Deal
+          </button>
+        </div>
       </div>
     </div>
 
@@ -163,7 +167,6 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, reactive } from "vue"
-import { useRouter } from "vue-router"
 import { lua, useBridge } from "@/bridge"
 import PlayingCard from "../components/playingCards/PlayingCard.vue"
 
@@ -216,7 +219,6 @@ const RTB_RESULTS = {
   timeout: "Time's Up!",
 }
 
-const router = useRouter()
 const { events } = useBridge()
 const rootRef = ref(null)
 const svgRef = ref(null)
@@ -734,12 +736,14 @@ function switchGames() {
 }
 
 function leaveTable() {
-  lua.gameplay_cardGames.close()
-  if (window.history.length > 1) {
-    router.back()
+  lua.gameplay_cardGames.leaveTable()
+  if (lua.career_career && lua.career_career.closeAllMenus) {
+    lua.career_career.closeAllMenus()
     return
   }
-  lua.career_career.closeAllMenus()
+  if (window.bngVue && typeof window.bngVue.gotoGameState === "function") {
+    window.bngVue.gotoGameState("play", { tryAngularJS: true, blankAngularJS: true })
+  }
 }
 
 function doAction(name, payload) {
@@ -796,15 +800,6 @@ onMounted(async () => {
     const text = await resp.text()
     if (svgRef.value) {
       svgRef.value.innerHTML = text
-      const bgImageEl = svgRef.value.querySelector("#_Image2")
-      const bgHref =
-        bgImageEl?.getAttribute("href") ||
-        bgImageEl?.getAttributeNS("http://www.w3.org/1999/xlink", "href") ||
-        bgImageEl?.getAttribute("xlink:href")
-
-      if (rootRef.value && bgHref) {
-        rootRef.value.style.setProperty("--felt-bg-image", `url("${bgHref}")`)
-      }
 
       hidePlaceholders()
       applyGameSvgVisibility()
@@ -836,10 +831,7 @@ onUnmounted(() => {
   inset: 0;
   width: 100%;
   height: 100%;
-  background:
-    var(--felt-bg-image, none) center center / cover no-repeat,
-    radial-gradient(ellipse at center, rgba(46, 142, 74, 0.5) 0%, rgba(46, 142, 74, 0) 42%),
-    linear-gradient(90deg, #0c5a2d 0%, #11753a 18%, #168548 50%, #11753a 82%, #0c5a2d 100%);
+  background: transparent;
   overflow: hidden;
 }
 
@@ -1107,6 +1099,19 @@ onUnmounted(() => {
   color: #f87171;
   font-weight: 400;
   text-align: center;
+}
+
+.betting-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.betting-cancel-btn {
+  font-size: 1rem;
+  padding: 0.6rem 1.5rem;
 }
 
 .card-games-balance {

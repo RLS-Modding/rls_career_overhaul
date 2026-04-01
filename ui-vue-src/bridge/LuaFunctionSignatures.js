@@ -1321,7 +1321,6 @@ export default {
     getAllRentals: () => {},
     calculateRent: (garageId, rentalType) => [String, String],
     calculateDeposit: (garageId, rentalType) => [String, String],
-
   },
 
   career_modules_garageManager: {
@@ -1594,7 +1593,6 @@ export default {
     navigateToEvent: raceName => String,
   },
 
-
   ui_phone_freContracts: {
     getState: filterDisciplineId => {},
     startLiveUpdates: () => {},
@@ -1613,7 +1611,6 @@ export default {
     requestFacilityList: () => {},
     requestFacilityDetail: facilityId => {},
     navigateToFacility: (facilityId, parkingSpotPath) => {},
-
   },
 
   ui_phone_time: {
@@ -1682,6 +1679,10 @@ export default {
     action: (name, payload) => [String, Any],
     newRound: () => {},
     requestSync: () => {},
+    clearGamblingPromptPlayerLock: () => {},
+    startGambleCameraAnim: () => {},
+    stopGambleCameraAnim: () => {},
+    leaveTable: () => {},
   },
 
   career_modules_business_tuningShopKits: {
