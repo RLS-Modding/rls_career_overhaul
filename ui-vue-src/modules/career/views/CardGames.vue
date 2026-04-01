@@ -805,6 +805,33 @@ function confirmBet() {
   lua.gameplay_cardGames.confirmBet()
 }
 
+function resetCardGamesClientState() {
+  resetDealAnimations()
+  clearShuffleDelayTimer()
+  pendingShuffleState = null
+  if (timerInterval) {
+    clearInterval(timerInterval)
+    timerInterval = null
+  }
+  state.gameId = null
+  state.phase = "idle"
+  state.bet = 100
+  state.mode = null
+  state.careerActive = false
+  state.balance = null
+  state.maxBet = 1000
+  state.betError = null
+  lastTableGameId.value = null
+  lastShuffleCounter.value = null
+  liveTimerRemaining.value = null
+  betInput.value = "100"
+  betInputFocused.value = false
+  svgReady.value = false
+  try {
+    lua.setCEFTyping(false)
+  } catch (_) {}
+}
+
 onMounted(async () => {
   events.on("cardGamesState", handleState)
 
@@ -827,13 +854,10 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  resetDealAnimations()
-  clearShuffleDelayTimer()
-  pendingShuffleState = null
-  if (timerInterval) {
-    clearInterval(timerInterval)
-    timerInterval = null
-  }
+  try {
+    lua.gameplay_cardGames.leaveTable()
+  } catch (_) {}
+  resetCardGamesClientState()
   events.off("cardGamesState", handleState)
 })
 </script>
