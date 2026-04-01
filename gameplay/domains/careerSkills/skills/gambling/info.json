@@ -1,0 +1,581 @@
+{
+    "name": "Gambling",
+    "description": "Progress the 1-50 Gambling mastery track.",
+    "order": 9900,
+    "isSkill": true,
+    "attributeKey": "careerSkills-gambling",
+    "hideUntilProgress": true,
+    "icon": "beamCurrency",
+    "levels": [
+        {
+            "requiredValue": 0,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 1",
+                "description": "Reach level 1 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 246,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 2",
+                "description": "Reach level 2 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 550,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 3",
+                "description": "Reach level 3 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 924,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 4",
+                "description": "Reach level 4 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 1380,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 5",
+                "description": "Reach level 5 in Gambling to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "beamCurrency",
+                    "heading": "Max Bet: $1,500",
+                    "description": "Maximum wager increased to $1,500."
+                }
+            ]
+        },
+        {
+            "requiredValue": 1930,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 6",
+                "description": "Reach level 6 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 2586,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 7",
+                "description": "Reach level 7 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 3360,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 8",
+                "description": "Reach level 8 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 4264,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 9",
+                "description": "Reach level 9 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 5310,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 10",
+                "description": "Reach level 10 in Gambling to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "beamCurrency",
+                    "heading": "Max Bet: $2,000",
+                    "description": "Maximum wager increased to $2,000."
+                }
+            ]
+        },
+        {
+            "requiredValue": 6510,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 11",
+                "description": "Reach level 11 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 7876,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 12",
+                "description": "Reach level 12 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 9420,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 13",
+                "description": "Reach level 13 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 11154,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 14",
+                "description": "Reach level 14 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 13090,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 15",
+                "description": "Reach level 15 in Gambling to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "beamCurrency",
+                    "heading": "Max Bet: $2,500",
+                    "description": "Maximum wager increased to $2,500."
+                }
+            ]
+        },
+        {
+            "requiredValue": 15240,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 16",
+                "description": "Reach level 16 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 17616,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 17",
+                "description": "Reach level 17 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 20230,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 18",
+                "description": "Reach level 18 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 23094,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 19",
+                "description": "Reach level 19 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 26220,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 20",
+                "description": "Reach level 20 in Gambling to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "beamCurrency",
+                    "heading": "Max Bet: $5,000",
+                    "description": "Maximum wager increased to $5,000."
+                }
+            ]
+        },
+        {
+            "requiredValue": 29620,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 21",
+                "description": "Reach level 21 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 33306,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 22",
+                "description": "Reach level 22 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 37290,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 23",
+                "description": "Reach level 23 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 41584,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 24",
+                "description": "Reach level 24 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 46200,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 25",
+                "description": "Reach level 25 in Gambling to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "beamCurrency",
+                    "heading": "Max Bet: $10,000",
+                    "description": "Maximum wager increased to $10,000."
+                }
+            ]
+        },
+        {
+            "requiredValue": 51150,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 26",
+                "description": "Reach level 26 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 56446,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 27",
+                "description": "Reach level 27 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 62100,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 28",
+                "description": "Reach level 28 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 68124,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 29",
+                "description": "Reach level 29 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 74530,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 30",
+                "description": "Reach level 30 in Gambling to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "beamCurrency",
+                    "heading": "Max Bet: $15,000",
+                    "description": "Maximum wager increased to $15,000."
+                }
+            ]
+        },
+        {
+            "requiredValue": 81330,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 31",
+                "description": "Reach level 31 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 88536,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 32",
+                "description": "Reach level 32 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 96160,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 33",
+                "description": "Reach level 33 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 104214,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 34",
+                "description": "Reach level 34 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 112710,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 35",
+                "description": "Reach level 35 in Gambling to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "beamCurrency",
+                    "heading": "Max Bet: $20,000",
+                    "description": "Maximum wager increased to $20,000."
+                }
+            ]
+        },
+        {
+            "requiredValue": 121660,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 36",
+                "description": "Reach level 36 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 131076,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 37",
+                "description": "Reach level 37 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 140970,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 38",
+                "description": "Reach level 38 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 151354,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 39",
+                "description": "Reach level 39 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 162240,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 40",
+                "description": "Reach level 40 in Gambling to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "beamCurrency",
+                    "heading": "Max Bet: $25,000",
+                    "description": "Maximum wager increased to $25,000."
+                }
+            ]
+        },
+        {
+            "requiredValue": 173640,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 41",
+                "description": "Reach level 41 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 185566,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 42",
+                "description": "Reach level 42 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 198030,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 43",
+                "description": "Reach level 43 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 211044,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 44",
+                "description": "Reach level 44 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 224620,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 45",
+                "description": "Reach level 45 in Gambling to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "beamCurrency",
+                    "heading": "Max Bet: $30,000",
+                    "description": "Maximum wager increased to $30,000."
+                }
+            ]
+        },
+        {
+            "requiredValue": 238770,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 46",
+                "description": "Reach level 46 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 253506,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 47",
+                "description": "Reach level 47 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 268840,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 48",
+                "description": "Reach level 48 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 284784,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 49",
+                "description": "Reach level 49 in Gambling to claim this reward tier."
+            },
+            "unlocks": []
+        },
+        {
+            "requiredValue": 301350,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 50",
+                "description": "Reach level 50 in Gambling to claim this reward tier."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "beamCurrency",
+                    "heading": "Max Bet: $50,000",
+                    "description": "Maximum wager increased to $50,000."
+                }
+            ]
+        }
+    ]
+}

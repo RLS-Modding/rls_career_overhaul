@@ -610,6 +610,7 @@ local function menuSkillDiscoverAll()
           color = info.color or nil,
           order = tonumber(info.order) or 9999,
           thresholds = thresholds,
+          hideUntilProgress = info.hideUntilProgress == true,
         })
         ::skipSkill::
       end
@@ -651,6 +652,7 @@ local function fillMenuProfileSkills(data, attData, useLive)
   local allSkills = menuSkillDiscoverAll()
   for _, sk in ipairs(allSkills) do
     local value = menuSkillReadValue(attData, sk.attributeKey, useLive)
+    if sk.hideUntilProgress and (tonumber(value) or 0) <= 0 then goto skipProfileSkill end
     local level, curProg, needNext = menuSkillCalcLevel(value, sk.thresholds)
     local icon, color = sk.icon, sk.color
     if career_branches then
@@ -672,6 +674,7 @@ local function fillMenuProfileSkills(data, attData, useLive)
       neededForNext = needNext,
       levelLabel = { txt = 'ui.career.lvlLabel', context = { lvl = level } },
     })
+    ::skipProfileSkill::
   end
 end
 

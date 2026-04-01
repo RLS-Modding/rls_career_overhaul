@@ -1,0 +1,71 @@
+.cgp-overlay-root {
+  position: fixed;
+  inset: 0;
+  z-index: 160;
+  pointer-events: none;
+  font-family: Overpass, Arial, sans-serif;
+}
+
+.cgp-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+}
+
+.cgp-modal {
+  width: min(26rem, calc(100vw - 2rem));
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(10, 12, 18, 0.96);
+  color: #f5f7fa;
+  box-shadow: 0 1.2rem 3rem rgba(0, 0, 0, 0.6);
+  padding: 1.6rem 1.4rem 1.2rem;
+  text-align: center;
+}
+
+.cgp-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06rem;
+  margin-bottom: 1.2rem;
+}
+
+.cgp-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.cgp-btn {
+  flex: 1;
+  padding: 0.55rem 1rem;
+  border: none;
+  border-radius: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.cgp-btn-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.cgp-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.cgp-btn-primary {
+  background: #f5a623;
+  color: #0a0c12;
+}
+
+.cgp-btn-primary:hover {
+  background: #fdb840;
+}
