@@ -817,7 +817,13 @@ local function beamngTrigger_checkpointPlayer(data, event, raceName, checkpointI
       session.checkpointsHit = session.checkpointsHit + 1
       raceSession.clearHudCompletionPayload()
       session.currCheckpoint = checkpointIndex
-      session.mSplitTimes[session.checkpointsHit] = session.in_race_time
+      local mainRaceCp = session.races[raceName]
+      local effectiveRaceCp = (session.mAltRoute and mainRaceCp.altRoute) and mainRaceCp.altRoute or mainRaceCp
+      if effectiveRaceCp.driftGoal then
+        session.mSplitTimes[session.checkpointsHit] = tonumber(raceSession.peekLiveDriftScore()) or 0
+      else
+        session.mSplitTimes[session.checkpointsHit] = session.in_race_time
+      end
       if session.checkpointsHit == 1 then
         session.mCurrentRouteName = getRouteDisplayName(session.races[raceName], isAlt)
       end
@@ -843,18 +849,36 @@ local function beamngTrigger_checkpointPlayer(data, event, raceName, checkpointI
       })
 
       local checkpointMessage = ""
+      local driftSplits = effectiveRaceCp.driftGoal
       local splitDiff = raceSession.getDifference(raceName, session.checkpointsHit)
       if splitDiff then
         local raceLabel = getRaceLabel()
         local leaderboardEntry = leaderboardManager.getLeaderboardEntry(session.mInventoryId, raceLabel)
-        local totalDiff = session.in_race_time - (leaderboardEntry.splitTimes[session.checkpointsHit] or 0)
+        local totalDiff
+        if driftSplits then
+          totalDiff = (leaderboardEntry.splitTimes[session.checkpointsHit] or 0) -
+            (session.mSplitTimes[session.checkpointsHit] or 0)
+        else
+          totalDiff = session.in_race_time - (leaderboardEntry.splitTimes[session.checkpointsHit] or 0)
+        end
 
-        checkpointMessage = string.format("Checkpoint %d/%d - Time: %s\nSplit: %s | Total: %s", session.checkpointsHit,
-          session.totalCheckpoints, utils.formatTime(session.in_race_time),
-          raceSession.formatSplitDifference(splitDiff), raceSession.formatSplitDifference(totalDiff))
+        if driftSplits then
+          checkpointMessage = string.format("Checkpoint %d/%d - Score: %d\nSplit: %s | Total: %s", session.checkpointsHit,
+            session.totalCheckpoints, math.floor(session.mSplitTimes[session.checkpointsHit] or 0),
+            raceSession.formatSplitDifference(splitDiff, true), raceSession.formatSplitDifference(totalDiff, true))
+        else
+          checkpointMessage = string.format("Checkpoint %d/%d - Time: %s\nSplit: %s | Total: %s", session.checkpointsHit,
+            session.totalCheckpoints, utils.formatTime(session.in_race_time),
+            raceSession.formatSplitDifference(splitDiff), raceSession.formatSplitDifference(totalDiff))
+        end
       else
-        checkpointMessage = string.format("Checkpoint %d/%d - Time: %s", session.checkpointsHit,
-          session.totalCheckpoints, utils.formatTime(session.in_race_time))
+        if driftSplits then
+          checkpointMessage = string.format("Checkpoint %d/%d - Score: %d", session.checkpointsHit,
+            session.totalCheckpoints, math.floor(session.mSplitTimes[session.checkpointsHit] or 0))
+        else
+          checkpointMessage = string.format("Checkpoint %d/%d - Time: %s", session.checkpointsHit,
+            session.totalCheckpoints, utils.formatTime(session.in_race_time))
+        end
       end
       if not session.races[raceName].checkpointRoad then
         utils.displayMessage(checkpointMessage, 7)
@@ -877,8 +901,16 @@ local function beamngTrigger_checkpointPlayer(data, event, raceName, checkpointI
         session.currentExpectedCheckpoint = checkpointManager.enableCheckpoint(checkpointIndex, isAlt)
 
         local message = string.format("Missed a checkpoint\nLap Invalidated.", checkpointIndex)
-        local checkpointMessageMiss = string.format("Checkpoint %d/%d - Time: %s", session.checkpointsHit,
-          session.totalCheckpoints, utils.formatTime(session.in_race_time))
+        local mrX = session.races[raceName]
+        local erX = (session.mAltRoute and mrX.altRoute) and mrX.altRoute or mrX
+        local checkpointMessageMiss
+        if erX.driftGoal then
+          checkpointMessageMiss = string.format("Checkpoint %d/%d - Score: %d", session.checkpointsHit,
+            session.totalCheckpoints, math.floor(session.mSplitTimes[session.checkpointsHit] or 0))
+        else
+          checkpointMessageMiss = string.format("Checkpoint %d/%d - Time: %s", session.checkpointsHit,
+            session.totalCheckpoints, utils.formatTime(session.in_race_time))
+        end
         message = message .. "\n" .. checkpointMessageMiss
         if session.races[raceName].checkpointRoad and raceSession.isRaceHudShown() then
           raceSession.setRaceHudBanner("Missed checkpoint — lap invalidated", "warn", 8)

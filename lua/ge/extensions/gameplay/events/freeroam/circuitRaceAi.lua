@@ -250,6 +250,13 @@ end
 local function getLeaderSectorDuration(leader, endCp)
     if not leader or not endCp or endCp < 1 then return nil end
     if leader.isPlayer then
+        if sess().mActiveRace and sess().races then
+            local rz = sess().races[sess().mActiveRace]
+            if rz then
+                local erz = (sess().mAltRoute and rz.altRoute) and rz.altRoute or rz
+                if erz and erz.driftGoal then return nil end
+            end
+        end
         local st = sess().mSplitTimes
         if not st or not st[endCp] then return nil end
         if endCp <= 1 then return st[1] end
