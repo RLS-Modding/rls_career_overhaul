@@ -21,6 +21,24 @@ local function notifyFreContractsFreeroamUi()
   end
 end
 
+local function getVehicleSpeedMph(vehId)
+  local speedUnit = (session and session.speedUnit) or 2.2369362921
+  if not vehId or not be or not be.getObjectVelocityXYZ then
+    return 0
+  end
+  local a, b, c = be:getObjectVelocityXYZ(vehId)
+  if type(a) == "number" and type(b) == "number" and type(c) == "number" then
+    return math.sqrt(a * a + b * b + c * c) * speedUnit
+  end
+  if type(a) == "number" then
+    return math.abs(a) * speedUnit
+  end
+  if a ~= nil and type(a.length) == "function" then
+    return a:length() * speedUnit
+  end
+  return 0
+end
+
 local function getDisplayTotalLapsForRace(r)
   return competitiveTrackFlow.getDisplayTotalLapsForRace(r)
 end
@@ -375,7 +393,7 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
 
       if raceName == "drag" and effectiveRace and subjectID and not useRaceHud then
         local side = "l"
-        utils.updateDisplay(side, session.in_race_time, math.abs(be:getObjectVelocityXYZ(subjectID)) * session.speedUnit)
+        utils.updateDisplay(side, session.in_race_time, getVehicleSpeedMph(subjectID))
       end
 
       if effectiveRace and effectiveRace.type and utils.tableContains(effectiveRace.type, "drift") then
@@ -593,7 +611,7 @@ local function tryCommitStagingEnter(raceName, spawnVehId)
   session.saveGameState = true
   core_gamestate.requestGameState()
 
-  local vehicleSpeed = math.abs(be:getObjectVelocityXYZ(spawnVehId)) * session.speedUnit
+  local vehicleSpeed = getVehicleSpeedMph(spawnVehId)
   if vehicleSpeed > 5 and session.mActiveRace then
     return false
   end
@@ -1108,7 +1126,7 @@ local function onUpdate(dtReal, dtSim, dtRaw)
     circuitRaceAi.onWaypointPollAccum(dtSim)
     local playerVehicleId = be:getPlayerVehicleID(0)
     if playerVehicleId then
-      local currentSpeed = math.abs(be:getObjectVelocityXYZ(playerVehicleId)) * session.speedUnit
+      local currentSpeed = getVehicleSpeedMph(playerVehicleId)
       if currentSpeed > session.maxSpeed then
         session.maxSpeed = currentSpeed
       end
