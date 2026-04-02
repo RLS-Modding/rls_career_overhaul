@@ -15,6 +15,12 @@ local loadedExtensions = {}
 
 local session
 
+local function notifyFreContractsFreeroamUi()
+  if gameplay_events_freContracts_ui and gameplay_events_freContracts_ui.emitUiStateUpdate then
+    gameplay_events_freContracts_ui.emitUiStateUpdate("freeroam_session")
+  end
+end
+
 local function getDisplayTotalLapsForRace(r)
   return competitiveTrackFlow.getDisplayTotalLapsForRace(r)
 end
@@ -285,6 +291,7 @@ local function beginFreeroamRace(raceNameArg, subjectID)
     race = session.races[raceName],
     checkpointRoad = session.races[raceName].checkpointRoad
   })
+  notifyFreContractsFreeroamUi()
 end
 
 local function applySavedStagingSpotNavigation()
@@ -491,6 +498,7 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
     session.mSuppressOffRoadExitUntil = 0
 
     session.mActiveRace = nil
+    notifyFreContractsFreeroamUi()
     local hideHudNow = deferResultScreen or not deferHudHide
     extensions.hook('onFreeroamSessionExiting', {
       raceName = raceName,
@@ -667,6 +675,7 @@ local function tryCommitStagingEnter(raceName, spawnVehId)
     raceName = raceName,
     vehicleId = vehId
   })
+  notifyFreContractsFreeroamUi()
   return true
 end
 
@@ -697,6 +706,7 @@ local function beamngTrigger_staging(data, event, raceName)
       session.staged = nil
       raceSession.setStagingSubjectId(nil)
       hideStagedFlashMessage()
+      notifyFreContractsFreeroamUi()
       if not useHud and showStagingExitMsg then
         utils.displayMessage("You exited the staging zone", 4)
       end
@@ -1225,6 +1235,7 @@ M.startSanctionedRaceDispatch = function(useAltRoute, poolReferenceHpOverride)
   end
   preloadFreeroamAiPathsForTrack()
   session.staged = nil
+  notifyFreContractsFreeroamUi()
   competitiveTrackFlow.resetTrackGridFlowFlags()
   trackFlowState.sanctionedPoolRefHp = (type(poolReferenceHpOverride) == "number" and poolReferenceHpOverride > 0) and
                                          poolReferenceHpOverride or nil
@@ -1275,6 +1286,7 @@ M.clearSanctionedDispatchStaging = function()
   if competitiveTrackFlow and competitiveTrackFlow.clearSanctionedNavigateVisuals then
     competitiveTrackFlow.clearSanctionedNavigateVisuals()
   end
+  notifyFreContractsFreeroamUi()
 end
 
 M.getFreeroamRaceLabel = getRaceLabel
