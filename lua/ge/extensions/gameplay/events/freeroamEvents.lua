@@ -272,8 +272,9 @@ local function beginFreeroamRace(raceNameArg, subjectID)
     utils.displayStartMessage(raceName)
   end
   utils.setActiveLight(raceName, "green")
-  if session.races[raceName].type and utils.tableContains(session.races[raceName].type, "drift") then
-    gameplay_drift_general.setContext("inChallenge")
+  local rStart = session.races[raceName]
+  if rStart and ((rStart.type and utils.tableContains(rStart.type, "drift")) or rStart.driftGoal) then
+    gameplay_drift_general.setContext("inFreeroam")
     gameplay_drift_general.reset()
     if gameplay_drift_drift then
       gameplay_drift_drift.setVehId(subjectID)
@@ -369,13 +370,6 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
       if raceName == "drag" and effectiveRace and subjectID and not useRaceHud then
         local side = "l"
         utils.updateDisplay(side, session.in_race_time, math.abs(be:getObjectVelocityXYZ(subjectID)) * session.speedUnit)
-      end
-
-      if effectiveRace and effectiveRace.type and utils.tableContains(effectiveRace.type, "drift") then
-        local finalScore = getDriftScore()
-        if gameplay_drift_general.getContext() == "inChallenge" then
-          gameplay_drift_general.setContext("inFreeRoam")
-        end
       end
 
       if customMessage then
@@ -539,8 +533,10 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
     if raceName == TRACK_RACE_ID and competitiveTrackFlow and competitiveTrackFlow.leaveTrackFlowAfterRace then
       competitiveTrackFlow.leaveTrackFlowAfterRace()
     end
-    if gameplay_drift_general.getContext() == "inChallenge" then
-      gameplay_drift_general.setContext("inFreeRoam")
+    local exitedFreRace = session.races[raceName]
+    if exitedFreRace and
+        ((exitedFreRace.type and utils.tableContains(exitedFreRace.type, "drift")) or exitedFreRace.driftGoal) then
+      gameplay_drift_general.setContext("inFreeroam")
       gameplay_drift_general.reset()
     end
     if career_career.isActive() then
