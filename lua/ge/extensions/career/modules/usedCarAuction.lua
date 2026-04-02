@@ -115,10 +115,13 @@ local auctionState = {
   bidHintUntil = 0
 }
 
+local pendingSavedPreAuction = nil
+
 local usedConfigKeys = {}
 local stopVehicleAI
 local setLotVehicleDriveLock
 local startAuctionImmediate
+local getPlayerExitSpot
 
 local function getAuctionTime()
   return auctionState.simTime or 0
@@ -146,6 +149,24 @@ local function getAuctionSettingsPaths(currentSavePath)
   return dirPath, dirPath .. '/' .. constants.AUCTION_SETTINGS_SAVE_FILE
 end
 
+local function buildAuctionSettingsPayload()
+  local payload = {
+    musicEnabled = auctionState.musicEnabled ~= false
+  }
+  if auctionState.phase ~= 'idle' and auctionState.returnTransform then
+    local rt = auctionState.returnTransform
+    local p, r = rt.pos, rt.rot
+    if p and r then
+      local rComb = quat(0, 0, 1, 0) * quat(r)
+      payload.preAuctionVehicle = {
+        px = p.x, py = p.y, pz = p.z,
+        qx = rComb.x, qy = rComb.y, qz = rComb.z, qw = rComb.w
+      }
+    end
+  end
+  return payload
+end
+
 local function saveAuctionSettings(currentSavePath)
   if not (FS and career_saveSystem and career_saveSystem.jsonWriteFileSafe) then
     return false
@@ -160,14 +181,13 @@ local function saveAuctionSettings(currentSavePath)
     FS:directoryCreate(dirPath)
   end
 
-  career_saveSystem.jsonWriteFileSafe(filePath, {
-    musicEnabled = auctionState.musicEnabled ~= false
-  }, true)
+  career_saveSystem.jsonWriteFileSafe(filePath, buildAuctionSettingsPayload(), true)
   return true
 end
 
 local function loadAuctionSettings()
   auctionState.musicEnabled = true
+  pendingSavedPreAuction = nil
   if not (career_career and career_career.isActive and career_career.isActive()) then
     return false
   end
@@ -184,6 +204,13 @@ local function loadAuctionSettings()
 
   if data.musicEnabled ~= nil then
     auctionState.musicEnabled = data.musicEnabled and true or false
+  end
+  if type(data.preAuctionVehicle) == 'table' then
+    local v = data.preAuctionVehicle
+    if tonumber(v.px) and tonumber(v.py) and tonumber(v.pz) and
+        tonumber(v.qx) and tonumber(v.qy) and tonumber(v.qz) and tonumber(v.qw) then
+      pendingSavedPreAuction = v
+    end
   end
   return true
 end
@@ -700,6 +727,84 @@ local function isAuctionLotVehicleId(vehId)
   return false
 end
 
+local function tryApplyPendingSavedPreAuctionVehicle()
+  if not pendingSavedPreAuction then
+    return false
+  end
+  if not (career_career and career_career.isActive and career_career.isActive()) then
+    return false
+  end
+  local veh = getPlayerVehicle()
+  if not veh then
+    return false
+  end
+  local v = pendingSavedPreAuction
+  local px = tonumber(v.px)
+  local py = tonumber(v.py)
+  local pz = tonumber(v.pz)
+  local qx = tonumber(v.qx)
+  local qy = tonumber(v.qy)
+  local qz = tonumber(v.qz)
+  local qw = tonumber(v.qw)
+  if not (px and py and pz and qx and qy and qz and qw) then
+    pendingSavedPreAuction = nil
+    saveAuctionSettings()
+    return false
+  end
+  local pos = vec3(px, py, pz)
+  local rot = quat(qx, qy, qz, qw)
+  if spawn and spawn.safeTeleport then
+    spawn.safeTeleport(veh, pos, rot)
+  else
+    veh:setPosRot(px, py, pz + 0.5, qx, qy, qz, qw)
+  end
+  if core_camera and core_camera.resetCamera then
+    pcall(function() core_camera.resetCamera(0) end)
+  end
+  pendingSavedPreAuction = nil
+  saveAuctionSettings()
+  auctionState.entryCooldownUntil = getAuctionTime() + constants.ENTRY_RETRIGGER_COOLDOWN
+  return true
+end
+
+local function getAuctionSaveRestoreSpot()
+  local exitSpot = getPlayerExitSpot(auctionState.siteLayout, false)
+  if exitSpot and exitSpot.pos and exitSpot.rot then
+    return {
+      pos = vec3(exitSpot.pos),
+      rot = quat(0, 0, 1, 0) * quat(exitSpot.rot)
+    }
+  end
+
+  local rt = auctionState.returnTransform
+  if rt and rt.pos and rt.rot then
+    return {
+      pos = vec3(rt.pos),
+      rot = quat(0, 0, 1, 0) * quat(rt.rot)
+    }
+  end
+end
+
+local function applyInventorySpawnOverrides(data)
+  if auctionState.phase == 'idle' then
+    return
+  end
+  local restoreSpot = getAuctionSaveRestoreSpot()
+  if not restoreSpot then
+    return
+  end
+  data.unicyclePos = vec3(restoreSpot.pos)
+  local spawned = data.spawnedPlayerVehicles
+  local cur = data.currentVehicle
+  if not spawned or not cur or not spawned[cur] then
+    return
+  end
+  spawned[cur] = {
+    pos = vec3(restoreSpot.pos),
+    rot = quat(restoreSpot.rot)
+  }
+end
+
 local function setVehicleFreezeSafe(veh, shouldFreeze)
   if not veh then return end
   local freezeValue = shouldFreeze and true or false
@@ -911,7 +1016,7 @@ local function buildSpotFromTrigger(triggerName)
   }
 end
 
-local function getPlayerExitSpot(layout, warnOnFallback)
+getPlayerExitSpot = function(layout, warnOnFallback)
   if layout and layout.playerExitSpot then
     return layout.playerExitSpot
   end
@@ -2460,6 +2565,7 @@ local function resetAuction(keepPurchases)
   auctionState.bidHintUntil = 0
 
   setIdleTriggerState()
+  saveAuctionSettings()
 end
 
 startAuctionImmediate = function()
@@ -2483,13 +2589,12 @@ startAuctionImmediate = function()
 
   setAuctionRunningTriggerState()
   auctionState.phase = 'starting'
+  auctionState.returnTransform = {
+    pos = playerVeh:getPosition(),
+    rot = quat(playerVeh:getRefNodeRotation())
+  }
 
   runFadedTransition(function()
-    auctionState.returnTransform = {
-      pos = playerVeh:getPosition(),
-      rot = quat(playerVeh:getRefNodeRotation())
-    }
-
     local layout = buildSiteLayout(spots)
     auctionState.siteLayout = layout
     auctionState.auctionSpot = layout.playerSpot
@@ -2754,10 +2859,12 @@ local function onBeamNGTrigger(data)
 end
 
 local function onUpdate(_, dtSim)
-  local now = advanceAuctionTime(dtSim)
+  advanceAuctionTime(dtSim)
+  tryApplyPendingSavedPreAuctionVehicle()
   if auctionState.phase ~= 'bidding' then
     return
   end
+  local now = getAuctionTime()
 
   local playerVehId = be:getPlayerVehicleID(0)
   if playerVehId and not isAuctionLotVehicleId(playerVehId) then
@@ -2838,11 +2945,17 @@ local function onCareerActivated()
   loadAuctionSettings()
   setIdleTriggerState()
   hideAuctionUiAndDisableAssets()
-  ejectPlayerFromAuctionInteriorOnCareerLoad()
+  if not tryApplyPendingSavedPreAuctionVehicle() then
+    ejectPlayerFromAuctionInteriorOnCareerLoad()
+  end
 end
 
 local function onSaveCurrentSaveSlot(currentSavePath)
   saveAuctionSettings(currentSavePath)
+end
+
+local function onSetupInventoryFinished()
+  tryApplyPendingSavedPreAuctionVehicle()
 end
 
 local function onCareerDeactivatedWhileLevelLoaded()
@@ -2883,6 +2996,8 @@ M.onClientStartMission = onClientStartMission
 M.onWorldReadyState = onWorldReadyState
 M.onGetRawPoiListForLevel = onGetRawPoiListForLevel
 M.onSaveCurrentSaveSlot = onSaveCurrentSaveSlot
+M.onSetupInventoryFinished = onSetupInventoryFinished
+M.applyInventorySpawnOverrides = applyInventorySpawnOverrides
 M.exitAuctionArea = exitAuctionArea
 M.requestAuctionState = requestAuctionState
 M.startAuction = startAuction

@@ -391,6 +391,10 @@ local function onSaveCurrentSaveSlot(currentSavePath, oldSaveDate, vehiclesThumb
     data.unicyclePos = playerVeh:getPosition()
   end
 
+  if career_modules_usedCarAuction and career_modules_usedCarAuction.applyInventorySpawnOverrides then
+    career_modules_usedCarAuction.applyInventorySpawnOverrides(data)
+  end
+
   table.clear(finishedSaveTasks)
 
   finishedSaveTasks.updatePartConditions = false
