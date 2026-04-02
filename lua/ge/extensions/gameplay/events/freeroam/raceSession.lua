@@ -87,6 +87,12 @@ end
 local function onExtensionLoaded()
 end
 
+local function notifyFreContractsFreeroamUi()
+  if gameplay_events_freContracts_ui and gameplay_events_freContracts_ui.emitUiStateUpdate then
+    gameplay_events_freContracts_ui.emitUiStateUpdate("freeroam_session")
+  end
+end
+
 function M.setStagingSubjectId(v)
     frh.stagingSubjectId = v
 end
@@ -809,6 +815,7 @@ function M.payoutRace(completedLapTime)
     local cpHud = race.checkpointRoad and frh.shown
     notifyFreRaceCompleted(mActiveRace, race, raceLabel, sess().in_race_time, be:getPlayerVehicleID(0), completionMeta)
     sess().mActiveRace = nil
+    notifyFreContractsFreeroamUi()
     if not cpHud then
         u.displayMessage(message, 20)
         if hotlapMessage ~= "" then
@@ -986,6 +993,7 @@ function M.payoutDragRace(raceName, finishTime, finishSpeed, vehId)
         sess().mActiveRace = nil
         sess().timerActive = false
         sess().dragPracticeActive = false
+        notifyFreContractsFreeroamUi()
         M.pushRaceHudCompletion(hudCompletionPayload, raceName, raceData.label, races["drag"].label, finishTime, true)
     end
     return reward
@@ -1243,6 +1251,7 @@ function M.beginDragPracticeFreeroamHud(vehId)
     M.prepareNewRaceHudState("drag")
     M.setStagingSubjectId(resolveSessionInventoryFromSpawnId(vehId))
     M.showFreeroamRaceHud()
+    notifyFreContractsFreeroamUi()
 end
 
 function M.beginDragPracticeFreeroamRace(vehId)
@@ -1265,6 +1274,7 @@ function M.beginDragPracticeFreeroamRace(vehId)
     local u = utils()
     M.setRaceHudBanner(u.getRaceStartBannerText("drag"), "good", 5)
     M.pushFreeroamRaceHudState(true)
+    notifyFreContractsFreeroamUi()
 end
 
 function M.endDragPracticeFreeroamHud()
@@ -1279,6 +1289,7 @@ function M.endDragPracticeFreeroamHud()
     sess().in_race_time = 0
     M.setStagingSubjectId(nil)
     M.hideFreeroamRaceHud()
+    notifyFreContractsFreeroamUi()
 end
 
 function M.pushRaceHudCompletion(completionPayload, raceName, displayLabel, leaderboardLabel, currentLapTime, freezeCard)
