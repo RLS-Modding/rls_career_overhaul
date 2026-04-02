@@ -98,6 +98,13 @@ local function calculateUnlockInfo(skill, value, level)
   return unlockInfo, maxRequiredValue, hasUnlocks
 end
 
+local function shouldHideSkill(branch, value)
+  if branch.hideUntilProgress or branch.attributeKey == "careerSkills-gambling" then
+    return (tonumber(value) or 0) <= 0
+  end
+  return false
+end
+
 local function getSkillsProgressForUi(branchId)
   local ret = {}
   --dump("getting skills for " .. branchId)
@@ -106,6 +113,7 @@ local function getSkillsProgressForUi(branchId)
     if skill.parentId == branchId then
       local attKey = skill.attributeKey
       local value = career_modules_playerAttributes.getAttributeValue(attKey)
+      if shouldHideSkill(skill, value) then goto continueSkill end
       local level, _, _, min, max = career_branches.calcBranchLevelFromValue(value, skill.id)
       local skData = {
         icon = skill.icon,
@@ -140,6 +148,7 @@ local function getSkillsProgressForUi(branchId)
       --dumpz(skData.unlockInfo,2)
 
       table.insert(ret, skData)
+      ::continueSkill::
     end
   end
   return ret
@@ -416,6 +425,7 @@ local function getBranchSkillCardData(branchId)
     if subBranch.parentId == branchId then
       local attKey = subBranch.attributeKey
       local value = career_modules_playerAttributes.getAttributeValue(attKey)
+      if shouldHideSkill(subBranch, value) then goto continueSubBranch end
       local level, _, _, min, max = career_branches.calcBranchLevelFromValue(value, subBranch.id)
       local skillInfo = {
         name = subBranch.name,
@@ -442,6 +452,7 @@ local function getBranchSkillCardData(branchId)
         skillInfo.showProgressAsStars = true
       end
       table.insert(branchInfo.skills, skillInfo)
+      ::continueSubBranch::
     end
   end
   return branchInfo
@@ -539,12 +550,16 @@ local function getLandingPageData(pathId)
     -- Find branches for this domain
     for _, branch in ipairs(branches) do
       if branch.parentId == pathId then
-        table.insert(data.branches, {
-          id = branch.id,
-          target = "skillPage",
-          isSkill = branch.isSkill,
-          description = branch.description,
-        })
+        local attKey = branch.attributeKey
+        local bValue = attKey and career_modules_playerAttributes.getAttributeValue(attKey)
+        if not shouldHideSkill(branch, bValue) then
+          table.insert(data.branches, {
+            id = branch.id,
+            target = "skillPage",
+            isSkill = branch.isSkill,
+            description = branch.description,
+          })
+        end
       end
     end
 

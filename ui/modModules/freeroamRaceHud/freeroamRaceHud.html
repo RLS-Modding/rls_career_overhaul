@@ -36,7 +36,17 @@
 
       </div>
 
-      <div class="frh-header-live frh-mono" ng-if="state.phase === 'racing'">
+      <div class="frh-header-live frh-mono" ng-if="state.phase === 'racing' && state.sectorSplitsUseScore">
+
+        <span>{{ state.driftScoreLive || 0 }} / {{ state.driftGoal }}</span>
+
+        <span ng-if="state.isLapRace"> · Lap {{ state.displayLap }}<span ng-if="state.totalLaps > 0">/{{ state.totalLaps }}</span></span>
+
+        <span> · {{ formatTime(state.currentLapTime) }}</span>
+
+      </div>
+
+      <div class="frh-header-live frh-mono" ng-if="state.phase === 'racing' && !state.sectorSplitsUseScore">
 
         <span>{{ formatTime(state.currentLapTime) }}</span>
 
@@ -90,9 +100,29 @@
 
     <div class="frh-summary" ng-if="state.phase !== 'staging'">
 
+      <div class="frh-row frh-row-goal-pb" ng-if="state.driftGoal != null">
+
+        <div class="frh-goal-pb-side frh-goal-pb-left">
+
+          <span class="frh-k">Goal</span>
+
+          <span class="frh-v frh-mono">{{ state.driftGoal }}</span>
+
+        </div>
+
+        <div class="frh-goal-pb-side frh-goal-pb-right" ng-if="state.personalBestDriftScore != null">
+
+          <span class="frh-k">PB</span>
+
+          <span class="frh-v frh-mono">{{ state.personalBestDriftScore }}</span>
+
+        </div>
+
+      </div>
+
       <div class="frh-row frh-row-goal-pb"
 
-           ng-if="state.goalTime != null || state.personalBestTime != null">
+           ng-if="state.driftGoal == null && (state.goalTime != null || state.personalBestTime != null)">
 
         <div class="frh-goal-pb-side frh-goal-pb-left" ng-if="state.goalTime != null">
 
@@ -136,7 +166,7 @@
 
       </div>
 
-      <div class="frh-row" ng-if="state.phase === 'racing' && state.driftGoal != null">
+      <div class="frh-row" ng-if="state.phase === 'racing' && state.driftGoal != null && !state.sectorSplitsUseScore">
 
         <span class="frh-k">Drift score</span>
 
@@ -367,9 +397,13 @@
 
       <span>Sector</span>
 
-      <span>Split</span>
+      <span ng-if="state.sectorSplitsUseScore">Sector pts</span>
 
-      <span>At CP</span>
+      <span ng-if="!state.sectorSplitsUseScore">Split</span>
+
+      <span ng-if="state.sectorSplitsUseScore">Total pts</span>
+
+      <span ng-if="!state.sectorSplitsUseScore">At CP</span>
 
       <span>vs PB</span>
 
@@ -383,11 +417,11 @@
 
         <span class="frh-idx">CP {{ s.index }}</span>
 
-        <span class="frh-mono">{{ formatTime(s.sectorTime) }}</span>
+        <span class="frh-mono">{{ formatSectorValue(s.sectorTime, state.sectorSplitsUseScore) }}</span>
 
-        <span class="frh-mono">{{ formatTime(s.cumulativeTime) }}</span>
+        <span class="frh-mono">{{ formatSectorValue(s.cumulativeTime, state.sectorSplitsUseScore) }}</span>
 
-        <span class="frh-delta frh-mono" ng-class="deltaClass(s.deltaVsPb)">{{ formatDelta(s.deltaVsPb) }}</span>
+        <span class="frh-delta frh-mono" ng-class="deltaClass(s.deltaVsPb)">{{ formatSectorDelta(s.deltaVsPb, state.sectorSplitsUseScore) }}</span>
 
       </div>
 

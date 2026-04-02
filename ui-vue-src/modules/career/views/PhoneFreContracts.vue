@@ -161,6 +161,9 @@
                 <div class="empty-card-title">Contracts Locked</div>
                 <div class="empty-card-copy">{{ contractsLockedMessage }}</div>
               </div>
+              <div v-else-if="freeroamEventContractBlockReason" class="warning-panel">
+                {{ freeroamEventContractBlockReason }}
+              </div>
               <div v-else-if="sortedAvailableContracts.length === 0" class="empty-card">
                 <div class="empty-card-title">No offers available</div>
                 <div class="empty-card-copy">No offers available right now. New offers will appear here automatically.</div>
@@ -195,7 +198,7 @@
                 </div>
                 <div class="deal-card-footer">
                   <button class="action-btn primary full-width" :disabled="actionBusy || !canAcceptContract(contract)" @click="acceptContract(contract.id)">
-                    {{ canAcceptContract(contract) ? 'Accept' : 'Slots Full' }}
+                    {{ availableContractAcceptLabel(contract) }}
                   </button>
                 </div>
               </article>
@@ -418,6 +421,7 @@ const state = ref({
   availableSponsors: [],
   sanctionedRacing: null,
   sanctionedRacingOfferPeriodMinutes: null,
+  freeroamEventContractBlockReason: '',
 })
 
 function loadSavedDiscipline() {
@@ -553,6 +557,7 @@ const summaryUnlockMessages = computed(() => {
   return messages
 })
 const contractsLockedMessage = computed(() => !selectedDisciplineInfo.value || selectedDisciplineInfo.value.contractsUnlocked ? '' : `Contracts unlock at level ${selectedDisciplineInfo.value.contractUnlockLevel}.`)
+const freeroamEventContractBlockReason = computed(() => String(state.value.freeroamEventContractBlockReason || '').trim())
 const sponsorsLockedMessage = computed(() => !selectedDisciplineInfo.value || selectedDisciplineInfo.value.sponsorsUnlocked ? '' : `Sponsors unlock at level ${selectedDisciplineInfo.value.sponsorUnlockLevel}.`)
 
 function normalizeList(value) {
@@ -575,6 +580,7 @@ function applyState(data) {
       normalized.sanctionedRacingOfferPeriodMinutes != null && normalized.sanctionedRacingOfferPeriodMinutes !== ''
         ? Number(normalized.sanctionedRacingOfferPeriodMinutes)
         : null,
+    freeroamEventContractBlockReason: typeof normalized.freeroamEventContractBlockReason === 'string' ? normalized.freeroamEventContractBlockReason : '',
   }
   if (selectedDiscipline.value !== 'all' && !state.value.disciplines.some(discipline => discipline?.id === selectedDiscipline.value)) {
     selectedDiscipline.value = 'all'
@@ -818,9 +824,20 @@ function contractUrgencyLabel(contract) {
   return `${formatMinutes(displayRemaining(contract?.minutesRemaining))} left`
 }
 
-function canAcceptContract(contract) {
+function contractHasFreeSlot(contract) {
   const discipline = disciplineLookup.value[contract.disciplineId]
   return Boolean(discipline && discipline.contractsUnlocked && discipline.contractSlotsUsed < discipline.contractSlots)
+}
+
+function canAcceptContract(contract) {
+  if (freeroamEventContractBlockReason.value) return false
+  return contractHasFreeSlot(contract)
+}
+
+function availableContractAcceptLabel(contract) {
+  if (freeroamEventContractBlockReason.value) return 'During event'
+  if (!contractHasFreeSlot(contract)) return 'Slots full'
+  return 'Accept'
 }
 
 function canSignSponsor(sponsor) {
