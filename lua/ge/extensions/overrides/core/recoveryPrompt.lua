@@ -129,10 +129,7 @@ local towToRoadCost = 75
 local baseTowToGarageCost = 250
 
 local function getPriceFunction(basePrice)
-  return function(target)
-    if career_modules_insurance_insurance.isRoadSideAssistanceFree(career_modules_inventory.getInventoryIdFromVehicleId(target.vehId)) then
-      return {money = {amount = 0, canBeNegative = true}}
-    end
+  return function()
     return {money = {amount = math.floor(basePrice * getGlobalEconomyIndex()), canBeNegative = true}}
   end
 end
@@ -148,12 +145,7 @@ local buttonOptions = {
       local veh = scenetree.findObjectById(target.vehId)
       if veh then
         spawn.teleportToLastRoad(veh, {resetVehicle = false})
-        local invVehId = career_modules_inventory.getInventoryIdFromVehicleId(target.vehId)
-        if not career_modules_insurance_insurance.isRoadSideAssistanceFree(invVehId) then
-          career_modules_payment.pay({money = {amount = math.floor(towToRoadCost * getGlobalEconomyIndex()), canBeNegative = true}}, {label = string.format("Towed your vehicle to the road")})
-        else
-          career_modules_insurance_insurance.useRoadsideAssistance(invVehId)
-        end
+        career_modules_payment.pay({money = {amount = math.floor(towToRoadCost * getGlobalEconomyIndex()), canBeNegative = true}}, {label = string.format("Towed your vehicle to the road")})
       end
     end,
     order = 5,
@@ -176,12 +168,7 @@ local buttonOptions = {
       local veh = scenetree.findObjectById(target.vehId)
       if veh then
         spawn.safeTeleport(veh, veh:getPosition(), quatFromDir(veh:getDirectionVector()), nil, nil, nil, nil, false )
-        local invVehId = career_modules_inventory.getInventoryIdFromVehicleId(target.vehId)
-        if not career_modules_insurance_insurance.isRoadSideAssistanceFree(invVehId) then
-          career_modules_payment.pay({money = {amount = math.floor(flipUpRightCost * getGlobalEconomyIndex()), canBeNegative = true}}, {label = string.format("Flipped your vehicle upright")})
-        else
-          career_modules_insurance_insurance.useRoadsideAssistance(invVehId)
-        end
+        career_modules_payment.pay({money = {amount = math.floor(flipUpRightCost * getGlobalEconomyIndex()), canBeNegative = true}}, {label = string.format("Flipped your vehicle upright")})
       end
     end,
     order = 15,
@@ -414,12 +401,20 @@ local function addTowingButtons()
   -- add garage tow buttons
   for i, garage in ipairs(garages) do
     if not garage.noQuickTravel then
-      local function getPrice(target)
-        if career_modules_insurance_insurance.isRoadSideAssistanceFree(career_modules_inventory.getInventoryIdFromVehicleId(target.vehId)) then
-          return {}
-        end
+      local function towToGarageMoneyAmount()
         local price = career_modules_quickTravel.getPriceForQuickTravelToGarage(garage) * 15
         if price > 0 then price = price + baseTowToGarageCost end
+        return price
+      end
+
+      local function getPrice(target)
+        local price = towToGarageMoneyAmount()
+        if price <= 0 then
+          return {money = {amount = 0, canBeNegative = true}}
+        end
+        if career_modules_insurance_insurance.isRoadSideAssistanceFree(career_modules_inventory.getInventoryIdFromVehicleId(target.vehId)) then
+          return {money = {amount = 0, canBeNegative = true}}
+        end
         return {money = {amount = price, canBeNegative = true}}
       end
 
@@ -436,12 +431,15 @@ local function addTowingButtons()
           enableConditions = {conditions.outOfPursuit, conditions.vehicleSlow, conditions.vehicleInInventory, conditions.notTestdriving, conditions.towToRoadAllowedByPermission},
           atFadeFunction = function(target)
             career_modules_playerDriving.teleportToGarage(garage.id, scenetree.findObjectById(target.vehId), false)
-            if career_modules_quickTravel.getPriceForQuickTravelToGarage(garage) > 0 then
-              local invId = career_modules_inventory.getInventoryIdFromVehicleId(target.vehId)
+            local invId = career_modules_inventory.getInventoryIdFromVehicleId(target.vehId)
+            local money = towToGarageMoneyAmount()
+            if money <= 0 then
+              return
             end
-            local price = getPrice(target)
-            if price then
-              career_modules_payment.pay(price, {label = string.format("Towed your vehicle to your garage")})
+            if career_modules_insurance_insurance.isRoadSideAssistanceFree(invId) then
+              career_modules_insurance_insurance.useRoadsideAssistance(invId)
+            else
+              career_modules_payment.pay({money = {amount = money, canBeNegative = true}}, {label = string.format("Towed your vehicle to your garage")})
             end
           end,
           message = "ui.career.towed",

@@ -14,6 +14,12 @@ local OFFER_TTL_VARIANCE = 0.5
 local VALUE_LOSS_LIMIT = 0.95
 local MAXIMUM_EXPIRED_OFFERS = 3
 
+local MIN_RATIO_DENOMINATOR = 1
+
+local function marketRatioDenominator(marketValue)
+  return math.max(tonumber(marketValue) or 0, MIN_RATIO_DENOMINATOR)
+end
+
 local offerMenuOpen = false
 local getListings
 
@@ -78,7 +84,7 @@ local function listVehicles(vehicles)
     if veh and not findVehicleListing(inventoryId) then
       local value = customValue or career_modules_valueCalculator.getInventoryVehicleSellValue(inventoryId)
       local marketValue = career_modules_valueCalculator.getInventoryVehicleSellValue(inventoryId)
-      local marketRatio = value / (marketValue or 1)
+      local marketRatio = tonumber(value) / marketRatioDenominator(marketValue)
 
       local offerTimeMultiplier
       if marketRatio >= 0.98 and marketRatio <= 1.1 then
@@ -190,12 +196,11 @@ local function generateOffer(inventoryId)
   local listing = inventoryId and findVehicleListing(inventoryId) or listedVehicles[math.random(1, #listedVehicles)]
   refreshLiveListingValues(listing)
   local buyerPersonality = generatePersonality(true)
-  local listingMarketValue = getLiveListingValue(listing)
+  local listingMarketValue = tonumber(getLiveListingValue(listing))
   if not listingMarketValue then
-    listingMarketValue = listing.marketValue or 1
+    listingMarketValue = tonumber(listing.marketValue) or 0
   end
-  local marketRatio = listing.value / (listingMarketValue or 1)
-
+  local marketRatio = tonumber(listing.value) / marketRatioDenominator(listingMarketValue)
   local baseOffer = listingMarketValue
 
   local personalityMult = buyerPersonality.priceMultiplier or 1.0
@@ -310,6 +315,7 @@ local opponentQuote = ""
 
 local negotiationInventoryId
 local negotiationOfferIndex
+local negotiationMaxBuyerPrice = math.huge
 
 local shopId
 local opponentPersonality
@@ -402,6 +408,9 @@ local function startNegotiateBuyingOffer(inventoryId, offerIndex)
   vehicleThumbnail = listing.thumbnail
   vehicleMileage = career_modules_valueCalculator.getVehicleMileageById(inventoryId)
   actualVehicleValue = career_modules_valueCalculator.getInventoryVehicleSellValue(inventoryId)
+  negotiationMaxBuyerPrice = math.max(50,
+    (tonumber(actualVehicleValue) or 0) * 1.25,
+    (tonumber(offer.value) or 0) * 1.5)
   startingPrice = listing.value
   negotiationActive = true
   patience = 1
@@ -448,6 +457,7 @@ local function startNegotiateSellingOffer(_shopId)
 
   negotiationInventoryId = nil
   negotiationOfferIndex = nil
+  negotiationMaxBuyerPrice = math.huge
   vehicleNiceName = vehicleInfo.Name
   vehicleThumbnail = vehicleInfo.preview
   vehicleMileage = vehicleInfo.Mileage
@@ -507,8 +517,9 @@ local function calculatePatienceDrop(baseValue)
     local gapFromMarket = math.abs(myOffer - baseValue)
     local referenceGap = opponentPersonality.isDealership and gapFromTheirOffer or gapFromMarket
     local referenceValue = opponentPersonality.isDealership and theirOfferAmount or baseValue
-    local gapPct = (referenceGap / referenceValue) * 100
-    local priceScale = math.min(1, referenceValue / 1000)
+    local pctScale = math.max(tonumber(referenceValue) or 0, MIN_RATIO_DENOMINATOR)
+    local gapPct = (referenceGap / pctScale) * 100
+    local priceScale = math.min(1, pctScale / 1000)
     local percentageWeight = priceScale
     local absoluteWeight = 1 - priceScale
 
@@ -526,7 +537,9 @@ local function calculatePatienceDrop(baseValue)
     local referenceGap, referenceValue
     if opponentPersonality.isDealership then
 
-      local minimumAcceptableOffer = math.min(startingPrice * insultThreshold, baseValue * 0.9)
+      local insBase = tonumber(baseValue) or 0
+      local floorOffer = insBase > 0 and insBase * 0.9 or startingPrice * insultThreshold
+      local minimumAcceptableOffer = math.min(startingPrice * insultThreshold, floorOffer)
       if myOffer < minimumAcceptableOffer then
         isInsulted = true
         return 1
@@ -534,17 +547,19 @@ local function calculatePatienceDrop(baseValue)
       referenceGap = gapFromTheirPrice
       referenceValue = theirAskingPrice
     else
-      if myOffer >= baseValue * 0.9 then
+      local baseNum = tonumber(baseValue) or 0
+      if baseNum > 0 and myOffer >= baseNum * 0.9 then
         referenceGap = gapFromTheirPrice * 0.5
         referenceValue = theirAskingPrice
       else
         referenceGap = gapFromMarket
-        referenceValue = baseValue
+        referenceValue = math.max(baseNum, MIN_RATIO_DENOMINATOR)
       end
     end
 
-    local gapPct = (referenceGap / referenceValue) * 100
-    local priceScale = math.min(1, referenceValue / 1000)
+    local pctScaleBuy = math.max(tonumber(referenceValue) or 0, MIN_RATIO_DENOMINATOR)
+    local gapPct = (referenceGap / pctScaleBuy) * 100
+    local priceScale = math.min(1, pctScaleBuy / 1000)
     local percentageWeight = priceScale
     local absoluteWeight = 1 - priceScale
 
@@ -566,7 +581,8 @@ local function generateCounterOffer()
     local currentBuyerPosition = theirOffer
     local movement = math.abs(diff) * weight
     local result = currentBuyerPosition + movement
-    return math.max(theirOffer, math.floor(result / 50 + 0.5) * 50)
+    local step = math.max(theirOffer, math.floor(result / 50 + 0.5) * 50)
+    return math.min(step, negotiationMaxBuyerPrice)
   else
     local currentSellerPosition = theirOffer
     local movement = math.abs(diff) * weight
@@ -582,7 +598,7 @@ local function makeOffer(price)
   table.insert(offerHistory, {
     myOffer = myOffer
   })
-  local baseValue = actualVehicleValue or startingPrice
+  local baseValue = tonumber(actualVehicleValue) or 0
 
   negotiationStatus = "thinking"
   guihooks.trigger('negotiationData', getNegotiationState())
@@ -590,8 +606,8 @@ local function makeOffer(price)
     local patienceChange = calculatePatienceDrop(baseValue)
     local thinkingTime = 5.5
     if opponentPersonality.isDealership then
-      local marketGap = math.abs(myOffer - baseValue) / baseValue
-      local askingGap = math.abs(myOffer - startingPrice) / startingPrice
+      local marketGap = math.abs(myOffer - baseValue) / math.max(baseValue, MIN_RATIO_DENOMINATOR)
+      local askingGap = math.abs(myOffer - startingPrice) / math.max(tonumber(startingPrice) or 0, MIN_RATIO_DENOMINATOR)
       if marketGap < 0.15 and askingGap > 0.20 then
         thinkingTime = 2.5 + math.random() * 1.5
       elseif askingGap > 0.30 then
@@ -689,7 +705,7 @@ local function makeOffer(price)
           end
         end
       else
-        local maxAcceptable = startingPrice * 1.05
+        local maxAcceptable = math.min(startingPrice * 1.05, negotiationMaxBuyerPrice)
 
         if patience <= 0.40 then
           theirOfferCandidate = math.floor(maxAcceptable / 50 + 0.5) * 50
@@ -699,19 +715,19 @@ local function makeOffer(price)
           local movePercent = baseMovePercent + (math.random() * 0.15 - 0.075)
           movePercent = math.max(0.15, math.min(0.75, movePercent))
           local counterAmount = theirOffer + (gapToClose * movePercent)
-          theirOfferCandidate = math.min(myOffer, math.floor(counterAmount / 50 + 0.5) * 50)
+          theirOfferCandidate = math.min(myOffer, math.floor(counterAmount / 50 + 0.5) * 50, negotiationMaxBuyerPrice)
         else
           local gapToClose = myOffer - theirOffer
           local baseMovePercent = ((1 - patience) * 0.4 + 0.25) * 0.5
           local movePercent = baseMovePercent + (math.random() * 0.1 - 0.05)
           movePercent = math.max(0.10, math.min(0.50, movePercent))
           local counterAmount = theirOffer + (gapToClose * movePercent)
-          theirOfferCandidate = math.min(maxAcceptable, math.floor(counterAmount / 50 + 0.5) * 50)
+          theirOfferCandidate = math.min(maxAcceptable, math.floor(counterAmount / 50 + 0.5) * 50, negotiationMaxBuyerPrice)
         end
 
         theirOfferCandidate = math.max(theirOfferCandidate, theirOffer)
         if theirOfferCandidate >= myOffer then
-          theirOffer = myOffer
+          theirOffer = math.min(myOffer, negotiationMaxBuyerPrice)
           negotiationStatus = "accepted"
         else
           if theirOfferCandidate <= theirOffer then
@@ -728,7 +744,7 @@ local function makeOffer(price)
       else
         local counter = generateCounterOffer()
         if (not amISelling and counter <= myOffer) or (amISelling and counter >= myOffer) then
-          theirOffer = myOffer
+          theirOffer = amISelling and math.min(myOffer, negotiationMaxBuyerPrice) or myOffer
           negotiationStatus = "accepted"
         else
           theirOffer = counter
@@ -830,7 +846,8 @@ getListings = function()
   for i, listing in ipairs(listingsCopy) do
     local currentValue = career_modules_valueCalculator.getInventoryVehicleSellValue(listing.id)
     local originalMarketValue = listing.marketValueAtListing or listing.marketValue
-    if currentValue and originalMarketValue and currentValue < originalMarketValue * VALUE_LOSS_LIMIT then
+    local origNum = tonumber(originalMarketValue) or 0
+    if currentValue and origNum > 0 and currentValue < origNum * VALUE_LOSS_LIMIT then
       listing.disabled = true
       listing.disableReason = "Cant sell the vehicle because value has dropped below " .. VALUE_LOSS_LIMIT * 100 .. "% of the market value when the vehicle was listed."
     end
