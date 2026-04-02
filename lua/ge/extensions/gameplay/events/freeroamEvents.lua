@@ -44,6 +44,19 @@ local function hideStagedFlashMessage()
   end
 end
 
+local function suppressVanillaDriftMissionUi()
+  if gameplay_drift_general and gameplay_drift_general.setContext then
+    gameplay_drift_general.setContext("inFreeroam")
+  end
+  if core_gamestate and core_gamestate.setGameState then
+    core_gamestate.setGameState("freeroam", "freeroam", "freeroam")
+  end
+  local gc = getGameplayAppContainers()
+  if gc and gc.hideApp then
+    gc.hideApp("gameplayApps", "drift")
+  end
+end
+
 local function triggerRaceCountdown()
   hideStagedFlashMessage()
 end
@@ -273,9 +286,11 @@ local function beginFreeroamRace(raceNameArg, subjectID)
   end
   utils.setActiveLight(raceName, "green")
   local rStart = session.races[raceName]
-  if rStart and ((rStart.type and utils.tableContains(rStart.type, "drift")) or rStart.driftGoal) then
-    gameplay_drift_general.setContext("inFreeroam")
-    gameplay_drift_general.reset()
+  local isFreDrift = rStart and ((rStart.type and utils.tableContains(rStart.type, "drift")) or rStart.driftGoal)
+  if isFreDrift then
+    if gameplay_drift_general and gameplay_drift_general.reset then
+      gameplay_drift_general.reset()
+    end
     if gameplay_drift_drift then
       gameplay_drift_drift.setVehId(subjectID)
     end
@@ -286,6 +301,15 @@ local function beginFreeroamRace(raceNameArg, subjectID)
     race = session.races[raceName],
     checkpointRoad = session.races[raceName].checkpointRoad
   })
+  if isFreDrift then
+    suppressVanillaDriftMissionUi()
+    if core_jobsystem and core_jobsystem.create then
+      core_jobsystem.create(function(job)
+        job.sleep(0.2)
+        suppressVanillaDriftMissionUi()
+      end)
+    end
+  end
 end
 
 local function applySavedStagingSpotNavigation()
