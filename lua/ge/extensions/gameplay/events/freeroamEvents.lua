@@ -68,6 +68,19 @@ local function hideStagedFlashMessage()
   end
 end
 
+local function suppressVanillaDriftMissionUi()
+  if gameplay_drift_general and gameplay_drift_general.setContext then
+    gameplay_drift_general.setContext("inFreeroam")
+  end
+  if core_gamestate and core_gamestate.setGameState then
+    core_gamestate.setGameState("freeroam", "freeroam", "freeroam")
+  end
+  local gc = getGameplayAppContainers()
+  if gc and gc.hideApp then
+    gc.hideApp("gameplayApps", "drift")
+  end
+end
+
 local function triggerRaceCountdown()
   hideStagedFlashMessage()
 end
@@ -296,9 +309,12 @@ local function beginFreeroamRace(raceNameArg, subjectID)
     utils.displayStartMessage(raceName)
   end
   utils.setActiveLight(raceName, "green")
-  if session.races[raceName].type and utils.tableContains(session.races[raceName].type, "drift") then
-    gameplay_drift_general.setContext("inChallenge")
-    gameplay_drift_general.reset()
+  local rStart = session.races[raceName]
+  local isFreDrift = rStart and ((rStart.type and utils.tableContains(rStart.type, "drift")) or rStart.driftGoal)
+  if isFreDrift then
+    if gameplay_drift_general and gameplay_drift_general.reset then
+      gameplay_drift_general.reset()
+    end
     if gameplay_drift_drift then
       gameplay_drift_drift.setVehId(subjectID)
     end
@@ -310,6 +326,15 @@ local function beginFreeroamRace(raceNameArg, subjectID)
     checkpointRoad = session.races[raceName].checkpointRoad
   })
   notifyFreContractsFreeroamUi()
+  if isFreDrift then
+    suppressVanillaDriftMissionUi()
+    if core_jobsystem and core_jobsystem.create then
+      core_jobsystem.create(function(job)
+        job.sleep(0.2)
+        suppressVanillaDriftMissionUi()
+      end)
+    end
+  end
 end
 
 local function applySavedStagingSpotNavigation()
@@ -393,7 +418,7 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
 
       if raceName == "drag" and effectiveRace and subjectID and not useRaceHud then
         local side = "l"
-        utils.updateDisplay(side, session.in_race_time, getVehicleSpeedMph(subjectID))
+        utils.updateDisplay(side, session.in_race_time, math.abs(be:getObjectVelocityXYZ(subjectID)) * session.speedUnit)
       end
 
       if effectiveRace and effectiveRace.type and utils.tableContains(effectiveRace.type, "drift") then
@@ -565,8 +590,10 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
     if raceName == TRACK_RACE_ID and competitiveTrackFlow and competitiveTrackFlow.leaveTrackFlowAfterRace then
       competitiveTrackFlow.leaveTrackFlowAfterRace()
     end
-    if gameplay_drift_general.getContext() == "inChallenge" then
-      gameplay_drift_general.setContext("inFreeRoam")
+    local exitedFreRace = session.races[raceName]
+    if exitedFreRace and
+        ((exitedFreRace.type and utils.tableContains(exitedFreRace.type, "drift")) or exitedFreRace.driftGoal) then
+      gameplay_drift_general.setContext("inFreeroam")
       gameplay_drift_general.reset()
     end
     if career_career.isActive() then
@@ -845,7 +872,13 @@ local function beamngTrigger_checkpointPlayer(data, event, raceName, checkpointI
       session.checkpointsHit = session.checkpointsHit + 1
       raceSession.clearHudCompletionPayload()
       session.currCheckpoint = checkpointIndex
-      session.mSplitTimes[session.checkpointsHit] = session.in_race_time
+      local mainRaceCp = session.races[raceName]
+      local effectiveRaceCp = (session.mAltRoute and mainRaceCp.altRoute) and mainRaceCp.altRoute or mainRaceCp
+      if effectiveRaceCp.driftGoal then
+        session.mSplitTimes[session.checkpointsHit] = tonumber(raceSession.peekLiveDriftScore()) or 0
+      else
+        session.mSplitTimes[session.checkpointsHit] = session.in_race_time
+      end
       if session.checkpointsHit == 1 then
         session.mCurrentRouteName = getRouteDisplayName(session.races[raceName], isAlt)
       end
@@ -871,18 +904,36 @@ local function beamngTrigger_checkpointPlayer(data, event, raceName, checkpointI
       })
 
       local checkpointMessage = ""
+      local driftSplits = effectiveRaceCp.driftGoal
       local splitDiff = raceSession.getDifference(raceName, session.checkpointsHit)
       if splitDiff then
         local raceLabel = getRaceLabel()
         local leaderboardEntry = leaderboardManager.getLeaderboardEntry(session.mInventoryId, raceLabel)
-        local totalDiff = session.in_race_time - (leaderboardEntry.splitTimes[session.checkpointsHit] or 0)
+        local totalDiff
+        if driftSplits then
+          totalDiff = (leaderboardEntry.splitTimes[session.checkpointsHit] or 0) -
+            (session.mSplitTimes[session.checkpointsHit] or 0)
+        else
+          totalDiff = session.in_race_time - (leaderboardEntry.splitTimes[session.checkpointsHit] or 0)
+        end
 
-        checkpointMessage = string.format("Checkpoint %d/%d - Time: %s\nSplit: %s | Total: %s", session.checkpointsHit,
-          session.totalCheckpoints, utils.formatTime(session.in_race_time),
-          raceSession.formatSplitDifference(splitDiff), raceSession.formatSplitDifference(totalDiff))
+        if driftSplits then
+          checkpointMessage = string.format("Checkpoint %d/%d - Score: %d\nSplit: %s | Total: %s", session.checkpointsHit,
+            session.totalCheckpoints, math.floor(session.mSplitTimes[session.checkpointsHit] or 0),
+            raceSession.formatSplitDifference(splitDiff, true), raceSession.formatSplitDifference(totalDiff, true))
+        else
+          checkpointMessage = string.format("Checkpoint %d/%d - Time: %s\nSplit: %s | Total: %s", session.checkpointsHit,
+            session.totalCheckpoints, utils.formatTime(session.in_race_time),
+            raceSession.formatSplitDifference(splitDiff), raceSession.formatSplitDifference(totalDiff))
+        end
       else
-        checkpointMessage = string.format("Checkpoint %d/%d - Time: %s", session.checkpointsHit,
-          session.totalCheckpoints, utils.formatTime(session.in_race_time))
+        if driftSplits then
+          checkpointMessage = string.format("Checkpoint %d/%d - Score: %d", session.checkpointsHit,
+            session.totalCheckpoints, math.floor(session.mSplitTimes[session.checkpointsHit] or 0))
+        else
+          checkpointMessage = string.format("Checkpoint %d/%d - Time: %s", session.checkpointsHit,
+            session.totalCheckpoints, utils.formatTime(session.in_race_time))
+        end
       end
       if not session.races[raceName].checkpointRoad then
         utils.displayMessage(checkpointMessage, 7)
@@ -905,8 +956,16 @@ local function beamngTrigger_checkpointPlayer(data, event, raceName, checkpointI
         session.currentExpectedCheckpoint = checkpointManager.enableCheckpoint(checkpointIndex, isAlt)
 
         local message = string.format("Missed a checkpoint\nLap Invalidated.", checkpointIndex)
-        local checkpointMessageMiss = string.format("Checkpoint %d/%d - Time: %s", session.checkpointsHit,
-          session.totalCheckpoints, utils.formatTime(session.in_race_time))
+        local mrX = session.races[raceName]
+        local erX = (session.mAltRoute and mrX.altRoute) and mrX.altRoute or mrX
+        local checkpointMessageMiss
+        if erX.driftGoal then
+          checkpointMessageMiss = string.format("Checkpoint %d/%d - Score: %d", session.checkpointsHit,
+            session.totalCheckpoints, math.floor(session.mSplitTimes[session.checkpointsHit] or 0))
+        else
+          checkpointMessageMiss = string.format("Checkpoint %d/%d - Time: %s", session.checkpointsHit,
+            session.totalCheckpoints, utils.formatTime(session.in_race_time))
+        end
         message = message .. "\n" .. checkpointMessageMiss
         if session.races[raceName].checkpointRoad and raceSession.isRaceHudShown() then
           raceSession.setRaceHudBanner("Missed checkpoint — lap invalidated", "warn", 8)
