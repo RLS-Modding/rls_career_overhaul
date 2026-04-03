@@ -353,29 +353,31 @@ local function openMenu()
     return
   end
   auctionState.uiOpen = true
-  pcall(function() extensions.overhaul_musicPlayer.loadMusicLibrary('/music', nil, true) end)
-  pcall(function() guihooks.trigger('UsedAuctionShow') end)
+  if extensions.overhaul_musicPlayer and extensions.overhaul_musicPlayer.loadMusicLibrary then
+    extensions.overhaul_musicPlayer.loadMusicLibrary('/music', nil, true)
+  end
+  guihooks.trigger('UsedAuctionShow')
 end
 
 local function closeCounterOverlayUi()
-  pcall(function() guihooks.trigger('UsedAuctionCounterHide') end)
+  guihooks.trigger('UsedAuctionCounterHide')
 end
 
 local function closeAuctionOverlayUi()
   auctionState.uiOpen = false
   closeCounterOverlayUi()
-  pcall(function() guihooks.trigger('UsedAuctionHide') end)
+  guihooks.trigger('UsedAuctionHide')
 end
 
 local function startFadeSafe()
   if ui_fadeScreen and ui_fadeScreen.start then
-    pcall(function() ui_fadeScreen.start(constants.FADE_DURATION) end)
+    ui_fadeScreen.start(constants.FADE_DURATION)
   end
 end
 
 local function stopFadeSafe()
   if ui_fadeScreen and ui_fadeScreen.stop then
-    pcall(function() ui_fadeScreen.stop(constants.FADE_DURATION) end)
+    ui_fadeScreen.stop(constants.FADE_DURATION)
   end
 end
 
@@ -2271,7 +2273,7 @@ local function openCounterPrompt()
   rollCounterOffers()
   auctionState.counterPromptActive = true
   openMenu()
-  pcall(function() guihooks.trigger('UsedAuctionCounterShow') end)
+  guihooks.trigger('UsedAuctionCounterShow')
   return true
 end
 
@@ -2980,7 +2982,7 @@ local function onBeamNGTrigger(data)
   if data.triggerName and data.triggerName:find(constants.EXIT_TRIGGER) then
     if auctionState.phase ~= 'idle' then
       if computeAuctionExitNeedsConfirm() then
-        pcall(function() guihooks.trigger('UsedAuctionExitRequest') end)
+        guihooks.trigger('UsedAuctionExitRequest')
       else
         exitAuctionArea()
       end
@@ -3069,7 +3071,7 @@ local function hideAuctionUiAndDisableAssets()
   hardDisableAuctionAudioVisuals()
   auctionState.uiOpen = false
   closeCounterOverlayUi()
-  pcall(function() guihooks.trigger('UsedAuctionHide') end)
+  guihooks.trigger('UsedAuctionHide')
 end
 
 local function onCareerActivated()
@@ -3091,7 +3093,7 @@ end
 
 local function onCareerDeactivatedWhileLevelLoaded()
   closeCounterOverlayUi()
-  pcall(function() guihooks.trigger('UsedAuctionHide') end)
+  guihooks.trigger('UsedAuctionHide')
   resetAuction(false)
 end
 
