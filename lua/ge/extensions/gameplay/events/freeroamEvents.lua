@@ -15,6 +15,30 @@ local loadedExtensions = {}
 
 local session
 
+local function notifyFreContractsFreeroamUi()
+  if gameplay_events_freContracts_ui and gameplay_events_freContracts_ui.emitUiStateUpdate then
+    gameplay_events_freContracts_ui.emitUiStateUpdate("freeroam_session")
+  end
+end
+
+local function getVehicleSpeedMph(vehId)
+  local speedUnit = (session and session.speedUnit) or 2.2369362921
+  if not vehId or not be or not be.getObjectVelocityXYZ then
+    return 0
+  end
+  local a, b, c = be:getObjectVelocityXYZ(vehId)
+  if type(a) == "number" and type(b) == "number" and type(c) == "number" then
+    return math.sqrt(a * a + b * b + c * c) * speedUnit
+  end
+  if type(a) == "number" then
+    return math.abs(a) * speedUnit
+  end
+  if a ~= nil and type(a.length) == "function" then
+    return a:length() * speedUnit
+  end
+  return 0
+end
+
 local function getDisplayTotalLapsForRace(r)
   return competitiveTrackFlow.getDisplayTotalLapsForRace(r)
 end
@@ -41,6 +65,19 @@ local function hideStagedFlashMessage()
   if gc and gc.hideApp then
     gc.hideApp("gameplayApps", "flashMessage")
     gc.hideApp("gameplayApps", "countdown")
+  end
+end
+
+local function suppressVanillaDriftMissionUi()
+  if gameplay_drift_general and gameplay_drift_general.setContext then
+    gameplay_drift_general.setContext("inFreeroam")
+  end
+  if core_gamestate and core_gamestate.setGameState then
+    core_gamestate.setGameState("freeroam", "freeroam", "freeroam")
+  end
+  local gc = getGameplayAppContainers()
+  if gc and gc.hideApp then
+    gc.hideApp("gameplayApps", "drift")
   end
 end
 
@@ -272,9 +309,12 @@ local function beginFreeroamRace(raceNameArg, subjectID)
     utils.displayStartMessage(raceName)
   end
   utils.setActiveLight(raceName, "green")
-  if session.races[raceName].type and utils.tableContains(session.races[raceName].type, "drift") then
-    gameplay_drift_general.setContext("inChallenge")
-    gameplay_drift_general.reset()
+  local rStart = session.races[raceName]
+  local isFreDrift = rStart and ((rStart.type and utils.tableContains(rStart.type, "drift")) or rStart.driftGoal)
+  if isFreDrift then
+    if gameplay_drift_general and gameplay_drift_general.reset then
+      gameplay_drift_general.reset()
+    end
     if gameplay_drift_drift then
       gameplay_drift_drift.setVehId(subjectID)
     end
@@ -285,6 +325,16 @@ local function beginFreeroamRace(raceNameArg, subjectID)
     race = session.races[raceName],
     checkpointRoad = session.races[raceName].checkpointRoad
   })
+  notifyFreContractsFreeroamUi()
+  if isFreDrift then
+    suppressVanillaDriftMissionUi()
+    if core_jobsystem and core_jobsystem.create then
+      core_jobsystem.create(function(job)
+        job.sleep(0.2)
+        suppressVanillaDriftMissionUi()
+      end)
+    end
+  end
 end
 
 local function applySavedStagingSpotNavigation()
@@ -491,6 +541,7 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
     session.mSuppressOffRoadExitUntil = 0
 
     session.mActiveRace = nil
+    notifyFreContractsFreeroamUi()
     local hideHudNow = deferResultScreen or not deferHudHide
     extensions.hook('onFreeroamSessionExiting', {
       raceName = raceName,
@@ -539,8 +590,10 @@ local function exitRace(isCompletion, customMessage, raceData, subjectID)
     if raceName == TRACK_RACE_ID and competitiveTrackFlow and competitiveTrackFlow.leaveTrackFlowAfterRace then
       competitiveTrackFlow.leaveTrackFlowAfterRace()
     end
-    if gameplay_drift_general.getContext() == "inChallenge" then
-      gameplay_drift_general.setContext("inFreeRoam")
+    local exitedFreRace = session.races[raceName]
+    if exitedFreRace and
+        ((exitedFreRace.type and utils.tableContains(exitedFreRace.type, "drift")) or exitedFreRace.driftGoal) then
+      gameplay_drift_general.setContext("inFreeroam")
       gameplay_drift_general.reset()
     end
     if career_career.isActive() then
@@ -585,7 +638,7 @@ local function tryCommitStagingEnter(raceName, spawnVehId)
   session.saveGameState = true
   core_gamestate.requestGameState()
 
-  local vehicleSpeed = math.abs(be:getObjectVelocityXYZ(spawnVehId)) * session.speedUnit
+  local vehicleSpeed = getVehicleSpeedMph(spawnVehId)
   if vehicleSpeed > 5 and session.mActiveRace then
     return false
   end
@@ -667,6 +720,7 @@ local function tryCommitStagingEnter(raceName, spawnVehId)
     raceName = raceName,
     vehicleId = vehId
   })
+  notifyFreContractsFreeroamUi()
   return true
 end
 
@@ -697,6 +751,7 @@ local function beamngTrigger_staging(data, event, raceName)
       session.staged = nil
       raceSession.setStagingSubjectId(nil)
       hideStagedFlashMessage()
+      notifyFreContractsFreeroamUi()
       if not useHud and showStagingExitMsg then
         utils.displayMessage("You exited the staging zone", 4)
       end
@@ -817,7 +872,13 @@ local function beamngTrigger_checkpointPlayer(data, event, raceName, checkpointI
       session.checkpointsHit = session.checkpointsHit + 1
       raceSession.clearHudCompletionPayload()
       session.currCheckpoint = checkpointIndex
-      session.mSplitTimes[session.checkpointsHit] = session.in_race_time
+      local mainRaceCp = session.races[raceName]
+      local effectiveRaceCp = (session.mAltRoute and mainRaceCp.altRoute) and mainRaceCp.altRoute or mainRaceCp
+      if effectiveRaceCp.driftGoal then
+        session.mSplitTimes[session.checkpointsHit] = tonumber(raceSession.peekLiveDriftScore()) or 0
+      else
+        session.mSplitTimes[session.checkpointsHit] = session.in_race_time
+      end
       if session.checkpointsHit == 1 then
         session.mCurrentRouteName = getRouteDisplayName(session.races[raceName], isAlt)
       end
@@ -843,18 +904,36 @@ local function beamngTrigger_checkpointPlayer(data, event, raceName, checkpointI
       })
 
       local checkpointMessage = ""
+      local driftSplits = effectiveRaceCp.driftGoal
       local splitDiff = raceSession.getDifference(raceName, session.checkpointsHit)
       if splitDiff then
         local raceLabel = getRaceLabel()
         local leaderboardEntry = leaderboardManager.getLeaderboardEntry(session.mInventoryId, raceLabel)
-        local totalDiff = session.in_race_time - (leaderboardEntry.splitTimes[session.checkpointsHit] or 0)
+        local totalDiff
+        if driftSplits then
+          totalDiff = (leaderboardEntry.splitTimes[session.checkpointsHit] or 0) -
+            (session.mSplitTimes[session.checkpointsHit] or 0)
+        else
+          totalDiff = session.in_race_time - (leaderboardEntry.splitTimes[session.checkpointsHit] or 0)
+        end
 
-        checkpointMessage = string.format("Checkpoint %d/%d - Time: %s\nSplit: %s | Total: %s", session.checkpointsHit,
-          session.totalCheckpoints, utils.formatTime(session.in_race_time),
-          raceSession.formatSplitDifference(splitDiff), raceSession.formatSplitDifference(totalDiff))
+        if driftSplits then
+          checkpointMessage = string.format("Checkpoint %d/%d - Score: %d\nSplit: %s | Total: %s", session.checkpointsHit,
+            session.totalCheckpoints, math.floor(session.mSplitTimes[session.checkpointsHit] or 0),
+            raceSession.formatSplitDifference(splitDiff, true), raceSession.formatSplitDifference(totalDiff, true))
+        else
+          checkpointMessage = string.format("Checkpoint %d/%d - Time: %s\nSplit: %s | Total: %s", session.checkpointsHit,
+            session.totalCheckpoints, utils.formatTime(session.in_race_time),
+            raceSession.formatSplitDifference(splitDiff), raceSession.formatSplitDifference(totalDiff))
+        end
       else
-        checkpointMessage = string.format("Checkpoint %d/%d - Time: %s", session.checkpointsHit,
-          session.totalCheckpoints, utils.formatTime(session.in_race_time))
+        if driftSplits then
+          checkpointMessage = string.format("Checkpoint %d/%d - Score: %d", session.checkpointsHit,
+            session.totalCheckpoints, math.floor(session.mSplitTimes[session.checkpointsHit] or 0))
+        else
+          checkpointMessage = string.format("Checkpoint %d/%d - Time: %s", session.checkpointsHit,
+            session.totalCheckpoints, utils.formatTime(session.in_race_time))
+        end
       end
       if not session.races[raceName].checkpointRoad then
         utils.displayMessage(checkpointMessage, 7)
@@ -877,8 +956,16 @@ local function beamngTrigger_checkpointPlayer(data, event, raceName, checkpointI
         session.currentExpectedCheckpoint = checkpointManager.enableCheckpoint(checkpointIndex, isAlt)
 
         local message = string.format("Missed a checkpoint\nLap Invalidated.", checkpointIndex)
-        local checkpointMessageMiss = string.format("Checkpoint %d/%d - Time: %s", session.checkpointsHit,
-          session.totalCheckpoints, utils.formatTime(session.in_race_time))
+        local mrX = session.races[raceName]
+        local erX = (session.mAltRoute and mrX.altRoute) and mrX.altRoute or mrX
+        local checkpointMessageMiss
+        if erX.driftGoal then
+          checkpointMessageMiss = string.format("Checkpoint %d/%d - Score: %d", session.checkpointsHit,
+            session.totalCheckpoints, math.floor(session.mSplitTimes[session.checkpointsHit] or 0))
+        else
+          checkpointMessageMiss = string.format("Checkpoint %d/%d - Time: %s", session.checkpointsHit,
+            session.totalCheckpoints, utils.formatTime(session.in_race_time))
+        end
         message = message .. "\n" .. checkpointMessageMiss
         if session.races[raceName].checkpointRoad and raceSession.isRaceHudShown() then
           raceSession.setRaceHudBanner("Missed checkpoint — lap invalidated", "warn", 8)
@@ -1098,7 +1185,7 @@ local function onUpdate(dtReal, dtSim, dtRaw)
     circuitRaceAi.onWaypointPollAccum(dtSim)
     local playerVehicleId = be:getPlayerVehicleID(0)
     if playerVehicleId then
-      local currentSpeed = math.abs(be:getObjectVelocityXYZ(playerVehicleId)) * session.speedUnit
+      local currentSpeed = getVehicleSpeedMph(playerVehicleId)
       if currentSpeed > session.maxSpeed then
         session.maxSpeed = currentSpeed
       end
@@ -1225,6 +1312,7 @@ M.startSanctionedRaceDispatch = function(useAltRoute, poolReferenceHpOverride)
   end
   preloadFreeroamAiPathsForTrack()
   session.staged = nil
+  notifyFreContractsFreeroamUi()
   competitiveTrackFlow.resetTrackGridFlowFlags()
   trackFlowState.sanctionedPoolRefHp = (type(poolReferenceHpOverride) == "number" and poolReferenceHpOverride > 0) and
                                          poolReferenceHpOverride or nil
@@ -1275,6 +1363,7 @@ M.clearSanctionedDispatchStaging = function()
   if competitiveTrackFlow and competitiveTrackFlow.clearSanctionedNavigateVisuals then
     competitiveTrackFlow.clearSanctionedNavigateVisuals()
   end
+  notifyFreContractsFreeroamUi()
 end
 
 M.getFreeroamRaceLabel = getRaceLabel

@@ -80,6 +80,33 @@ local function formatTimeForRequirement(seconds)
   end
 end
 
+local FREEROAM_CONTRACT_BLOCK_MSG =
+  "You can't accept contracts during a freeroam race or while staged at an event. Finish or leave the event first."
+
+local function isFreeroamEventBlockingContracts()
+  local fs = gameplay_events_freeroam_session
+  if type(fs) ~= "table" then
+    return false
+  end
+  if fs.mActiveRace then
+    return true
+  end
+  if fs.staged then
+    return true
+  end
+  if fs.dragPracticeActive then
+    return true
+  end
+  return false
+end
+
+local function getFreeroamEventContractBlockMessage()
+  if isFreeroamEventBlockingContracts() then
+    return FREEROAM_CONTRACT_BLOCK_MSG
+  end
+  return nil
+end
+
 local function pickWeightedBonusType(weightTable)
   local entries = {}
   local total = 0
@@ -113,5 +140,7 @@ M.pickEarlierTime = pickEarlierTime
 M.tableHasAnyEntries = tableHasAnyEntries
 M.formatTimeForRequirement = formatTimeForRequirement
 M.pickWeightedBonusType = pickWeightedBonusType
+M.isFreeroamEventBlockingContracts = isFreeroamEventBlockingContracts
+M.getFreeroamEventContractBlockMessage = getFreeroamEventContractBlockMessage
 
 return M

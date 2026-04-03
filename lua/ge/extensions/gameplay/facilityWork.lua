@@ -986,9 +986,9 @@ local function spawnBatch(facilityId)
     if not dropTrigger then return false end
     local spawns = facCfg.spawns or {}
     if #spawns == 0 then return false end
-    local baseSize = tonumber(facCfg.batchSize) or 8
-    local batchSize = preferredBatchSize or baseSize
-    batchSize = math.max(1, batchSize)
+    local maxBatch = tonumber(facCfg.batchSize) or 8
+    local batchSize = preferredBatchSize or maxBatch
+    batchSize = math.max(1, math.min(batchSize, maxBatch))
     
     local spawnDef = spawns[math.random(1, #spawns)]
     local mat = materialsById[spawnDef.materialId]
@@ -1921,6 +1921,10 @@ function M.selectFacility(id)
     loadConfig()
     if id and facilityConfigs[id] then
         selectedFacilityId = id
+        local maxB = tonumber(facilityConfigs[id].batchSize) or 8
+        if preferredBatchSize and preferredBatchSize > maxB then
+            preferredBatchSize = maxB
+        end
         if not currentBatch and not currentForkliftId then
             if setWaypointToFacilityForklift(id) and utils and utils.displayMessage then
                 utils.displayMessage("Waypoint set to the loaner forklift.", 4)
@@ -1938,10 +1942,16 @@ end
 
 function M.setBatchSize(size)
     local s = tonumber(size)
-    if s and s >= 1 then
-        preferredBatchSize = math.floor(s)
-        notifyPhoneState()
+    if not s or s < 1 then
+        return
     end
+    loadConfig()
+    local maxB = 8
+    if selectedFacilityId and facilityConfigs[selectedFacilityId] then
+        maxB = tonumber(facilityConfigs[selectedFacilityId].batchSize) or 8
+    end
+    preferredBatchSize = math.max(1, math.min(math.floor(s), maxB))
+    notifyPhoneState()
 end
 
 function M.endFacilityWork()

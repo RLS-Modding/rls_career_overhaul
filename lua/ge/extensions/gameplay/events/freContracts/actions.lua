@@ -1,8 +1,13 @@
 local M = {}
 
 local freConfig = require('gameplay/fre/config')
+local freHelpers = require('gameplay/events/freContracts/helpers')
 
 local function acceptContract(contractId)
+  local blockMsg = freHelpers.getFreeroamEventContractBlockMessage()
+  if blockMsg then
+    return false, blockMsg
+  end
   local state = gameplay_events_freContracts_state.getState()
   local now = tonumber(state.simTime) or 0
   for _, discipline in ipairs(freConfig.getDisciplines()) do

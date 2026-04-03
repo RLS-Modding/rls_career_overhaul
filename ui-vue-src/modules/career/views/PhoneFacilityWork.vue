@@ -17,7 +17,7 @@
                     @click="selectFacility(fac.id)"
                 >
                     <div class="fac-name">{{ formatName(fac.name) }}</div>
-                    <div class="fac-meta">Default batch: {{ fac.batchSize }}</div>
+                    <div class="fac-meta">Max batch: {{ fac.batchSize }}</div>
                 </div>
             </div>
 
@@ -59,7 +59,7 @@
                         <input 
                             type="range" 
                             min="1" 
-                            max="20" 
+                            :max="batchSliderMax"
                             v-model.number="batchSize" 
                             @change="updateBatchSize"
                             class="slider"
@@ -153,6 +153,18 @@ const facilityName = computed(() => {
     return f ? formatName(f.name) : 'Unknown'
 })
 
+/** Upper bound from facilityWorkConfig batchSize for the selected (or sole) facility */
+const batchSliderMax = computed(() => {
+    let f = null
+    if (selectedFacilityId.value) {
+        f = facilities.value.find(x => x.id === selectedFacilityId.value)
+    } else if (facilities.value.length === 1) {
+        f = facilities.value[0]
+    }
+    const n = f != null ? Number(f.batchSize) : NaN
+    return n >= 1 && !Number.isNaN(n) ? Math.floor(n) : 8
+})
+
 // Formatting
 const formatCurrency = (val) => {
     return (val ?? 0).toFixed(2)
@@ -169,6 +181,14 @@ const escapeLuaString = (s) => String(s).replace(/\\/g, '\\\\').replace(/"/g, '\
 // Actions
 const selectFacility = (id) => {
     selectedFacilityId.value = id
+    if (id) {
+        const f = facilities.value.find(x => x.id === id)
+        const cap = f != null ? Number(f.batchSize) : NaN
+        const maxB = cap >= 1 && !Number.isNaN(cap) ? Math.floor(cap) : 8
+        if (batchSize.value > maxB) {
+            batchSize.value = maxB
+        }
+    }
     // Use raw engineLua to bypass bridge proxy cache; escape id to prevent Lua injection
     if (id) {
         const safeId = escapeLuaString(id)
@@ -237,11 +257,17 @@ const updateState = (data) => {
     available.value = !!data.available
     facilities.value = data.facilities || []
     selectedFacilityId.value = data.selectedFacilityId || null
-    if (data.preferredBatchSize) {
-        batchSize.value = data.preferredBatchSize
+    const maxB = batchSliderMax.value
+    if (data.preferredBatchSize != null && data.preferredBatchSize !== undefined) {
+        batchSize.value = Math.min(Math.max(1, Math.floor(Number(data.preferredBatchSize) || 1)), maxB)
     } else if (selectedFacilityId.value) {
         const fac = facilities.value.find(x => x.id === selectedFacilityId.value)
-        if (fac) batchSize.value = fac.batchSize
+        if (fac) {
+            batchSize.value = Math.min(Math.max(1, Math.floor(Number(fac.batchSize) || maxB)), maxB)
+        }
+    } else if (facilities.value.length === 1) {
+        const fac = facilities.value[0]
+        batchSize.value = Math.min(Math.max(1, Math.floor(Number(fac.batchSize) || maxB)), maxB)
     }
     truckWaitingForLoad.value = !!data.truckWaitingForLoad
 }

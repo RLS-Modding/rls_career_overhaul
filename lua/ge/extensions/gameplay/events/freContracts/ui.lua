@@ -1,6 +1,7 @@
 local M = {}
 
 local freConfig = require('gameplay/fre/config')
+local freHelpers = require('gameplay/events/freContracts/helpers')
 
 local uiStreamingActive = false
 local uiRevision = 0
@@ -226,6 +227,7 @@ local function getUiState(filterDisciplineId)
     availableSponsors = availableSponsors,
     sanctionedRacing = gameplay_events_freContracts_sanctionedRacing.getOfferUiSnapshot(now),
     sanctionedRacingOfferPeriodMinutes = gameplay_events_freContracts_sanctionedRacing.getOfferGenerationPeriodMinutes(),
+    freeroamEventContractBlockReason = freHelpers.getFreeroamEventContractBlockMessage(),
   }
 end
 

@@ -5,6 +5,9 @@
       <div v-else class="content">
         <div class="account-header">
           <p class="account-name">{{ account.name }}</p>
+          <p v-if="account.type !== 'business' && account.accountType === 'savings'" class="savings-meta">
+            Accrued: ${{ formatCurrency(account.accruedInterest || 0) }} · Next payout in {{ formatPayoutEta(account.nextPayoutIn) }}
+          </p>
           <h2 class="account-balance">${{ formatCurrency(account.balance) }}</h2>
           <div class="actions-section">
             <button class="action-btn deposit-btn" @click="showDepositModal = true">
@@ -122,6 +125,19 @@ let refreshInterval = null
 
 const formatCurrency = (amount) => {
   return (amount || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+}
+
+const formatPayoutEta = (seconds) => {
+  const s = Math.max(0, Math.ceil(Number(seconds) || 0))
+  const m = Math.floor(s / 60)
+  const r = s % 60
+  if (m >= 60) {
+    const h = Math.floor(m / 60)
+    const mm = m % 60
+    return `${h}h ${mm}m`
+  }
+  if (m > 0) return `${m}m ${r}s`
+  return `${r}s`
 }
 
 const getAccountName = (accountId) => {
@@ -316,6 +332,14 @@ onBeforeUnmount(() => {
   opacity: 0.8;
   margin: 0 0 6px 0;
   line-height: 1.2;
+}
+
+.savings-meta {
+  font-size: 0.72rem;
+  opacity: 0.85;
+  margin: 0 0 8px 0;
+  line-height: 1.25;
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .account-balance {

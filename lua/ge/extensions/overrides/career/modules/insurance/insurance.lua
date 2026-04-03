@@ -4,7 +4,7 @@
 
 local M = {}
 
-M.dependencies = {'career_career', 'career_modules_payment', 'career_modules_playerAttributes'}
+M.dependencies = {'career_career', 'career_modules_payment', 'career_modules_playerAttributes', 'career_modules_valueCalculator'}
 
 local plInsuranceDataFileName = "insurance"
 
@@ -24,7 +24,8 @@ local insuranceEditTime = 600 -- have to wait between coverage editing
 local testDriveClaimPrice = {money = { amount = 500, canBeNegative = true}}
 local minimumDriverScore = 0
 local maximumDriverScore = 100
-local driverScoreIncrementAmount = 1
+local insuranceRepairScorePenaltySqrtDivisor = 6250
+local insuranceRepairScorePenaltyMax = 25
 local quickRepairExtraPrice = 1000
 local earlyTerminationPenalty = 25 -- percentage
 --loaded default data
@@ -568,6 +569,20 @@ local function makeTestDriveDamageClaim(vehId)
     }
   })
 end
+local function getInsuranceRepairDriverScorePenalty(vehInfo, costs)
+  local damageEstimate = career_modules_valueCalculator.getRepairDetails(vehInfo).price
+  local deductible = 0
+  if type(costs) == "table" then
+    deductible = costs.deductible or 0
+  end
+  local covered = math.max(0, damageEstimate - deductible)
+  if covered <= 0 then
+    return 1
+  end
+  local penalty = math.max(2, math.ceil(math.sqrt(covered / insuranceRepairScorePenaltySqrtDivisor)) + 1)
+  return math.min(penalty, insuranceRepairScorePenaltyMax)
+end
+
 local originComputerId
 local function makeRepairClaim(invVehId, costs, vehInfo)
   local totalCost = 0
@@ -577,12 +592,13 @@ local function makeRepairClaim(invVehId, costs, vehInfo)
 
   local insuranceId = invVehs[invVehId].insuranceId or -1
   local hasUsedAccidentForgiveness = false
+  local driverScorePenalty = getInsuranceRepairDriverScorePenalty(vehInfo, costs)
 
   if insuranceId > 0 and plInsurancesData[insuranceId] and plInsurancesData[insuranceId].accidentForgiveness > 0 then
     plInsurancesData[insuranceId].accidentForgiveness = plInsurancesData[insuranceId].accidentForgiveness - 1
     hasUsedAccidentForgiveness = true
   else
-    plDriverScore = math.max(plDriverScore - driverScoreIncrementAmount, minimumDriverScore)
+    plDriverScore = math.max(plDriverScore - driverScorePenalty, minimumDriverScore)
   end
 
   lastDriverScoreKmIncrease = totalDrivenDistance
@@ -592,10 +608,11 @@ local function makeRepairClaim(invVehId, costs, vehInfo)
     insuranceName = availableInsurances[insuranceId].name
   end
 
+  local scoreEffectChange = hasUsedAccidentForgiveness and 0 or -driverScorePenalty
   career_modules_insurance_history.addToPlHistory({
     type = "insuranceRepairClaim",
     title = "Insurance repair claim",
-    effects = {{type = "money", label = "Money", changedBy = -totalCost, newValue = career_modules_playerAttributes.getAttributeValue("money")}, {type = "driverScore", label = "Driver score", changedBy = -driverScoreIncrementAmount, newValue = plDriverScore}},
+    effects = {{type = "money", label = "Money", changedBy = -totalCost, newValue = career_modules_playerAttributes.getAttributeValue("money")}, {type = "driverScore", label = "Driver score", changedBy = scoreEffectChange, newValue = plDriverScore}},
     concernedInsuranceName = insuranceName,
     overrideText = hasUsedAccidentForgiveness and "Use accident forgiveness" or nil,
     other = {
@@ -2097,5 +2114,6 @@ M.resetPlPolicyData = function()
   loadInsurancesData(true)
 end
 M.setDriverScore = setDriverScore
+M.getInsuranceRepairDriverScorePenalty = getInsuranceRepairDriverScorePenalty
 
 return M

@@ -6,11 +6,100 @@ local saveDir = "/career/rls_career"
 local saveFile = saveDir .. "/bank.json"
 
 local PENDING_TRANSFER_DURATION = 5 * 60
+local SAVINGS_PAYOUT_INTERVAL_SEC = 30 * 60
+local SAVINGS_RATE_PER_SEC = 0.05 / (6 * 3600)
 
 local accounts = {}
 local pendingTransfers = {}
 local transactions = {}
 local isLoadingData = false
+local triggerAccountUpdate
+
+local function isSavingsPersonal(account)
+  return account and (account.type or "") == "personal" and account.accountType == "savings"
+end
+
+local function migrateSavingsInterestOnLoad(acc)
+  if not isSavingsPersonal(acc) then
+    return
+  end
+  acc.accruedInterest = acc.accruedInterest or 0
+  acc.sinceLastPayout = acc.sinceLastPayout or 0
+  acc.sinceSegmentStart = acc.sinceSegmentStart or 0
+  acc.segmentBalance = acc.segmentBalance or acc.balance or 0
+end
+
+local function closeOpenSegment(account)
+  if not isSavingsPersonal(account) then
+    return
+  end
+  local dt = math.max(0, account.sinceSegmentStart or 0)
+  local segBal = account.segmentBalance or account.balance or 0
+  if dt > 0 then
+    account.accruedInterest = (account.accruedInterest or 0) + segBal * SAVINGS_RATE_PER_SEC * dt
+  end
+  account.sinceSegmentStart = 0
+  account.segmentBalance = account.balance or 0
+end
+
+local function syncSavingsSegmentAfterMutation(account)
+  if isSavingsPersonal(account) then
+    account.segmentBalance = account.balance or 0
+  end
+end
+
+local function runSavingsPayoutCycle(account)
+  if not isSavingsPersonal(account) then
+    return
+  end
+  closeOpenSegment(account)
+  local raw = account.accruedInterest or 0
+  local paid = math.floor(raw * 100 + 0.5) / 100
+  account.balance = (account.balance or 0) + paid
+  account.accruedInterest = raw - paid
+  if paid > 0 then
+    if not transactions[account.id] then
+      transactions[account.id] = {}
+    end
+    table.insert(transactions[account.id], {
+      id = Engine.generateUUID(),
+      accountId = account.id,
+      label = "Interest",
+      amount = paid,
+      timestamp = os.time(),
+      description = "Savings interest payout"
+    })
+  end
+  account.segmentBalance = account.balance or 0
+  account.sinceSegmentStart = 0
+  account.sinceLastPayout = (account.sinceLastPayout or 0) - SAVINGS_PAYOUT_INTERVAL_SEC
+  if not isLoadingData then
+    triggerAccountUpdate(account.id)
+  end
+end
+
+local function applySavingsDtSim(dtSim)
+  if not career_career.isActive() or isLoadingData or not dtSim or dtSim <= 0 then
+    return
+  end
+  for _, account in pairs(accounts) do
+    if isSavingsPersonal(account) then
+      account.sinceLastPayout = (account.sinceLastPayout or 0) + dtSim
+      account.sinceSegmentStart = (account.sinceSegmentStart or 0) + dtSim
+      while (account.sinceLastPayout or 0) >= SAVINGS_PAYOUT_INTERVAL_SEC do
+        runSavingsPayoutCycle(account)
+      end
+    end
+  end
+end
+
+local function foldAllSavingsForSave()
+  for _, account in pairs(accounts) do
+    if isSavingsPersonal(account) then
+      closeOpenSegment(account)
+    end
+  end
+end
 
 local function ensureSaveDir(currentSavePath)
   local dirPath = currentSavePath .. saveDir
@@ -38,6 +127,7 @@ local function loadBankData()
   if data.accounts then
     for _, acc in ipairs(data.accounts) do
       accounts[acc.id] = acc
+      migrateSavingsInterestOnLoad(acc)
     end
   end
 
@@ -126,6 +216,7 @@ local function onSaveCurrentSaveSlot(currentSavePath)
     return
   end
   local success, err = pcall(function()
+    foldAllSavingsForSave()
     saveBankData(currentSavePath, true)
   end)
   if not success then
@@ -135,7 +226,7 @@ end
 
 local processPendingTransfers
 
-local function triggerAccountUpdate(accountId)
+triggerAccountUpdate = function(accountId)
   if not accountId or not accounts[accountId] then
     return
   end
@@ -185,7 +276,9 @@ processPendingTransfers = function()
 
       if fromAccount and toAccount then
         local transferAmount = transfer.amount or 0
+        closeOpenSegment(toAccount)
         toAccount.balance = (toAccount.balance or 0) + transferAmount
+        syncSavingsSegmentAfterMutation(toAccount)
 
         if not transactions[transfer.toAccountId] then
           transactions[transfer.toAccountId] = {}
@@ -259,6 +352,13 @@ local function createAccount(name, accountType, initialDeposit)
     createdAt = os.time()
   }
 
+  if accountType == "savings" then
+    account.accruedInterest = 0
+    account.sinceLastPayout = 0
+    account.sinceSegmentStart = 0
+    account.segmentBalance = initialDeposit
+  end
+
   accounts[accountId] = account
 
   if initialDeposit > 0 then
@@ -323,12 +423,18 @@ local function deleteAccount(accountId)
     return false
   end
 
-  local balance = account.balance or 0
-  if balance > 0 then
+  if isSavingsPersonal(account) then
+    closeOpenSegment(account)
+  end
+  local payTotal = (account.balance or 0) + (isSavingsPersonal(account) and (account.accruedInterest or 0) or 0)
+  if isSavingsPersonal(account) then
+    account.accruedInterest = 0
+  end
+  if payTotal > 0 then
     if career_modules_payment and career_modules_payment.reward then
       career_modules_payment.reward({
         money = {
-          amount = balance
+          amount = payTotal
         }
       }, {
         label = "Account closure withdrawal"
@@ -368,7 +474,9 @@ local function addFunds(accountId, amount, label, description)
   end
 
   local account = accounts[accountId]
+  closeOpenSegment(account)
   account.balance = (account.balance or 0) + amount
+  syncSavingsSegmentAfterMutation(account)
 
   if not transactions[accountId] then
     transactions[accountId] = {}
@@ -400,7 +508,9 @@ local function removeFunds(accountId, amount, label, description, allowNegativeB
     return false
   end
 
+  closeOpenSegment(account)
   account.balance = (account.balance or 0) - amount
+  syncSavingsSegmentAfterMutation(account)
 
   if not transactions[accountId] then
     transactions[accountId] = {}
@@ -526,7 +636,9 @@ local function transfer(fromAccountId, toAccountId, amount)
       completesAt = currentTime + PENDING_TRANSFER_DURATION
     }
 
+    closeOpenSegment(fromAccount)
     fromAccount.balance = fromAccount.balance - amount
+    syncSavingsSegmentAfterMutation(fromAccount)
 
     if not transactions[fromAccountId] then
       transactions[fromAccountId] = {}
@@ -548,8 +660,12 @@ local function transfer(fromAccountId, toAccountId, amount)
     return transferId
   else
     local toAccount = accounts[toAccountId]
+    closeOpenSegment(fromAccount)
+    closeOpenSegment(toAccount)
     fromAccount.balance = fromAccount.balance - amount
     toAccount.balance = toAccount.balance + amount
+    syncSavingsSegmentAfterMutation(fromAccount)
+    syncSavingsSegmentAfterMutation(toAccount)
 
     local currentTime = os.time()
 
@@ -591,6 +707,9 @@ local function getAccounts()
 
   local accountsArray = {}
   for _, acc in pairs(accounts) do
+    if isSavingsPersonal(acc) then
+      acc.nextPayoutIn = math.max(0, SAVINGS_PAYOUT_INTERVAL_SEC - (acc.sinceLastPayout or 0))
+    end
     table.insert(accountsArray, acc)
   end
 
@@ -649,7 +768,9 @@ local function cancelPendingTransfer(transferId)
 
   if fromAccount then
     local transferAmount = transfer.amount or 0
+    closeOpenSegment(fromAccount)
     fromAccount.balance = (fromAccount.balance or 0) + transferAmount
+    syncSavingsSegmentAfterMutation(fromAccount)
 
     if transactions[transfer.fromAccountId] then
       for i = #transactions[transfer.fromAccountId], 1, -1 do
@@ -734,8 +855,11 @@ end
 local updateInterval = 5
 local updateTimer = 0
 
-local function onUpdate(dt)
-  updateTimer = updateTimer + dt
+local function onUpdate(dtReal, dtSim)
+  dtSim = dtSim or 0
+  dtReal = dtReal or 0
+  applySavingsDtSim(dtSim)
+  updateTimer = updateTimer + dtReal
   if updateTimer >= updateInterval then
     updateTimer = 0
     processPendingTransfers()

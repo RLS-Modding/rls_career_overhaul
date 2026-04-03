@@ -87,6 +87,12 @@ end
 local function onExtensionLoaded()
 end
 
+local function notifyFreContractsFreeroamUi()
+  if gameplay_events_freContracts_ui and gameplay_events_freContracts_ui.emitUiStateUpdate then
+    gameplay_events_freContracts_ui.emitUiStateUpdate("freeroam_session")
+  end
+end
+
 function M.setStagingSubjectId(v)
     frh.stagingSubjectId = v
 end
@@ -418,6 +424,11 @@ local function peekDriftScore()
         finalScore = finalScore + math.floor(cachedScore * combo)
     end
     return finalScore, combo
+end
+
+function M.peekLiveDriftScore()
+    local s = peekDriftScore()
+    return s
 end
 
 function M.payoutRace(completedLapTime)
@@ -809,6 +820,7 @@ function M.payoutRace(completedLapTime)
     local cpHud = race.checkpointRoad and frh.shown
     notifyFreRaceCompleted(mActiveRace, race, raceLabel, sess().in_race_time, be:getPlayerVehicleID(0), completionMeta)
     sess().mActiveRace = nil
+    notifyFreContractsFreeroamUi()
     if not cpHud then
         u.displayMessage(message, 20)
         if hotlapMessage ~= "" then
@@ -986,6 +998,7 @@ function M.payoutDragRace(raceName, finishTime, finishSpeed, vehId)
         sess().mActiveRace = nil
         sess().timerActive = false
         sess().dragPracticeActive = false
+        notifyFreContractsFreeroamUi()
         M.pushRaceHudCompletion(hudCompletionPayload, raceName, raceData.label, races["drag"].label, finishTime, true)
     end
     return reward
@@ -1006,21 +1019,43 @@ function M.getDifference(raceName, currentCheckpointIndex)
     if not mSplitTimes[currentCheckpointIndex] or not splitTimes[currentCheckpointIndex] then
         return nil
     end
+    local races = sess().races
+    local race = races and races[raceName]
+    local effectiveRace = race and ((sess().mAltRoute and race.altRoute) and race.altRoute or race) or nil
+    local useDriftScoreSplits = effectiveRace and effectiveRace.driftGoal
     local currentSplitDiff
     if currentCheckpointIndex == 1 then
-        currentSplitDiff = mSplitTimes[currentCheckpointIndex] - splitTimes[currentCheckpointIndex]
+        if useDriftScoreSplits then
+            currentSplitDiff = splitTimes[currentCheckpointIndex] - mSplitTimes[currentCheckpointIndex]
+        else
+            currentSplitDiff = mSplitTimes[currentCheckpointIndex] - splitTimes[currentCheckpointIndex]
+        end
     else
         if not mSplitTimes[currentCheckpointIndex - 1] or not splitTimes[currentCheckpointIndex - 1] then
             return nil
         end
         local previousBestSplit = splitTimes[currentCheckpointIndex] - splitTimes[currentCheckpointIndex - 1]
         local currentSplit = mSplitTimes[currentCheckpointIndex] - mSplitTimes[currentCheckpointIndex - 1]
-        currentSplitDiff = currentSplit - previousBestSplit
+        if useDriftScoreSplits then
+            currentSplitDiff = previousBestSplit - currentSplit
+        else
+            currentSplitDiff = currentSplit - previousBestSplit
+        end
     end
     return currentSplitDiff
 end
 
-function M.formatSplitDifference(diff)
+local function iroundDiff(x)
+    if x >= 0 then return math.floor(x + 0.5) end
+    return math.ceil(x - 0.5)
+end
+
+function M.formatSplitDifference(diff, asScore)
+    if asScore then
+        local r = iroundDiff(diff)
+        if r > 0 then return string.format("+%d", r) end
+        return string.format("%d", r)
+    end
     local sign = diff >= 0 and "+" or "-"
     return string.format("%s%s", sign, utils().formatTime(math.abs(diff)))
 end
@@ -1092,6 +1127,9 @@ function M.buildFreeroamRaceHudPayload()
             isLapRace = s.isLapRace,
             goalTime = s.goalTime,
             personalBestTime = s.personalBestTime,
+            driftGoal = s.driftGoal,
+            personalBestDriftScore = s.personalBestDriftScore,
+            sectorSplitsUseScore = s.sectorSplitsUseScore,
             currentLapTime = s.currentLapTime,
             bestLapThisRun = s.bestLapThisRun,
             invalidLap = s.invalidLap,
@@ -1138,6 +1176,15 @@ function M.buildFreeroamRaceHudPayload()
         if effectiveRace and effectiveRace.driftGoal then
             driftScoreLive, driftComboLive = peekDriftScore()
         end
+        local sectorSplitsUseScore = effectiveRace and effectiveRace.driftGoal and
+            (tonumber(sess().totalCheckpoints) or 0) > 0
+        local isDriftRace = effectiveRace and effectiveRace.driftGoal
+        local personalBestDriftScore = nil
+        if isDriftRace and type(lbEntry.driftScore) == "number" then
+            personalBestDriftScore = lbEntry.driftScore
+        end
+        local goalTimePb = not isDriftRace and effectiveRace.bestTime or nil
+        local personalBestTimePb = not isDriftRace and lbEntry.time or nil
         return {
             phase = "racing",
             raceLabel = displayLabel,
@@ -1145,8 +1192,9 @@ function M.buildFreeroamRaceHudPayload()
             displayLap = displayLapNum,
             totalLaps = totalLapsVal,
             isLapRace = isLapRace and true or false,
-            goalTime = effectiveRace.bestTime,
-            personalBestTime = lbEntry.time,
+            goalTime = goalTimePb,
+            personalBestTime = personalBestTimePb,
+            personalBestDriftScore = personalBestDriftScore,
             currentLapTime = sess().in_race_time,
             bestLapThisRun = sess().mBestLapThisRun,
             invalidLap = sess().invalidLap and true or false,
@@ -1157,10 +1205,11 @@ function M.buildFreeroamRaceHudPayload()
             completion = frh.completionPayload,
             banner = banner,
             lastLapReward = lastRew,
-            driftGoal = effectiveRace and effectiveRace.driftGoal or nil,
+            driftGoal = isDriftRace and effectiveRace.driftGoal or nil,
             driftScoreLive = driftScoreLive,
             driftComboLive = driftComboLive,
             dragSpeedLive = isDragRace and sess().maxSpeed or nil,
+            sectorSplitsUseScore = sectorSplitsUseScore and true or false,
         }
     end
     local staged = sess().staged
@@ -1177,6 +1226,11 @@ function M.buildFreeroamRaceHudPayload()
         if invId then
             stagingUi = u.getStagingHudBreakdown(invId, raceName) or stagingUi
         end
+        local stDrift = effectiveStagingRace and effectiveStagingRace.driftGoal
+        local stPbDrift = nil
+        if stDrift and type(lbEntry.driftScore) == "number" then
+            stPbDrift = lbEntry.driftScore
+        end
         return {
             phase = "staging",
             raceLabel = displayLabel,
@@ -1184,8 +1238,11 @@ function M.buildFreeroamRaceHudPayload()
             displayLap = 1,
             totalLaps = totalLapsVal,
             isLapRace = isLapRace and true or false,
-            goalTime = effectiveStagingRace.bestTime,
-            personalBestTime = lbEntry.time,
+            goalTime = not stDrift and effectiveStagingRace.bestTime or nil,
+            personalBestTime = not stDrift and lbEntry.time or nil,
+            personalBestDriftScore = stPbDrift,
+            driftGoal = stDrift and effectiveStagingRace.driftGoal or nil,
+            sectorSplitsUseScore = false,
             currentLapTime = 0,
             bestLapThisRun = nil,
             invalidLap = false,
@@ -1243,6 +1300,7 @@ function M.beginDragPracticeFreeroamHud(vehId)
     M.prepareNewRaceHudState("drag")
     M.setStagingSubjectId(resolveSessionInventoryFromSpawnId(vehId))
     M.showFreeroamRaceHud()
+    notifyFreContractsFreeroamUi()
 end
 
 function M.beginDragPracticeFreeroamRace(vehId)
@@ -1265,6 +1323,7 @@ function M.beginDragPracticeFreeroamRace(vehId)
     local u = utils()
     M.setRaceHudBanner(u.getRaceStartBannerText("drag"), "good", 5)
     M.pushFreeroamRaceHudState(true)
+    notifyFreContractsFreeroamUi()
 end
 
 function M.endDragPracticeFreeroamHud()
@@ -1279,6 +1338,7 @@ function M.endDragPracticeFreeroamHud()
     sess().in_race_time = 0
     M.setStagingSubjectId(nil)
     M.hideFreeroamRaceHud()
+    notifyFreContractsFreeroamUi()
 end
 
 function M.pushRaceHudCompletion(completionPayload, raceName, displayLabel, leaderboardLabel, currentLapTime, freezeCard)
@@ -1292,14 +1352,22 @@ function M.pushRaceHudCompletion(completionPayload, raceName, displayLabel, lead
         local isLapRace = isLapRaceConfig(effectiveRace)
         local totalLapsSnap = isLapRace and getDisplayTotalLapsForRace(effectiveRace) or 0
         local lbEntry = sess().mInventoryId and leaderboardManager().getLeaderboardEntry(sess().mInventoryId, leaderboardLabel or displayLabel) or {}
+        local snapDrift = effectiveRace and effectiveRace.driftGoal
+        local snapPbDrift = nil
+        if snapDrift and type(lbEntry.driftScore) == "number" then
+            snapPbDrift = lbEntry.driftScore
+        end
         frh.completionSnapshot = {
             raceLabel = displayLabel,
             routeName = sess().mCurrentRouteName,
             displayLap = isLapRace and hudDisplayLap(sess().lapCount, totalLapsSnap) or 1,
             totalLaps = totalLapsSnap,
             isLapRace = isLapRace and true or false,
-            goalTime = effectiveRace.bestTime,
-            personalBestTime = lbEntry.time,
+            goalTime = not snapDrift and effectiveRace.bestTime or nil,
+            personalBestTime = not snapDrift and lbEntry.time or nil,
+            driftGoal = snapDrift and effectiveRace.driftGoal or nil,
+            personalBestDriftScore = snapPbDrift,
+            sectorSplitsUseScore = snapDrift and (tonumber(sess().totalCheckpoints) or 0) > 0 or false,
             currentLapTime = currentLapTime,
             bestLapThisRun = sess().mBestLapThisRun,
             invalidLap = sess().invalidLap and true or false,
