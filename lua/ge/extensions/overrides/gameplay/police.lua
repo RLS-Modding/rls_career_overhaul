@@ -538,8 +538,7 @@ local function onVehicleSwitched(oldId, newId)
         traffic[newId].ignorePolice = true -- prevents self arrest
       end
 
-      if (inVeh or outVeh) and traffic[oldId].pursuit.mode > 0 then
-        -- walk mode changed during an active pursuit
+      if traffic[oldId].pursuit and traffic[oldId].pursuit.mode > 0 then
         if traffic[newId].role.name ~= 'suspect' then traffic[newId]:setRole('suspect') end
 
         local mode = traffic[oldId].pursuit.mode
@@ -548,7 +547,6 @@ local function onVehicleSwitched(oldId, newId)
         traffic[newId].queuedFuncs.pursuitChange = {timer = 0.1, func = gameplay_police.setPursuitMode, args = {mode, newId}}
 
         if inVeh and traffic[newId].pursuit.policeVisible then
-          -- force the target to get arrested
           traffic[newId].queuedFuncs.autoArrest = {timer = 0.2, func = gameplay_police.arrestVehicle, args = {newId, gameplay_traffic.showMessages}}
         end
       end

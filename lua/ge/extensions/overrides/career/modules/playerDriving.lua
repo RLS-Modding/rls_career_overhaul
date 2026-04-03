@@ -39,14 +39,35 @@ local function setPlayerData(newId, oldId)
 end
 
 -- RLS
-local function getPlayerIsCop()
+local function getPlayerIsCop(switchCtx)
+  switchCtx = switchCtx or {}
   local vehId = be:getPlayerVehicleID(0)
   if vehId and gameplay_traffic.getTrafficData()[vehId] and career_modules_inventory.getInventoryIdFromVehicleId(vehId) then
     local vehicle = scenetree.findObjectById(vehId)
     local invId = career_modules_inventory.getInventoryIdFromVehicleId(vehId)
+    local trafficVehicle = gameplay_traffic.getTrafficData()[vehId]
+    local pursuitMode = trafficVehicle.pursuit and trafficVehicle.pursuit.mode or 0
+    if pursuitMode == 0 and switchCtx.switchOldId then
+      local oldTraffic = gameplay_traffic.getTrafficData()[switchCtx.switchOldId]
+      if oldTraffic and oldTraffic.pursuit then
+        pursuitMode = oldTraffic.pursuit.mode or 0
+      end
+    end
+    if pursuitMode ~= 0 then
+      if pursuitMode > 0 and trafficVehicle.role and trafficVehicle.role.name ~= 'suspect' then
+        trafficVehicle:setRole('suspect')
+      end
+      local licenseText = career_modules_inventory.getLicensePlateText(vehId)
+      if licenseText and licenseText:lower() == "repo" then
+        return false
+      end
+      gameplay_traffic.setTrafficVars({
+        enableRandomEvents = false
+      })
+      return false
+    end
     local vehicleRole = career_modules_inventory.getVehicleRole(invId)
     if vehicleRole ~= nil then
-      local trafficVehicle = gameplay_traffic.getTrafficData()[vehId]
       if trafficVehicle then
         trafficVehicle:setRole(vehicleRole)
       end
@@ -182,7 +203,7 @@ local function onVehicleSwitched(oldId, newId)
   if not career_career.tutorialEnabled and not gameplay_missions_missionManager.getForegroundMissionId() then
     setPlayerData(newId, oldId)
     setTrafficVars()
-    local playerIsCop = getPlayerIsCop()
+    local playerIsCop = getPlayerIsCop({switchOldId = oldId})
     if playerIsCop then
       local policeDisabled, disabledReason = career_modules_enforcement.isPoliceDisabled()
       if policeDisabled then
