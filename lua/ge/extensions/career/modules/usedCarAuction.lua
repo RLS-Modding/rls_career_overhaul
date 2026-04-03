@@ -248,6 +248,7 @@ local function openMenu()
     return
   end
   auctionState.uiOpen = true
+  pcall(function() extensions.overhaul_musicPlayer.loadMusicLibrary('/music') end)
   pcall(function() guihooks.trigger('UsedAuctionShow') end)
 end
 

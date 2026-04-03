@@ -461,7 +461,7 @@ rlsMusicPlayerModule.directive('rlsMusicPlayer', ['$interval', function($interva
         startupPlaybackSynced = true
         if (vm.startPlaying === 'false') {
           vm.stop()
-        } else {
+        } else if (!result.isPlaying) {
           vm.play()
         }
       }

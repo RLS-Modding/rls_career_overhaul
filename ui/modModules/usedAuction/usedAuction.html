@@ -26,159 +26,159 @@
     </div>
   </div>
 
-  <div class="ua-vault-shell bng-blur" ng-if="isVaultSession() && !isEntryPrompt() && !showMainAuctionPanel()">
-    <div class="ua-vault-shell-header">
-      <div class="ua-vault-shell-title">The Vault</div>
-      <div class="ua-phase-badge" ng-class="phaseClass()">{{ phaseLabel() }}</div>
-    </div>
-    <div class="ua-stats-inline">
-      <div class="ua-stat-item">
-        <span class="ua-stat-k">Wins</span>
-        <span class="ua-stat-v">{{ state.purchasedCount || 0 }}</span>
+  <div class="ua-vault-session-stack" ng-if="isVaultSession() && !isEntryPrompt()">
+    <div class="ua-vault-shell bng-blur" ng-if="!showMainAuctionPanel()">
+      <div class="ua-vault-shell-header">
+        <div class="ua-vault-shell-title">The Vault</div>
+        <div class="ua-phase-badge" ng-class="phaseClass()">{{ phaseLabel() }}</div>
       </div>
-      <div class="ua-stat-sep"></div>
-      <div class="ua-stat-item">
-        <span class="ua-stat-k">Balance</span>
-        <span class="ua-stat-v">{{ formatCurrency(state.playerBalance || 0) }}</span>
-      </div>
-    </div>
-    <div class="ua-music-player">
-      <rls-music-player
-        ng-if="state.musicEnabled !== null"
-        emitter-name="SFXEmitter_2"
-        music-root="/music"
-        start-playing="{{ state.musicEnabled !== false }}"
-        poll-ms="400"></rls-music-player>
-    </div>
-    <div class="ua-vault-cta">{{ state.statusMessage }}</div>
-  </div>
-
-  <div class="ua-panel bng-blur" ua-draggable ng-if="showMainAuctionPanel() && !isEntryPrompt()">
-    <div class="ua-header">
-      <div class="ua-header-left">
-        <div class="ua-title">Used Car Auction</div>
-        <div class="ua-subtitle" ng-if="state.totalLots > 0">{{ state.totalLots }} lots</div>
-      </div>
-      <div class="ua-phase-badge" ng-class="phaseClass()">{{ phaseLabel() }}</div>
-    </div>
-
-    <div class="ua-stats-inline">
-      <div class="ua-stat-item">
-        <span class="ua-stat-k">Wins</span>
-        <span class="ua-stat-v">{{ state.purchasedCount || 0 }}</span>
-      </div>
-      <div class="ua-stat-sep"></div>
-      <div class="ua-stat-item">
-        <span class="ua-stat-k">Balance</span>
-        <span class="ua-stat-v">{{ formatCurrency(state.playerBalance || 0) }}</span>
-      </div>
-      <div class="ua-stat-sep" ng-if="activeLot()"></div>
-      <div class="ua-stat-item" ng-if="activeLot()">
-        <span class="ua-stat-k">Live</span>
-        <span class="ua-stat-v">Lot {{ activeLot().lotIndex }}</span>
-      </div>
-    </div>
-
-    <div class="ua-music-player">
-      <rls-music-player
-        ng-if="state.musicEnabled !== null"
-        emitter-name="SFXEmitter_2"
-        music-root="/music"
-        start-playing="{{ state.musicEnabled !== false }}"
-        poll-ms="400"></rls-music-player>
-    </div>
-
-    <div class="ua-table" id="ua-lot-table">
-      <div class="ua-table-head">
-        <div class="ua-col-lot">Lot</div>
-        <div class="ua-col-vehicle">Vehicle</div>
-        <div class="ua-col-mileage">Mileage</div>
-        <div class="ua-col-status">Status</div>
-      </div>
-      <div class="ua-table-body">
-        <div class="ua-table-row"
-             ng-repeat="lot in (state.lots || []) track by lot.lotIndex"
-             ng-class="{ active: isActiveLot(lot), finished: lot.state === 'finished', won: lot.state === 'finished' && lot.highestBidder === 'player' }"
-             id="ua-lot-{{ lot.lotIndex }}">
-          <div class="ua-col-lot">
-            <span class="ua-lot-num">{{ lot.lotIndex }}</span>
-          </div>
-          <div class="ua-col-vehicle" title="{{ lot.title || '-' }}">{{ lot.title || '-' }}</div>
-          <div class="ua-col-mileage">{{ formatMileage(lot.mileage) }}</div>
-          <div class="ua-col-status">
-            <span class="ua-lot-badge" ng-class="lotBadgeClass(lot)">{{ lotStatusLabel(lot) }}</span>
-          </div>
+      <div class="ua-stats-inline">
+        <div class="ua-stat-item">
+          <span class="ua-stat-k">Wins</span>
+          <span class="ua-stat-v">{{ state.purchasedCount || 0 }}</span>
         </div>
-        <div class="ua-empty" ng-if="!(state.lots && state.lots.length)">No active lots.</div>
+        <div class="ua-stat-sep"></div>
+        <div class="ua-stat-item">
+          <span class="ua-stat-k">Balance</span>
+          <span class="ua-stat-v">{{ formatCurrency(state.playerBalance || 0) }}</span>
+        </div>
       </div>
+      <div class="ua-music-player" ng-if="state.musicEnabled !== null">
+        <rls-music-player
+          emitter-name="SFXEmitter_2"
+          music-root="/music"
+          start-playing="{{ state.musicEnabled !== false }}"
+          poll-ms="400"></rls-music-player>
+      </div>
+      <div class="ua-vault-cta">{{ state.statusMessage }}</div>
     </div>
 
-    <div class="ua-bidding-section" ng-if="activeLot()">
-      <div class="ua-bid-info">
-        <div class="ua-bid-main">
-          <div class="ua-bid-amount-wrap" ng-class="{ waiting: !isLiveBidLot() }">
-            <span class="ua-bid-label">{{ bidCardLabel() }}</span>
-            <span class="ua-bid-amount" ng-if="isLiveBidLot()">{{ formatCurrency(activeLot() && activeLot().currentBid) }}</span>
-          </div>
-          <div class="ua-bid-leader-wrap" ng-class="bidLeaderClass()" ng-if="isLiveBidLot()">
-            <span class="ua-bid-leader-indicator"></span>
-            <span class="ua-bid-leader-name">{{ formatBidder(activeLot()) }}</span>
-          </div>
-          <div class="ua-bid-waiting-text" ng-if="!isLiveBidLot()">Lot is moving to the block</div>
+    <div class="ua-panel bng-blur" ua-draggable ng-if="showMainAuctionPanel()">
+      <div class="ua-header">
+        <div class="ua-header-left">
+          <div class="ua-title">Used Car Auction</div>
+          <div class="ua-subtitle" ng-if="state.totalLots > 0">{{ state.totalLots }} lots</div>
         </div>
-        <div class="ua-timer" ng-class="timerUrgencyClass()" ng-if="isLotBiddable()">
-          <svg viewBox="0 0 36 36" class="ua-timer-ring">
-            <circle cx="18" cy="18" r="16" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3"/>
-            <circle class="ua-timer-ring-progress" cx="18" cy="18" r="16" fill="none" stroke="currentColor" stroke-width="3"
-                    stroke-dasharray="{{ timerDash() }}"
-                    stroke-dashoffset="0"
-                    transform="rotate(-90 18 18)"
-                    stroke-linecap="round"
-                    ng-style="timerProgressStyle()"/>
-          </svg>
-          <span class="ua-timer-text">{{ (activeLot() && activeLot().timeLeft) || 0 }}s</span>
+        <div class="ua-phase-badge" ng-class="phaseClass()">{{ phaseLabel() }}</div>
+      </div>
+
+      <div class="ua-stats-inline">
+        <div class="ua-stat-item">
+          <span class="ua-stat-k">Wins</span>
+          <span class="ua-stat-v">{{ state.purchasedCount || 0 }}</span>
         </div>
-        <div class="ua-timer-waiting" ng-if="!isLotBiddable()">
-          <svg viewBox="0 0 36 36" class="ua-spinner-ring">
-            <circle cx="18" cy="18" r="16" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3"/>
-            <circle cx="18" cy="18" r="16" fill="none" stroke="currentColor" stroke-width="3"
-                    stroke-dasharray="25 75.5"
-                    stroke-linecap="round"/>
-          </svg>
+        <div class="ua-stat-sep"></div>
+        <div class="ua-stat-item">
+          <span class="ua-stat-k">Balance</span>
+          <span class="ua-stat-v">{{ formatCurrency(state.playerBalance || 0) }}</span>
+        </div>
+        <div class="ua-stat-sep" ng-if="activeLot()"></div>
+        <div class="ua-stat-item" ng-if="activeLot()">
+          <span class="ua-stat-k">Live</span>
+          <span class="ua-stat-v">Lot {{ activeLot().lotIndex }}</span>
         </div>
       </div>
 
-      <div class="ua-bid-hint" ng-if="state.bidMessage">{{ state.bidMessage }}</div>
-
-      <div class="ua-bid-blocked" ng-if="canBid() && state.hasFreeGarageSlot === false">
-        No free garage slot. You cannot bid on vehicles.
+      <div class="ua-music-player" ng-if="state.musicEnabled !== null">
+        <rls-music-player
+          emitter-name="SFXEmitter_2"
+          music-root="/music"
+          start-playing="{{ state.musicEnabled !== false }}"
+          poll-ms="400"></rls-music-player>
       </div>
 
-      <div class="ua-actions" ng-if="canBid() && state.hasFreeGarageSlot !== false">
-        <button type="button" class="ua-btn ua-btn-bid" ng-click="bid(250)" ng-if="canAffordBid(250)">
-          <span class="ua-btn-increment">+$250</span>
-          <span class="ua-btn-total">{{ formatCurrency(bidTotalAfter(250)) }}</span>
-        </button>
-        <button type="button" class="ua-btn ua-btn-bid" ng-click="bid(500)" ng-if="canAffordBid(500)">
-          <span class="ua-btn-increment">+$500</span>
-          <span class="ua-btn-total">{{ formatCurrency(bidTotalAfter(500)) }}</span>
-        </button>
-        <button type="button" class="ua-btn ua-btn-bid" ng-click="bid(1000)" ng-if="canAffordBid(1000)">
-          <span class="ua-btn-increment">+$1,000</span>
-          <span class="ua-btn-total">{{ formatCurrency(bidTotalAfter(1000)) }}</span>
-        </button>
-        <button type="button" class="ua-btn ua-btn-bid" ng-click="bid(5000)" ng-if="canAffordBid(5000)">
-          <span class="ua-btn-increment">+$5,000</span>
-          <span class="ua-btn-total">{{ formatCurrency(bidTotalAfter(5000)) }}</span>
-        </button>
+      <div class="ua-table" id="ua-lot-table">
+        <div class="ua-table-head">
+          <div class="ua-col-lot">Lot</div>
+          <div class="ua-col-vehicle">Vehicle</div>
+          <div class="ua-col-mileage">Mileage</div>
+          <div class="ua-col-status">Status</div>
+        </div>
+        <div class="ua-table-body">
+          <div class="ua-table-row"
+               ng-repeat="lot in (state.lots || []) track by lot.lotIndex"
+               ng-class="{ active: isActiveLot(lot), finished: lot.state === 'finished', won: lot.state === 'finished' && lot.highestBidder === 'player' }"
+               id="ua-lot-{{ lot.lotIndex }}">
+            <div class="ua-col-lot">
+              <span class="ua-lot-num">{{ lot.lotIndex }}</span>
+            </div>
+            <div class="ua-col-vehicle" title="{{ lot.title || '-' }}">{{ lot.title || '-' }}</div>
+            <div class="ua-col-mileage">{{ formatMileage(lot.mileage) }}</div>
+            <div class="ua-col-status">
+              <span class="ua-lot-badge" ng-class="lotBadgeClass(lot)">{{ lotStatusLabel(lot) }}</span>
+            </div>
+          </div>
+          <div class="ua-empty" ng-if="!(state.lots && state.lots.length)">No active lots.</div>
+        </div>
       </div>
 
-      <div class="ua-bid-blocked" ng-if="canBid() && state.hasFreeGarageSlot !== false && !canAffordBid(250)">
-        Not enough funds to bid on this vehicle.
-      </div>
+      <div class="ua-bidding-section" ng-if="activeLot()">
+        <div class="ua-bid-info">
+          <div class="ua-bid-main">
+            <div class="ua-bid-amount-wrap" ng-class="{ waiting: !isLiveBidLot() }">
+              <span class="ua-bid-label">{{ bidCardLabel() }}</span>
+              <span class="ua-bid-amount" ng-if="isLiveBidLot()">{{ formatCurrency(activeLot() && activeLot().currentBid) }}</span>
+            </div>
+            <div class="ua-bid-leader-wrap" ng-class="bidLeaderClass()" ng-if="isLiveBidLot()">
+              <span class="ua-bid-leader-indicator"></span>
+              <span class="ua-bid-leader-name">{{ formatBidder(activeLot()) }}</span>
+            </div>
+            <div class="ua-bid-waiting-text" ng-if="!isLiveBidLot()">Lot is moving to the block</div>
+          </div>
+          <div class="ua-timer" ng-class="timerUrgencyClass()" ng-if="isLotBiddable()">
+            <svg viewBox="0 0 36 36" class="ua-timer-ring">
+              <circle cx="18" cy="18" r="16" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3"/>
+              <circle class="ua-timer-ring-progress" cx="18" cy="18" r="16" fill="none" stroke="currentColor" stroke-width="3"
+                      stroke-dasharray="{{ timerDash() }}"
+                      stroke-dashoffset="0"
+                      transform="rotate(-90 18 18)"
+                      stroke-linecap="round"
+                      ng-style="timerProgressStyle()"/>
+            </svg>
+            <span class="ua-timer-text">{{ (activeLot() && activeLot().timeLeft) || 0 }}s</span>
+          </div>
+          <div class="ua-timer-waiting" ng-if="!isLotBiddable()">
+            <svg viewBox="0 0 36 36" class="ua-spinner-ring">
+              <circle cx="18" cy="18" r="16" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3"/>
+              <circle cx="18" cy="18" r="16" fill="none" stroke="currentColor" stroke-width="3"
+                      stroke-dasharray="25 75.5"
+                      stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
 
-      <div class="ua-winning-banner" ng-if="activeLot() && activeLot().highestBidder === 'player' && activeLot().state === 'active'">
-        You are the highest bidder
+        <div class="ua-bid-hint" ng-if="state.bidMessage">{{ state.bidMessage }}</div>
+
+        <div class="ua-bid-blocked" ng-if="canBid() && state.hasFreeGarageSlot === false">
+          No free garage slot. You cannot bid on vehicles.
+        </div>
+
+        <div class="ua-actions" ng-if="canBid() && state.hasFreeGarageSlot !== false">
+          <button type="button" class="ua-btn ua-btn-bid" ng-click="bid(250)" ng-if="canAffordBid(250)">
+            <span class="ua-btn-increment">+$250</span>
+            <span class="ua-btn-total">{{ formatCurrency(bidTotalAfter(250)) }}</span>
+          </button>
+          <button type="button" class="ua-btn ua-btn-bid" ng-click="bid(500)" ng-if="canAffordBid(500)">
+            <span class="ua-btn-increment">+$500</span>
+            <span class="ua-btn-total">{{ formatCurrency(bidTotalAfter(500)) }}</span>
+          </button>
+          <button type="button" class="ua-btn ua-btn-bid" ng-click="bid(1000)" ng-if="canAffordBid(1000)">
+            <span class="ua-btn-increment">+$1,000</span>
+            <span class="ua-btn-total">{{ formatCurrency(bidTotalAfter(1000)) }}</span>
+          </button>
+          <button type="button" class="ua-btn ua-btn-bid" ng-click="bid(5000)" ng-if="canAffordBid(5000)">
+            <span class="ua-btn-increment">+$5,000</span>
+            <span class="ua-btn-total">{{ formatCurrency(bidTotalAfter(5000)) }}</span>
+          </button>
+        </div>
+
+        <div class="ua-bid-blocked" ng-if="canBid() && state.hasFreeGarageSlot !== false && !canAffordBid(250)">
+          Not enough funds to bid on this vehicle.
+        </div>
+
+        <div class="ua-winning-banner" ng-if="activeLot() && activeLot().highestBidder === 'player' && activeLot().state === 'active'">
+          You are the highest bidder
+        </div>
       </div>
     </div>
   </div>

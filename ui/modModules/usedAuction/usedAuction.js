@@ -6,7 +6,6 @@ function defaultAuctionState() {
   return {
     phase: 'idle',
     entryPromptActive: false,
-    counterPromptActive: false,
     entryFee: 1000,
     canPayEntryFee: false,
     nextLotRegistrationFee: 0,
@@ -368,12 +367,12 @@ angular.module('beamng.stuff')
       $scope.$evalAsync(function() {
         const d = defaultCounterState()
         $scope.state = {
-          lotBatchSize: result.lotBatchSize != null ? result.lotBatchSize : d.lotBatchSize,
-          nextLotRegistrationFee: result.nextLotRegistrationFee != null ? result.nextLotRegistrationFee : d.nextLotRegistrationFee,
-          nextLotFeeCoveredByEntry: result.nextLotFeeCoveredByEntry !== undefined ? result.nextLotFeeCoveredByEntry : d.nextLotFeeCoveredByEntry,
-          canAffordNextLotRegistration: result.canAffordNextLotRegistration !== undefined ? result.canAffordNextLotRegistration : d.canAffordNextLotRegistration,
-          canRegisterMoreLots: result.canRegisterMoreLots !== undefined ? result.canRegisterMoreLots : d.canRegisterMoreLots,
-          hasFreeGarageSlot: result.hasFreeGarageSlot !== undefined ? result.hasFreeGarageSlot : d.hasFreeGarageSlot
+          lotBatchSize: result.lotBatchSize ?? d.lotBatchSize,
+          nextLotRegistrationFee: result.nextLotRegistrationFee ?? d.nextLotRegistrationFee,
+          nextLotFeeCoveredByEntry: result.nextLotFeeCoveredByEntry ?? d.nextLotFeeCoveredByEntry,
+          canAffordNextLotRegistration: result.canAffordNextLotRegistration ?? d.canAffordNextLotRegistration,
+          canRegisterMoreLots: result.canRegisterMoreLots ?? d.canRegisterMoreLots,
+          hasFreeGarageSlot: result.hasFreeGarageSlot ?? d.hasFreeGarageSlot
         }
       })
     })
@@ -415,6 +414,14 @@ angular.module('beamng.stuff')
     callAuctionLua('cancelCounterPrompt')
   }
 
+  function hideCounterOverlay() {
+    stopPolling()
+    $scope.$evalAsync(function() {
+      $scope.visible = false
+      $scope.state = defaultCounterState()
+    })
+  }
+
   const showListener = angularRootScope.$on('UsedAuctionCounterShow', function() {
     $scope.$evalAsync(function() {
       $scope.visible = true
@@ -422,21 +429,8 @@ angular.module('beamng.stuff')
     startPolling()
   })
 
-  const hideListener = angularRootScope.$on('UsedAuctionCounterHide', function() {
-    stopPolling()
-    $scope.$evalAsync(function() {
-      $scope.visible = false
-      $scope.state = defaultCounterState()
-    })
-  })
-
-  const mainHideListener = angularRootScope.$on('UsedAuctionHide', function() {
-    stopPolling()
-    $scope.$evalAsync(function() {
-      $scope.visible = false
-      $scope.state = defaultCounterState()
-    })
-  })
+  const hideListener = angularRootScope.$on('UsedAuctionCounterHide', hideCounterOverlay)
+  const mainHideListener = angularRootScope.$on('UsedAuctionHide', hideCounterOverlay)
 
   $scope.$on('$destroy', function() {
     showListener()
@@ -489,10 +483,12 @@ angular.module('beamng.stuff')
         dragOffsetX = event.clientX - rect.left
         dragOffsetY = event.clientY - rect.top
         dragging = true
+        panelEl.style.position = 'fixed'
         panelEl.style.left = rect.left + 'px'
         panelEl.style.top = rect.top + 'px'
         panelEl.style.right = 'auto'
         panelEl.style.bottom = 'auto'
+        panelEl.style.width = panelWidth + 'px'
         event.preventDefault()
         $document.on('mousemove', onPointerMove)
         $document.on('mouseup', stopDragging)
