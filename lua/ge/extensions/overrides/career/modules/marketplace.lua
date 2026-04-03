@@ -48,13 +48,6 @@ local function refreshLiveListingValues(listing)
   end
 end
 
-local function getVehicleBuyMultiplier()
-  if career_modules_globalEconomy and career_modules_globalEconomy.getVehicleBuyMultiplier then
-    return career_modules_globalEconomy.getVehicleBuyMultiplier()
-  end
-  return 1.0
-end
-
 local function findVehicleListing(inventoryId)
   for _, listing in ipairs(listedVehicles) do
     if listing.id == inventoryId then
@@ -450,7 +443,7 @@ local function startNegotiateSellingOffer(_shopId)
     isDesperate = false
     insultThreshold = 0.75
   end
-  local vehicleBuyMult = getVehicleBuyMultiplier()
+  local vehicleBuyMult = career_modules_valueCalculator.getVehicleBuyMarketMultiplier()
   local valueBase = vehicleInfo.valueBase or (vehicleInfo.marketValue and vehicleInfo.marketValue * (vehicleInfo.negotiationPersonality and vehicleInfo.negotiationPersonality.priceMultiplier or 1)) or vehicleInfo.Value
   local roundedVehicleValue = math.floor((valueBase or vehicleInfo.Value or 0) * vehicleBuyMult + 0.5)
   opponentQuote = selectQuoteForPersonality(opponentPersonality, roundedVehicleValue, false)
@@ -776,7 +769,7 @@ local function takeTheirOffer()
     end
     vehicleInfo.Value = theirOffer
     vehicleInfo.negotiationPossible = false
-    vehicleInfo.valueBase = theirOffer / getVehicleBuyMultiplier()
+    vehicleInfo.valueBase = theirOffer / career_modules_valueCalculator.getVehicleBuyMarketMultiplier()
   end
   myOffer = nil
 end

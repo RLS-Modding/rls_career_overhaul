@@ -1117,9 +1117,13 @@ local function coverPathToUiUrl(vfsPath)
   return 'local://local/' .. p
 end
 
-local function scanMusicLibrary(root)
-  stop()
+local function scanMusicLibrary(root, allowSkipIfUnchanged)
   root = normalizeMusicRoot(root)
+  if allowSkipIfUnchanged and state.musicLibraryRoot == root and type(state.playlistsByName) == 'table' and
+      next(state.playlistsByName) ~= nil and (state.playlistPath == nil or state.playlistPath == '') then
+    return true
+  end
+  stop()
   state.musicLibraryRoot = root
   state.playlistPath = nil
   state.playlistsByName = {}
@@ -1354,8 +1358,8 @@ local function loadPlaylist(path)
   return false
 end
 
-local function loadMusicLibrary(root, preferredPlaylist)
-  if not scanMusicLibrary(root) then
+local function loadMusicLibrary(root, preferredPlaylist, allowSkipRescan)
+  if not scanMusicLibrary(root, allowSkipRescan == true) then
     return false
   end
   if type(preferredPlaylist) == 'string' and preferredPlaylist ~= '' and state.playlistsByName[preferredPlaylist] then

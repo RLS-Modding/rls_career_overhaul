@@ -6,6 +6,12 @@ local M = {}
 
 M.dependencies = {'career_career'}
 
+local jbeamIO = require('jbeam/io')
+
+local PARTS_INTRINSIC_BUMP = 1.081
+local pcPartsCatalogCache = {}
+local pcPartsCatalogBadLogOnce = {}
+
 local function isHardcoreMode()
   return career_modules_difficultyMode and career_modules_difficultyMode.isHardcoreMode and career_modules_difficultyMode.isHardcoreMode()
 end
@@ -154,6 +160,129 @@ local function getDepreciatedPartValue(value, mileage)
     result = result * 0.66
   end
   return result
+end
+
+local function getVehicleBuyMarketMultiplier()
+  if career_modules_globalEconomy and career_modules_globalEconomy.getVehicleBuyMultiplier then
+    return career_modules_globalEconomy.getVehicleBuyMultiplier()
+  end
+  return 1.0
+end
+
+local function getVehicleSellMarketMultiplier()
+  if career_modules_globalEconomy and career_modules_globalEconomy.getVehicleSellMultiplier then
+    return career_modules_globalEconomy.getVehicleSellMultiplier()
+  end
+  return 1.0
+end
+
+local function applyVehicleBuyMarketToMoney(amount)
+  local mult = getVehicleBuyMarketMultiplier()
+  return math.floor((tonumber(amount) or 0) * mult + 0.5)
+end
+
+local function clearVehiclePcPartsCatalogSumCache()
+  table.clear(pcPartsCatalogCache)
+  table.clear(pcPartsCatalogBadLogOnce)
+end
+
+local function getVehiclePcPartsCatalogSum(modelName, configKey, logContext)
+  if not modelName or not configKey then
+    return 0
+  end
+  local cacheKey = tostring(modelName) .. "|" .. tostring(configKey)
+  if pcPartsCatalogCache[cacheKey] ~= nil then
+    return pcPartsCatalogCache[cacheKey]
+  end
+  local ioCtx = {
+    preloadedDirs = {"/vehicles/" .. modelName .. "/"}
+  }
+  local candidatePcPaths = {
+    "vehicles/" .. modelName .. "/" .. configKey .. ".pc",
+    "vehicles/" .. modelName .. "/configurations/" .. configKey .. ".pc",
+  }
+  local pcPath, pcData
+  for _, candidate in ipairs(candidatePcPaths) do
+    local ok, data = pcall(jsonReadFile, candidate)
+    if ok and data and type(data.parts) == "table" then
+      pcPath = candidate
+      pcData = data
+      break
+    end
+  end
+  if not pcData or type(pcData.parts) ~= "table" then
+    local logKey = cacheKey .. "|partsMissing"
+    if not pcPartsCatalogBadLogOnce[logKey] then
+      pcPartsCatalogBadLogOnce[logKey] = true
+      log("W", "valueCalculator", string.format(
+        "PC parts unreadable for %s during %s (%s)",
+        cacheKey, tostring(logContext or "pcParts"), table.concat(candidatePcPaths, ", ")))
+    end
+    pcPartsCatalogCache[cacheKey] = 0
+    return 0
+  end
+  local valueOk, totalValue = pcall(function()
+    local accumulatedValue = 0
+    for _, partName in pairs(pcData.parts) do
+      if partName and partName ~= "" then
+        local partData = jbeamIO.getPart(ioCtx, partName)
+        if partData and partData.information and partData.information.value then
+          accumulatedValue = accumulatedValue + partData.information.value
+        end
+      end
+    end
+    return accumulatedValue
+  end)
+  if not valueOk then
+    local logKey = cacheKey .. "|partsValueError"
+    if not pcPartsCatalogBadLogOnce[logKey] then
+      pcPartsCatalogBadLogOnce[logKey] = true
+      log("W", "valueCalculator", string.format(
+        "PC parts jbeam lookup failed for %s (%s): %s",
+        cacheKey, tostring(logContext or "pcParts"), tostring(totalValue)))
+    end
+    pcPartsCatalogCache[cacheKey] = 0
+    return 0
+  end
+  pcPartsCatalogCache[cacheKey] = totalValue
+  return totalValue
+end
+
+local function getVehicleCatalogIntrinsicBookValue(opts)
+  if type(opts) ~= "table" then
+    return nil
+  end
+  local baseValue = tonumber(opts.catalogBaseValue) or 0
+  if baseValue <= 0 then
+    return nil
+  end
+  local mileageMeters = tonumber(opts.mileageMeters) or 0
+  local age = tonumber(opts.age)
+  if not age then
+    return nil
+  end
+  local adjustedBaseValue = getAdjustedVehicleBaseValue(baseValue, {mileage = mileageMeters, age = age})
+  local partsBase = tonumber(opts.partsCatalogSum)
+  if not partsBase then
+    partsBase = getVehiclePcPartsCatalogSum(opts.modelName, opts.configKey, opts.logContext)
+  end
+  local conditionedPartsValue = 0
+  if partsBase > 0 then
+    conditionedPartsValue = math.floor(getDepreciatedPartValue(partsBase, mileageMeters) * PARTS_INTRINSIC_BUMP)
+  end
+  local conditioned = math.max(adjustedBaseValue or 0, conditionedPartsValue or 0)
+  if conditioned <= 0 then
+    return nil
+  end
+  conditioned = math.floor(conditioned / 1000) * 1000
+  local minBook = tonumber(opts.minBookValue) or 1500
+  conditioned = math.max(minBook, conditioned)
+  if opts.applyVehicleBuyMarket then
+    local mult = getVehicleBuyMarketMultiplier()
+    conditioned = math.floor((conditioned * mult) / 1000 + 0.5) * 1000
+    conditioned = math.max(minBook, conditioned)
+  end
+  return conditioned
 end
 
 local function getPartMarketMultiplier()
@@ -318,13 +447,7 @@ end
 local function getInventoryVehicleSellValue(inventoryId, options)
   local value = getInventoryVehicleValue(inventoryId, options and options.ignoreDamage)
   if not value then return end
-
-  local vehicleSellMult = 1.0
-  if career_modules_globalEconomy and career_modules_globalEconomy.getVehicleSellMultiplier then
-    vehicleSellMult = career_modules_globalEconomy.getVehicleSellMultiplier()
-  end
-
-  return value * vehicleSellMult
+  return value * getVehicleSellMarketMultiplier()
 end
 
 local function getNumberOfBrokenParts(partConditions)
@@ -360,6 +483,40 @@ local function getBrokenPartsThreshold()
   return brokenPartsThreshold
 end
 
+local function getSpawnedVehicleRepairPrice(vehId, partConditions)
+  local vehicleData = extensions.core_vehicle_manager.getVehicleData(vehId)
+  if not vehicleData or not partConditions then return 0 end
+
+  local price = 0
+  local function walkTree(node)
+    if not node.partPath then return end
+    local pc = partConditions[node.partPath]
+    if pc and pc.integrityValue and pc.integrityValue == 0 then
+      local partValue = 700
+      local activePartIdx = vehicleData.vdata.activeParts[node.partPath]
+      if activePartIdx and vehicleData.vdata.activePartsData[activePartIdx] then
+        partValue = vehicleData.vdata.activePartsData[activePartIdx].information.value or 700
+      end
+      local partPrice = partValue * getPartMarketMultiplier()
+      if isHardcoreMode() then
+        price = math.floor((price + partPrice * 1.25) * 100) / 100
+      else
+        price = math.floor((price + partPrice * 0.9) * 100) / 100
+      end
+    end
+    if node.children then
+      for _, child in pairs(node.children) do
+        walkTree(child)
+      end
+    end
+  end
+
+  if vehicleData.config and vehicleData.config.partsTree then
+    walkTree(vehicleData.config.partsTree)
+  end
+  return price
+end
+
 M.getPartDifference = getPartDifference
 
 M.getInventoryVehicleValue = getInventoryVehicleValue
@@ -369,9 +526,15 @@ M.getAdjustedVehicleBaseValue = getAdjustedVehicleBaseValue
 M.getVehicleMileageById = getVehicleMileageById
 M.getInventoryVehicleSellValue = getInventoryVehicleSellValue
 M.getBrokenPartsThreshold = getBrokenPartsThreshold
+M.getVehiclePcPartsCatalogSum = getVehiclePcPartsCatalogSum
+M.clearVehiclePcPartsCatalogSumCache = clearVehiclePcPartsCatalogSumCache
+M.getVehicleCatalogIntrinsicBookValue = getVehicleCatalogIntrinsicBookValue
+M.getVehicleBuyMarketMultiplier = getVehicleBuyMarketMultiplier
+M.getVehicleSellMarketMultiplier = getVehicleSellMarketMultiplier
+M.applyVehicleBuyMarketToMoney = applyVehicleBuyMarketToMoney
 
--- Vehicle damage related API
 M.getRepairDetails = getRepairDetails
 M.getNumberOfBrokenParts = getNumberOfBrokenParts
 M.partConditionsNeedRepair = partConditionsNeedRepair
+M.getSpawnedVehicleRepairPrice = getSpawnedVehicleRepairPrice
 return M

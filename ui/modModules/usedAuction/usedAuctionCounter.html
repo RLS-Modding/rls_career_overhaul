@@ -1,0 +1,108 @@
+<link rel="stylesheet" type="text/css" href="/ui/modModules/usedAuction/usedAuction.css" />
+
+<div class="ua-counter-overlay-root" ng-if="visible">
+  <div class="ua-entry-backdrop">
+    <div class="ua-entry-modal ua-counter-modal">
+      <div class="ua-entry-title">Auction Counter</div>
+
+      <div class="ua-counter-tabs" role="tablist">
+        <button type="button" role="tab" class="ua-counter-tab"
+          ng-if="state.counterShowAuctionsTab !== false"
+          ng-class="{ 'is-active': counterTabIs('auctions') }"
+          ng-click="setCounterTab('auctions')">Auctions</button>
+        <button type="button" role="tab" class="ua-counter-tab"
+          ng-class="{ 'is-active': counterTabIs('myVehicles') }"
+          ng-click="setCounterTab('myVehicles')">My Vehicles</button>
+      </div>
+
+      <div class="ua-counter-panel" ng-if="counterTabIs('auctions') && state.counterShowAuctionsTab !== false">
+        <div class="ua-entry-text">Pick a theme and lot count, then confirm.</div>
+
+        <div class="ua-lot-inline">
+          <span class="ua-lot-inline-label">Lots</span>
+          <div class="ua-hslider-wrap">
+            <div
+              class="ua-hslider"
+              ua-counter-lot-slider
+              tabindex="0"
+              role="slider"
+              aria-label="Number of lots"
+              aria-valuemin="5"
+              aria-valuemax="25"
+              ng-attr-aria-valuenow="{{ state.lotBatchSize || 10 }}"
+              ng-keydown="lotBatchSliderKeyDown($event)">
+              <div class="ua-hslider-track">
+                <div class="ua-hslider-fill" ng-style="lotBatchSliderFillStyle()"></div>
+                <div class="ua-hslider-thumb" ng-style="lotBatchSliderThumbStyle()"></div>
+              </div>
+            </div>
+          </div>
+          <span class="ua-lot-inline-value">{{ state.lotBatchSize || 10 }}</span>
+        </div>
+        <div class="ua-lot-inline-meta">
+          <span>Entry Credit: <strong>{{ formatCurrency(state.entryCreditRemaining) }}</strong></span>
+        </div>
+
+        <div class="ua-counter-options">
+          <button
+            type="button"
+            class="ua-counter-option"
+            ng-repeat="offer in (state.counterOffers || []) track by offer.id"
+            ng-class="{ 'is-selected': isAuctionTypeSelected(offer) }"
+            ng-click="selectAuctionType(offer)">
+            <span class="ua-counter-option-copy">
+              <span class="ua-counter-option-title">{{ offer.label }}</span>
+              <span class="ua-counter-option-subtitle">{{ offer.subtitle }}</span>
+            </span>
+            <span class="ua-counter-option-meta">
+              <span class="ua-counter-option-fee" ng-if="offer.coveredByEntry">Covered</span>
+              <span class="ua-counter-option-fee" ng-if="!offer.coveredByEntry">{{ formatCurrency(offer.registrationFee) }}</span>
+            </span>
+          </button>
+        </div>
+
+        <div class="ua-entry-warning" ng-if="state.canRegisterMoreLots === false">
+          Finish the current lot group before registering another one.
+        </div>
+        <div class="ua-entry-warning" ng-if="state.canRegisterMoreLots !== false && state.hasFreeGarageSlot === false">
+          You need at least one free garage slot to register a lot group.
+        </div>
+        <div class="ua-entry-warning" ng-if="state.canRegisterMoreLots !== false && state.hasFreeGarageSlot !== false && selectedAuctionOffer() && !canAffordSelectedAuctionOffer()">
+          Not enough money to register this auction type.
+        </div>
+        <div class="ua-entry-actions">
+          <button type="button" class="ua-btn ua-btn-secondary" ng-click="cancelCounterPrompt()">Close</button>
+          <button type="button" class="ua-btn ua-btn-primary" ng-disabled="confirmButtonDisabled()" ng-click="confirmRegisterNextLot()">Generate {{ state.lotBatchSize || 10 }} Lots</button>
+        </div>
+      </div>
+
+      <div class="ua-counter-panel ua-my-vehicles-panel" ng-if="counterTabIs('myVehicles')">
+        <div class="ua-entry-text" ng-if="state.listedVehicleInventoryId != null">
+          A vehicle is listed for the next <strong>Anything Goes</strong> batch. Tier 1 at the counter is locked to that theme until it runs.
+        </div>
+        <div class="ua-my-vehicles-scroll">
+          <div class="ua-mv-row" ng-repeat="row in (state.myVehicles || []) track by row.inventoryId">
+            <div class="ua-mv-thumb-wrap">
+              <img class="ua-mv-thumb" ng-if="row.thumbnail" ng-src="{{ row.thumbnail }}" alt="" />
+              <div class="ua-mv-thumb ua-mv-thumb-placeholder" ng-if="!row.thumbnail"></div>
+            </div>
+            <div class="ua-mv-info">
+              <div class="ua-mv-name">{{ row.niceName }}</div>
+              <div class="ua-mv-value">{{ formatCurrency(row.value || 0) }}</div>
+              <div class="ua-mv-listed" ng-if="row.listedForAuction">Listed for next Anything Goes</div>
+            </div>
+            <div class="ua-mv-actions">
+              <button type="button" class="ua-btn ua-btn-primary ua-btn-small"
+                ng-disabled="!canListVehicleRow(row)"
+                ng-click="listVehicleAtAuction(row)">Sell at Auction</button>
+            </div>
+          </div>
+          <div class="ua-entry-warning" ng-if="!(state.myVehicles && state.myVehicles.length)">No vehicles in your garage.</div>
+        </div>
+        <div class="ua-entry-actions ua-mv-footer">
+          <button type="button" class="ua-btn ua-btn-secondary" ng-click="cancelCounterPrompt()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

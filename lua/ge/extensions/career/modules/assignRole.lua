@@ -4,9 +4,54 @@ local dependencies = {'career_career', 'career_modules_inventory'}
 
 local assignmentData = nil
 local vehiclePresent = nil
+local POLICE_ASSIGNMENT_TRIGGER = "policeAssignment"
+local POLICE_ASSIGNMENT_UNLOCK_LEVEL = 20
+local POLICE_SKILL_ATTRIBUTE_KEY = "careerSkills-police"
+local POLICE_SKILL_PATH_IDS = {"careerSkills-police", "police", "freestyle-police"}
 local roleAssignments = {
-    ["policeAssignment"] = "Police"
+    [POLICE_ASSIGNMENT_TRIGGER] = "Police"
 }
+
+local function getBranchLevelByPathIds(pathIds)
+    if not career_branches or not career_branches.getBranchLevel then
+        return 0
+    end
+
+    for _, skillPathId in ipairs(pathIds or {}) do
+        local branchLevel = career_branches.getBranchLevel(skillPathId)
+        local level = tonumber(branchLevel)
+        if level then
+            return math.max(0, math.floor(level))
+        end
+    end
+
+    return 0
+end
+
+local function getPoliceSkillLevel()
+    local level = getBranchLevelByPathIds(POLICE_SKILL_PATH_IDS)
+    if level > 0 then
+        return level
+    end
+
+    if career_modules_playerAttributes and career_modules_playerAttributes.getAttributeValue and career_branches and career_branches.calcBranchLevelFromValue then
+        local value = tonumber(career_modules_playerAttributes.getAttributeValue(POLICE_SKILL_ATTRIBUTE_KEY)) or 0
+        for _, skillPathId in ipairs(POLICE_SKILL_PATH_IDS) do
+            local branchLevel = career_branches.calcBranchLevelFromValue(value, skillPathId)
+            level = math.max(level, tonumber(branchLevel) or 0)
+        end
+    end
+
+    return math.max(0, math.floor(level))
+end
+
+local function isPoliceCertificationUnlocked()
+    return getPoliceSkillLevel() >= POLICE_ASSIGNMENT_UNLOCK_LEVEL
+end
+
+local function getPoliceCertificationLockMessage()
+    return string.format("Police certification requires Police Skill level %d", POLICE_ASSIGNMENT_UNLOCK_LEVEL)
+end
 
 local function canPay()
     local canPayJobIndex = career_modules_globalEconomy and career_modules_globalEconomy.getJobMarketIndex() or 1.0
@@ -24,6 +69,10 @@ local function startCertification()
         state = 'play',
         params = {}
     })
+    if not isPoliceCertificationUnlocked() then
+        ui_message(getPoliceCertificationLockMessage(), 8, "Police", "info")
+        return
+    end
     local inventoryId = career_modules_inventory.getCurrentVehicle()
     if inventoryId then
         if not canPay() then
@@ -53,7 +102,7 @@ local function onBeamNGTrigger(data)
         return
     end
 
-    if not data.triggerName:find("policeAssignment") then
+    if not data.triggerName:find(POLICE_ASSIGNMENT_TRIGGER) then
         return
     end
     assignmentData = {
@@ -65,6 +114,10 @@ local function onBeamNGTrigger(data)
     if data.event == "enter" then
         local inventoryId = career_modules_inventory.getInventoryIdFromVehicleId(data.subjectID)
         if inventoryId then
+            if not isPoliceCertificationUnlocked() then
+                ui_message(getPoliceCertificationLockMessage(), 8, "Police", "info")
+                return
+            end
             if career_modules_inventory.getVehicleRole(inventoryId) ~= string.lower(assignmentData.type) then
                 guihooks.trigger('ChangeState', {
                     state = 'roleAssignment'
@@ -128,10 +181,14 @@ end
 
 function M.onGetRawPoiListForLevel(levelIdentifier, elements)
     for role, roleName in pairs(roleAssignments) do
+        if role == POLICE_ASSIGNMENT_TRIGGER and not isPoliceCertificationUnlocked() then
+            goto continue
+        end
         local poi = formatAssignRolePoi(role, roleName)
         if poi then
             table.insert(elements, poi)
         end
+        ::continue::
     end
 end
 

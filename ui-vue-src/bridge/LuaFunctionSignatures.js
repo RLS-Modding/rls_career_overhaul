@@ -262,6 +262,10 @@ export default {
     deliverVehicle: (id, money) => [Number, Number],
     storeVehicle: id => Number,
     storeVehicleAtClosestGarage: id => Number,
+    isVehicleListedForAuction: id => Number,
+    getListedVehicleId: () => {},
+    setVehicleListedForAuction: (inventoryId, listed) => [Number, Boolean],
+    clearVehicleAuctionListing: id => Number,
   },
 
   career_modules_vehiclePerformance: {
@@ -298,6 +302,8 @@ export default {
     sendChooseInsuranceDataToTheUI: (purchaseType, shopId, defaultInsuranceId) => [String, Number, Number],
     sendChangeInsuranceDataToTheUI: (vehicleId) => [Number],
     resetDriverScore: () => {},
+    getTestDriveClaimPrice: () => {},
+    getTestDriveDamagePlayerShare: () => {},
   },
 
   career_modules_insurance_repairScreen: {
@@ -1288,13 +1294,18 @@ export default {
     requestAuctionState: () => {},
     startAuction: () => {},
     cancelTravelPrompt: () => {},
+    cancelCounterPrompt: () => {},
+    confirmRegisterNextLot: (auctionTypeId, lotCount) => [String, Number],
+    setCounterLotBatchSize: lotCount => Number,
     placeBid: amount => {},
     setAuctionMusicEnabled: enabled => {},
     passCurrentLot: () => {},
     closeMenu: () => {},
     setAutoBidEnabled: enabled => {},
     setAutoBidMax: maxBid => {},
-    exitAuctionArea: () => {}
+    exitAuctionArea: () => {},
+    listVehicleForNextAnythingGoesAuction: inventoryId => Number,
+    cancelAuctionListing: inventoryId => Number,
   },
 
   career_modules_propertyMortgage: {
