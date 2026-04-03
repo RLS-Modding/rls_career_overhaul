@@ -478,7 +478,15 @@ function VehicleRepoJob:generateVehicleConfig()
     end
 
     if career_career.isActive() then
-        self.vehicleValue = career_modules_valueCalculator.getAdjustedVehicleBaseValue(self.randomVehicleInfo.Value, {
+        self.vehicleValue = career_modules_valueCalculator.getVehicleCatalogIntrinsicBookValue({
+            catalogBaseValue = self.randomVehicleInfo.Value,
+            mileageMeters = self.randomVehicleInfo.Mileage,
+            age = 2025 - self.randomVehicleInfo.year,
+            modelName = self.randomVehicleInfo.model_key,
+            configKey = self.randomVehicleInfo.key,
+            logContext = "repo",
+            applyVehicleBuyMarket = false
+        }) or career_modules_valueCalculator.getAdjustedVehicleBaseValue(self.randomVehicleInfo.Value, {
             mileage = self.randomVehicleInfo.Mileage,
             age = 2025 - self.randomVehicleInfo.year
         })

@@ -31,8 +31,8 @@
           "Factory"
         ],
         "Mileage": {
-          "min": 4800,
-          "max": 1437376
+          "min": 7725000,
+          "max": 231000000
         },
         "Population": {
           "min": 1,
@@ -50,8 +50,8 @@
           "Factory"
         ],
         "Mileage": {
-          "min": 4800,
-          "max": 1437376
+          "min": 7725000,
+          "max": 231000000
         },
         "Population": {
           "min": 1,
@@ -69,8 +69,8 @@
           "Custom"
         ],
         "Mileage": {
-          "min": 4800,
-          "max": 1437376
+          "min": 7725000,
+          "max": 231000000
         },
         "Population": {
           "min": 1,
@@ -88,8 +88,8 @@
           "Custom"
         ],
         "Mileage": {
-          "min": 4800,
-          "max": 1437376
+          "min": 7725000,
+          "max": 231000000
         },
         "Population": {
           "min": 1,

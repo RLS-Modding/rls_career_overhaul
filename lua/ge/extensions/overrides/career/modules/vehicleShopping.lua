@@ -4,10 +4,10 @@
 local M = {}
 
 M.dependencies =
-  {'career_career', 'career_modules_inspectVehicle', 'util_configListGenerator', 'freeroam_organizations'}
+  {'career_career', 'career_modules_inspectVehicle', 'career_modules_valueCalculator', 'util_configListGenerator',
+   'freeroam_organizations'}
 
 local moduleVersion = 63
-local jbeamIO = require('jbeam/io')
 
 -- Configuration constants
 local vehicleDeliveryDelay = 60
@@ -64,7 +64,6 @@ local vehicleCache = {
   cacheValid = false
 }
 
-local partsValueCache = {}
 local badConfigQuarantine = {}
 local badConfigLogOnce = {}
 local validationStats = {
@@ -349,16 +348,9 @@ local function getDeliveryDelay(distance)
   return vehicleDeliveryDelay
 end
 
-local function getVehicleBuyMultiplier()
-  if career_modules_globalEconomy and career_modules_globalEconomy.getVehicleBuyMultiplier then
-    return career_modules_globalEconomy.getVehicleBuyMultiplier()
-  end
-  return 1.0
-end
-
 local function applyPurchaseAdjustedMarketValue(vehicleInfo)
   if not vehicleInfo then return end
-  local vehicleBuyMult = getVehicleBuyMultiplier()
+  local vehicleBuyMult = career_modules_valueCalculator.getVehicleBuyMarketMultiplier()
   local marketValue = vehicleInfo.marketValueBase or vehicleInfo.marketValue or vehicleInfo.Value
   vehicleInfo.marketValueAdjusted = math.floor((marketValue or 0) * vehicleBuyMult + 0.5)
 
@@ -975,59 +967,6 @@ local function normalizePopulations(configs, scalingFactor)
   end
 end
 
-local function getVehiclePartsValue(modelName, configKey, vehicleInfo, context)
-  if not modelName or not configKey then
-    return 0
-  end
-  local cacheKey = tostring(modelName) .. "|" .. tostring(configKey)
-  if partsValueCache[cacheKey] ~= nil then
-    return partsValueCache[cacheKey]
-  end
-  local ioCtx = {
-    preloadedDirs = {"/vehicles/" .. modelName .. "/"}
-  }
-
-  local pcPath = "vehicles/" .. modelName .. "/" .. configKey .. ".pc"
-  local readOk, pcData = pcall(jsonReadFile, pcPath)
-
-  if not readOk or not pcData or type(pcData.parts) ~= "table" then
-    local logKey = cacheKey .. "|partsMissing"
-    if not badConfigLogOnce[logKey] then
-      badConfigLogOnce[logKey] = true
-      log("W", "Career", string.format("Vehicle parts value fallback for %s during %s: unreadable or malformed %s",
-        cacheKey, tostring(context or "partsValue"), pcPath))
-    end
-    return 0
-  end
-
-  local valueOk, totalValue = pcall(function()
-    local accumulatedValue = 0
-    for _, partName in pairs(pcData.parts) do
-      if partName and partName ~= "" then
-        local partData = jbeamIO.getPart(ioCtx, partName)
-        if partData and partData.information and partData.information.value then
-          accumulatedValue = accumulatedValue + partData.information.value
-        end
-      end
-    end
-    return accumulatedValue
-  end)
-
-  if not valueOk then
-    local logKey = cacheKey .. "|partsValueError"
-    if not badConfigLogOnce[logKey] then
-      badConfigLogOnce[logKey] = true
-      log("W", "Career", string.format(
-        "Vehicle parts value fallback for %s during %s: jbeam lookup failed, using base value only (%s)",
-        cacheKey, tostring(context or "partsValue"), tostring(totalValue)))
-    end
-    return 0
-  end
-
-  partsValueCache[cacheKey] = totalValue
-  return totalValue
-end
-
 local function doesVehiclePassFiltersList(vehicleInfo, filters)
   if type(vehicleInfo) ~= "table" or type(filters) ~= "table" then
     return false
@@ -1164,8 +1103,8 @@ local function cacheDealers()
                 local cacheEntry = deepcopy(vehicleInfo)
                 cacheEntry.precomputedFilter = filter
                 cacheEntry.subFilterProbability = subProb
-                cacheEntry.cachedPartsValue = getVehiclePartsValue(vehicleInfo.model_key, vehicleInfo.key, vehicleInfo,
-                  "cacheDealers")
+                cacheEntry.cachedPartsValue = career_modules_valueCalculator.getVehiclePcPartsCatalogSum(
+                  vehicleInfo.model_key, vehicleInfo.key, "cacheDealers")
                 return cacheEntry
               end)
 
@@ -1200,8 +1139,8 @@ local function cacheDealers()
   for i = #privateVehicles, 1, -1 do
     local vehicleInfo = privateVehicles[i]
     local cachedVehicle, err = safeVehicleOp("cacheDealers:private", vehicleInfo, function()
-      vehicleInfo.cachedPartsValue = getVehiclePartsValue(vehicleInfo.model_key, vehicleInfo.key, vehicleInfo,
-        "cacheDealers:private")
+      vehicleInfo.cachedPartsValue = career_modules_valueCalculator.getVehiclePcPartsCatalogSum(
+        vehicleInfo.model_key, vehicleInfo.key, "cacheDealers:private")
       return vehicleInfo
     end)
 
@@ -1316,7 +1255,7 @@ local function invalidateVehicleCache()
   vehicleCache.cacheValid = false
   vehicleCache.regularVehicles = {}
   vehicleCache.dealershipCache = {}
-  partsValueCache = {}
+  career_modules_valueCalculator.clearVehiclePcPartsCatalogSumCache()
   resetVehicleValidationState()
 end
 
@@ -1404,8 +1343,8 @@ local function rebuildDealershipCache(dealershipId)
           local cacheEntry = deepcopy(vehicleInfo)
           cacheEntry.precomputedFilter = f
           cacheEntry.subFilterProbability = subProb
-          cacheEntry.cachedPartsValue = getVehiclePartsValue(vehicleInfo.model_key, vehicleInfo.key, vehicleInfo,
-            "rebuildDealershipCache")
+          cacheEntry.cachedPartsValue = career_modules_valueCalculator.getVehiclePcPartsCatalogSum(
+            vehicleInfo.model_key, vehicleInfo.key, "rebuildDealershipCache")
           return cacheEntry
         end)
 
@@ -1818,16 +1757,22 @@ local function updateVehicleList(fromScratch)
                 randomVehicleInfo.Mileage = starterVehicleMileages[randomVehicleInfo.model_key] or 100000000
               end
 
-              local totalPartsValue = randomVehicleInfo.cachedPartsValue or
-                                        (getVehiclePartsValue(randomVehicleInfo.model_key, randomVehicleInfo.key,
-                                          randomVehicleInfo, "updateVehicleList") or 0)
-              totalPartsValue = math.floor(career_modules_valueCalculator.getDepreciatedPartValue(totalPartsValue,
-                randomVehicleInfo.Mileage) * 1.081)
-              local adjustedBaseValue = career_modules_valueCalculator.getAdjustedVehicleBaseValue(randomVehicleInfo.Value, {
-                mileage = randomVehicleInfo.Mileage,
-                age = 2025 - randomVehicleInfo.year
-              })
-              local baseValue = math.floor(math.max(adjustedBaseValue, totalPartsValue) / 1000) * 1000
+              local valuationYear = tonumber(os.date("%Y")) or 2026
+              local vehicleAge = math.max(0, valuationYear - (tonumber(randomVehicleInfo.year) or valuationYear))
+              local baseValue = career_modules_valueCalculator.getVehicleCatalogIntrinsicBookValue({
+                catalogBaseValue = randomVehicleInfo.Value,
+                mileageMeters = randomVehicleInfo.Mileage,
+                age = vehicleAge,
+                modelName = randomVehicleInfo.model_key,
+                configKey = randomVehicleInfo.key,
+                partsCatalogSum = randomVehicleInfo.cachedPartsValue,
+                logContext = "updateVehicleList",
+                applyVehicleBuyMarket = false
+              }) or math.max(1500,
+                math.floor(career_modules_valueCalculator.getAdjustedVehicleBaseValue(randomVehicleInfo.Value, {
+                  mileage = randomVehicleInfo.Mileage,
+                  age = vehicleAge
+                }) / 1000) * 1000)
 
               local range = seller.range
               if seller.associatedOrganization then
@@ -1860,11 +1805,7 @@ local function updateVehicleList(fromScratch)
               randomVehicleInfo.valueBase = randomVehicleInfo.marketValue * priceMultiplier
               randomVehicleInfo.priceMultiplier = priceMultiplier
 
-              local vehicleBuyMult = 1.0
-              if career_modules_globalEconomy and career_modules_globalEconomy.getVehicleBuyMultiplier then
-                vehicleBuyMult = career_modules_globalEconomy.getVehicleBuyMultiplier()
-              end
-
+              local vehicleBuyMult = career_modules_valueCalculator.getVehicleBuyMarketMultiplier()
               randomVehicleInfo.Value = getRoundedPrice(randomVehicleInfo.valueBase * vehicleBuyMult,
                 seller.priceRoundingType)
 
