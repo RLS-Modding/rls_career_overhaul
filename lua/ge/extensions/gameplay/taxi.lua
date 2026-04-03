@@ -18,6 +18,7 @@ local availableSeats = nil
 local state = "start"
 local timer = 0
 local updateTimer = 1
+local rideElapsed = 0
 local jobOfferTimer = 0
 local jobOfferInterval = math.random(5, 45)
 
@@ -834,7 +835,8 @@ local function calculateSpeedFactor()
     if not currentFare then
         return 0
     end
-    local elapsedTime = os.difftime(os.time(), currentFare.startTime)
+    local elapsedTime = rideElapsed > 0 and rideElapsed or os.difftime(os.time(), currentFare.startTime)
+    if elapsedTime <= 0 then return 0 end
     local actualSpeed = (currentFare.totalDistance or 0) / elapsedTime
 
     return (actualSpeed - suggestedSpeed) / suggestedSpeed
@@ -868,7 +870,7 @@ local function completeRide()
         return
     end
 
-    local elapsedTime = os.difftime(os.time(), currentFare.startTime)
+    local elapsedTime = rideElapsed > 0 and rideElapsed or os.difftime(os.time(), currentFare.startTime)
     local speedFactor = calculateSpeedFactor()
     
     local passengerType = getPassengerType(currentFare.passengerType)
@@ -1072,6 +1074,9 @@ end
 -- UPDATE LOOP
 -- ================================
 local function update(_, dt)
+    if state == "dropoff" then
+        rideElapsed = rideElapsed + dt
+    end
     timer = timer + dt
     if timer < updateTimer then
         return
@@ -1094,6 +1099,7 @@ local function update(_, dt)
             core_groundMarkers.setPath(currentFare.destination.pos, {clearPathOnReachingTarget = true})
             local dropoffDistance = core_groundMarkers.getPathLength()
             currentFare.startTime = os.time()
+            rideElapsed = 0
             currentFare.totalDistance = currentFare.totalDistance + dropoffDistance
             M.rideData = {}
             local taxiDisabled, disabledReason = isTaxiDisabled()
