@@ -4,6 +4,7 @@
       <AspectRatio v-if="thumbUrl" :ratio="'16:9'" :external-image="thumbUrl" class="preview-image">
         <span class="disabled-reason" v-if="disabledReason">{{ disabledReason }}</span>
         <div class="indicators-overlay">
+          <span v-if="data.listedForAuction" class="class-badge auction-badge" v-bng-tooltip="'Listed at used car auction'">At auction</span>
           <BngIcon v-if="data.favorite" :type="icons.star" color="#fd0" v-bng-tooltip="'Favourite'" />
           <BngIcon v-if="data.delayReason === 'repair'" :type="icons.wrench" color="#fff" />
           <BngCondition v-else :integrity="partConditionAvg" :integrity-warning="data.needsRepair" :color="colour" show-tooltip />
@@ -245,6 +246,11 @@ const locked = computed(() => {
       border-radius: 0.25em;
       font-size: 0.8em;
       font-weight: 600;
+    }
+
+    .auction-badge {
+      background-color: rgba(20, 70, 90, 0.9);
+      color: #7fd8ff;
     }
   }
 

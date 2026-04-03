@@ -59,7 +59,7 @@ local auctionTypes = {
     mileage = { minMul = 1.05, maxMul = 1.28 }
   },
   rare_finds = {
-    whiteList = { Population = { min = 1, max = 2000 } },
+    whiteList = { Population = { min = 1, max = 20000 } },
     implicitYears = { min = 1990 },
     mileage = { minMul = 0.5, maxMul = 0.78 }
   },
@@ -128,6 +128,43 @@ local function normalizeFilterDefinition(filter)
   return normalized
 end
 
+local function isDiscreteListParams(parameters)
+  return type(parameters) == 'table' and parameters.min == nil and parameters.max == nil
+end
+
+local function mergeDiscreteListsUnique(a, b)
+  local seen, out = {}, {}
+  for _, lst in ipairs({ a, b }) do
+    for _, v in ipairs(lst or {}) do
+      local k = tostring(v)
+      if not seen[k] then
+        seen[k] = true
+        table.insert(out, v)
+      end
+    end
+  end
+  return out
+end
+
+local function mergeAuctionBlacklistWithDefaults(customFilter)
+  local normalized = normalizeFilterDefinition(customFilter or {})
+  normalized.blackList = normalized.blackList or {}
+  local defBl =
+    normalizeFilterDefinition(type(defaultAuctionFilters.filter) == 'table' and defaultAuctionFilters.filter or {}).blackList or
+    {}
+  for key, defParams in pairs(defBl) do
+    if isDiscreteListParams(defParams) then
+      local cur = normalized.blackList[key]
+      if cur == nil then
+        normalized.blackList[key] = deepCopy(defParams)
+      elseif isDiscreteListParams(cur) then
+        normalized.blackList[key] = mergeDiscreteListsUnique(defParams, cur)
+      end
+    end
+  end
+  return normalized
+end
+
 local function getSubFilterBody(subFilter)
   if type(subFilter) ~= 'table' then
     return {}
@@ -158,6 +195,8 @@ local function getAuctionFilterConfig()
   local cfg = jsonReadFile(path)
 
   if type(cfg) == 'table' then
+    cfg = deepCopy(cfg)
+    cfg.filter = mergeAuctionBlacklistWithDefaults(cfg.filter)
     return cfg
   end
 
@@ -241,23 +280,23 @@ local function isRollerLikeInfo(info)
   return a:find('roller', 1, true) or b:find('roller', 1, true) or c:find('roller', 1, true)
 end
 
-local function getMileageFromInfo(info)
-  if not info then
-    return nil
-  end
-
-  local mileage = tonumber(info.Mileage) or tonumber(info.mileage) or tonumber(info['Mileage'])
+local function rawMileageToMiles(raw)
+  local mileage = tonumber(raw)
   if not mileage then
     return nil
   end
   if mileage > CATALOG_MILEAGE_AS_METERS_THRESHOLD then
     mileage = mileage / MILES_TO_METERS
   end
-  mileage = math.max(0, math.floor(mileage))
-  if mileage <= 0 then
+  return math.max(0, mileage)
+end
+
+local function getMileageFromInfo(info)
+  local mileage = rawMileageToMiles(info and (tonumber(info.Mileage) or tonumber(info.mileage) or tonumber(info['Mileage'])))
+  if not mileage or mileage <= 0 then
     return nil
   end
-  return mileage
+  return math.floor(mileage)
 end
 
 local function isRangeParams(parameters)
@@ -273,10 +312,12 @@ end
 
 local filterFieldAliases = {
   bodytype = { 'Body Type', 'BodyType', 'Body Style', 'BodyStyle' },
+  bodystyle = { 'Body Style', 'BodyStyle', 'Body Type', 'BodyType' },
   configtype = { 'Config Type', 'ConfigType' },
   type = { 'Type', 'Vehicle Type', 'VehicleType' },
   brand = { 'Brand', 'Make' },
-  years = { 'Years', 'Year' }
+  years = { 'Years', 'Year' },
+  mileage = { 'Mileage', 'mileage' }
 }
 
 local function getFilterFieldCandidates(fieldName)
@@ -410,6 +451,17 @@ local function isDiscreteMatch(value, wanted)
   return false
 end
 
+local function mileageRangeBoundToMiles(bound)
+  local n = tonumber(bound)
+  if not n then
+    return nil
+  end
+  if n > CATALOG_MILEAGE_AS_METERS_THRESHOLD then
+    return n / MILES_TO_METERS
+  end
+  return n
+end
+
 local function doesVehicleMatchFilterRule(vehicleInfo, filterName, parameters)
   if filterName == 'Years' then
     local minYear, maxYear = getVehicleYearRange(vehicleInfo)
@@ -418,10 +470,27 @@ local function doesVehicleMatchFilterRule(vehicleInfo, filterName, parameters)
     end
     local minAllowed = tonumber(parameters and parameters.min)
     local maxAllowed = tonumber(parameters and parameters.max)
-    if minAllowed and minYear < minAllowed then
+    if minAllowed and maxYear < minAllowed then
       return false
     end
-    if maxAllowed and maxYear > maxAllowed then
+    if maxAllowed and minYear > maxAllowed then
+      return false
+    end
+    return true
+  end
+
+  if normalizeToken(filterName) == 'mileage' and isRangeParams(parameters) then
+    local value = getVehicleFieldValue(vehicleInfo, filterName)
+    local miles = rawMileageToMiles(value)
+    if miles == nil then
+      return false
+    end
+    local minAllowed = mileageRangeBoundToMiles(parameters.min)
+    local maxAllowed = mileageRangeBoundToMiles(parameters.max)
+    if minAllowed and miles < minAllowed then
+      return false
+    end
+    if maxAllowed and miles > maxAllowed then
       return false
     end
     return true

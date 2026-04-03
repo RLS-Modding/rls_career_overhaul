@@ -3,7 +3,12 @@ local M = {}
 local C = {
   NPC_PER_LOT_MULT = 1.25,
   NPC_COUNT_MIN = 3,
-  NPC_CASH_POOL_BUFFER_MULT = 3.0,
+  NPC_CASH_POOL_BUFFER_MULT = 4.0,
+  NPC_INTEREST_LOT_VALUE_HEADROOM = 1.75,
+  NPC_VALUE_TOPUP_MIN_INTEREST = 0.14,
+  PLAYER_LISTING_MIN_STRONG_BIDDERS = 5,
+  PLAYER_LISTING_STRONG_BIDDER_FRAC = 0.72,
+  PLAYER_LISTING_BID_CHANCE_BONUS = 0.12,
   NPC_MIN_CASH_FLOOR = 5000,
   NPC_MIN_SPEND_FRAC = 0.15,
   NPC_MAX_SPEND_FRAC = 0.85,
@@ -187,12 +192,94 @@ local function generatePersonas(lotCount)
   return personas
 end
 
+local function lotBaseValue(lot)
+  return math.max(500, math.floor(tonumber(lot.conditionedBasePrice) or tonumber(lot.basePrice) or 0))
+end
+
+local function ensurePersonasCanContestOpening(lot, personas)
+  if not lot or not personas then
+    return
+  end
+  local hurdle = (tonumber(lot.currentBid) or 0) + (tonumber(lot.minStep) or 250)
+  local refCommitFrac = lerp(C.NPC_MIN_SPEND_FRAC, C.NPC_MAX_SPEND_FRAC, 0.40)
+  local minForOpening = C.NPC_MIN_CASH_FLOOR
+  if hurdle > 0 then
+    minForOpening = math.max(minForOpening, math.ceil(hurdle / refCommitFrac))
+  end
+  local lotValue = lotBaseValue(lot)
+  local headroom = C.NPC_INTEREST_LOT_VALUE_HEADROOM
+
+  for _, p in ipairs(personas) do
+    local need = minForOpening
+    local intr = (lot.npcBaseInterestByPersonaId and tonumber(lot.npcBaseInterestByPersonaId[p.id])) or 0
+    if intr >= C.NPC_VALUE_TOPUP_MIN_INTEREST then
+      local frac = lerp(C.NPC_MIN_SPEND_FRAC, C.NPC_MAX_SPEND_FRAC, intr)
+      local forValue = math.ceil((lotValue * headroom) / frac)
+      if forValue > need then
+        need = forValue
+      end
+    end
+    local c = tonumber(p.cashOnHand) or 0
+    if c < need then
+      p.cashOnHand = need
+    end
+  end
+end
+
+local function computePersonaInterestMinCash(persona, lots, openingFloorPerPersona)
+  local scored = {}
+  for _, lot in ipairs(lots or {}) do
+    local map = lot.npcBaseInterestByPersonaId or {}
+    local intr = tonumber(map[persona.id]) or 0
+    table.insert(scored, { interest = intr, lot = lot })
+  end
+  table.sort(scored, function(a, b)
+    return a.interest > b.interest
+  end)
+
+  local stake = 0
+  local headroom = C.NPC_INTEREST_LOT_VALUE_HEADROOM
+  local picked = 0
+  for i = 1, #scored do
+    if picked >= 2 then
+      break
+    end
+    if scored[i].interest < C.NPC_VALUE_TOPUP_MIN_INTEREST then
+      break
+    end
+    local base = lotBaseValue(scored[i].lot)
+    local frac = lerp(C.NPC_MIN_SPEND_FRAC, C.NPC_MAX_SPEND_FRAC, scored[i].interest)
+    stake = stake + math.ceil((base * headroom) / frac)
+    picked = picked + 1
+  end
+  return math.max(C.NPC_MIN_CASH_FLOOR, openingFloorPerPersona, stake)
+end
+
 local function allocateCash(personas, lots)
   local totalPreview = 0
+  local maxPreview = 0
   for _, lot in ipairs(lots) do
-    totalPreview = totalPreview + (tonumber(lot.previewStartBid) or tonumber(lot.currentBid) or 0)
+    local pv = tonumber(lot.previewStartBid) or tonumber(lot.currentBid) or 0
+    totalPreview = totalPreview + pv
+    if pv > maxPreview then
+      maxPreview = pv
+    end
   end
   local pool = math.max(totalPreview * C.NPC_CASH_POOL_BUFFER_MULT, 50000)
+
+  local minStep = 250
+  local hurdle = maxPreview + minStep
+  local refCommitFrac = lerp(C.NPC_MIN_SPEND_FRAC, C.NPC_MAX_SPEND_FRAC, 0.40)
+  local openingFloor = math.max(C.NPC_MIN_CASH_FLOOR, math.ceil(hurdle / refCommitFrac))
+
+  local personaFloors = {}
+  local sumFloors = 0
+  for _, persona in ipairs(personas) do
+    local f = computePersonaInterestMinCash(persona, lots, openingFloor)
+    personaFloors[persona.id] = f
+    sumFloors = sumFloors + f
+  end
+  pool = math.max(pool, sumFloors)
 
   local weights, totalW = {}, 0
   for i = 1, #personas do
@@ -200,10 +287,15 @@ local function allocateCash(personas, lots)
     totalW = totalW + weights[i]
   end
 
-  local floor = C.NPC_MIN_CASH_FLOOR
-  local distributable = math.max(0, pool - floor * #personas)
+  local extra = pool - sumFloors
+  if extra < 0 then
+    pool = sumFloors
+    extra = 0
+  end
+
   for i, persona in ipairs(personas) do
-    persona.cashOnHand = math.floor(floor + distributable * (weights[i] / totalW))
+    local base = personaFloors[persona.id]
+    persona.cashOnHand = math.floor(base + extra * (weights[i] / totalW))
     persona.startingCash = persona.cashOnHand
   end
 
@@ -212,7 +304,8 @@ local function allocateCash(personas, lots)
   if actualSum > 0 and math.abs(actualSum - pool) > #personas then
     local scale = pool / actualSum
     for _, p in ipairs(personas) do
-      p.cashOnHand = math.max(floor, math.floor(p.cashOnHand * scale))
+      local floorP = personaFloors[p.id]
+      p.cashOnHand = math.max(floorP, math.floor(p.cashOnHand * scale))
       p.startingCash = p.cashOnHand
     end
   end
@@ -224,8 +317,8 @@ local function sessionInterestBands(lotCount)
   local favLo = lerp(0.48, C.NPC_FAVORITE_INTEREST_LO, t)
   local favHi = lerp(0.62, C.NPC_FAVORITE_INTEREST_HI, t)
   if lotCount == 1 then
-    favLo = 0.40
-    favHi = 0.55
+    favLo = 0.34
+    favHi = 0.78
   end
   local nonFavMax = lerp(0.09, C.NPC_NONFAVORITE_INTEREST_MAX, t)
   local secondaryLo = 0.07 + 0.05 * t
@@ -244,6 +337,58 @@ local function probOneFavoriteForSession(lotCount)
     return 1
   end
   return lerp(0.76, C.NPC_FAVORITES_ONE_WEIGHT, clamp01((lotCount - 2) / 6))
+end
+
+local function isPlayerConsignmentLot(lot)
+  return lot and (lot.sellerInventoryId ~= nil or lot.playerListing == true)
+end
+
+local function boostCrowdInterestOnPlayerListings(personas, lots, bands)
+  if not personas or not lots or #personas < 2 then
+    return
+  end
+  local playerLots = {}
+  for idx, lot in ipairs(lots) do
+    if isPlayerConsignmentLot(lot) then
+      table.insert(playerLots, idx)
+    end
+  end
+  if #playerLots < 1 then
+    return
+  end
+
+  local want = math.max(
+    C.PLAYER_LISTING_MIN_STRONG_BIDDERS,
+    math.ceil(#personas * C.PLAYER_LISTING_STRONG_BIDDER_FRAC)
+  )
+  want = math.min(want, #personas)
+
+  local order = {}
+  for i = 1, #personas do
+    order[i] = i
+  end
+  for i = #order, 2, -1 do
+    local j = math.random(i)
+    order[i], order[j] = order[j], order[i]
+  end
+
+  for _, lotIdx in ipairs(playerLots) do
+    local lot = lots[lotIdx]
+    local map = lot.npcBaseInterestByPersonaId
+    if type(map) ~= 'table' then
+      map = {}
+      lot.npcBaseInterestByPersonaId = map
+    end
+    for n = 1, want do
+      local persona = personas[order[n]]
+      local cur = tonumber(map[persona.id]) or 0
+      local boosted = bands.favLo + math.random() * (bands.favHi - bands.favLo)
+      if boosted < cur then
+        boosted = cur
+      end
+      map[persona.id] = boosted
+    end
+  end
 end
 
 local function assignSparseFavoriteInterests(personas, lots)
@@ -293,6 +438,8 @@ local function assignSparseFavoriteInterests(personas, lots)
       end
     end
   end
+
+  boostCrowdInterestOnPlayerListings(personas, lots, bands)
 end
 
 local function seedLotInterest(lot, personas)
@@ -406,6 +553,7 @@ local function repriceLot(lot, newBasePrice, personas)
   local startBid = roundNearest(newBasePrice * (0.55 + math.random() * 0.2), 500)
   lot.currentBid = math.max(minStep, startBid)
 
+  ensurePersonasCanContestOpening(lot, personas)
   refreshLotNpcCaps(lot, personas)
   local leader = chooseInitialLeader(lot, personas)
   if leader then
@@ -432,6 +580,8 @@ local function onLotBiddingBegin(lot, now, personas)
   lot.npcLastOwnBidAtByPersonaId = {}
   lot.npcTimePressureGainByPersonaId = {}
   lot.initialLotDurationSec = math.max(C.TIME_PRESSURE_MIN_WINDOW, (tonumber(lot.endTime) or now) - now)
+
+  ensurePersonasCanContestOpening(lot, personas)
 
   for _, persona in ipairs(personas) do
     local baseInterest = (lot.npcBaseInterestByPersonaId and lot.npcBaseInterestByPersonaId[persona.id]) or 0.5
@@ -549,6 +699,9 @@ local function tick(lot, dtSim, personas)
         local playerLeads = lot.highestBidder == 'player'
         local headroom = clamp01((effMax - currentBid) / math.max(lot.basePrice or 1, 1))
         local baseBidChance = 0.22 + interest * 0.44 + headroom * 0.18 + (playerLeads and 0.08 or 0)
+        if isPlayerConsignmentLot(lot) then
+          baseBidChance = baseBidChance + C.PLAYER_LISTING_BID_CHANCE_BONUS
+        end
         local bidChance = clamp(
           baseBidChance + C.TIME_PRESSURE_BID_BONUS_MAX * pressure * timePressureInterestWeight(interest),
           C.NPC_BID_CHANCE_FLOOR,

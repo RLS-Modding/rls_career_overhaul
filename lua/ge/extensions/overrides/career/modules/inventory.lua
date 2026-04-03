@@ -277,6 +277,52 @@ local function setVehicleDirty(inventoryId)
   dirtiedVehicles[inventoryId] = true
 end
 
+local function isVehicleListedForAuction(inventoryId)
+  local v = vehicles[inventoryId]
+  return v and v.listedForAuction == true
+end
+
+local function getListedVehicleId()
+  for id, v in pairs(vehicles) do
+    if v.listedForAuction then
+      return id
+    end
+  end
+end
+
+local function setVehicleListedForAuction(inventoryId, listed)
+  local v = vehicles[inventoryId]
+  if not v or not v.owned then
+    return false
+  end
+  if listed then
+    if career_modules_insurance_insurance and career_modules_insurance_insurance.inventoryVehNeedsRepair(inventoryId) then
+      ui_message("Repair this vehicle before listing it at auction.", nil, "vehicleInventory")
+      return false
+    end
+    local existing = getListedVehicleId()
+    if existing and existing ~= inventoryId then
+      return false
+    end
+    v.listedForAuction = true
+    if inventoryIdToVehId[inventoryId] then
+      removeVehicleObject(inventoryId)
+    end
+  else
+    v.listedForAuction = nil
+  end
+  setVehicleDirty(inventoryId)
+  return true
+end
+
+local function clearVehicleAuctionListing(inventoryId)
+  local v = vehicles[inventoryId]
+  if v then
+    v.listedForAuction = nil
+    setVehicleDirty(inventoryId)
+  end
+end
+
 local function updatePartConditionsOfSpawnedVehicles(callback)
   local vehicleCount = tableSize(vehIdToInventoryId)
   local callbackCounter = 0
@@ -530,6 +576,10 @@ local function getPartConditionsCallback(partConditions, inventoryId)
 end
 
 local function updatePartConditions(vehId, inventoryId, callback)
+  if inventoryId and isVehicleListedForAuction(inventoryId) then
+    if callback then callback() end
+    return
+  end
   local veh
   if vehId then
     veh = getObjectByID(vehId)
@@ -562,6 +612,10 @@ end
 -- replaceOption 2: replace the vehicle object with the same inventoryId
 local function spawnVehicle(inventoryId, replaceOption, callback)
   local vehInfo = vehicles[inventoryId]
+  if vehInfo and vehInfo.listedForAuction then
+    ui_message("This vehicle is listed at the auction and cannot be spawned.", nil, "vehicleInventory")
+    return
+  end
 
   local carConfigToLoad = vehInfo.config
   local carModelToLoad = vehInfo.model
@@ -663,6 +717,10 @@ end
 local function enterVehicle(newInventoryId, loadOption, callback)
   local vehInfo = vehicles[newInventoryId]
   if vehInfo and vehInfo.timeToAccess then return end
+  if vehInfo and vehInfo.listedForAuction then
+    ui_message("This vehicle is listed at the auction.", nil, "vehicleInventory")
+    return
+  end
   career_modules_log.addLog(string.format("Enter vehicle %s", newInventoryId or "no vehicle"), "inventory")
 
   enterCallbackFunction = callback
@@ -1157,6 +1215,7 @@ local function getVehicleUiData(inventoryId, inventoryIdsInGarage)
 
   local marketplaceListed = career_modules_marketplace.findVehicleListing(inventoryId) ~= nil
   vehicleData.listedForSale = marketplaceListed
+  vehicleData.listedForAuction = vehicleData.listedForAuction == true
 
   for _, performanceData in ipairs(vehicleData.performanceHistory or {}) do
     processPerformanceData(performanceData)
@@ -1473,6 +1532,9 @@ local function sellVehicle(inventoryId, price)
     log("W", "inventory", string.format("Cannot sell vehicle %d because %s", inventoryId, reasonText))
     return false
   end
+  if vehicle.listedForAuction then
+    return false
+  end
 
   local value = price or career_modules_valueCalculator.getInventoryVehicleSellValue(inventoryId)
   extensions.hook("onBeforeVehicleSell", {inventoryId = inventoryId, price = value})
@@ -1500,6 +1562,9 @@ local function returnLoanedVehicleFromInventory(inventoryId)
 end
 
 local function expediteRepairFromInventory(inventoryId, price)
+  if isVehicleListedForAuction(inventoryId) then
+    return
+  end
   career_modules_insurance_insurance.expediteRepair(inventoryId, price)
   career_saveSystem.saveCurrent()
   sendDataToUi()
@@ -1521,7 +1586,7 @@ local function onAvailableMissionsSentToUi()
 end
 
 local function setFavoriteVehicle(inventoryId)
-  if vehicles[inventoryId] then
+  if vehicles[inventoryId] and not vehicles[inventoryId].listedForAuction then
     favoriteVehicle = inventoryId
   end
 end
@@ -1547,6 +1612,9 @@ local function onComputerAddFunctions(menuData, computerFunctions)
 end
 
 local function setLicensePlateText(inventoryId, text)
+  if isVehicleListedForAuction(inventoryId) then
+    return
+  end
   local vehId = getVehicleIdFromInventoryId(inventoryId)
   if inventoryId then
     core_vehicles.setPlateText(text, vehId)
@@ -1560,6 +1628,9 @@ local function getLicensePlateText(vehId)
 end
 
 local function purchaseLicensePlateText(inventoryId, text, money)
+  if isVehicleListedForAuction(inventoryId) then
+    return
+  end
   local price = {money = {amount = money}}
   if not career_modules_payment.canPay(price) then return end
   career_modules_payment.pay(price, {label = string.format("Change the license plate text"), tags = {"licensePlate", "buying"}})
@@ -1607,6 +1678,14 @@ local function onCheckPermission(tags, permissions, additionalData)
     end
     if tag == "vehicleSelling" and vehData.timeToAccess then
       table.insert(permissions, {permission = "forbidden"})
+    end
+    if vehData.listedForAuction then
+      if tag == "vehicleSelling" or tag == "vehicleFavorite" or tag == "vehicleStoring"
+        or tag == "vehicleRepair" or tag == "tuning" or tag == "partSwapping"
+        or tag == "painting" or tag == "vehicleModification" or tag == "vehicleLicensePlate"
+        or tag == "junkVehicle" or tag == "partBuying" then
+        table.insert(permissions, {permission = "forbidden"})
+      end
     end
     if tag == "vehicleFavorite" and (vehData.favorite or vehData.missingFile) then
       table.insert(permissions, {permission = "forbidden"})
@@ -1676,6 +1755,9 @@ end
 local function renameVehicle(inventoryId, name)
   if not isVehicleNameValid(name) then
     log("E", "inventory", "Invalid characters in vehicle name: " .. name)
+    return false
+  end
+  if isVehicleListedForAuction(inventoryId) then
     return false
   end
   vehicles[inventoryId].niceName = name
@@ -1896,6 +1978,9 @@ end
 local function storeVehicleAtClosestGarage(inventoryId)
   local veh = vehicles[inventoryId]
   if not veh then return false end
+  if isVehicleListedForAuction(inventoryId) then
+    return false
+  end
 
   local garage = getClosestGarage()
   if not garage or not garage.id then return false end
@@ -1938,6 +2023,9 @@ end
 -- Garage Localization
 
 M.moveVehicleToGarage = function(id, garage)
+  if isVehicleListedForAuction(id) then
+    return false
+  end
   local garageManager = career_modules_garageManager
   if not garageManager then return false end
 
@@ -1986,6 +2074,9 @@ M.storeVehicle = function(id)
 end
 
 M.switchGarageSpots = function(first, second)
+  if isVehicleListedForAuction(first) or isVehicleListedForAuction(second) then
+    return nil
+  end
   local spot1 = vehicles[first].location
   local spot2 = vehicles[second].location
   if not spot1 or not spot2 then return nil end
@@ -2095,4 +2186,9 @@ M.getRepossessions = getRepossessions
 M.addMovieRental = addMovieRental
 M.getMovieRentals = getMovieRentals
 M.getClosestOwnedGarageWithSpace = getClosestOwnedGarageWithSpace
+
+M.isVehicleListedForAuction = isVehicleListedForAuction
+M.getListedVehicleId = getListedVehicleId
+M.setVehicleListedForAuction = setVehicleListedForAuction
+M.clearVehicleAuctionListing = clearVehicleAuctionListing
 return M

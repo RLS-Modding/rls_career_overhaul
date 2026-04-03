@@ -925,3 +925,157 @@
   font-size: 0.6rem;
   color: rgba(255, 255, 255, 0.45);
 }
+
+.ua-counter-modal {
+  max-width: 32rem;
+}
+
+.ua-counter-tabs {
+  display: flex;
+  gap: 0.35rem;
+  margin: 0.5rem 0 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 0.35rem;
+}
+
+.ua-counter-tab {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.35rem 0.65rem;
+  border-radius: 0.3rem;
+  cursor: pointer;
+}
+
+.ua-counter-tab.is-active {
+  color: #fff;
+  background: rgba(245, 122, 30, 0.25);
+}
+
+.ua-counter-panel {
+  margin-top: 0.25rem;
+}
+
+.ua-my-vehicles-panel .ua-my-vehicles-scroll {
+  max-height: 60vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin: 0.5rem 0;
+  padding-right: 0.25rem;
+}
+
+.ua-my-vehicles-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ua-my-vehicles-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 3px;
+}
+
+.ua-my-vehicles-scroll::-webkit-scrollbar-thumb {
+  background: rgba(245, 122, 30, 0.45);
+  border-radius: 3px;
+}
+
+.ua-my-vehicles-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 122, 30, 0.65);
+}
+
+.ua-mv-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ua-mv-row:last-child {
+  border-bottom: none;
+}
+
+.ua-mv-thumb-wrap {
+  flex: 0 0 auto;
+}
+
+.ua-mv-thumb {
+  width: 4.5rem;
+  height: 2.5rem;
+  object-fit: cover;
+  border-radius: 0.4rem;
+  display: block;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.ua-mv-thumb-placeholder {
+  width: 4.5rem;
+  height: 2.5rem;
+}
+
+.ua-mv-info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ua-mv-name {
+  font-weight: 700;
+  font-size: 0.88rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ua-mv-value {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.55);
+  margin-top: 0.15rem;
+}
+
+.ua-mv-listed {
+  font-size: 0.7rem;
+  color: rgba(127, 216, 255, 0.95);
+  margin-top: 0.2rem;
+}
+
+.ua-mv-actions {
+  flex: 0 0 auto;
+}
+
+.ua-btn-small {
+  font-size: 0.72rem;
+  padding: 0.35rem 0.55rem;
+}
+
+.ua-mv-footer {
+  margin-top: 0.35rem;
+}
+
+.ua-wrap {
+  position: relative;
+}
+
+.ua-exit-confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 120000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.65);
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.ua-exit-confirm-modal {
+  max-width: 26rem;
+  width: 100%;
+}
+
+.ua-exit-confirm-text {
+  margin: 0.35rem 0 1rem;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.85);
+}

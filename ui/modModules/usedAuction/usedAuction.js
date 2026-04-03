@@ -31,7 +31,11 @@ function defaultCounterState() {
     playerBalance: 0,
     entryCreditRemaining: 0,
     counterOffers: [],
-    selectedAuctionTypeId: null
+    selectedAuctionTypeId: null,
+    counterTab: 'auctions',
+    counterShowAuctionsTab: true,
+    myVehicles: [],
+    listedVehicleInventoryId: null
   }
 }
 
@@ -55,6 +59,7 @@ angular.module('beamng.stuff')
   }
 
   $scope.visible = false
+  $scope.exitConfirmVisible = false
   $scope.state = defaultAuctionState()
 
   let lastActiveLotIndex = null
@@ -167,6 +172,7 @@ angular.module('beamng.stuff')
     const active = $scope.activeLot()
     if (!active || active.state !== 'active' || $scope.state.phase !== 'bidding') return false
     if (active.highestBidder === 'player') return false
+    if (active.isPlayerListing) return false
     return true
   }
 
@@ -338,16 +344,45 @@ angular.module('beamng.stuff')
     resetAuctionTimerUi()
     $scope.$evalAsync(function() {
       $scope.visible = false
+      $scope.exitConfirmVisible = false
       $scope.state = defaultAuctionState()
     })
     stopPolling()
   })
 
-  $scope.$on('$destroy', function() {
-    showListener()
-    hideListener()
-    stopPolling()
+  const exitRequestListener = angularRootScope.$on('UsedAuctionExitRequest', function() {
+    $scope.$evalAsync(function() {
+      $scope.exitConfirmVisible = true
+      if (!$scope.visible) {
+        $scope.visible = true
+      }
+    })
   })
+
+  $scope.cancelLeaveAuction = function() {
+    $scope.exitConfirmVisible = false
+  }
+
+  $scope.cancelLeaveAuctionBackdrop = function(ev) {
+    if (ev && ev.target === ev.currentTarget) {
+      $scope.cancelLeaveAuction()
+    }
+  }
+
+  $scope.confirmLeaveAuction = function() {
+    $scope.exitConfirmVisible = false
+    const api = getGameLuaApi()
+    if (api) {
+      api.engineLua('career_modules_usedCarAuction.exitAuctionArea()')
+    }
+  }
+
+  $scope.$on('$destroy', function() {
+          showListener()
+          hideListener()
+          exitRequestListener()
+          stopPolling()
+        })
 }])
 
 .controller('UsedAuctionCounterController', ['$scope', '$rootScope', function($scope, $rootScope) {
@@ -367,6 +402,11 @@ angular.module('beamng.stuff')
         const previousSelection = $scope.state.selectedAuctionTypeId
         const counterOffers = Array.isArray(result.counterOffers) ? result.counterOffers : d.counterOffers
         const hasPreviousSelection = counterOffers.some(offer => offer && offer.id === previousSelection)
+        const showAuctions = result.counterShowAuctionsTab !== false
+        let counterTab = $scope.state.counterTab || d.counterTab
+        if (!showAuctions) {
+          counterTab = 'myVehicles'
+        }
         $scope.state = {
           lotBatchSize: result.lotBatchSize ?? d.lotBatchSize,
           canRegisterMoreLots: result.canRegisterMoreLots ?? d.canRegisterMoreLots,
@@ -374,7 +414,11 @@ angular.module('beamng.stuff')
           playerBalance: result.playerBalance ?? d.playerBalance,
           entryCreditRemaining: result.entryCreditRemaining ?? d.entryCreditRemaining,
           counterOffers,
-          selectedAuctionTypeId: hasPreviousSelection ? previousSelection : d.selectedAuctionTypeId
+          selectedAuctionTypeId: hasPreviousSelection ? previousSelection : d.selectedAuctionTypeId,
+          counterShowAuctionsTab: showAuctions,
+          counterTab,
+          myVehicles: Array.isArray(result.myVehicles) ? result.myVehicles : d.myVehicles,
+          listedVehicleInventoryId: result.listedVehicleInventoryId != null ? result.listedVehicleInventoryId : d.listedVehicleInventoryId
         }
       })
     })
@@ -573,6 +617,31 @@ angular.module('beamng.stuff')
 
   $scope.cancelCounterPrompt = function() {
     callAuctionLua('cancelCounterPrompt')
+  }
+
+  $scope.setCounterTab = function(tab) {
+    if (tab === 'auctions' && $scope.state.counterShowAuctionsTab === false) {
+      return
+    }
+    $scope.state.counterTab = tab
+  }
+
+  $scope.counterTabIs = function(tab) {
+    return ($scope.state.counterTab || 'auctions') === tab
+  }
+
+  $scope.canListVehicleRow = function(row) {
+    if (!row) return false
+    if (row.listedForAuction) return false
+    if (row.needsRepair) return false
+    const listed = $scope.state.listedVehicleInventoryId
+    if (listed != null && listed !== row.inventoryId) return false
+    return true
+  }
+
+  $scope.listVehicleAtAuction = function(row) {
+    if (!row || !$scope.canListVehicleRow(row)) return
+    callAuctionLua('listVehicleForNextAnythingGoesAuction', [String(row.inventoryId)])
   }
 
   function hideCounterOverlay() {

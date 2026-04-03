@@ -1,5 +1,6 @@
 <link rel="stylesheet" type="text/css" href="/ui/modModules/usedAuction/usedAuction.css" />
 
+<div class="ua-wrap">
 <div class="ua-overlay-root" ng-if="visible">
   <div class="ua-entry-backdrop" ng-if="isEntryPrompt()">
     <div class="ua-entry-modal">
@@ -149,6 +150,10 @@
 
         <div class="ua-bid-hint" ng-if="state.bidMessage">{{ state.bidMessage }}</div>
 
+        <div class="ua-bid-blocked" ng-if="activeLot() && activeLot().isPlayerListing">
+          This lot is your consignment. You cannot bid on it.
+        </div>
+
         <div class="ua-bid-blocked" ng-if="canBid() && state.hasFreeGarageSlot === false">
           No free garage slot. You cannot bid on vehicles.
         </div>
@@ -182,4 +187,16 @@
       </div>
     </div>
   </div>
+</div>
+
+<div class="ua-exit-confirm-backdrop" ng-if="exitConfirmVisible" ng-click="cancelLeaveAuctionBackdrop($event)">
+  <div class="ua-entry-modal ua-exit-confirm-modal" ng-click="$event.stopPropagation()">
+    <div class="ua-entry-title">Leave the vault?</div>
+    <p class="ua-exit-confirm-text">You have a vehicle listed for auction. It will stay listed and locked in your garage until it sells. You can leave; your listing does not cancel.</p>
+    <div class="ua-entry-actions">
+      <button type="button" class="ua-btn ua-btn-secondary" ng-click="cancelLeaveAuction()">Stay</button>
+      <button type="button" class="ua-btn ua-btn-primary" ng-click="confirmLeaveAuction()">Leave</button>
+    </div>
+  </div>
+</div>
 </div>
