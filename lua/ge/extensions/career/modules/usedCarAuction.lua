@@ -117,6 +117,7 @@ local auctionState = {
   bidHintUntil = 0,
   lotsRegisteredThisVisit = 0,
   counterOffers = {},
+  rerollCounterOffersOnOpen = false,
   counterLotBatchSize = constants.DEFAULT_LOT_COUNT,
   entryCreditRemaining = 0
 }
@@ -1743,6 +1744,7 @@ local function setAuctionComplete()
   if auctionState.phase == 'complete' then return end
   auctionState.phase = 'complete'
   auctionState.awaitingFinalExit = false
+  auctionState.rerollCounterOffersOnOpen = true
   setAuctionRunningTriggerState()
 end
 
@@ -2270,7 +2272,11 @@ local function openCounterPrompt()
     return false
   end
   auctionState.counterLotBatchSize = clampCounterLotBatchSize(constants.DEFAULT_LOT_COUNT)
-  rollCounterOffers()
+  local co = auctionState.counterOffers or {}
+  if auctionState.rerollCounterOffersOnOpen or #co < 1 then
+    rollCounterOffers()
+    auctionState.rerollCounterOffersOnOpen = false
+  end
   auctionState.counterPromptActive = true
   openMenu()
   guihooks.trigger('UsedAuctionCounterShow')
@@ -2286,7 +2292,6 @@ local function cancelCounterPrompt(closeUi)
   end
 
   auctionState.counterPromptActive = false
-  auctionState.counterOffers = {}
   closeCounterOverlayUi()
   if closeUi then
     closeMenuIfCounterOnly()
@@ -2638,6 +2643,7 @@ local function resetAuction(keepPurchases)
   auctionState.entryPromptActive = false
   auctionState.counterPromptActive = false
   auctionState.counterOffers = {}
+  auctionState.rerollCounterOffersOnOpen = false
   auctionState.counterLotBatchSize = clampCounterLotBatchSize(constants.DEFAULT_LOT_COUNT)
   auctionState.entryCreditRemaining = 0
   auctionState.awaitingFinalExit = false
@@ -2719,6 +2725,7 @@ startAuctionImmediate = function()
     auctionState.lots = {}
     auctionState.lotsRegisteredThisVisit = 0
     auctionState.counterOffers = {}
+    auctionState.rerollCounterOffersOnOpen = false
     auctionState.counterLotBatchSize = clampCounterLotBatchSize(constants.DEFAULT_LOT_COUNT)
     auctionState.npcPersonas = npcModule.generatePersonas(constants.DEFAULT_LOT_COUNT)
     npcModule.initSession({

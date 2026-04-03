@@ -38,9 +38,10 @@ local defaultAuctionFilters = {
 
 local auctionTypes = {
   anything_goes = {
-    whiteList = {},
-    implicitYears = { min = 1950 },
-    mileage = { minMul = 0.9, maxMul = 1.1 }
+    whiteList = {
+      Years = { min = 1950 },
+      Mileage = { min = 5000, max = 180000 }
+    }
   },
   budget = {
     whiteList = {
@@ -50,27 +51,33 @@ local auctionTypes = {
     }
   },
   vintage = {
-    whiteList = { Years = { min = 1900, max = 1980 } },
-    mileage = { minMul = 0.98, maxMul = 1.06, vintageGarageBand = true }
+    whiteList = {
+      Years = { min = 1900, max = 1980 },
+      Mileage = { min = 500, max = 25000 }
+    }
   },
   truck_night = {
-    whiteList = { ['Body Style'] = { 'Van', 'SUV', 'Pickup' } },
-    implicitYears = { min = 1985 },
-    mileage = { minMul = 1.05, maxMul = 1.28 }
+    whiteList = {
+      ['Body Style'] = { 'Van', 'SUV', 'Pickup' },
+      Years = { min = 1985 },
+      Mileage = { min = 20000, max = 180000 }
+    }
   },
   rare_finds = {
-    whiteList = { Population = { min = 1, max = 500 } },
-    implicitYears = { min = 1990 },
-    mileage = { minMul = 0.5, maxMul = 0.78 }
+    whiteList = {
+      Population = { min = 1, max = 500 },
+      Years = { min = 1990 },
+      Mileage = { min = 3000, max = 90000 }
+    }
   },
   high_rollers = {
-    whiteList = { Value = { min = 100000, max = 10000000 } },
-    implicitYears = { min = 2000 },
-    mileage = { minMul = 0.22, maxMul = 0.52, maxMilesCap = 42000 }
+    whiteList = {
+      Value = { min = 100000, max = 10000000 },
+      Years = { min = 2000 },
+      Mileage = { min = 2000, max = 20000 }
+    }
   }
 }
-
-local defaultAuctionMileageTuning = auctionTypes.anything_goes.mileage
 
 local usedConfigKeys = {}
 
@@ -561,19 +568,43 @@ local function doesVehiclePassAuctionFilter(vehicleInfo, filter)
 end
 
 local function buildRelaxedFallbackFilter(filter)
-  local normalized = normalizeFilterDefinition(filter)
-  local relaxed = {
-    whiteList = {},
-    blackList = deepCopy(normalized.blackList or {})
-  }
+  return normalizeFilterDefinition(filter)
+end
 
-  for filterName, parameters in pairs(normalized.whiteList or {}) do
-    if normalizeToken(filterName) ~= 'mileage' then
-      relaxed.whiteList[filterName] = deepCopy(parameters)
+local function buildSelectionFilter(filter)
+  local selection = normalizeFilterDefinition(filter)
+  for key in pairs(selection.whiteList or {}) do
+    if normalizeToken(key) == 'mileage' then
+      selection.whiteList[key] = nil
     end
   end
+  return selection
+end
 
-  return relaxed
+local function getMileageRangeFromFilter(filter)
+  local normalized = normalizeFilterDefinition(filter)
+  for key, value in pairs(normalized.whiteList or {}) do
+    if normalizeToken(key) == 'mileage' and isRangeParams(value) then
+      return value
+    end
+  end
+end
+
+local function applyLotMileageFromFilter(lot, filter)
+  if type(lot) ~= 'table' then
+    return lot
+  end
+  local mileageRange = getMileageRangeFromFilter(filter)
+  if not mileageRange then
+    return lot
+  end
+
+  local minAllowed = mileageRangeBoundToMiles(mileageRange.min)
+  local maxAllowed = mileageRangeBoundToMiles(mileageRange.max)
+  minAllowed = math.max(0, math.floor(tonumber(minAllowed) or 0))
+  maxAllowed = math.max(minAllowed, math.floor(tonumber(maxAllowed) or minAllowed))
+  lot.mileage = math.random(minAllowed, maxAllowed)
+  return lot
 end
 
 local function buildVehicleDefFromInfo(info, configPath)
@@ -621,7 +652,7 @@ end
 
 local function getRandomVehicleDefWithFilter(filter, sampleCount)
   local eligibleVehicles = util_configListGenerator.getEligibleVehicles(false, false)
-  local normalizedFilter = normalizeFilterDefinition(filter or {})
+  local normalizedFilter = buildSelectionFilter(filter or {})
   local safeCount = math.max(1, math.floor(tonumber(sampleCount) or 140))
   local filterSet = { filter = normalizedFilter }
   local popKey = 'Population'
@@ -706,78 +737,6 @@ function M.resetUsedConfigs()
   clearTable(usedConfigKeys)
 end
 
-local function clampInt(n, lo, hi)
-  n = math.floor(tonumber(n) or 0)
-  return math.max(lo, math.min(hi, n))
-end
-
-local function impliedMileageMetersFromYearRange(yMin, yMax, mileageTuning)
-  local m = mileageTuning or defaultAuctionMileageTuning
-  local cy = getCurrentYear()
-  local lo = math.floor(math.min(tonumber(yMin) or 1900, tonumber(yMax) or cy))
-  local hi = math.floor(math.max(tonumber(yMin) or 1900, tonumber(yMax) or cy))
-  if hi > cy then
-    hi = cy
-  end
-  if lo > hi then
-    lo, hi = hi, lo
-  end
-
-  local avgYear = (lo + hi) / 2
-  local age = math.max(0, cy - avgYear)
-  local minMi = 200 + age * 820
-  local maxMi = 3500 + age * 7200
-  minMi = clampInt(minMi, 150, 95000)
-  maxMi = clampInt(maxMi, minMi + 1500, 480000)
-
-  minMi = minMi * (m.minMul or 0.9)
-  maxMi = maxMi * (m.maxMul or 1.1)
-  if m.vintageGarageBand then
-    local driverMax = maxMi
-    local garageMinMi = math.max(260, math.min(10500, 5200 - age * 48))
-    minMi = math.min(minMi, garageMinMi)
-    maxMi = math.max(driverMax * 1.035, minMi + 3200)
-  end
-  if m.maxMilesCap then
-    maxMi = math.min(maxMi, m.maxMilesCap)
-    minMi = math.min(minMi, maxMi - 500)
-  end
-  if maxMi < minMi then
-    minMi, maxMi = maxMi, minMi
-  end
-  maxMi = math.max(maxMi, minMi + 800)
-
-  local minM = math.floor(minMi * MILES_TO_METERS)
-  local maxM = math.floor(maxMi * MILES_TO_METERS)
-  if maxM < minM then
-    minM, maxM = maxM, minM
-  end
-  return minM, maxM
-end
-
-local function applyDerivedMileageFromYears(merged, typeDef)
-  local wl = merged.whiteList or {}
-  if wl.Mileage then
-    return merged
-  end
-
-  local yMin, yMax = boundsFromYearTable(wl.Years)
-  if not yMin and typeDef.implicitYears then
-    local implicit = typeDef.implicitYears
-    yMin = tonumber(implicit.min) or 1950
-    yMax = tonumber(implicit.max) or getCurrentYear()
-  end
-  if not yMin or not yMax then
-    return merged
-  end
-
-  local mileageTuning = typeDef.mileage or defaultAuctionMileageTuning
-  local minM, maxM = impliedMileageMetersFromYearRange(yMin, yMax, mileageTuning)
-  wl.Mileage = { min = minM, max = maxM }
-  merged.whiteList = wl
-  return merged
-end
-
 function M.getSafetyAuctionFilter()
   return normalizeFilterDefinition({
     whiteList = {},
@@ -793,7 +752,6 @@ function M.composeAuctionTypeFilter(typeId)
   local merged = mergeFilter(M.getSafetyAuctionFilter(), {
     whiteList = deepCopy(typeDef.whiteList)
   })
-  merged = applyDerivedMileageFromYears(merged, typeDef)
   if typeId == 'rare_finds' then
     merged._auctionSpawnInversePopulation = true
   end
@@ -827,7 +785,9 @@ function M.buildNextLotEntry(lotIndex, spawnSpots, blockSpots, fixedFilter)
     vehicleDef = fallbackPool[math.random(1, #fallbackPool)]
   end
 
-  return buildLotFromVehicleDef(vehicleDef, safeLotIndex, spawnSpot, blockSpot)
+  local lot = buildLotFromVehicleDef(vehicleDef, safeLotIndex, spawnSpot, blockSpot)
+  applyLotMileageFromFilter(lot, lotFilter)
+  return lot
 end
 
 function M.buildLotBatch(startLotIndex, lotCount, spawnSpots, blockSpots, fixedFilter)
