@@ -253,7 +253,9 @@ onMounted(async () => {
     const maps = await lua.overhaul_maps.getMapsExcludingWestCoast()
     if (maps && Object.keys(maps).length > 0) {
       hasOtherMaps.value = true
-      mapOptions.value = Object.entries(maps).map(([key, value]) => ({ id: key, name: value }))
+      mapOptions.value = Object.entries(maps)
+        .map(([key, value]) => ({ id: key, name: value }))
+        .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
     }
   } catch (error) {
     console.error("Failed to load maps:", error)

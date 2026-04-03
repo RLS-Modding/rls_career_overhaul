@@ -54,10 +54,12 @@ onMounted(async () => {
     const compatibleMaps = await lua.overhaul_maps.getOtherAvailableMaps()
     if (compatibleMaps) {
       // Convert the map data to options format for BngDropdown
-      const dynamicMaps = Object.entries(compatibleMaps).map(([key, value]) => ({
-        value: key,
-        label: value
-      }))
+      const dynamicMaps = Object.entries(compatibleMaps)
+        .map(([key, value]) => ({
+          value: key,
+          label: value
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }))
       if (dynamicMaps.length > 0) {
         mapOptions.value = dynamicMaps
       }
