@@ -4,8 +4,10 @@ local CONSTANTS = {
   COP_PITY_MULTIPLIER = 30,
   CRIMINAL_REWARD_MULTIPLIER = 110,
   ARREST_BONUS_MULTIPLIER = 180,
-  ARREST_BONUS_MAX = 5000,
-  ARREST_BONUS_MIN = 1000,
+  ARREST_BONUS_MAX = 430,
+  ARREST_BONUS_MIN = 215,
+  ARREST_SKILL_BONUS_PER_LEVEL = 0.25,
+  ARREST_REPUTATION_BONUS_SCALE = 0.05,
   POLICE_PAYOUT_MULTIPLIER = 0.70,
   REWARD_DIVISOR = 6,
   POLICE_SKILL_XP_DIVISOR = 60,
@@ -14,7 +16,9 @@ local CONSTANTS = {
   NO_LICENSE_PLATE_EVADE_PENALTY = 35,
   POLICE_LOANER_ORG_NAME = "policeLoaner",
   REPUTATION_BONUS_AMOUNT = 10,
+  POLICE_SKILL_MAX_LEVEL = 50,
   POLICE_SKILL_ATTRIBUTE_KEY = "careerSkills-police",
+  POLICE_SKILL_PATH_IDS = {"careerSkills-police", "police", "freestyle-police"},
 }
 
 local function applyDifficultyProgressionRewardData(rewardData)
@@ -86,6 +90,52 @@ local function calculatePoliceSkillXp(amount)
   return math.floor(amount / CONSTANTS.POLICE_SKILL_XP_DIVISOR)
 end
 
+local function getBranchLevelByPathIds(pathIds)
+  if not career_branches or not career_branches.getBranchLevel then
+    return 0
+  end
+
+  for _, skillPathId in ipairs(pathIds or {}) do
+    local branchLevel = career_branches.getBranchLevel(skillPathId)
+    local level = tonumber(branchLevel)
+    if level then
+      return math.max(0, math.floor(level))
+    end
+  end
+
+  return 0
+end
+
+local function getPoliceSkillLevel()
+  local level = getBranchLevelByPathIds(CONSTANTS.POLICE_SKILL_PATH_IDS)
+  if level > 0 then
+    return level
+  end
+
+  if career_modules_playerAttributes and career_modules_playerAttributes.getAttributeValue and career_branches and career_branches.calcBranchLevelFromValue then
+    local value = tonumber(career_modules_playerAttributes.getAttributeValue(CONSTANTS.POLICE_SKILL_ATTRIBUTE_KEY)) or 0
+    for _, skillPathId in ipairs(CONSTANTS.POLICE_SKILL_PATH_IDS) do
+      local branchLevel = career_branches.calcBranchLevelFromValue(value, skillPathId)
+      level = math.max(level, tonumber(branchLevel) or 0)
+    end
+  end
+
+  return math.max(0, math.floor(level))
+end
+
+local function calculateArrestReputationBonus(rawBonus)
+  rawBonus = tonumber(rawBonus) or 1
+  if rawBonus <= 1 then
+    return 1
+  end
+  return 1 + ((rawBonus - 1) * CONSTANTS.ARREST_REPUTATION_BONUS_SCALE)
+end
+
+local function calculatePoliceSkillPayoutMultiplier(policeSkillLevel)
+  local clampedLevel = math.min(math.max(tonumber(policeSkillLevel) or 0, 0), CONSTANTS.POLICE_SKILL_MAX_LEVEL)
+  return 1 + (clampedLevel * CONSTANTS.ARREST_SKILL_BONUS_PER_LEVEL)
+end
+
 local function handleCopEvadeReward(data)
   local pityAmount = calculateRewardAmount(data.score, CONSTANTS.COP_PITY_MULTIPLIER, "police")
   pityAmount = math.floor(pityAmount * CONSTANTS.POLICE_PAYOUT_MULTIPLIER)
@@ -140,11 +190,13 @@ end
 local function handleArrestReward(data, playerData)
   local baseBonus = calculateRewardAmount(data.score, CONSTANTS.ARREST_BONUS_MULTIPLIER)
   local bonus = math.max(CONSTANTS.ARREST_BONUS_MAX - baseBonus, CONSTANTS.ARREST_BONUS_MIN)
+  local policeSkillLevel = getPoliceSkillLevel()
+  local policeSkillMultiplier = calculatePoliceSkillPayoutMultiplier(policeSkillLevel)
 
   local org = freeroam_organizations.getOrganization(CONSTANTS.POLICE_LOANER_ORG_NAME)
   local level = org.reputationLevels[org.reputation.level + 2]
-  local reputationBonus = level.deliveryBonus.value
-  bonus = bonus * reputationBonus
+  local reputationBonus = calculateArrestReputationBonus(level.deliveryBonus and level.deliveryBonus.value)
+  bonus = bonus * reputationBonus * policeSkillMultiplier
 
   local loanerCut = 0
   local vehicle = career_modules_inventory.getVehicle(playerData.inventoryId)
@@ -173,6 +225,9 @@ local function handleArrestReward(data, playerData)
   end
   if reputationBonus ~= 1 then
     message = message .. " (Reputation Bonus: " .. math.floor((reputationBonus - 1) * 100) .. "%)"
+  end
+  if policeSkillMultiplier > 1 then
+    message = message .. " (Police Skill Bonus: " .. math.floor((policeSkillMultiplier - 1) * 100) .. "%)"
   end
 
   ui_message(message, 5, "Police")
