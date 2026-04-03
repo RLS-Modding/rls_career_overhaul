@@ -3,6 +3,30 @@ local M = {}
 local freConfig = require('gameplay/fre/config')
 local core_vehicles = require('core/vehicles')
 
+local function isTrailerVehicleModel(modelInfo)
+  if type(modelInfo) ~= "table" then
+    return false
+  end
+
+  local hints = {
+    modelInfo.Type,
+    modelInfo.type,
+    modelInfo.Category,
+    modelInfo.category,
+    modelInfo.Class,
+    modelInfo.class
+  }
+
+  for _, hint in ipairs(hints) do
+    local value = string.lower(tostring(hint or ""))
+    if value ~= "" and string.find(value, "trailer", 1, true) then
+      return true
+    end
+  end
+
+  return false
+end
+
 local function isValidVehicleModelKey(modelKey)
   local normalized = type(modelKey) == "string" and string.lower(modelKey) or nil
   if not normalized or normalized == "" then
@@ -15,6 +39,9 @@ local function isValidVehicleModelKey(modelKey)
       return false
     end
     local modelInfo = type(modelData.model) == "table" and modelData.model or {}
+    if isTrailerVehicleModel(modelInfo) then
+      return false
+    end
     local typeHint = string.lower(tostring(
       modelInfo.Type or modelInfo.type or modelInfo.Category or modelInfo.category or ""))
     local classHint = string.lower(tostring(modelInfo.Class or modelInfo.class or ""))

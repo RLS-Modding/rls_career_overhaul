@@ -19,7 +19,12 @@ local config = {
     tipPerPassengerMultiplier = 2,
     roughRidePenaltyMultiplier = 10,
     loopBonusFactor = 0.5,
-    stopVelocityThreshold = 0.5
+    stopVelocityThreshold = 0.5,
+    -- Few-stop routes (long legs, limited stops): mileage pay when #stopTriggers < this; $/mile before economy/reward multipliers.
+    limitedStopsRouteMaxStops = 5,
+    payPerMile = 600,
+    metersPerMile = 1609.344,
+    odometerMaxStepMeters = 400
 }
 
 local DEBUG = false
@@ -61,6 +66,8 @@ local stopMarkerObjects = {}
 local stopPerimeterTrigger = nil
 local currentLoanerCut = 0
 local passengerDisplayTimer = 0
+local routeOdometerMeters = 0
+local lastOdometerPos = nil
 
 local isBus
 local initRoute
@@ -682,6 +689,9 @@ local function showNextStopMarker(targetStopIndex)
 end
 
 local function endRoute(reason, payout)
+    routeOdometerMeters = 0
+    lastOdometerPos = nil
+
     currentRouteActive = false
     dwellTimer = nil
     routeInitialized = false
@@ -1116,6 +1126,7 @@ initRoute = function()
 
     currentStopIndex = 1
     consecutiveStops, dwellTimer, accumulatedReward, totalStopsCompleted = 0, nil, 0, 0
+    routeOdometerMeters, lastOdometerPos = 0, nil
     currentRouteActive, routeInitialized, passengersOnboard, routeCooldown = true, true, 0, 0
     tipTotal, roughRide, lastVelocity = 0, 0, nil
 
@@ -1264,17 +1275,28 @@ local function processStop(vehicle, dtSim)
 
             local base = config.baseFare
             local bonusMultiplier = config.bonusMultiplierBase + (consecutiveStops / #stopTriggers) * config.bonusMultiplierFactor
-            local payout = math.floor(base * bonusMultiplier)
+            local stopPayout = math.floor(base * bonusMultiplier)
+
+            local mileagePayout = 0
+            if #stopTriggers < config.limitedStopsRouteMaxStops then
+                local payPerMeter = config.payPerMile / config.metersPerMile
+                mileagePayout = math.floor(routeOdometerMeters * payPerMeter + 0.5)
+            end
+
+            local combined = stopPayout + mileagePayout
             local sectionMultiplier = 1.0
+            local payout = combined
 
             if career_economyAdjuster then
                 sectionMultiplier = career_economyAdjuster.getSectionMultiplier("bus") or 1.0
-                payout = math.floor(payout * sectionMultiplier + 0.5)
+                payout = math.floor(combined * sectionMultiplier + 0.5)
             end
             local rewardMultiplier = config.rewardMultiplier or 1
             payout = math.floor(payout * rewardMultiplier + 0.5)
 
             accumulatedReward = accumulatedReward + payout
+            routeOdometerMeters = 0
+            lastOdometerPos = vehicle:getPosition()
 
             local tipsEarned = 0
             if trueDeboarding > 0 then
@@ -1314,7 +1336,8 @@ local function processStop(vehicle, dtSim)
 
                 routeCooldown = config.routeCooldown
                 currentStopIndex = 1
-                
+                lastOdometerPos = nil
+
                 isCalculatingRoute = true
                 routeCalcTimer = 0
                 
@@ -1466,6 +1489,17 @@ local function onUpdate(dtReal, dtSim, dtRaw)
 
     lastVelocity = velocity
 
+    if stopTriggers and #stopTriggers < config.limitedStopsRouteMaxStops then
+        local pos = vehicle:getPosition()
+        if lastOdometerPos then
+            local d = pos:distance(lastOdometerPos)
+            if d > 0 and d <= config.odometerMaxStepMeters then
+                routeOdometerMeters = routeOdometerMeters + d
+            end
+        end
+        lastOdometerPos = pos
+    end
+
     processStop(vehicle, dtSim)
 end
 
@@ -1549,6 +1583,8 @@ local function onExtensionUnloaded()
     stopDisplayNames = {}
     routeItems = {}
     currentLoanerCut = 0
+    routeOdometerMeters = 0
+    lastOdometerPos = nil
 
     M.vehicleCapacity = nil
     
