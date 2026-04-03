@@ -306,7 +306,7 @@ local function setVehicleListedForAuction(inventoryId, listed)
     end
     v.listedForAuction = true
     if inventoryIdToVehId[inventoryId] then
-      removeVehicleObject(inventoryId)
+      M.removeVehicleObject(inventoryId)
     end
   else
     v.listedForAuction = nil
