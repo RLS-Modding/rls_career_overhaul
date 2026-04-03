@@ -121,7 +121,7 @@
       ],
       "displaySpeed":true,
       "label":"No Prep Highway Drag",
-      "reward":50,
+      "reward":75,
       "type":[
         "drag"
       ]
@@ -184,7 +184,7 @@
       ],
       "driftGoal":29000,
       "label":"Island Touge Drift",
-      "reward":200,
+      "reward":400,
       "type":[
         "drift"
       ]
@@ -285,7 +285,7 @@
         "mudDrag2"
       ],
       "label":"Mud Drag Hard",
-      "reward":400,
+      "reward":75,
       "type":[
         "mudding"
       ]
@@ -309,30 +309,6 @@
       "reward":100,
       "type":[
         "rally"
-      ]
-    },
-    "raceTrackDrift":{
-      "bestTime":35,
-      "checkpointIndexs":[
-        5,
-        10,
-        15,
-        19,
-        21,
-        24,
-        27,
-        31
-      ],
-      "checkpointRoad":[
-        "raceTrackDrift"
-      ],
-      "driftGoal":31000,
-      "hotlap":30,
-      "label":"Parking Lot Drift",
-      "minCheckpointDistance":20,
-      "reward":250,
-      "type":[
-        "drift"
       ]
     },
     "rally1":{
@@ -553,7 +529,7 @@
       ],
       "hotlap":55,
       "label":"Rubberband Ridge",
-      "reward":400,
+      "reward":300,
       "runningStart":true,
       "type":[
         "offroad"
