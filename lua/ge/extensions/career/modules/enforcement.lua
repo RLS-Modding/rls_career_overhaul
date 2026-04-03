@@ -8,6 +8,7 @@ local CONSTANTS = {
   ARREST_BONUS_MIN = 1000,
   POLICE_PAYOUT_MULTIPLIER = 0.70,
   REWARD_DIVISOR = 6,
+  POLICE_SKILL_XP_DIVISOR = 60,
   COP_PROXIMITY_DISTANCE = 15,
   LICENSE_PLATE_EVADE_BONUS = 55,
   NO_LICENSE_PLATE_EVADE_PENALTY = 35,
@@ -81,6 +82,10 @@ local function createRewardPayment(rewardData, label, tags)
   }, true)
 end
 
+local function calculatePoliceSkillXp(amount)
+  return math.floor(amount / CONSTANTS.POLICE_SKILL_XP_DIVISOR)
+end
+
 local function handleCopEvadeReward(data)
   local pityAmount = calculateRewardAmount(data.score, CONSTANTS.COP_PITY_MULTIPLIER, "police")
   pityAmount = math.floor(pityAmount * CONSTANTS.POLICE_PAYOUT_MULTIPLIER)
@@ -88,7 +93,7 @@ local function handleCopEvadeReward(data)
   local rewardData = {
     money = { amount = pityAmount },
     beamXP = { amount = math.floor(pityAmount / CONSTANTS.REWARD_DIVISOR) },
-    [CONSTANTS.POLICE_SKILL_ATTRIBUTE_KEY] = { amount = math.floor(pityAmount / CONSTANTS.REWARD_DIVISOR) },
+    [CONSTANTS.POLICE_SKILL_ATTRIBUTE_KEY] = { amount = calculatePoliceSkillXp(pityAmount) },
     specialized = { amount = math.floor(pityAmount / CONSTANTS.REWARD_DIVISOR) }
   }
   rewardData = applyDifficultyProgressionRewardData(rewardData)
@@ -153,7 +158,7 @@ local function handleArrestReward(data, playerData)
   local rewardData = {
     money = { amount = bonus },
     beamXP = { amount = math.floor(bonus / CONSTANTS.REWARD_DIVISOR) },
-    [CONSTANTS.POLICE_SKILL_ATTRIBUTE_KEY] = { amount = math.floor(bonus / CONSTANTS.REWARD_DIVISOR) },
+    [CONSTANTS.POLICE_SKILL_ATTRIBUTE_KEY] = { amount = calculatePoliceSkillXp(bonus) },
     specialized = { amount = math.floor(bonus / CONSTANTS.REWARD_DIVISOR) },
     policeLoanerReputation = { amount = CONSTANTS.REPUTATION_BONUS_AMOUNT }
   }

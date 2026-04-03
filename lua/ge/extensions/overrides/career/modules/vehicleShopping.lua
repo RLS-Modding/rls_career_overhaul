@@ -21,6 +21,12 @@ local dealershipPurchaseReputationGain = 2000
 local missingYearsFallbackModelYear = 2023
 local refreshInterval = 5
 local tetherRange = 4
+local POLICE_DEALERSHIP_UNLOCK_LEVEL = 10
+local POLICE_DEALERSHIP_IDS = {
+  policeDealership = true,
+  poliziaAuto = true
+}
+local POLICE_SKILL_PATH_IDS = {"careerSkills-police", "police", "freestyle-police"}
 
 -- Module state
 local vehicleShopDirtyDate
@@ -88,6 +94,47 @@ local function generateShopId()
       return shopId
     end
   end
+end
+
+local function getBranchLevelByPathIds(pathIds)
+  if not career_branches or not career_branches.getBranchLevel then
+    return 0
+  end
+
+  for _, skillPathId in ipairs(pathIds or {}) do
+    local branchLevel = career_branches.getBranchLevel(skillPathId)
+    local level = tonumber(branchLevel)
+    if level then
+      return math.max(0, math.floor(level))
+    end
+  end
+
+  return 0
+end
+
+local function getPoliceSkillLevel()
+  local level = getBranchLevelByPathIds(POLICE_SKILL_PATH_IDS)
+  if level > 0 then
+    return level
+  end
+
+  if career_modules_playerAttributes and career_modules_playerAttributes.getAttributeValue and career_branches and career_branches.calcBranchLevelFromValue then
+    local value = tonumber(career_modules_playerAttributes.getAttributeValue("careerSkills-police")) or 0
+    for _, skillPathId in ipairs(POLICE_SKILL_PATH_IDS) do
+      local branchLevel = career_branches.calcBranchLevelFromValue(value, skillPathId)
+      level = math.max(level, tonumber(branchLevel) or 0)
+    end
+  end
+
+  return math.max(0, math.floor(level))
+end
+
+local function isPoliceDealershipLocked(dealershipId)
+  return POLICE_DEALERSHIP_IDS[dealershipId] and getPoliceSkillLevel() < POLICE_DEALERSHIP_UNLOCK_LEVEL or false
+end
+
+local function getPoliceDealershipLockLabel()
+  return string.format("Police Dealership requires Police Skill level %d", POLICE_DEALERSHIP_UNLOCK_LEVEL)
 end
 
 local function getVehicleInfoByShopId(shopId)
@@ -849,7 +896,7 @@ local function getShoppingData()
         name = d.name,
         description = d.description,
         preview = d.preview,
-        hiddenFromDealerList = d.hiddenFromDealerList,
+        hiddenFromDealerList = d.hiddenFromDealerList or isPoliceDealershipLocked(d.id),
         associatedOrganization = d.associatedOrganization
       })
     end
@@ -862,7 +909,7 @@ local function getShoppingData()
         name = d.name,
         description = d.description,
         preview = d.preview,
-        hiddenFromDealerList = d.hiddenFromDealerList,
+        hiddenFromDealerList = d.hiddenFromDealerList or isPoliceDealershipLocked(d.id),
         associatedOrganization = d.associatedOrganization
       })
     end
@@ -1459,7 +1506,7 @@ local function updateVehicleList(fromScratch)
             name = dealership.name,
             description = dealership.description,
             preview = dealership.preview,
-            hiddenFromDealerList = dealership.hiddenFromDealerList,
+            hiddenFromDealerList = dealership.hiddenFromDealerList or isPoliceDealershipLocked(dealership.id),
             associatedOrganization = dealership.associatedOrganization,
             vehicleGenerationMultiplier = dealership.vehicleGenerationMultiplier,
             stock = dealership.stock,
@@ -1477,7 +1524,7 @@ local function updateVehicleList(fromScratch)
           name = dealership.name,
           description = dealership.description,
           preview = dealership.preview,
-          hiddenFromDealerList = dealership.hiddenFromDealerList,
+          hiddenFromDealerList = dealership.hiddenFromDealerList or isPoliceDealershipLocked(dealership.id),
           associatedOrganization = dealership.associatedOrganization,
           vehicleGenerationMultiplier = dealership.vehicleGenerationMultiplier,
           stock = dealership.stock,
@@ -2134,6 +2181,11 @@ end
 -- TODO At this point, the part conditions of the previous vehicle should have already been saved. for example when entering the garage
 local originComputerId
 local function openShop(seller, _originComputerId, screenTag)
+  if seller and isPoliceDealershipLocked(seller) then
+    ui_message(getPoliceDealershipLockLabel(), 8, "Police", "info")
+    return
+  end
+
   currentSeller = seller
   originComputerId = _originComputerId
 
@@ -2204,6 +2256,11 @@ local function openShop(seller, _originComputerId, screenTag)
 end
 
 local function navigateToDealership(dealershipId)
+  if isPoliceDealershipLocked(dealershipId) then
+    ui_message(getPoliceDealershipLockLabel(), 8, "Police", "info")
+    return
+  end
+
   local dealership = freeroam_facilities.getDealership(dealershipId)
   if not dealership then
     return
@@ -2216,6 +2273,11 @@ local function navigateToDealership(dealershipId)
 end
 
 local function taxiToDealership(dealershipId)
+  if isPoliceDealershipLocked(dealershipId) then
+    ui_message(getPoliceDealershipLockLabel(), 8, "Police", "info")
+    return
+  end
+
   local dealership = freeroam_facilities.getDealership(dealershipId)
   if not dealership then
     return
@@ -2229,6 +2291,10 @@ local function taxiToDealership(dealershipId)
 end
 
 local function getTaxiPriceToDealership(dealershipId)
+  if isPoliceDealershipLocked(dealershipId) then
+    return 0
+  end
+
   local dealership = freeroam_facilities.getDealership(dealershipId)
   if not dealership then
     log("W", "Career", "getTaxiPriceToDealership: Dealership not found: " .. tostring(dealershipId))
