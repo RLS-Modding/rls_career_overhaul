@@ -173,6 +173,51 @@ local function renameSaveSlot(slotName, newName)
   end
 end
 
+local function duplicateSaveSlot(slotName, newName)
+  if not isLegalDirectoryName(slotName) or not isLegalDirectoryName(newName) then
+    return false
+  end
+  if slotName == newName then
+    return false
+  end
+  local src = saveRoot .. slotName
+  local dst = saveRoot .. newName
+  if not FS:directoryExists(src) or FS:directoryExists(dst) then
+    return false
+  end
+
+  if currentSaveSlot == slotName and career_career.isActive() then
+    M.saveCurrent(nil, true)
+  end
+
+  local files = FS:findFiles(src .. "/", "*.*", -1, true, true)
+  if not files or tableSize(files) == 0 then
+    return false
+  end
+
+  local ok = true
+  for i = 1, tableSize(files) do
+    local srcPath = files[i]
+    if not FS:directoryExists(srcPath) then
+      local dstPath = dst .. string.sub(srcPath, #src + 2)
+      local parentDir = path.split(dstPath)
+      if parentDir and parentDir ~= "" and not FS:directoryExists(parentDir) then
+        FS:directoryCreate(parentDir, true)
+      end
+      if FS:copyFile(srcPath, dstPath) ~= 0 then
+        ok = false
+        break
+      end
+    end
+  end
+
+  if not ok then
+    FS:directoryRemove(dst)
+    return false
+  end
+  return true
+end
+
 local function getCurrentSaveSlot()
   return currentSaveSlot, currentSavePath
 end
@@ -401,6 +446,7 @@ M.onUpdate = onUpdate
 M.setSaveSlot = setSaveSlot
 M.removeSaveSlot = removeSaveSlot
 M.renameSaveSlot = renameSaveSlot
+M.duplicateSaveSlot = duplicateSaveSlot
 M.getCurrentSaveSlot = getCurrentSaveSlot
 M.saveCurrent = saveCurrent
 M.getAllSaveSlots = getAllSaveSlots

@@ -112,27 +112,7 @@ local function getSkillLevel(disciplineId)
   return math.max(0, math.floor(level))
 end
 
-local function getSkillProgress(disciplineId)
-  local skillKey, refs = getSkillRefs(disciplineId)
-  if not skillKey then
-    return {
-      value = 0,
-      level = 0,
-      progress = 0,
-      xpIntoLevel = 0,
-      xpNeededForLevel = 0,
-      xpToNextLevel = 0,
-      prevThreshold = nil,
-      nextThreshold = nil
-    }
-  end
-
-  local value = 0
-  if career_modules_playerAttributes and career_modules_playerAttributes.getAttributeValue then
-    local raw = career_modules_playerAttributes.getAttributeValue(skillKey)
-    value = tonumber(raw) or 0
-  end
-
+local function buildProgressFromValueRefs(value, refs)
   local best = {
     level = 0,
     prevThreshold = nil,
@@ -181,6 +161,66 @@ local function getSkillProgress(disciplineId)
     prevThreshold = prevThreshold,
     nextThreshold = nextThreshold
   }
+end
+
+local function readAttributeValueFromSave(attData, skillKey)
+  if type(attData) ~= "table" or type(skillKey) ~= "string" or skillKey == "" then
+    return 0
+  end
+  local storageKey = skillKey
+  if career_branches and career_branches.newAttributeNamesToOldNames then
+    storageKey = career_branches.newAttributeNamesToOldNames[skillKey] or skillKey
+  end
+  local blob = attData[storageKey] or attData[skillKey]
+  if type(blob) == "table" then
+    return tonumber(blob.value) or 0
+  end
+  return tonumber(blob) or 0
+end
+
+local function getSkillProgressFromSavedAttributes(attData, disciplineId)
+  local skillKey, refs = getSkillRefs(disciplineId)
+  if not skillKey then
+    return {
+      value = 0,
+      level = 0,
+      progress = 0,
+      xpIntoLevel = 0,
+      xpNeededForLevel = 0,
+      xpToNextLevel = 0,
+      prevThreshold = nil,
+      nextThreshold = nil
+    }
+  end
+  local value = 0
+  if type(attData) == "table" then
+    value = readAttributeValueFromSave(attData, skillKey)
+  end
+  return buildProgressFromValueRefs(value, refs)
+end
+
+local function getSkillProgress(disciplineId)
+  local skillKey, refs = getSkillRefs(disciplineId)
+  if not skillKey then
+    return {
+      value = 0,
+      level = 0,
+      progress = 0,
+      xpIntoLevel = 0,
+      xpNeededForLevel = 0,
+      xpToNextLevel = 0,
+      prevThreshold = nil,
+      nextThreshold = nil
+    }
+  end
+
+  local value = 0
+  if career_modules_playerAttributes and career_modules_playerAttributes.getAttributeValue then
+    local raw = career_modules_playerAttributes.getAttributeValue(skillKey)
+    value = tonumber(raw) or 0
+  end
+
+  return buildProgressFromValueRefs(value, refs)
 end
 
 local function hasLevel(level, requiredLevel)
@@ -273,6 +313,7 @@ end
 
 M.getSkillLevel = getSkillLevel
 M.getSkillProgress = getSkillProgress
+M.getSkillProgressFromSavedAttributes = getSkillProgressFromSavedAttributes
 M.countOfferCap = countOfferCap
 M.countSlotCap = countSlotCap
 M.getUnlockedContractTiers = getUnlockedContractTiers

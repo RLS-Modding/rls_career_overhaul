@@ -173,6 +173,21 @@ angular.module('beamng.stuff')
     return sign + delta.toFixed(2) + 's'
   }
 
+  $scope.formatSectorValue = function(v, useScore) {
+    if (v == null || typeof v !== 'number' || !isFinite(v)) return '—'
+    if (useScore) return String(Math.round(v))
+    return $scope.formatTime(v)
+  }
+
+  $scope.formatSectorDelta = function(delta, useScore) {
+    if (delta == null || typeof delta !== 'number' || !isFinite(delta)) return '—'
+    if (useScore) {
+      const sign = delta > 0 ? '+' : (delta < 0 ? '' : '')
+      return sign + Math.round(delta)
+    }
+    return $scope.formatDelta(delta)
+  }
+
   $scope.deltaClass = function(delta) {
     if (delta == null || typeof delta !== 'number') return ''
     if (delta < 0) return 'frh-delta-fast'

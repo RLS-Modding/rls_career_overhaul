@@ -568,6 +568,21 @@ local function driveToTarget(targetPos, throttle, brake, targetSpeed)
       local steerCoef = outDeviation * absegoSpeed * absegoSpeed * min(1, dirAngle * dirAngle * 4)
       local understeerCoef = max(0, steerCoef) * min(1, abs(ego.vel:dot(p2p1DirVec) * 3))
       local noUndersteerCoef = max(0, 1 - understeerCoef)
+      -- Racing: when wide of centerline, do not lift as hard for "understeer" — keeps pace on alternate lines.
+      if opt.racing and type(parameters.raceWideLineUndersteerRelax) == 'number' and parameters.raceWideLineUndersteerRelax > 0 and plan[plan.egoSeg or 1] and plan[(plan.egoSeg or 1) + 1] then
+        local es = plan.egoSeg or 1
+        local a, b = plan[es].pos, plan[es + 1].pos
+        local xn = ego.pos:xnormOnLine(a, b)
+        if xn < 0 then xn = 0 elseif xn > 1 then xn = 1 end
+        local onL = a + (b - a) * xn
+        local latMag = abs((ego.pos - onL):dot(plan[es].normal))
+        local lat0 = (type(parameters.raceWideLineLateralStartM) == 'number' and parameters.raceWideLineLateralStartM) or 0.85
+        local lat1 = (type(parameters.raceWideLineLateralEndM) == 'number' and parameters.raceWideLineLateralEndM) or 2.5
+        if lat1 <= lat0 then lat1 = lat0 + 0.01 end
+        local tWide = clamp((latMag - lat0) / (lat1 - lat0), 0, 1)
+        local relax = tWide * clamp(parameters.raceWideLineUndersteerRelax, 0, 1)
+        noUndersteerCoef = noUndersteerCoef + (1 - noUndersteerCoef) * relax
+      end
       throttleUnderCoef = noUndersteerCoef
       brakeUnderCoef = min(brakeUnderCoef, max(0, 1 - understeerCoef * understeerCoef))
     end
@@ -3244,6 +3259,58 @@ local function raceplanAhead(route, baseRoute, pmode)
 
   updatePlanLen(plan, 2, plan.planCount)
 
+  -- Racing: bias lateral position toward the outside of tight corners (wider arc, more human line sacrifice).
+  -- Uses geometry + previous-frame curvature; reclamps to lane/road limits. State-based slip/TCS handles stability.
+  if opt.racing and not pmode and type(parameters.raceCornerLineLiftMaxM) == 'number' and parameters.raceCornerLineLiftMaxM > 0 then
+    local liftMax = parameters.raceCornerLineLiftMaxM * clamp((type(parameters.raceCornerLineLiftScale) == 'number' and parameters.raceCornerLineLiftScale) or 1, 0, 1.5)
+    local k0 = (type(parameters.raceCornerCurvStart) == 'number' and parameters.raceCornerCurvStart) or 0.022
+    local k1 = (type(parameters.raceCornerCurvEnd) == 'number' and parameters.raceCornerCurvEnd) or 0.10
+    if k1 <= k0 then k1 = k0 + 1e-4 end
+    local roadWidthMargin = ego.width * 0.8
+    local laneWidthMargin = ego.width * 0.8
+    local function raceCornerLineLiftApply(liftPlan)
+      if not liftPlan or not liftPlan[2] or (liftPlan.planCount or 0) < 2 then return end
+      for i = 2, liftPlan.planCount - 1 do
+        local n = liftPlan[i]
+        local np = liftPlan[i + 1]
+        if np and n.vec and np.vec then
+          local cInst = abs(inCurvature(n.vec, np.vec))
+          local kRef = max(cInst, abs(n.curvature or 0))
+          local t = clamp((kRef - k0) / (k1 - k0), 0, 1)
+          if t > 0 then
+            tmpVec:setSub2(n.dirVec, np.dirVec)
+            local tl = tmpVec:length()
+            if tl > 1e-5 then
+              tmpVec:setScaled(1 / tl)
+              local widenSign = -sign2(tmpVec:dot(n.normal))
+              local delta = t * liftMax * widenSign
+              local roadHalfWidth = n.halfWidth
+              local roadLimRight = max(0, roadHalfWidth - roadWidthMargin)
+              local limL = max(n.laneLimLeft + laneWidthMargin, -roadLimRight) + max(0, liftPlan.offset or 0)
+              local limR = min(n.laneLimRight - laneWidthMargin, roadLimRight) + min(0, liftPlan.offset or 0)
+              local newLat = clamp(n.lateralXnorm + delta, limL, limR)
+              if newLat ~= n.lateralXnorm then
+                n.lateralXnorm = newLat
+                n.pos:setScaled2(n.normal, newLat)
+                n.pos:setAdd(n.posOrig)
+              end
+            end
+          end
+        end
+      end
+      for i = 2, liftPlan.planCount do
+        liftPlan[i].vec:setSub2(liftPlan[i - 1].pos, liftPlan[i].pos)
+        liftPlan[i].vec.z = 0
+        liftPlan[i].dirVec:set(liftPlan[i].vec)
+        liftPlan[i].dirVec:normalize()
+      end
+      updatePlanLen(liftPlan, 2, liftPlan.planCount)
+    end
+    raceCornerLineLiftApply(plan)
+    if route.planL then raceCornerLineLiftApply(route.planL) end
+    if route.planR then raceCornerLineLiftApply(route.planR) end
+  end
+
   -------########## Error Distribution ##########---------
   --profilerPopEvent("ai_error_smoother")
   if not pmode then -- adjust plan error for main plan
@@ -3340,7 +3407,33 @@ local function raceplanAhead(route, baseRoute, pmode)
   calculateTrafficTargetSpeed(plan, traffic.trafficTable)
 
   plan.originaltargetSpeed = plan.targetSpeed -- save target speed computed by geometry only
-  plan.targetSpeed = min(plan.targetSpeed, plan.trafficTargetSpeed)
+  local geoTS = plan.targetSpeed
+  local mergedTS = min(geoTS, plan.trafficTargetSpeed)
+  -- Racing: when clearly wide of the intended line, ease traffic cap toward geometric speed (never above geoTS).
+  -- latMag always uses route.plan (main) so planL/planR scoring measures lateral error vs intended path, not offset polylines.
+  if opt.racing and type(parameters.raceWideLineTrafficBlend) == 'number' and parameters.raceWideLineTrafficBlend > 0 then
+    local refPlan = route.plan
+    local es = (refPlan and type(refPlan.egoSeg) == 'number' and refPlan.egoSeg) or plan.egoSeg or 1
+    if refPlan and refPlan.planCount and es > refPlan.planCount - 1 then
+      es = max(1, refPlan.planCount - 1)
+    end
+    local pn = refPlan and refPlan[es]
+    local pn1 = refPlan and refPlan[es + 1]
+    if pn and pn1 then
+      local p1, p2 = pn.pos, pn1.pos
+      local xn = ego.pos:xnormOnLine(p1, p2)
+      if xn < 0 then xn = 0 elseif xn > 1 then xn = 1 end
+      local onL = p1 + (p2 - p1) * xn
+      local latMag = abs((ego.pos - onL):dot(pn.normal))
+      local lat0 = (type(parameters.raceWideLineLateralStartM) == 'number' and parameters.raceWideLineLateralStartM) or 0.85
+      local lat1 = (type(parameters.raceWideLineLateralEndM) == 'number' and parameters.raceWideLineLateralEndM) or 2.5
+      if lat1 <= lat0 then lat1 = lat0 + 0.01 end
+      local tWide = clamp((latMag - lat0) / (lat1 - lat0), 0, 1)
+      local relief = tWide * clamp(parameters.raceWideLineTrafficBlend, 0, 1)
+      mergedTS = mergedTS + relief * (geoTS - mergedTS)
+    end
+  end
+  plan.targetSpeed = mergedTS
 
   ------######## Return #########--------
   return route

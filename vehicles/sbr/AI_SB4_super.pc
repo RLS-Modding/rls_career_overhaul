@@ -7,9 +7,9 @@
   "paints":[
     {
       "baseColor":[
-        0.901,
-        0.163,
-        0.227,
+        0.102,
+        0.862,
+        0.287,
         1.2
       ],
       "clearcoat":1,
@@ -19,9 +19,9 @@
     },
     {
       "baseColor":[
-        0.046,
-        0.007,
-        0.032,
+        0.029,
+        0.044,
+        0.222,
         1.2
       ],
       "clearcoat":1,
@@ -31,9 +31,9 @@
     },
     {
       "baseColor":[
-        0.797,
-        0.171,
-        0.121,
+        0.06,
+        0.04,
+        0.16,
         1.2
       ],
       "clearcoat":1,
@@ -76,7 +76,7 @@
     "sbr_doorglass_R":"sbr_doorglass_R",
     "sbr_doorpanel_L":"sbr_doorpanel_L",
     "sbr_doorpanel_R":"sbr_doorpanel_R",
-    "sbr_engine":"sbr_engine_2.5",
+    "sbr_engine":"sbr_engine_2.0",
     "sbr_engine_ecu":"sbr_engine_ecu_race",
     "sbr_engine_internals":"sbr_engine_internals_stage2",
     "sbr_enginelid":"sbr_enginelid",
@@ -187,6 +187,6 @@
     "$toe_RR":1.0018,
     "$trackoffset_F":0,
     "$trackoffset_R":0,
-    "$wastegateStart":26
+    "$wastegateStart":20
   }
 }
