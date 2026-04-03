@@ -63,6 +63,7 @@ angular.module('beamng.stuff')
   $scope.state = defaultAuctionState()
 
   let lastActiveLotIndex = null
+  let prevAuctionPhase = null
 
   function requestState() {
     const api = getGameLuaApi()
@@ -70,6 +71,11 @@ angular.module('beamng.stuff')
     api.engineLua('career_modules_usedCarAuction.requestAuctionState()', function(result) {
       if (!result || typeof result !== 'object') return
       $scope.$evalAsync(function() {
+        const p = result.phase
+        if (p === 'bidding' && prevAuctionPhase !== 'bidding') {
+          resetAuctionTimerUi()
+        }
+        prevAuctionPhase = p
         $scope.state = result
         const newIdx = Number(result.currentLotIndex || result.activeLotIndex || 0)
         if (newIdx && newIdx !== lastActiveLotIndex) {

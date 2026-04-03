@@ -197,15 +197,26 @@ local function getVehiclePcPartsCatalogSum(modelName, configKey, logContext)
   local ioCtx = {
     preloadedDirs = {"/vehicles/" .. modelName .. "/"}
   }
-  local pcPath = "vehicles/" .. modelName .. "/" .. configKey .. ".pc"
-  local readOk, pcData = pcall(jsonReadFile, pcPath)
-  if not readOk or not pcData or type(pcData.parts) ~= "table" then
+  local candidatePcPaths = {
+    "vehicles/" .. modelName .. "/" .. configKey .. ".pc",
+    "vehicles/" .. modelName .. "/configurations/" .. configKey .. ".pc",
+  }
+  local pcPath, pcData
+  for _, candidate in ipairs(candidatePcPaths) do
+    local ok, data = pcall(jsonReadFile, candidate)
+    if ok and data and type(data.parts) == "table" then
+      pcPath = candidate
+      pcData = data
+      break
+    end
+  end
+  if not pcData or type(pcData.parts) ~= "table" then
     local logKey = cacheKey .. "|partsMissing"
     if not pcPartsCatalogBadLogOnce[logKey] then
       pcPartsCatalogBadLogOnce[logKey] = true
       log("W", "valueCalculator", string.format(
         "PC parts unreadable for %s during %s (%s)",
-        cacheKey, tostring(logContext or "pcParts"), pcPath))
+        cacheKey, tostring(logContext or "pcParts"), table.concat(candidatePcPaths, ", ")))
     end
     pcPartsCatalogCache[cacheKey] = 0
     return 0

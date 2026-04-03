@@ -1710,10 +1710,12 @@ local function updateVehicleList(fromScratch)
                 randomVehicleInfo.Mileage = starterVehicleMileages[randomVehicleInfo.model_key] or 100000000
               end
 
+              local valuationYear = tonumber(os.date("%Y")) or 2026
+              local vehicleAge = math.max(0, valuationYear - (tonumber(randomVehicleInfo.year) or valuationYear))
               local baseValue = career_modules_valueCalculator.getVehicleCatalogIntrinsicBookValue({
                 catalogBaseValue = randomVehicleInfo.Value,
                 mileageMeters = randomVehicleInfo.Mileage,
-                age = 2025 - randomVehicleInfo.year,
+                age = vehicleAge,
                 modelName = randomVehicleInfo.model_key,
                 configKey = randomVehicleInfo.key,
                 partsCatalogSum = randomVehicleInfo.cachedPartsValue,
@@ -1722,7 +1724,7 @@ local function updateVehicleList(fromScratch)
               }) or math.max(1500,
                 math.floor(career_modules_valueCalculator.getAdjustedVehicleBaseValue(randomVehicleInfo.Value, {
                   mileage = randomVehicleInfo.Mileage,
-                  age = 2025 - randomVehicleInfo.year
+                  age = vehicleAge
                 }) / 1000) * 1000)
 
               local range = seller.range

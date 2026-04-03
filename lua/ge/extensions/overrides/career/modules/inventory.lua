@@ -304,10 +304,17 @@ local function setVehicleListedForAuction(inventoryId, listed)
     if existing and existing ~= inventoryId then
       return false
     end
-    v.listedForAuction = true
     if inventoryIdToVehId[inventoryId] then
-      M.removeVehicleObject(inventoryId)
+      M.updatePartConditions(nil, inventoryId, function()
+        v.listedForAuction = true
+        if inventoryIdToVehId[inventoryId] then
+          M.removeVehicleObject(inventoryId)
+        end
+        setVehicleDirty(inventoryId)
+      end)
+      return true
     end
+    v.listedForAuction = true
   else
     v.listedForAuction = nil
   end
@@ -614,6 +621,9 @@ local function spawnVehicle(inventoryId, replaceOption, callback)
   local vehInfo = vehicles[inventoryId]
   if vehInfo and vehInfo.listedForAuction then
     ui_message("This vehicle is listed at the auction and cannot be spawned.", nil, "vehicleInventory")
+    if callback then
+      callback()
+    end
     return
   end
 
@@ -2062,10 +2072,15 @@ M.moveVehicleToGarage = function(id, garage)
 end
 
 M.deliverVehicle = function(id, money)
+  if isVehicleListedForAuction(id) then
+    return
+  end
+  if not M.moveVehicleToGarage(id) then
+    return
+  end
   local price = {money = {amount = money, canBeNegative = true}}
   career_modules_payment.pay(price, {label = string.format("Delivering vehicle to garage"), tags = {"delivery"}})
   delayVehicleAccess(id, 120, "delivery")
-  M.moveVehicleToGarage(id)
   sendDataToUi()
 end
 

@@ -5,9 +5,9 @@ M.dependencies = {
 }
 
 local fallbackPool = {
-  { model = 'covet', config = 'vehicles/covet/roller_covet.pc', title = 'Ibishu Covet', basePrice = 2600 },
-  { model = 'hopper', config = 'vehicles/hopper/roller-hopper.pc', title = 'Ibishu Hopper', basePrice = 4200 },
-  { model = 'wendover', config = 'vehicles/wendover/roller-wendover.pc', title = 'Gavril Wendover', basePrice = 6400 }
+  { model = 'covet', config = '/vehicles/covet/covet_tutorial.pc', title = 'Ibishu Covet', basePrice = 2600 },
+  { model = 'hopper', config = '/vehicles/hopper/classic.pc', title = 'Ibishu Hopper', basePrice = 4200 },
+  { model = 'wendover', config = '/vehicles/wendover/se_v6_A.pc', title = 'Gavril Wendover', basePrice = 6400 }
 }
 
 local MILES_TO_METERS = 1609.344
@@ -587,8 +587,12 @@ local function buildVehicleDefFromInfo(info, configPath)
     title = title,
     basePrice = math.max(1500, math.floor(tonumber(info.Value or 4500))),
     mileage = getMileageFromInfo(info) or getFallbackMileage(),
-    year = tonumber(info.Year) or tonumber(info.year) or
-      (type(info.Years) == 'table' and tonumber(info.Years.max)) or getCurrentYear()
+    year = tonumber(info.Year) or tonumber(info.year) or (function()
+      local yMin, yMax = boundsFromYearTable(info.Years)
+      if yMin and yMax then
+        return math.random(yMin, yMax)
+      end
+    end)() or getCurrentYear()
   }
 end
 

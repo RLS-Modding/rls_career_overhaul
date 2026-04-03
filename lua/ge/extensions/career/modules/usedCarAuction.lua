@@ -353,7 +353,7 @@ local function openMenu()
     return
   end
   auctionState.uiOpen = true
-  pcall(function() extensions.overhaul_musicPlayer.loadMusicLibrary('/music') end)
+  pcall(function() extensions.overhaul_musicPlayer.loadMusicLibrary('/music', nil, true) end)
   pcall(function() guihooks.trigger('UsedAuctionShow') end)
 end
 
@@ -1861,6 +1861,10 @@ local function placePlayerBidIfPossible()
     setBidHint('Wait until this lot is live on the block.', 3)
     return false
   end
+  if not hasGarageSpaceForPurchase() then
+    setBidHint('No free garage slot. You cannot bid on vehicles.', 4)
+    return false
+  end
   if lot.sellerInventoryId or lot.playerListing then
     setBidHint("You can't bid on your own consignment.", 4)
     return false
@@ -1889,6 +1893,10 @@ local function placePlayerBidByAmount(amount)
   local lot = getActiveAuctionLot()
   if not lot or lot.state ~= 'active' then
     setBidHint('Wait until this lot is live on the block.', 3)
+    return false
+  end
+  if not hasGarageSpaceForPurchase() then
+    setBidHint('No free garage slot. You cannot bid on vehicles.', 4)
     return false
   end
   if lot.sellerInventoryId or lot.playerListing then
@@ -2025,23 +2033,25 @@ local function requestAuctionState()
   local phaseForTabs = auctionState.phase
   local counterShowAuctionsTab = not (phaseForTabs == 'bidding' or phaseForTabs == 'starting')
   local myVehicles = {}
-  for invId, veh in pairs(career_modules_inventory.getVehicles()) do
-    if veh.owned then
-      local needsRepair = career_modules_insurance_insurance and
-        career_modules_insurance_insurance.inventoryVehNeedsRepair(invId) or false
-      table.insert(myVehicles, {
-        inventoryId = invId,
-        niceName = veh.niceName or 'Vehicle',
-        value = career_modules_valueCalculator.getInventoryVehicleValue(invId) or 0,
-        thumbnail = career_modules_inventory.getVehicleThumbnail(invId),
-        listedForAuction = veh.listedForAuction and true or false,
-        needsRepair = needsRepair and true or false
-      })
+  if auctionState.counterPromptActive then
+    for invId, veh in pairs(career_modules_inventory.getVehicles()) do
+      if veh.owned then
+        local needsRepair = career_modules_insurance_insurance and
+          career_modules_insurance_insurance.inventoryVehNeedsRepair(invId) or false
+        table.insert(myVehicles, {
+          inventoryId = invId,
+          niceName = veh.niceName or 'Vehicle',
+          value = career_modules_valueCalculator.getInventoryVehicleValue(invId) or 0,
+          thumbnail = career_modules_inventory.getVehicleThumbnail(invId),
+          listedForAuction = veh.listedForAuction and true or false,
+          needsRepair = needsRepair and true or false
+        })
+      end
     end
+    table.sort(myVehicles, function(a, b)
+      return (a.niceName or '') < (b.niceName or '')
+    end)
   end
-  table.sort(myVehicles, function(a, b)
-    return (a.niceName or '') < (b.niceName or '')
-  end)
 
   local listedVehicleInventoryId = career_modules_inventory.getListedVehicleId()
   local hasPlayerListingLotAtAuction = false
@@ -2356,14 +2366,11 @@ local function queueNextLotBatch(selectedTypeId, requestedLotCount)
     return false
   end
 
-  local paymentLabel = string.format('%s (%s, %d Lots)', constants.AUCTION_LOT_REGISTRATION_PAYMENT_LABEL, selectedOffer.label, lotCount)
-  if not payNextLotRegistrationFee(selectedTypeId, lotCount, paymentLabel) then
-    return false
-  end
+  local payCount = #lotBatch
+  local paymentLabel = string.format('%s (%s, %d Lots)', constants.AUCTION_LOT_REGISTRATION_PAYMENT_LABEL, selectedOffer.label, payCount)
 
   clearLotsForNextBatch()
   auctionState.lots = lotBatch
-  auctionState.lotsRegisteredThisVisit = (auctionState.lotsRegisteredThisVisit or 0) + 1
 
   local npcModule = career_modules_usedCarAuctionNpcs
   auctionState.npcPersonas = npcModule.generatePersonas(#auctionState.lots)
@@ -2383,10 +2390,25 @@ local function queueNextLotBatch(selectedTypeId, requestedLotCount)
   auctionState.counterOffers = {}
   local started = startNextLotAfter(0)
   if not started then
-    setAuctionComplete()
+    clearLotsForNextBatch()
+    npcModule.resetSession()
+    auctionState.awaitingFinalExit = false
     return false
   end
 
+  if not payNextLotRegistrationFee(selectedTypeId, payCount, paymentLabel) then
+    for _, lot in ipairs(auctionState.lots or {}) do
+      if lot.vehId and not lot.wonInventoryId then
+        deleteVehicleSafe(lot.vehId)
+      end
+    end
+    clearLotsForNextBatch()
+    npcModule.resetSession()
+    auctionState.phase = 'vaultIdle'
+    return false
+  end
+
+  auctionState.lotsRegisteredThisVisit = (auctionState.lotsRegisteredThisVisit or 0) + 1
   auctionState.phase = 'bidding'
   return true
 end
