@@ -49,7 +49,9 @@ end
 -- TODO maybe save whenever we go into the esc menu
 
 local function updateNodegrabberBlocking()
-  if (career_modules_cheats and career_modules_cheats.isCheatsMode()) then
+  if career_modules_cheats and career_modules_cheats.isCheatsMode() then
+    core_input_actionFilter.setGroup('careerNodeGrabberActions', nodegrabberActions)
+    core_input_actionFilter.addAction(0, 'careerNodeGrabberActions', false)
     return
   end
   -- enable node grabber only in walking mode (unless cheats are enabled)
