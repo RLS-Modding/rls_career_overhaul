@@ -1,18 +1,8 @@
 local M = {}
 
 M.dependencies = {
-  'career_career',
-  'career_modules_inventory',
-  'career_modules_garageManager',
-  'career_modules_marketplace',
-  'career_modules_payment',
-  'career_modules_usedCarAuctionLots',
-  'career_modules_valueCalculator',
-  'career_saveSystem',
   'gameplay_sites_sitesManager',
-  'gameplay_traffic',
-  'overhaul_musicPlayer',
-  'career_modules_usedCarAuctionNpcs'
+  'gameplay_traffic'
 }
 
 local constants = {
@@ -41,7 +31,9 @@ local constants = {
   ANTI_SNIPE_EXTEND = 8.0,
   VEHICLE_SWITCH_REJECT_WARN_COOLDOWN = 2.5,
   VEHICLE_SWITCH_REVERT_DELAY = 0.05,
-  DEFAULT_LOT_COUNT = 8,
+  MIN_LOT_COUNT = 5,
+  DEFAULT_LOT_COUNT = 10,
+  MAX_LOT_COUNT = 25,
   LOT_WIN_EMITTER_DURATION = 2.0,
   AUCTION_WIN_EMITTERS_GROUP = 'auctionEmitters',
   AUCTION_ACTIVE_ASSETS_GROUP = 'auctionAssetsOn',
@@ -66,6 +58,33 @@ local constants = {
   AUCTION_COUNTER_MARKER_COLOR = '1.00 0.55 0.10 0.95',
   AUCTION_EXIT_MARKER_Z_OFFSET = -0.8,
   AUCTION_ENTRY_LOADING_TAG = 'usedCarAuctionEntry'
+}
+
+local auctionCounterTypeTiers = {
+  {
+    tier = 1,
+    fullFee = 1000,
+    offers = {
+      { id = 'anything_goes', label = 'Anything Goes', subtitle = 'No filter' },
+      { id = 'budget', label = 'Budget', subtitle = 'Cheap, high-mileage cars' }
+    }
+  },
+  {
+    tier = 2,
+    fullFee = 2000,
+    offers = {
+      { id = 'vintage', label = 'Vintage', subtitle = 'Pre-1980 vehicles' },
+      { id = 'truck_night', label = 'Truck Night', subtitle = 'SUVs, vans, and pickups' }
+    }
+  },
+  {
+    tier = 3,
+    fullFee = 5000,
+    offers = {
+      { id = 'rare_finds', label = 'Rare Finds', subtitle = 'Low-population vehicles' },
+      { id = 'high_rollers', label = 'High Rollers', subtitle = 'High-end exotics' }
+    }
+  }
 }
 
 local auctionState = {
@@ -94,7 +113,10 @@ local auctionState = {
   musicEnabled = true,
   bidHint = nil,
   bidHintUntil = 0,
-  lotsRegisteredThisVisit = 0
+  lotsRegisteredThisVisit = 0,
+  counterOffers = {},
+  counterLotBatchSize = constants.DEFAULT_LOT_COUNT,
+  entryCreditRemaining = 0
 }
 
 local pendingSavedPreAuction = nil
@@ -593,6 +615,58 @@ local function getAuctionEntryFee()
   return tonumber(constants.AUCTION_ENTRY_FEE) or 0
 end
 
+local function roundAuctionMoney(amount)
+  return math.max(0, math.floor((tonumber(amount) or 0) + 0.5))
+end
+
+local function clampCounterLotBatchSize(value)
+  local minLots = constants.MIN_LOT_COUNT or 5
+  local maxLots = constants.MAX_LOT_COUNT or minLots
+  local lotCount = math.floor(tonumber(value) or constants.DEFAULT_LOT_COUNT or minLots)
+  if lotCount < minLots then
+    lotCount = minLots
+  end
+  if lotCount > maxLots then
+    lotCount = maxLots
+  end
+  return lotCount
+end
+
+local function getCounterLotBatchMultiplier(lotCount)
+  local minLots = constants.MIN_LOT_COUNT or 5
+  local baseLots = constants.DEFAULT_LOT_COUNT or 10
+  local maxLots = constants.MAX_LOT_COUNT or 25
+  local safeLots = clampCounterLotBatchSize(lotCount)
+
+  if safeLots <= baseLots then
+    local lowSpan = math.max(1, baseLots - minLots)
+    return 0.75 + ((safeLots - minLots) / lowSpan) * 0.25
+  end
+
+  local highSpan = math.max(1, maxLots - baseLots)
+  return 1 + ((safeLots - baseLots) / highSpan)
+end
+
+local function getCounterOfferPricing(offer, lotCount)
+  if type(offer) ~= 'table' then
+    return nil
+  end
+
+  local safeLotCount = clampCounterLotBatchSize(lotCount)
+  local rawCost = roundAuctionMoney((tonumber(offer.fullFee) or 0) * getCounterLotBatchMultiplier(safeLotCount))
+  local creditRemaining = roundAuctionMoney(auctionState.entryCreditRemaining or 0)
+  local creditApplied = math.min(rawCost, creditRemaining)
+  local registrationFee = math.max(0, rawCost - creditApplied)
+
+  return {
+    lotCount = safeLotCount,
+    rawCost = rawCost,
+    creditApplied = creditApplied,
+    registrationFee = registrationFee,
+    remainingCreditAfter = math.max(0, creditRemaining - creditApplied)
+  }
+end
+
 local function canAffordAuctionEntry()
   local fee = getAuctionEntryFee()
   if fee <= 0 then
@@ -610,28 +684,57 @@ local function payAuctionEntryFee()
   return payForVehicle(fee, string.format('Used Auction Entry ($%d)', fee))
 end
 
-local function getNextLotRegistrationFee()
-  if (auctionState.lotsRegisteredThisVisit or 0) <= 0 then
-    return 0
+local function getCounterOfferById(typeId)
+  if type(typeId) ~= 'string' or typeId == '' then
+    return nil
   end
-  return getAuctionEntryFee()
+
+  for _, offer in ipairs(auctionState.counterOffers or {}) do
+    if offer.id == typeId then
+      return offer
+    end
+  end
 end
 
-local function canAffordNextLotRegistration()
-  local fee = getNextLotRegistrationFee()
+local function getCounterRegistrationFeeForSelection(typeId, lotCount)
+  local offer = getCounterOfferById(typeId)
+  if not offer then
+    return nil
+  end
+  local pricing = getCounterOfferPricing(offer, lotCount or auctionState.counterLotBatchSize)
+  return pricing and pricing.registrationFee or nil
+end
+
+local function canAffordNextLotRegistration(typeId, lotCount)
+  local fee = getCounterRegistrationFeeForSelection(typeId, lotCount)
+  if fee == nil then
+    return false
+  end
   if fee <= 0 then
     return true
   end
   return canAfford(fee)
 end
 
-local function payNextLotRegistrationFee()
-  local fee = getNextLotRegistrationFee()
+local function payNextLotRegistrationFee(typeId, lotCount, paymentLabel)
+  local offer = getCounterOfferById(typeId)
+  local pricing = offer and getCounterOfferPricing(offer, lotCount or auctionState.counterLotBatchSize) or nil
+  if not pricing then
+    return false
+  end
+  local fee = pricing.registrationFee
   if fee <= 0 then
+    if pricing then
+      auctionState.entryCreditRemaining = pricing.remainingCreditAfter
+    end
     return true
   end
 
-  return payForVehicle(fee, constants.AUCTION_LOT_REGISTRATION_PAYMENT_LABEL)
+  local paid = payForVehicle(fee, paymentLabel or constants.AUCTION_LOT_REGISTRATION_PAYMENT_LABEL)
+  if paid and pricing then
+    auctionState.entryCreditRemaining = pricing.remainingCreditAfter
+  end
+  return paid
 end
 
 local function canRegisterMoreLots()
@@ -1714,7 +1817,6 @@ end
 
 local function requestAuctionState()
   local now = getAuctionTime()
-  local nextLotFee = getNextLotRegistrationFee()
   local lotsOut = {}
   for _, lot in ipairs(auctionState.lots or {}) do
     local lotOut = {
@@ -1804,6 +1906,20 @@ local function requestAuctionState()
   end
 
   local mainAuctionPanelActive = (auctionState.phase == 'bidding') or hasLiveTransitionLots()
+  local counterOffers = {}
+  for _, offer in ipairs(auctionState.counterOffers or {}) do
+    local pricing = getCounterOfferPricing(offer, auctionState.counterLotBatchSize) or {}
+    local registrationFee = pricing.registrationFee or 0
+    table.insert(counterOffers, {
+      id = offer.id,
+      label = offer.label,
+      subtitle = offer.subtitle,
+      tier = offer.tier,
+      creditApplied = pricing.creditApplied or 0,
+      registrationFee = registrationFee,
+      coveredByEntry = registrationFee <= 0
+    })
+  end
 
   return {
     phase = derivedPhase,
@@ -1812,11 +1928,9 @@ local function requestAuctionState()
     musicEnabled = auctionState.musicEnabled ~= false,
     entryFee = getAuctionEntryFee(),
     canPayEntryFee = canAffordAuctionEntry(),
-    nextLotRegistrationFee = nextLotFee,
-    nextLotFeeCoveredByEntry = nextLotFee <= 0,
-    canAffordNextLotRegistration = canAffordNextLotRegistration(),
     canRegisterMoreLots = canRegisterMoreLots(),
     lotsRegisteredThisVisit = auctionState.lotsRegisteredThisVisit or 0,
+    entryCreditRemaining = roundAuctionMoney(auctionState.entryCreditRemaining or 0),
     hasFreeGarageSlot = hasGarageSpaceForPurchase(),
     activeLotIndex = auctionState.activeLotIndex,
     currentLotIndex = derivedCurrentLotIndex,
@@ -1830,8 +1944,9 @@ local function requestAuctionState()
     playerBalance = career_modules_playerAttributes and career_modules_playerAttributes.getAttributeValue("money") or 0,
     totalLots = #(auctionState.lots or {}),
     lots = lotsOut,
+    counterOffers = counterOffers,
     mainAuctionPanelActive = mainAuctionPanelActive,
-    lotBatchSize = constants.DEFAULT_LOT_COUNT
+    lotBatchSize = clampCounterLotBatchSize(auctionState.counterLotBatchSize)
   }
 end
 
@@ -1948,10 +2063,50 @@ local function canUseAuctionCounter()
   return auctionState.phase == 'vaultIdle' or auctionState.phase == 'complete'
 end
 
+local function buildCounterOffer(tierConfig, baseOffer)
+  local offer = {
+    id = baseOffer.id,
+    label = baseOffer.label,
+    subtitle = baseOffer.subtitle,
+    tier = tierConfig.tier,
+    fullFee = tierConfig.fullFee
+  }
+  local pricing = getCounterOfferPricing(offer, auctionState.counterLotBatchSize) or {}
+  offer.creditApplied = pricing.creditApplied or 0
+  offer.registrationFee = pricing.registrationFee or 0
+  offer.coveredByEntry = offer.registrationFee <= 0
+  return offer
+end
+
+local function setCounterLotBatchSize(lotCount)
+  auctionState.counterLotBatchSize = clampCounterLotBatchSize(lotCount)
+  for _, offer in ipairs(auctionState.counterOffers or {}) do
+    local pricing = getCounterOfferPricing(offer, auctionState.counterLotBatchSize) or {}
+    offer.creditApplied = pricing.creditApplied or 0
+    offer.registrationFee = pricing.registrationFee or 0
+    offer.coveredByEntry = offer.registrationFee <= 0
+  end
+  return auctionState.counterLotBatchSize
+end
+
+local function rollCounterOffers()
+  auctionState.counterOffers = {}
+
+  for _, tierConfig in ipairs(auctionCounterTypeTiers) do
+    local tierOffers = tierConfig.offers or {}
+    if #tierOffers > 0 then
+      local picked = tierOffers[math.random(1, #tierOffers)]
+      table.insert(auctionState.counterOffers, buildCounterOffer(tierConfig, picked))
+    end
+  end
+end
+
 local function openCounterPrompt()
   if not canUseAuctionCounter() or auctionState.transitionActive then
     return false
   end
+  auctionState.counterLotBatchSize = clampCounterLotBatchSize(constants.DEFAULT_LOT_COUNT)
+  rollCounterOffers()
   auctionState.counterPromptActive = true
   openMenu()
   pcall(function() guihooks.trigger('UsedAuctionCounterShow') end)
@@ -1967,6 +2122,7 @@ local function cancelCounterPrompt(closeUi)
   end
 
   auctionState.counterPromptActive = false
+  auctionState.counterOffers = {}
   closeCounterOverlayUi()
   if closeUi then
     closeMenuIfCounterOnly()
@@ -1990,7 +2146,7 @@ local function clearLotsForNextBatch()
   auctionState.bidHintUntil = 0
 end
 
-local function queueNextLotBatch()
+local function queueNextLotBatch(selectedTypeId, requestedLotCount)
   if not canUseAuctionCounter() then
     return false
   end
@@ -2003,19 +2159,29 @@ local function queueNextLotBatch()
   if not canRegisterMoreLots() then
     return false
   end
-  if not canAffordNextLotRegistration() then
+  local selectedOffer = getCounterOfferById(selectedTypeId)
+  if not selectedOffer then
+    return false
+  end
+  local lotCount = clampCounterLotBatchSize(requestedLotCount)
+  if not canAffordNextLotRegistration(selectedTypeId, lotCount) then
+    return false
+  end
+  local auctionFilter = career_modules_usedCarAuctionLots.composeAuctionTypeFilter(selectedTypeId)
+  if type(auctionFilter) ~= 'table' then
     return false
   end
 
   local layout = auctionState.siteLayout or {}
   local spawnSpots = layout.spawnSpots or {}
   local blockSpots = layout.blockSpots or {}
-  local lotBatch = career_modules_usedCarAuctionLots.buildLotBatch(1, constants.DEFAULT_LOT_COUNT, spawnSpots, blockSpots)
+  local lotBatch = career_modules_usedCarAuctionLots.buildLotBatch(1, lotCount, spawnSpots, blockSpots, auctionFilter)
   if type(lotBatch) ~= 'table' or #lotBatch < 1 then
     return false
   end
 
-  if not payNextLotRegistrationFee() then
+  local paymentLabel = string.format('%s (%s, %d Lots)', constants.AUCTION_LOT_REGISTRATION_PAYMENT_LABEL, selectedOffer.label, lotCount)
+  if not payNextLotRegistrationFee(selectedTypeId, lotCount, paymentLabel) then
     return false
   end
 
@@ -2038,6 +2204,7 @@ local function queueNextLotBatch()
 
   auctionState.activeLotIndex = 0
   auctionState.awaitingFinalExit = false
+  auctionState.counterOffers = {}
   local started = startNextLotAfter(0)
   if not started then
     setAuctionComplete()
@@ -2048,12 +2215,12 @@ local function queueNextLotBatch()
   return true
 end
 
-local function confirmRegisterNextLot()
+local function confirmRegisterNextLot(selectedTypeId, lotCount)
   if not auctionState.counterPromptActive then
     return false
   end
 
-  local queued = queueNextLotBatch()
+  local queued = queueNextLotBatch(selectedTypeId, lotCount)
   if not queued then
     return false
   end
@@ -2245,6 +2412,9 @@ local function resetAuction(keepPurchases)
   auctionState.lastValidPlayerVehId = nil
   auctionState.entryPromptActive = false
   auctionState.counterPromptActive = false
+  auctionState.counterOffers = {}
+  auctionState.counterLotBatchSize = clampCounterLotBatchSize(constants.DEFAULT_LOT_COUNT)
+  auctionState.entryCreditRemaining = 0
   auctionState.awaitingFinalExit = false
   auctionState.npcPersonas = {}
   auctionState.lotsRegisteredThisVisit = 0
@@ -2284,6 +2454,8 @@ startAuctionImmediate = function()
   setAuctionRunningTriggerState()
   auctionState.phase = 'starting'
   auctionState.counterPromptActive = false
+  auctionState.counterLotBatchSize = clampCounterLotBatchSize(constants.DEFAULT_LOT_COUNT)
+  auctionState.entryCreditRemaining = roundAuctionMoney(getAuctionEntryFee())
   auctionState.returnTransform = {
     pos = playerVeh:getPosition(),
     rot = quat(playerVeh:getRefNodeRotation())
@@ -2321,6 +2493,8 @@ startAuctionImmediate = function()
     local npcModule = career_modules_usedCarAuctionNpcs
     auctionState.lots = {}
     auctionState.lotsRegisteredThisVisit = 0
+    auctionState.counterOffers = {}
+    auctionState.counterLotBatchSize = clampCounterLotBatchSize(constants.DEFAULT_LOT_COUNT)
     auctionState.npcPersonas = npcModule.generatePersonas(constants.DEFAULT_LOT_COUNT)
     npcModule.initSession({
       getAuctionTime = getAuctionTime,
@@ -2710,6 +2884,7 @@ M.startAuction = startAuction
 M.cancelTravelPrompt = cancelTravelPrompt
 M.cancelCounterPrompt = cancelCounterPrompt
 M.confirmRegisterNextLot = confirmRegisterNextLot
+M.setCounterLotBatchSize = setCounterLotBatchSize
 M.placeBid = placeBid
 M.passCurrentLot = passCurrentLot
 M.setAutoBidEnabled = setAutoBidEnabled

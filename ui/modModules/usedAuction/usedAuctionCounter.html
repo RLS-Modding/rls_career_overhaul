@@ -4,27 +4,63 @@
   <div class="ua-entry-backdrop">
     <div class="ua-entry-modal">
       <div class="ua-entry-title">Auction Counter</div>
-      <div class="ua-entry-fee">
-        <span class="ua-entry-fee-label">Auction Size</span>
-        <span class="ua-entry-fee-amount">{{ state.lotBatchSize || 8 }} Lots</span>
+      <div class="ua-entry-text">Pick a theme and lot count, then confirm.</div>
+
+      <div class="ua-lot-inline">
+        <span class="ua-lot-inline-label">Lots</span>
+        <div class="ua-hslider-wrap">
+          <div
+            class="ua-hslider"
+            ua-counter-lot-slider
+            tabindex="0"
+            role="slider"
+            aria-label="Number of lots"
+            aria-valuemin="5"
+            aria-valuemax="25"
+            ng-attr-aria-valuenow="{{ state.lotBatchSize || 10 }}"
+            ng-keydown="lotBatchSliderKeyDown($event)">
+            <div class="ua-hslider-track">
+              <div class="ua-hslider-fill" ng-style="lotBatchSliderFillStyle()"></div>
+              <div class="ua-hslider-thumb" ng-style="lotBatchSliderThumbStyle()"></div>
+            </div>
+          </div>
+        </div>
+        <span class="ua-lot-inline-value">{{ state.lotBatchSize || 10 }}</span>
       </div>
-      <div class="ua-entry-fee">
-        <span class="ua-entry-fee-label">Auction Fee</span>
-        <span class="ua-entry-fee-amount" ng-if="state.nextLotFeeCoveredByEntry">Covered by entry fee</span>
-        <span class="ua-entry-fee-amount" ng-if="!state.nextLotFeeCoveredByEntry">{{ formatCurrency(state.nextLotRegistrationFee) }}</span>
+      <div class="ua-lot-inline-meta">
+        <span>Entry Credit: <strong>{{ formatCurrency(state.entryCreditRemaining) }}</strong></span>
       </div>
+
+      <div class="ua-counter-options">
+        <button
+          type="button"
+          class="ua-counter-option"
+          ng-repeat="offer in (state.counterOffers || []) track by offer.id"
+          ng-class="{ 'is-selected': isAuctionTypeSelected(offer) }"
+          ng-click="selectAuctionType(offer)">
+          <span class="ua-counter-option-copy">
+            <span class="ua-counter-option-title">{{ offer.label }}</span>
+            <span class="ua-counter-option-subtitle">{{ offer.subtitle }}</span>
+          </span>
+          <span class="ua-counter-option-meta">
+            <span class="ua-counter-option-fee" ng-if="offer.coveredByEntry">Covered</span>
+            <span class="ua-counter-option-fee" ng-if="!offer.coveredByEntry">{{ formatCurrency(offer.registrationFee) }}</span>
+          </span>
+        </button>
+      </div>
+
       <div class="ua-entry-warning" ng-if="state.canRegisterMoreLots === false">
         Finish the current lot group before registering another one.
       </div>
       <div class="ua-entry-warning" ng-if="state.canRegisterMoreLots !== false && state.hasFreeGarageSlot === false">
         You need at least one free garage slot to register a lot group.
       </div>
-      <div class="ua-entry-warning" ng-if="state.canRegisterMoreLots !== false && state.hasFreeGarageSlot !== false && !state.canAffordNextLotRegistration">
-        Not enough money to register this lot group.
+      <div class="ua-entry-warning" ng-if="state.canRegisterMoreLots !== false && state.hasFreeGarageSlot !== false && selectedAuctionOffer() && !canAffordSelectedAuctionOffer()">
+        Not enough money to register this auction type.
       </div>
       <div class="ua-entry-actions">
         <button type="button" class="ua-btn ua-btn-secondary" ng-click="cancelCounterPrompt()">Close</button>
-        <button type="button" class="ua-btn ua-btn-primary" ng-disabled="state.canRegisterMoreLots === false || state.hasFreeGarageSlot === false || !state.canAffordNextLotRegistration" ng-click="confirmRegisterNextLot()">Generate {{ state.lotBatchSize || 8 }} Lots</button>
+        <button type="button" class="ua-btn ua-btn-primary" ng-disabled="confirmButtonDisabled()" ng-click="confirmRegisterNextLot()">Generate {{ state.lotBatchSize || 10 }} Lots</button>
       </div>
     </div>
   </div>

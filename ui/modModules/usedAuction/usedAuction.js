@@ -8,9 +8,6 @@ function defaultAuctionState() {
     entryPromptActive: false,
     entryFee: 1000,
     canPayEntryFee: false,
-    nextLotRegistrationFee: 0,
-    nextLotFeeCoveredByEntry: true,
-    canAffordNextLotRegistration: true,
     canRegisterMoreLots: true,
     lotsRegisteredThisVisit: 0,
     hasFreeGarageSlot: true,
@@ -22,18 +19,19 @@ function defaultAuctionState() {
     bidMessage: '',
     lots: [],
     mainAuctionPanelActive: false,
-    lotBatchSize: 8
+    lotBatchSize: 10
   }
 }
 
 function defaultCounterState() {
   return {
-    lotBatchSize: 8,
-    nextLotRegistrationFee: 0,
-    nextLotFeeCoveredByEntry: true,
-    canAffordNextLotRegistration: true,
+    lotBatchSize: 10,
     canRegisterMoreLots: true,
-    hasFreeGarageSlot: true
+    hasFreeGarageSlot: true,
+    playerBalance: 0,
+    entryCreditRemaining: 0,
+    counterOffers: [],
+    selectedAuctionTypeId: null
   }
 }
 
@@ -366,13 +364,17 @@ angular.module('beamng.stuff')
       if (!result || typeof result !== 'object') return
       $scope.$evalAsync(function() {
         const d = defaultCounterState()
+        const previousSelection = $scope.state.selectedAuctionTypeId
+        const counterOffers = Array.isArray(result.counterOffers) ? result.counterOffers : d.counterOffers
+        const hasPreviousSelection = counterOffers.some(offer => offer && offer.id === previousSelection)
         $scope.state = {
           lotBatchSize: result.lotBatchSize ?? d.lotBatchSize,
-          nextLotRegistrationFee: result.nextLotRegistrationFee ?? d.nextLotRegistrationFee,
-          nextLotFeeCoveredByEntry: result.nextLotFeeCoveredByEntry ?? d.nextLotFeeCoveredByEntry,
-          canAffordNextLotRegistration: result.canAffordNextLotRegistration ?? d.canAffordNextLotRegistration,
           canRegisterMoreLots: result.canRegisterMoreLots ?? d.canRegisterMoreLots,
-          hasFreeGarageSlot: result.hasFreeGarageSlot ?? d.hasFreeGarageSlot
+          hasFreeGarageSlot: result.hasFreeGarageSlot ?? d.hasFreeGarageSlot,
+          playerBalance: result.playerBalance ?? d.playerBalance,
+          entryCreditRemaining: result.entryCreditRemaining ?? d.entryCreditRemaining,
+          counterOffers,
+          selectedAuctionTypeId: hasPreviousSelection ? previousSelection : d.selectedAuctionTypeId
         }
       })
     })
@@ -406,8 +408,167 @@ angular.module('beamng.stuff')
     return '$' + Math.round(n).toLocaleString()
   }
 
+  $scope.selectAuctionType = function(offer) {
+    if (!offer || !offer.id) return
+    $scope.state.selectedAuctionTypeId = offer.id
+  }
+
+  $scope.setLotBatchSize = function(value) {
+    const n = Math.max(5, Math.min(25, Math.round(Number(value) || 10)))
+    const prev = Math.round(Number($scope.state.lotBatchSize) || 10)
+    if (prev === n) {
+      return
+    }
+    $scope.state.lotBatchSize = n
+    callAuctionLua('setCounterLotBatchSize', [String(n)])
+  }
+
+  const LOT_BATCH_MIN = 5
+  const LOT_BATCH_MAX = 25
+  const LOT_BATCH_SPAN = LOT_BATCH_MAX - LOT_BATCH_MIN
+
+  function lotBatchPercent() {
+    const n = Math.round(Number($scope.state.lotBatchSize) || 10)
+    const clamped = Math.max(LOT_BATCH_MIN, Math.min(LOT_BATCH_MAX, n))
+    return ((clamped - LOT_BATCH_MIN) / LOT_BATCH_SPAN) * 100
+  }
+
+  $scope.lotBatchSliderFillStyle = function() {
+    return { width: lotBatchPercent() + '%' }
+  }
+
+  $scope.lotBatchSliderThumbStyle = function() {
+    return { left: 'calc(' + lotBatchPercent() + '% - 0.43rem)' }
+  }
+
+  function lotBatchPointerClientX(ev) {
+    if (ev.touches && ev.touches.length) {
+      return ev.touches[0].clientX
+    }
+    if (ev.changedTouches && ev.changedTouches.length) {
+      return ev.changedTouches[0].clientX
+    }
+    return ev.clientX
+  }
+
+  $scope.lotBatchSliderPointerDown = function(ev) {
+    if (ev.type === 'mousedown' && ev.button !== 0) {
+      return
+    }
+    let root = ev.currentTarget
+    if (!root || !root.querySelector) {
+      const t = ev.target
+      if (t && t.closest) {
+        root = t.closest('.ua-hslider')
+      }
+    }
+    if (!root || !root.querySelector) {
+      return
+    }
+    const track = root.querySelector('.ua-hslider-track')
+    if (!track) {
+      return
+    }
+    if (ev.preventDefault) {
+      ev.preventDefault()
+    }
+
+    const win = window
+    function updateFromEvent(e) {
+      if (e.type === 'touchmove' && e.cancelable) {
+        e.preventDefault()
+      }
+      const tr = track.getBoundingClientRect()
+      const w = tr.width
+      if (w <= 0) {
+        return
+      }
+      const x = lotBatchPointerClientX(e)
+      const t = (x - tr.left) / w
+      const raw = LOT_BATCH_MIN + t * LOT_BATCH_SPAN
+      const n = Math.max(LOT_BATCH_MIN, Math.min(LOT_BATCH_MAX, Math.round(raw)))
+      $scope.$evalAsync(function() {
+        $scope.setLotBatchSize(n)
+      })
+    }
+
+    updateFromEvent(ev)
+
+    function move(e) {
+      updateFromEvent(e)
+    }
+    function up() {
+      win.removeEventListener('mousemove', move, true)
+      win.removeEventListener('mouseup', up, true)
+      win.removeEventListener('touchmove', move, true)
+      win.removeEventListener('touchend', up, true)
+      win.removeEventListener('touchcancel', up, true)
+    }
+    win.addEventListener('mousemove', move, true)
+    win.addEventListener('mouseup', up, true)
+    win.addEventListener('touchmove', move, { capture: true, passive: false })
+    win.addEventListener('touchend', up, true)
+    win.addEventListener('touchcancel', up, true)
+  }
+
+  $scope.lotBatchSliderKeyDown = function(ev) {
+    const k = ev.key
+    const cur = Math.round(Number($scope.state.lotBatchSize) || 10)
+    if (k === 'Home') {
+      ev.preventDefault()
+      $scope.setLotBatchSize(LOT_BATCH_MIN)
+      return
+    }
+    if (k === 'End') {
+      ev.preventDefault()
+      $scope.setLotBatchSize(LOT_BATCH_MAX)
+      return
+    }
+    let d = 0
+    if (k === 'ArrowRight' || k === 'ArrowUp') {
+      d = 1
+    } else if (k === 'ArrowLeft' || k === 'ArrowDown') {
+      d = -1
+    }
+    if (!d) {
+      return
+    }
+    ev.preventDefault()
+    $scope.setLotBatchSize(cur + d)
+  }
+
+  $scope.isAuctionTypeSelected = function(offer) {
+    return !!(offer && offer.id && offer.id === $scope.state.selectedAuctionTypeId)
+  }
+
+  $scope.selectedAuctionOffer = function() {
+    const offers = $scope.state.counterOffers || []
+    for (let i = 0; i < offers.length; i++) {
+      if (offers[i] && offers[i].id === $scope.state.selectedAuctionTypeId) {
+        return offers[i]
+      }
+    }
+    return null
+  }
+
+  $scope.canAffordSelectedAuctionOffer = function() {
+    const offer = $scope.selectedAuctionOffer()
+    if (!offer) return false
+    const fee = Number(offer.registrationFee) || 0
+    if (fee <= 0) return true
+    const balance = Number($scope.state.playerBalance) || 0
+    return balance >= fee
+  }
+
+  $scope.confirmButtonDisabled = function() {
+    if ($scope.state.canRegisterMoreLots === false || $scope.state.hasFreeGarageSlot === false) return true
+    return !$scope.selectedAuctionOffer() || !$scope.canAffordSelectedAuctionOffer()
+  }
+
   $scope.confirmRegisterNextLot = function() {
-    callAuctionLua('confirmRegisterNextLot')
+    const offer = $scope.selectedAuctionOffer()
+    if (!offer) return
+    callAuctionLua('confirmRegisterNextLot', [JSON.stringify(String(offer.id)), String(Math.round(Number($scope.state.lotBatchSize) || 10))])
   }
 
   $scope.cancelCounterPrompt = function() {
@@ -439,6 +600,25 @@ angular.module('beamng.stuff')
     stopPolling()
   })
 }])
+
+.directive('uaCounterLotSlider', function() {
+  return {
+    restrict: 'A',
+    link: function(scope, element) {
+      function down(ev) {
+        if (typeof scope.lotBatchSliderPointerDown === 'function') {
+          scope.lotBatchSliderPointerDown(ev)
+        }
+      }
+      element.on('mousedown', down)
+      element.on('touchstart', down)
+      scope.$on('$destroy', function() {
+        element.off('mousedown', down)
+        element.off('touchstart', down)
+      })
+    }
+  }
+})
 
 .directive('uaDraggable', ['$document', function($document) {
   return {

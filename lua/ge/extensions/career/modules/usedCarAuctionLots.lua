@@ -10,6 +10,11 @@ local fallbackPool = {
   { model = 'wendover', config = 'vehicles/wendover/roller-wendover.pc', title = 'Gavril Wendover', basePrice = 6400 }
 }
 
+local MILES_TO_METERS = 1609.344
+local CATALOG_MILEAGE_AS_METERS_THRESHOLD = 2000000
+
+local defaultWeightedSubFilterMileage = { min = 4800, max = 16093 }
+
 local defaultAuctionFilters = {
   filter = {
     whiteList = {
@@ -21,15 +26,51 @@ local defaultAuctionFilters = {
     }
   },
   subFilters = {
-    { probability = 7, whiteList = { Mileage = { min = 4800, max = 16093 }, Years = { min = 2010, max = 2025 } } },
-    { probability = 6, whiteList = { Mileage = { min = 4800, max = 16093 }, Years = { min = 2000, max = 2009 } } },
-    { probability = 5, whiteList = { Mileage = { min = 4800, max = 16093 }, Years = { min = 1990, max = 1999 } } },
-    { probability = 4, whiteList = { Mileage = { min = 4800, max = 16093 }, Years = { min = 1980, max = 1989 } } },
-    { probability = 3, whiteList = { Mileage = { min = 4800, max = 16093 }, Years = { min = 1970, max = 1979 } } },
-    { probability = 2, whiteList = { Mileage = { min = 4800, max = 16093 }, Years = { min = 1950, max = 1969 } } },
-    { probability = 1, whiteList = { Mileage = { min = 4800, max = 16093 }, Years = { min = 1900, max = 1949 } } }
+    { probability = 7, whiteList = { Mileage = defaultWeightedSubFilterMileage, Years = { min = 2010, max = 2025 } } },
+    { probability = 6, whiteList = { Mileage = defaultWeightedSubFilterMileage, Years = { min = 2000, max = 2009 } } },
+    { probability = 5, whiteList = { Mileage = defaultWeightedSubFilterMileage, Years = { min = 1990, max = 1999 } } },
+    { probability = 4, whiteList = { Mileage = defaultWeightedSubFilterMileage, Years = { min = 1980, max = 1989 } } },
+    { probability = 3, whiteList = { Mileage = defaultWeightedSubFilterMileage, Years = { min = 1970, max = 1979 } } },
+    { probability = 2, whiteList = { Mileage = defaultWeightedSubFilterMileage, Years = { min = 1950, max = 1969 } } },
+    { probability = 1, whiteList = { Mileage = defaultWeightedSubFilterMileage, Years = { min = 1900, max = 1949 } } }
   }
 }
+
+local auctionTypes = {
+  anything_goes = {
+    whiteList = {},
+    implicitYears = { min = 1950 },
+    mileage = { minMul = 0.9, maxMul = 1.1 }
+  },
+  budget = {
+    whiteList = {
+      Value = { min = 1, max = 50000 },
+      Mileage = { min = 965606400, max = 1287475200 },
+      Years = { min = 1980, max = 2015 }
+    }
+  },
+  vintage = {
+    whiteList = { Years = { min = 1900, max = 1980 } },
+    mileage = { minMul = 0.98, maxMul = 1.06, vintageGarageBand = true }
+  },
+  truck_night = {
+    whiteList = { ['Body Style'] = { 'Van', 'SUV', 'Pickup' } },
+    implicitYears = { min = 1985 },
+    mileage = { minMul = 1.05, maxMul = 1.28 }
+  },
+  rare_finds = {
+    whiteList = { Population = { min = 1, max = 2000 } },
+    implicitYears = { min = 1990 },
+    mileage = { minMul = 0.5, maxMul = 0.78 }
+  },
+  high_rollers = {
+    whiteList = { Value = { min = 100000, max = 10000000 } },
+    implicitYears = { min = 2000 },
+    mileage = { minMul = 0.22, maxMul = 0.52, maxMilesCap = 42000 }
+  }
+}
+
+local defaultAuctionMileageTuning = auctionTypes.anything_goes.mileage
 
 local usedConfigKeys = {}
 
@@ -209,8 +250,8 @@ local function getMileageFromInfo(info)
   if not mileage then
     return nil
   end
-  if mileage > 2000000 then
-    mileage = mileage / 1609.344
+  if mileage > CATALOG_MILEAGE_AS_METERS_THRESHOLD then
+    mileage = mileage / MILES_TO_METERS
   end
   mileage = math.max(0, math.floor(mileage))
   if mileage <= 0 then
@@ -311,11 +352,7 @@ local function getVehicleFieldValue(vehicleInfo, fieldName)
   return nil
 end
 
-local function getVehicleYearRange(vehicleInfo)
-  local years = getVehicleFieldValue(vehicleInfo, 'Years')
-  if type(years) == 'number' then
-    return years, years
-  end
+local function boundsFromYearTable(years)
   if type(years) ~= 'table' then
     return nil, nil
   end
@@ -332,6 +369,17 @@ local function getVehicleYearRange(vehicleInfo)
     minYear, maxYear = maxYear, minYear
   end
   return minYear, maxYear
+end
+
+local function getVehicleYearRange(vehicleInfo)
+  if type(vehicleInfo) ~= 'table' then
+    return nil, nil
+  end
+  local years = vehicleInfo.Years or (vehicleInfo.aggregates and vehicleInfo.aggregates.Years) or getVehicleFieldValue(vehicleInfo, 'Years')
+  if type(years) == 'number' then
+    return years, years
+  end
+  return boundsFromYearTable(years)
 end
 
 local function isDiscreteMatch(value, wanted)
@@ -370,10 +418,10 @@ local function doesVehicleMatchFilterRule(vehicleInfo, filterName, parameters)
     end
     local minAllowed = tonumber(parameters and parameters.min)
     local maxAllowed = tonumber(parameters and parameters.max)
-    if minAllowed and maxYear < minAllowed then
+    if minAllowed and minYear < minAllowed then
       return false
     end
-    if maxAllowed and minYear > maxAllowed then
+    if maxAllowed and maxYear > maxAllowed then
       return false
     end
     return true
@@ -451,8 +499,7 @@ local function buildRelaxedFallbackFilter(filter)
   }
 
   for filterName, parameters in pairs(normalized.whiteList or {}) do
-    local key = normalizeToken(filterName)
-    if not isRangeParams(parameters) and key ~= 'years' and key ~= 'mileage' and key ~= 'population' and key ~= 'value' then
+    if normalizeToken(filterName) ~= 'mileage' then
       relaxed.whiteList[filterName] = deepCopy(parameters)
     end
   end
@@ -476,10 +523,24 @@ local function buildVehicleDefFromInfo(info, configPath)
   }
 end
 
-local function getRandomVehicleDefWithFilter(filter)
+local function shuffleIndicesInclusive(n)
+  local order = {}
+  for i = 1, n do
+    order[i] = i
+  end
+  for i = n, 2, -1 do
+    local j = math.random(i)
+    order[i], order[j] = order[j], order[i]
+  end
+  return order
+end
+
+local function getRandomVehicleDefWithFilter(filter, sampleCount)
   local eligibleVehicles = util_configListGenerator.getEligibleVehicles(false, false)
   local normalizedFilter = normalizeFilterDefinition(filter or {})
-  local infos = util_configListGenerator.getRandomVehicleInfos({filter = {}}, 140, eligibleVehicles, 'Population')
+  local safeCount = math.max(1, math.floor(tonumber(sampleCount) or 140))
+  local filterSet = { filter = normalizedFilter }
+  local infos = util_configListGenerator.getRandomVehicleInfos(filterSet, safeCount, eligibleVehicles, 'Population')
 
   for _, info in ipairs(infos or {}) do
     if doesVehiclePassAuctionFilter(info, normalizedFilter) then
@@ -491,20 +552,17 @@ local function getRandomVehicleDefWithFilter(filter)
     end
   end
 
-  return nil
-end
-
-local function getRandomVehicleDefNoFilter(enforceFilter)
-  local eligibleVehicles = util_configListGenerator.getEligibleVehicles(false, false)
-  local infos = util_configListGenerator.getRandomVehicleInfos({filter = {}}, 80, eligibleVehicles, 'Population')
-  local normalizedFilter = normalizeFilterDefinition(enforceFilter or {})
-
-  for _, info in ipairs(infos or {}) do
-    if doesVehiclePassAuctionFilter(info, normalizedFilter) then
-      local configPath = getVehicleConfigPath(info)
-      if configPath and (not usedConfigKeys[configPath]) and (not isRollerLikeInfo(info)) then
-        usedConfigKeys[configPath] = true
-        return buildVehicleDefFromInfo(info, configPath)
+  local n = #(eligibleVehicles or {})
+  if n > 0 then
+    local order = shuffleIndicesInclusive(n)
+    for k = 1, n do
+      local info = eligibleVehicles[order[k]]
+      if doesVehiclePassAuctionFilter(info, normalizedFilter) then
+        local configPath = getVehicleConfigPath(info)
+        if configPath and (not usedConfigKeys[configPath]) and (not isRollerLikeInfo(info)) then
+          usedConfigKeys[configPath] = true
+          return buildVehicleDefFromInfo(info, configPath)
+        end
       end
     end
   end
@@ -552,7 +610,97 @@ function M.resetUsedConfigs()
   clearTable(usedConfigKeys)
 end
 
-function M.buildNextLotEntry(lotIndex, spawnSpots, blockSpots)
+local function clampInt(n, lo, hi)
+  n = math.floor(tonumber(n) or 0)
+  return math.max(lo, math.min(hi, n))
+end
+
+local function impliedMileageMetersFromYearRange(yMin, yMax, mileageTuning)
+  local m = mileageTuning or defaultAuctionMileageTuning
+  local cy = getCurrentYear()
+  local lo = math.floor(math.min(tonumber(yMin) or 1900, tonumber(yMax) or cy))
+  local hi = math.floor(math.max(tonumber(yMin) or 1900, tonumber(yMax) or cy))
+  if hi > cy then
+    hi = cy
+  end
+  if lo > hi then
+    lo, hi = hi, lo
+  end
+
+  local avgYear = (lo + hi) / 2
+  local age = math.max(0, cy - avgYear)
+  local minMi = 200 + age * 820
+  local maxMi = 3500 + age * 7200
+  minMi = clampInt(minMi, 150, 95000)
+  maxMi = clampInt(maxMi, minMi + 1500, 480000)
+
+  minMi = minMi * (m.minMul or 0.9)
+  maxMi = maxMi * (m.maxMul or 1.1)
+  if m.vintageGarageBand then
+    local driverMax = maxMi
+    local garageMinMi = math.max(260, math.min(10500, 5200 - age * 48))
+    minMi = math.min(minMi, garageMinMi)
+    maxMi = math.max(driverMax * 1.035, minMi + 3200)
+  end
+  if m.maxMilesCap then
+    maxMi = math.min(maxMi, m.maxMilesCap)
+    minMi = math.min(minMi, maxMi - 500)
+  end
+  if maxMi < minMi then
+    minMi, maxMi = maxMi, minMi
+  end
+  maxMi = math.max(maxMi, minMi + 800)
+
+  local minM = math.floor(minMi * MILES_TO_METERS)
+  local maxM = math.floor(maxMi * MILES_TO_METERS)
+  if maxM < minM then
+    minM, maxM = maxM, minM
+  end
+  return minM, maxM
+end
+
+local function applyDerivedMileageFromYears(merged, typeDef)
+  local wl = merged.whiteList or {}
+  if wl.Mileage then
+    return merged
+  end
+
+  local yMin, yMax = boundsFromYearTable(wl.Years)
+  if not yMin and typeDef.implicitYears then
+    local implicit = typeDef.implicitYears
+    yMin = tonumber(implicit.min) or 1950
+    yMax = tonumber(implicit.max) or getCurrentYear()
+  end
+  if not yMin or not yMax then
+    return merged
+  end
+
+  local mileageTuning = typeDef.mileage or defaultAuctionMileageTuning
+  local minM, maxM = impliedMileageMetersFromYearRange(yMin, yMax, mileageTuning)
+  wl.Mileage = { min = minM, max = maxM }
+  merged.whiteList = wl
+  return merged
+end
+
+function M.getSafetyAuctionFilter()
+  return normalizeFilterDefinition({
+    whiteList = {},
+    blackList = deepCopy(((defaultAuctionFilters.filter or {}).blackList) or {})
+  })
+end
+
+function M.composeAuctionTypeFilter(typeId)
+  local typeDef = auctionTypes[typeId]
+  if typeDef == nil then
+    return nil
+  end
+  local merged = mergeFilter(M.getSafetyAuctionFilter(), {
+    whiteList = deepCopy(typeDef.whiteList)
+  })
+  return applyDerivedMileageFromYears(merged, typeDef)
+end
+
+function M.buildNextLotEntry(lotIndex, spawnSpots, blockSpots, fixedFilter)
   local spawnCount = #(spawnSpots or {})
   if spawnCount <= 0 then
     return nil
@@ -566,15 +714,14 @@ function M.buildNextLotEntry(lotIndex, spawnSpots, blockSpots)
     blockSpot = blockSpots[((safeLotIndex - 1) % blockCount) + 1]
   end
 
-  local weightedFilters = buildWeightedFilters()
-  local lotFilter = pickWeightedFilter(weightedFilters)
+  local lotFilter = normalizeFilterDefinition(fixedFilter)
+  if next(lotFilter.whiteList) == nil and next(lotFilter.blackList) == nil then
+    local weightedFilters = buildWeightedFilters()
+    lotFilter = pickWeightedFilter(weightedFilters)
+  end
   local vehicleDef = getRandomVehicleDefWithFilter(lotFilter)
   if not vehicleDef then
-    local relaxedFallbackFilter = buildRelaxedFallbackFilter(lotFilter)
-    vehicleDef = getRandomVehicleDefWithFilter(relaxedFallbackFilter)
-    if not vehicleDef then
-      vehicleDef = getRandomVehicleDefNoFilter(relaxedFallbackFilter)
-    end
+    vehicleDef = getRandomVehicleDefWithFilter(buildRelaxedFallbackFilter(lotFilter))
   end
   if not vehicleDef then
     vehicleDef = fallbackPool[math.random(1, #fallbackPool)]
@@ -583,7 +730,7 @@ function M.buildNextLotEntry(lotIndex, spawnSpots, blockSpots)
   return buildLotFromVehicleDef(vehicleDef, safeLotIndex, spawnSpot, blockSpot)
 end
 
-function M.buildLotBatch(startLotIndex, lotCount, spawnSpots, blockSpots)
+function M.buildLotBatch(startLotIndex, lotCount, spawnSpots, blockSpots, fixedFilter)
   local batch = {}
   local safeStartIndex = math.max(1, math.floor(tonumber(startLotIndex) or 1))
   local safeCount = math.max(1, math.floor(tonumber(lotCount) or 1))
@@ -591,7 +738,7 @@ function M.buildLotBatch(startLotIndex, lotCount, spawnSpots, blockSpots)
   M.resetUsedConfigs()
 
   for offset = 0, safeCount - 1 do
-    local lot = M.buildNextLotEntry(safeStartIndex + offset, spawnSpots, blockSpots)
+    local lot = M.buildNextLotEntry(safeStartIndex + offset, spawnSpots, blockSpots, fixedFilter)
     if not lot then
       break
     end

@@ -1,10 +1,5 @@
 local M = {}
 
-M.dependencies = {
-  'career_career',
-  'career_modules_marketplace'
-}
-
 local C = {
   NPC_PER_LOT_MULT = 1.25,
   NPC_COUNT_MIN = 3,

@@ -78,6 +78,167 @@
   color: #f5a623;
 }
 
+.ua-lot-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.35rem;
+}
+
+.ua-lot-inline-label {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.55);
+  flex-shrink: 0;
+}
+
+.ua-lot-inline-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #f5a623;
+  min-width: 1.6rem;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.ua-lot-inline-meta {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.45);
+  margin-bottom: 0.75rem;
+  text-align: left;
+}
+
+.ua-lot-inline-meta strong {
+  color: #f5a623;
+  font-weight: 700;
+}
+
+.ua-hslider-wrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  padding: 0.35rem 0;
+  box-sizing: border-box;
+}
+
+.ua-hslider {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  outline: none;
+}
+
+.ua-hslider:focus-visible {
+  box-shadow: 0 0 0 2px rgba(240, 242, 245, 0.45);
+  border-radius: 0.3rem;
+}
+
+.ua-hslider-track {
+  position: relative;
+  width: 100%;
+  height: 0.32rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  box-sizing: border-box;
+}
+
+.ua-hslider-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: inherit;
+  background: rgba(240, 242, 245, 0.5);
+  width: 0;
+  min-width: 0;
+  pointer-events: none;
+}
+
+.ua-hslider-thumb {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.43rem;
+  width: 0.86rem;
+  height: 0.86rem;
+  left: 0;
+  border-radius: 50%;
+  background: #f0f2f5;
+  border: 1px solid rgba(10, 12, 18, 0.45);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+.ua-counter-options {
+  display: grid;
+  gap: 0.55rem;
+  margin-bottom: 0.9rem;
+}
+
+.ua-counter-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.85rem;
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+  cursor: pointer;
+  appearance: none;
+  text-align: left;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+
+.ua-counter-option:hover {
+  border-color: rgba(245, 166, 35, 0.45);
+  background: rgba(245, 166, 35, 0.08);
+}
+
+.ua-counter-option.is-selected {
+  border-color: rgba(245, 166, 35, 0.7);
+  background: rgba(245, 166, 35, 0.12);
+  transform: translateY(-1px);
+}
+
+.ua-counter-option-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  min-width: 0;
+}
+
+.ua-counter-option-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.ua-counter-option-subtitle {
+  font-size: 0.76rem;
+  color: rgba(255, 255, 255, 0.64);
+}
+
+.ua-counter-option-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+  flex-shrink: 0;
+}
+
+.ua-counter-option-fee {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #f5a623;
+}
+
 .ua-entry-warning {
   font-size: 0.78rem;
   color: #e85454;
