@@ -6,8 +6,14 @@ function defaultAuctionState() {
   return {
     phase: 'idle',
     entryPromptActive: false,
+    counterPromptActive: false,
     entryFee: 1000,
     canPayEntryFee: false,
+    nextLotRegistrationFee: 0,
+    nextLotFeeCoveredByEntry: true,
+    canAffordNextLotRegistration: true,
+    canRegisterMoreLots: true,
+    lotsRegisteredThisVisit: 0,
     hasFreeGarageSlot: true,
     musicEnabled: null,
     activeLotIndex: 1,
@@ -15,7 +21,20 @@ function defaultAuctionState() {
     statusMessage: '',
     purchasedCount: 0,
     bidMessage: '',
-    lots: []
+    lots: [],
+    mainAuctionPanelActive: false,
+    lotBatchSize: 8
+  }
+}
+
+function defaultCounterState() {
+  return {
+    lotBatchSize: 8,
+    nextLotRegistrationFee: 0,
+    nextLotFeeCoveredByEntry: true,
+    canAffordNextLotRegistration: true,
+    canRegisterMoreLots: true,
+    hasFreeGarageSlot: true
   }
 }
 
@@ -83,6 +102,15 @@ angular.module('beamng.stuff')
 
   $scope.isEntryPrompt = function() {
     return $scope.state.phase === 'entryPrompt' || $scope.state.entryPromptActive === true
+  }
+
+  $scope.isVaultSession = function() {
+    const p = $scope.state.phase
+    return p === 'vaultIdle' || p === 'starting' || p === 'bidding' || p === 'complete'
+  }
+
+  $scope.showMainAuctionPanel = function() {
+    return $scope.state.mainAuctionPanelActive === true
   }
 
   $scope.entryPromptMessage = function() {
@@ -179,7 +207,8 @@ angular.module('beamng.stuff')
     const p = $scope.state.phase
     if (p === 'bidding') return 'Bidding'
     if (p === 'complete') return 'Complete'
-    if (p === 'starting') return 'Starting'
+    if (p === 'starting') return 'Entering'
+    if (p === 'vaultIdle') return 'Inside'
     return 'Idle'
   }
 
@@ -187,6 +216,8 @@ angular.module('beamng.stuff')
     const p = $scope.state.phase
     if (p === 'bidding') return 'phase-bidding'
     if (p === 'complete') return 'phase-complete'
+    if (p === 'vaultIdle') return 'phase-vault'
+    if (p === 'starting') return 'phase-starting'
     return ''
   }
 
@@ -322,6 +353,99 @@ angular.module('beamng.stuff')
   })
 }])
 
+.controller('UsedAuctionCounterController', ['$scope', '$rootScope', function($scope, $rootScope) {
+  let pollTimer = null
+  const angularRootScope = window.globalAngularRootScope || $rootScope
+
+  $scope.visible = false
+  $scope.state = defaultCounterState()
+
+  function requestState() {
+    const api = getGameLuaApi()
+    if (!api) return
+    api.engineLua('career_modules_usedCarAuction.requestAuctionState()', function(result) {
+      if (!result || typeof result !== 'object') return
+      $scope.$evalAsync(function() {
+        const d = defaultCounterState()
+        $scope.state = {
+          lotBatchSize: result.lotBatchSize != null ? result.lotBatchSize : d.lotBatchSize,
+          nextLotRegistrationFee: result.nextLotRegistrationFee != null ? result.nextLotRegistrationFee : d.nextLotRegistrationFee,
+          nextLotFeeCoveredByEntry: result.nextLotFeeCoveredByEntry !== undefined ? result.nextLotFeeCoveredByEntry : d.nextLotFeeCoveredByEntry,
+          canAffordNextLotRegistration: result.canAffordNextLotRegistration !== undefined ? result.canAffordNextLotRegistration : d.canAffordNextLotRegistration,
+          canRegisterMoreLots: result.canRegisterMoreLots !== undefined ? result.canRegisterMoreLots : d.canRegisterMoreLots,
+          hasFreeGarageSlot: result.hasFreeGarageSlot !== undefined ? result.hasFreeGarageSlot : d.hasFreeGarageSlot
+        }
+      })
+    })
+  }
+
+  function startPolling() {
+    if (pollTimer) return
+    requestState()
+    pollTimer = window.setInterval(requestState, 250)
+  }
+
+  function stopPolling() {
+    if (!pollTimer) return
+    window.clearInterval(pollTimer)
+    pollTimer = null
+  }
+
+  function callAuctionLua(fnName, args) {
+    const api = getGameLuaApi()
+    if (!api) return
+    const fn = 'career_modules_usedCarAuction.' + fnName
+    const argList = args && args.length ? '(' + args.join(', ') + ')' : '()'
+    api.engineLua(fn + argList, function() {
+      requestState()
+    })
+  }
+
+  $scope.formatCurrency = function(amount) {
+    const n = Number(amount)
+    if (!Number.isFinite(n) || n < 0) return '$0'
+    return '$' + Math.round(n).toLocaleString()
+  }
+
+  $scope.confirmRegisterNextLot = function() {
+    callAuctionLua('confirmRegisterNextLot')
+  }
+
+  $scope.cancelCounterPrompt = function() {
+    callAuctionLua('cancelCounterPrompt')
+  }
+
+  const showListener = angularRootScope.$on('UsedAuctionCounterShow', function() {
+    $scope.$evalAsync(function() {
+      $scope.visible = true
+    })
+    startPolling()
+  })
+
+  const hideListener = angularRootScope.$on('UsedAuctionCounterHide', function() {
+    stopPolling()
+    $scope.$evalAsync(function() {
+      $scope.visible = false
+      $scope.state = defaultCounterState()
+    })
+  })
+
+  const mainHideListener = angularRootScope.$on('UsedAuctionHide', function() {
+    stopPolling()
+    $scope.$evalAsync(function() {
+      $scope.visible = false
+      $scope.state = defaultCounterState()
+    })
+  })
+
+  $scope.$on('$destroy', function() {
+    showListener()
+    hideListener()
+    mainHideListener()
+    stopPolling()
+  })
+}])
+
 .directive('uaDraggable', ['$document', function($document) {
   return {
     restrict: 'A',
@@ -388,9 +512,6 @@ const usedAuctionModule = angular.module('usedAuction', ['ui.router', 'rlsMusicP
 
 .run(['$rootScope', function() {
   function initializeAuctionOverlay() {
-    const existingContainer = document.getElementById('used-auction-overlay-container')
-    if (existingContainer) return
-
     const bodyElement = angular.element(document.body)
     const injector = bodyElement.injector()
     if (!injector) {
@@ -400,10 +521,18 @@ const usedAuctionModule = angular.module('usedAuction', ['ui.router', 'rlsMusicP
 
     const $compile = injector.get('$compile')
     const $rootScope = injector.get('$rootScope')
-    const container = angular.element('<div id="used-auction-overlay-container" ng-controller="UsedAuctionController" ng-include="\'/ui/modModules/usedAuction/usedAuction.html\'"></div>')
 
-    bodyElement.append(container)
-    $compile(container)($rootScope)
+    if (!document.getElementById('used-auction-overlay-container')) {
+      const container = angular.element('<div id="used-auction-overlay-container" ng-controller="UsedAuctionController" ng-include="\'/ui/modModules/usedAuction/usedAuction.html\'"></div>')
+      bodyElement.append(container)
+      $compile(container)($rootScope)
+    }
+
+    if (!document.getElementById('used-auction-counter-container')) {
+      const counterEl = angular.element('<div id="used-auction-counter-container" ng-controller="UsedAuctionCounterController" ng-include="\'/ui/modModules/usedAuction/usedAuctionCounter.html\'"></div>')
+      bodyElement.append(counterEl)
+      $compile(counterEl)($rootScope)
+    }
   }
 
   if (document.readyState === 'loading') {

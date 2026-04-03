@@ -6,6 +6,14 @@
   font-family: Overpass, Arial, sans-serif;
 }
 
+.ua-counter-overlay-root {
+  position: fixed;
+  inset: 0;
+  z-index: 170;
+  pointer-events: none;
+  font-family: Overpass, Arial, sans-serif;
+}
+
 /* ── Entry prompt ──────────────────────────────────────── */
 
 .ua-entry-backdrop {
@@ -159,6 +167,59 @@
 .ua-phase-badge.phase-complete {
   background: rgba(80, 200, 120, 0.15);
   color: #50c878;
+}
+
+.ua-phase-badge.phase-vault {
+  background: rgba(100, 160, 255, 0.15);
+  color: #8eb8ff;
+}
+
+.ua-phase-badge.phase-starting {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.65);
+}
+
+/* ── Vault shell (between auctions, no main panel) ─────── */
+
+.ua-vault-shell {
+  position: fixed;
+  top: 1.2rem;
+  left: 1.2rem;
+  width: min(30rem, calc(100vw - 2rem));
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.75rem 0.85rem 0.95rem;
+  border-radius: 0.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(8, 10, 14, 0.92);
+  color: #f5f7fa;
+  box-shadow: 0 0.8rem 2.4rem rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+}
+
+.ua-vault-shell-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.ua-vault-shell-title {
+  font-size: 0.88rem;
+  font-weight: 800;
+  letter-spacing: 0.04rem;
+  text-transform: uppercase;
+}
+
+.ua-vault-cta {
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.82);
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.45rem;
+  background: rgba(245, 122, 30, 0.12);
+  border: 1px solid rgba(245, 122, 30, 0.25);
 }
 
 /* ── Status bar ────────────────────────────────────────── */

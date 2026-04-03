@@ -26,7 +26,34 @@
     </div>
   </div>
 
-  <div class="ua-panel bng-blur" ua-draggable ng-if="!isEntryPrompt()">
+  <div class="ua-vault-shell bng-blur" ng-if="isVaultSession() && !isEntryPrompt() && !showMainAuctionPanel()">
+    <div class="ua-vault-shell-header">
+      <div class="ua-vault-shell-title">The Vault</div>
+      <div class="ua-phase-badge" ng-class="phaseClass()">{{ phaseLabel() }}</div>
+    </div>
+    <div class="ua-stats-inline">
+      <div class="ua-stat-item">
+        <span class="ua-stat-k">Wins</span>
+        <span class="ua-stat-v">{{ state.purchasedCount || 0 }}</span>
+      </div>
+      <div class="ua-stat-sep"></div>
+      <div class="ua-stat-item">
+        <span class="ua-stat-k">Balance</span>
+        <span class="ua-stat-v">{{ formatCurrency(state.playerBalance || 0) }}</span>
+      </div>
+    </div>
+    <div class="ua-music-player">
+      <rls-music-player
+        ng-if="state.musicEnabled !== null"
+        emitter-name="SFXEmitter_2"
+        music-root="/music"
+        start-playing="{{ state.musicEnabled !== false }}"
+        poll-ms="400"></rls-music-player>
+    </div>
+    <div class="ua-vault-cta">{{ state.statusMessage }}</div>
+  </div>
+
+  <div class="ua-panel bng-blur" ua-draggable ng-if="showMainAuctionPanel() && !isEntryPrompt()">
     <div class="ua-header">
       <div class="ua-header-left">
         <div class="ua-title">Used Car Auction</div>

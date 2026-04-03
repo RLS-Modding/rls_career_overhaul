@@ -6,11 +6,11 @@ M.dependencies = {
   'career_modules_garageManager',
   'career_modules_marketplace',
   'career_modules_payment',
+  'career_modules_usedCarAuctionLots',
   'career_modules_valueCalculator',
   'career_saveSystem',
   'gameplay_sites_sitesManager',
   'gameplay_traffic',
-  'util_configListGenerator',
   'overhaul_musicPlayer',
   'career_modules_usedCarAuctionNpcs'
 }
@@ -18,6 +18,7 @@ M.dependencies = {
 local constants = {
   ENTRY_TRIGGER = 'usedCarAuctionEntry',
   EXIT_TRIGGER = 'usedCarAuctionExit',
+  COUNTER_TRIGGER_PREFIX = 'auctionCounter_',
   AUCTION_SITES_NAME = 'auction',
 
   LOT_DURATION = 30,
@@ -48,44 +49,23 @@ local constants = {
   AUCTION_ENTRY_PAYMENT_SFX_EVENT = 'event:>UI>Career>Buy_01',
   AUCTION_ENTRY_FEE = 1000,
   AUCTION_SETTINGS_SAVE_FILE = 'usedCarAuctionSettings.json',
+  AUCTION_LOT_REGISTRATION_PAYMENT_LABEL = 'Used Auction Lot Registration',
   BID_ACCEPTED_SFX_EVENT = 'event:>UI>Career>Buy_02',
   LOT_WIN_CELEBRATION_SFX_EVENT = 'event:>UI>Missions>End_Gold',
   AUCTION_POI_ID = 'usedCarAuctionEntrance',
   AUCTION_POI_LEVEL = 'west_coast_usa',
   AUCTION_POI_ICON = 'poi_fasttravel_round_orange_green',
   AUCTION_EXIT_MARKER_NAME = 'usedCarAuctionExitMarker',
+  AUCTION_COUNTER_MARKER_NAME = 'usedCarAuctionCounterMarker',
+  AUCTION_COUNTER_MARKER_TRIGGER = 'auctionCounter_1',
+  AUCTION_COUNTER_MARKER_LABEL = 'Walk to counter',
   AUCTION_EXIT_MARKER_SHAPE = 'art/shapes/interface/checkpoint_marker.dae',
   AUCTION_EXIT_MARKER_SCALE = 2.2,
   AUCTION_EXIT_MARKER_COLOR = '1.00 0.10 0.10 0.95',
+  AUCTION_COUNTER_MARKER_SCALE = 1.8,
+  AUCTION_COUNTER_MARKER_COLOR = '1.00 0.55 0.10 0.95',
   AUCTION_EXIT_MARKER_Z_OFFSET = -0.8,
   AUCTION_ENTRY_LOADING_TAG = 'usedCarAuctionEntry'
-}
-
-local fallbackPool = {
-  { model = 'covet', config = 'vehicles/covet/roller_covet.pc', title = 'Ibishu Covet', basePrice = 2600 },
-  { model = 'hopper', config = 'vehicles/hopper/roller-hopper.pc', title = 'Ibishu Hopper', basePrice = 4200 },
-  { model = 'wendover', config = 'vehicles/wendover/roller-wendover.pc', title = 'Gavril Wendover', basePrice = 6400 }
-}
-
-local defaultAuctionFilters = {
-  filter = {
-    whiteList = {
-      Mileage = { min = 25000000, max = 380000000 }
-    },
-    blackList = {
-      Type = { 'Trailer', 'Semi Truck' },
-      ['Config Type'] = { 'Roller', 'Race', 'Police', 'Service' }
-    }
-  },
-  subFilters = {
-    { probability = 7, whiteList = { Mileage = { min = 4800, max = 16093 }, Years = { min = 2010, max = 2025 } } },
-    { probability = 6, whiteList = { Mileage = { min = 4800, max = 16093 }, Years = { min = 2000, max = 2009 } } },
-    { probability = 5, whiteList = { Mileage = { min = 4800, max = 16093 }, Years = { min = 1990, max = 1999 } } },
-    { probability = 4, whiteList = { Mileage = { min = 4800, max = 16093 }, Years = { min = 1980, max = 1989 } } },
-    { probability = 3, whiteList = { Mileage = { min = 4800, max = 16093 }, Years = { min = 1970, max = 1979 } } },
-    { probability = 2, whiteList = { Mileage = { min = 4800, max = 16093 }, Years = { min = 1950, max = 1969 } } },
-    { probability = 1, whiteList = { Mileage = { min = 4800, max = 16093 }, Years = { min = 1900, max = 1949 } } }
-  }
 }
 
 local auctionState = {
@@ -106,22 +86,24 @@ local auctionState = {
   switchWarnCooldownUntil = 0,
   lastValidPlayerVehId = nil,
   entryPromptActive = false,
+  counterPromptActive = false,
   uiOpen = false,
   awaitingFinalExit = false,
   npcPersonas = {},
   winEmitterPulseToken = 0,
   musicEnabled = true,
   bidHint = nil,
-  bidHintUntil = 0
+  bidHintUntil = 0,
+  lotsRegisteredThisVisit = 0
 }
 
 local pendingSavedPreAuction = nil
-
-local usedConfigKeys = {}
 local stopVehicleAI
 local setLotVehicleDriveLock
 local startAuctionImmediate
 local getPlayerExitSpot
+local startLotByIndex
+local hasLiveTransitionLots
 
 local function getAuctionTime()
   return auctionState.simTime or 0
@@ -224,109 +206,6 @@ local function deepCopy(src)
   return out
 end
 
-local function getFilterLists(filter)
-  if type(filter) ~= 'table' then
-    return {}, {}
-  end
-
-  local whiteList = filter.whiteList or filter.whitelist or filter.white_list or {}
-  local blackList = filter.blackList or filter.blacklist or filter.black_list or {}
-  return whiteList, blackList
-end
-
-local function normalizeFilterDefinition(filter)
-  local normalized = deepCopy(type(filter) == 'table' and filter or {})
-  local whiteList, blackList = getFilterLists(normalized)
-  normalized.whiteList = deepCopy(whiteList or {})
-  normalized.blackList = deepCopy(blackList or {})
-  normalized.whitelist = nil
-  normalized.white_list = nil
-  normalized.blacklist = nil
-  normalized.black_list = nil
-  return normalized
-end
-
-local function getSubFilterBody(subFilter)
-  if type(subFilter) ~= 'table' then
-    return {}
-  end
-  if type(subFilter.filter) == 'table' then
-    return subFilter.filter
-  end
-  return subFilter
-end
-
-local function mergeFilter(baseFilter, subFilter)
-  local merged = normalizeFilterDefinition(baseFilter)
-  local normalizedSubFilter = normalizeFilterDefinition(getSubFilterBody(subFilter))
-
-  for k, v in pairs(normalizedSubFilter.whiteList or {}) do
-    merged.whiteList[k] = deepCopy(v)
-  end
-  for k, v in pairs(normalizedSubFilter.blackList or {}) do
-    merged.blackList[k] = deepCopy(v)
-  end
-
-  return merged
-end
-
-local function getAuctionFilterConfig()
-  local level = getCurrentLevelIdentifier() or 'west_coast_usa'
-  local path = '/levels/' .. level .. '/auction.filters.json'
-  local cfg = jsonReadFile(path)
-
-  if type(cfg) == 'table' then
-    return cfg
-  end
-
-  return deepCopy(defaultAuctionFilters)
-end
-
-local function buildWeightedFilters()
-  local cfg = getAuctionFilterConfig()
-  local baseFilter = normalizeFilterDefinition(cfg.filter or {})
-  local subFilters = cfg.subFilters or {}
-
-  local weighted = {}
-  if #subFilters == 0 then
-    table.insert(weighted, {prob = 1, filter = deepCopy(baseFilter)})
-    return weighted
-  end
-
-  for _, sf in ipairs(subFilters) do
-    local sfBody = getSubFilterBody(sf)
-    local p = tonumber(sf.probability) or tonumber(sf._probability) or tonumber(sfBody.probability) or tonumber(sfBody._probability) or 1
-    table.insert(weighted, {
-      prob = math.max(0.01, p),
-      filter = mergeFilter(baseFilter, sf)
-    })
-  end
-
-  return weighted
-end
-
-local function pickWeightedFilter(weighted)
-  if not weighted or #weighted == 0 then
-    return {}
-  end
-
-  local total = 0
-  for _, item in ipairs(weighted) do
-    total = total + (item.prob or 1)
-  end
-
-  local r = math.random() * total
-  local acc = 0
-  for _, item in ipairs(weighted) do
-    acc = acc + (item.prob or 1)
-    if r <= acc then
-      return item.filter or {}
-    end
-  end
-
-  return weighted[#weighted].filter or {}
-end
-
 local function setTriggerHidden(triggerName, hidden)
   local trigger = scenetree.findObject(triggerName)
   if trigger then
@@ -334,8 +213,8 @@ local function setTriggerHidden(triggerName, hidden)
   end
 end
 
-local function clearAuctionExitMarker()
-  local marker = scenetree.findObject(constants.AUCTION_EXIT_MARKER_NAME)
+local function clearMarkerByName(markerName)
+  local marker = scenetree.findObject(markerName)
   if not marker then
     return
   end
@@ -344,6 +223,14 @@ local function clearAuctionExitMarker()
     pcall(function() editor.onRemoveSceneTreeObjects({marker:getID()}) end)
   end
   pcall(function() marker:delete() end)
+end
+
+local function clearAuctionExitMarker()
+  clearMarkerByName(constants.AUCTION_EXIT_MARKER_NAME)
+end
+
+local function clearAuctionCounterMarker()
+  clearMarkerByName(constants.AUCTION_COUNTER_MARKER_NAME)
 end
 
 local function setIdleTriggerState()
@@ -357,12 +244,20 @@ local function setAuctionRunningTriggerState()
 end
 
 local function openMenu()
+  if auctionState.uiOpen then
+    return
+  end
   auctionState.uiOpen = true
   pcall(function() guihooks.trigger('UsedAuctionShow') end)
 end
 
+local function closeCounterOverlayUi()
+  pcall(function() guihooks.trigger('UsedAuctionCounterHide') end)
+end
+
 local function closeAuctionOverlayUi()
   auctionState.uiOpen = false
+  closeCounterOverlayUi()
   pcall(function() guihooks.trigger('UsedAuctionHide') end)
 end
 
@@ -579,6 +474,7 @@ local function hardDisableAuctionAudioVisuals()
   setAuctionWinEmittersEnabled(false)
   setAuctionActiveAssetsEnabled(false)
   clearAuctionExitMarker()
+  clearAuctionCounterMarker()
 end
 
 local function triggerAuctionWinEmitters(duration)
@@ -711,6 +607,34 @@ local function payAuctionEntryFee()
   end
 
   return payForVehicle(fee, string.format('Used Auction Entry ($%d)', fee))
+end
+
+local function getNextLotRegistrationFee()
+  if (auctionState.lotsRegisteredThisVisit or 0) <= 0 then
+    return 0
+  end
+  return getAuctionEntryFee()
+end
+
+local function canAffordNextLotRegistration()
+  local fee = getNextLotRegistrationFee()
+  if fee <= 0 then
+    return true
+  end
+  return canAfford(fee)
+end
+
+local function payNextLotRegistrationFee()
+  local fee = getNextLotRegistrationFee()
+  if fee <= 0 then
+    return true
+  end
+
+  return payForVehicle(fee, constants.AUCTION_LOT_REGISTRATION_PAYMENT_LABEL)
+end
+
+local function canRegisterMoreLots()
+  return auctionState.phase == 'vaultIdle' or (auctionState.phase == 'complete' and not hasLiveTransitionLots())
 end
 
 local function getPlayerVehicle()
@@ -1036,6 +960,32 @@ getPlayerExitSpot = function(layout, warnOnFallback)
   return fallbackSpot
 end
 
+local function buildMarkerAtPos(markerName, markerPos, color, scale)
+  if not markerPos then
+    return false
+  end
+
+  local marker = createObject('TSStatic')
+  marker:setField('shapeName', 0, constants.AUCTION_EXIT_MARKER_SHAPE)
+  marker:setPosition(markerPos + vec3(0, 0, constants.AUCTION_EXIT_MARKER_Z_OFFSET))
+  marker.scale = vec3(scale, scale, scale)
+  marker:setField('rotation', 0, '1 0 0 0')
+  marker.useInstanceRenderData = true
+  marker:setField('instanceColor', 0, color)
+  marker:setField('collisionType', 0, 'Collision Mesh')
+  marker:setField('decalType', 0, 'Collision Mesh')
+  marker:setField('allowPlayerStep', 0, '1')
+  marker:setField('canSave', 0, '0')
+  marker:setField('canSaveDynamicFields', 0, '1')
+  marker.canSave = false
+  marker:registerObject(markerName)
+  if scenetree and scenetree.MissionGroup then
+    scenetree.MissionGroup:addObject(marker)
+  end
+
+  return true
+end
+
 local function ensureAuctionExitMarker(layout)
   clearAuctionExitMarker()
 
@@ -1059,25 +1009,33 @@ local function ensureAuctionExitMarker(layout)
     return false
   end
 
-  local marker = createObject('TSStatic')
-  marker:setField('shapeName', 0, constants.AUCTION_EXIT_MARKER_SHAPE)
-  marker:setPosition(markerPos + vec3(0, 0, constants.AUCTION_EXIT_MARKER_Z_OFFSET))
-  marker.scale = vec3(constants.AUCTION_EXIT_MARKER_SCALE, constants.AUCTION_EXIT_MARKER_SCALE, constants.AUCTION_EXIT_MARKER_SCALE)
-  marker:setField('rotation', 0, '1 0 0 0')
-  marker.useInstanceRenderData = true
-  marker:setField('instanceColor', 0, constants.AUCTION_EXIT_MARKER_COLOR)
-  marker:setField('collisionType', 0, 'Collision Mesh')
-  marker:setField('decalType', 0, 'Collision Mesh')
-  marker:setField('allowPlayerStep', 0, '1')
-  marker:setField('canSave', 0, '0')
-  marker:setField('canSaveDynamicFields', 0, '1')
-  marker.canSave = false
-  marker:registerObject(constants.AUCTION_EXIT_MARKER_NAME)
-  if scenetree and scenetree.MissionGroup then
-    scenetree.MissionGroup:addObject(marker)
+  return buildMarkerAtPos(
+    constants.AUCTION_EXIT_MARKER_NAME,
+    markerPos,
+    constants.AUCTION_EXIT_MARKER_COLOR,
+    constants.AUCTION_EXIT_MARKER_SCALE
+  )
+end
+
+local function ensureAuctionCounterMarker()
+  clearAuctionCounterMarker()
+
+  local counterTrigger = scenetree.findObject(constants.AUCTION_COUNTER_MARKER_TRIGGER)
+  if not counterTrigger then
+    return false
   end
 
-  return true
+  local ok, pos = pcall(function() return counterTrigger:getPosition() end)
+  if not ok or not pos then
+    return false
+  end
+
+  return buildMarkerAtPos(
+    constants.AUCTION_COUNTER_MARKER_NAME,
+    vec3(pos),
+    constants.AUCTION_COUNTER_MARKER_COLOR,
+    constants.AUCTION_COUNTER_MARKER_SCALE
+  )
 end
 
 local function getAuctionEntrancePos()
@@ -1272,52 +1230,6 @@ local function applyApproachStopControl(lot, veh, distToBlock, speed, now)
   veh:queueLuaCommand(string.format('ai.setSpeed(%.4f)', constants.LOT_APPROACH_SLOW_SPEED_MPS))
 end
 
-local function getVehicleConfigPath(info)
-  if not info or not info.model_key or not info.key then
-    return nil
-  end
-
-  local key = tostring(info.key)
-  key = key:gsub('%.pc$', '')
-  local candidatePaths = {
-    '/vehicles/' .. info.model_key .. '/configurations/' .. key .. '.pc',
-    '/vehicles/' .. info.model_key .. '/' .. key .. '.pc'
-  }
-
-  for _, path in ipairs(candidatePaths) do
-    if FS:fileExists(path) then
-      return path
-    end
-  end
-
-  return nil
-end
-
-local function isRollerLikeInfo(info)
-  local a = string.lower(tostring(info.key or ''))
-  local b = string.lower(tostring(info.Name or ''))
-  local c = string.lower(tostring(info['Config Type'] or ''))
-
-  return a:find('roller', 1, true) or b:find('roller', 1, true) or c:find('roller', 1, true)
-end
-
-local function getMileageFromInfo(info)
-  if not info then return nil end
-  local mileage = tonumber(info.Mileage) or tonumber(info.mileage) or tonumber(info['Mileage'])
-  if not mileage then return nil end
-  -- config-list mileage is often in meters; normalize to miles for UI display
-  if mileage > 2000000 then
-    mileage = mileage / 1609.344
-  end
-  mileage = math.max(0, math.floor(mileage))
-  if mileage <= 0 then return nil end
-  return mileage
-end
-
-local function getFallbackMileage()
-  return math.random(5000, 180000)
-end
-
 local function getLotMileageMeters(lot)
   local mileageMiles = tonumber(lot and lot.mileage) or 0
   return math.max(0, math.floor(mileageMiles * 1609.344))
@@ -1325,274 +1237,6 @@ end
 
 local function getCurrentYear()
   return tonumber(os.date('%Y')) or 2025
-end
-
-local function isRangeParams(parameters)
-  return type(parameters) == 'table' and (parameters.min ~= nil or parameters.max ~= nil)
-end
-
-local function normalizeToken(value)
-  if value == nil then
-    return ''
-  end
-  return tostring(value):lower():gsub('[^%w]', '')
-end
-
-local filterFieldAliases = {
-  bodytype = { 'Body Type', 'BodyType', 'Body Style', 'BodyStyle' },
-  configtype = { 'Config Type', 'ConfigType' },
-  type = { 'Type', 'Vehicle Type', 'VehicleType' },
-  brand = { 'Brand', 'Make' },
-  years = { 'Years', 'Year' }
-}
-
-local function getFilterFieldCandidates(fieldName)
-  local candidates = {}
-  local seen = {}
-
-  local function addCandidate(value)
-    if value == nil then
-      return
-    end
-    local key = tostring(value)
-    if key == '' or seen[key] then
-      return
-    end
-    seen[key] = true
-    table.insert(candidates, key)
-  end
-
-  addCandidate(fieldName)
-  local aliases = filterFieldAliases[normalizeToken(fieldName)]
-  if type(aliases) == 'table' then
-    for _, alias in ipairs(aliases) do
-      addCandidate(alias)
-    end
-  end
-
-  return candidates
-end
-
-local function getLooseTableField(source, fieldName)
-  if type(source) ~= 'table' then
-    return nil
-  end
-
-  local value = source[fieldName]
-  if value ~= nil then
-    return value
-  end
-
-  local wantedKey = normalizeToken(fieldName)
-  for key, item in pairs(source) do
-    if normalizeToken(key) == wantedKey then
-      return item
-    end
-  end
-
-  return nil
-end
-
-local function getVehicleFieldValue(vehicleInfo, fieldName)
-  if type(vehicleInfo) ~= 'table' then return nil end
-
-  local candidates = getFilterFieldCandidates(fieldName)
-  for _, candidate in ipairs(candidates) do
-    local value = getLooseTableField(vehicleInfo, candidate)
-    if value ~= nil then
-      return value
-    end
-  end
-
-  if type(vehicleInfo.aggregates) == 'table' then
-    for _, candidate in ipairs(candidates) do
-      local value = getLooseTableField(vehicleInfo.aggregates, candidate)
-      if value ~= nil then
-        return value
-      end
-    end
-  end
-
-  return nil
-end
-
-local function getVehicleYearRange(vehicleInfo)
-  local years = getVehicleFieldValue(vehicleInfo, 'Years')
-  if type(years) == 'number' then
-    return years, years
-  end
-  if type(years) ~= 'table' then
-    return nil, nil
-  end
-
-  local minYear = tonumber(years.min) or tonumber(years[1])
-  local maxYear = tonumber(years.max) or minYear
-  if not minYear then
-    return nil, nil
-  end
-  if not maxYear then
-    maxYear = minYear
-  end
-  if minYear > maxYear then
-    minYear, maxYear = maxYear, minYear
-  end
-  return minYear, maxYear
-end
-
-local function isDiscreteMatch(value, wanted)
-  if value == wanted then
-    return true
-  end
-  if normalizeToken(value) ~= '' and normalizeToken(value) == normalizeToken(wanted) then
-    return true
-  end
-  if type(value) ~= 'table' then
-    return false
-  end
-  if value[wanted] then return true end
-  if value[tostring(wanted)] then return true end
-  if value[normalizeToken(wanted)] then return true end
-  local wantedToken = normalizeToken(wanted)
-  for key, keyed in pairs(value) do
-    if keyed and normalizeToken(key) == wantedToken then
-      return true
-    end
-  end
-  for _, item in ipairs(value) do
-    if item == wanted or (normalizeToken(item) ~= '' and normalizeToken(item) == wantedToken) then
-      return true
-    end
-  end
-  return false
-end
-
-local function doesVehicleMatchFilterRule(vehicleInfo, filterName, parameters)
-  if filterName == 'Years' then
-    local minYear, maxYear = getVehicleYearRange(vehicleInfo)
-    if not minYear then
-      return false
-    end
-    local minAllowed = tonumber(parameters and parameters.min)
-    local maxAllowed = tonumber(parameters and parameters.max)
-    if minAllowed and maxYear < minAllowed then
-      return false
-    end
-    if maxAllowed and minYear > maxAllowed then
-      return false
-    end
-    return true
-  end
-
-  if isRangeParams(parameters) then
-    local value = getVehicleFieldValue(vehicleInfo, filterName)
-    local numberValue = tonumber(value)
-    if numberValue == nil and type(value) == 'table' then
-      numberValue = tonumber(value.min) or tonumber(value.max)
-    end
-    if numberValue == nil then
-      return false
-    end
-
-    local minAllowed = tonumber(parameters.min)
-    local maxAllowed = tonumber(parameters.max)
-    if minAllowed and numberValue < minAllowed then
-      return false
-    end
-    if maxAllowed and numberValue > maxAllowed then
-      return false
-    end
-    return true
-  end
-
-  local value = getVehicleFieldValue(vehicleInfo, filterName)
-  if type(parameters) ~= 'table' then
-    return isDiscreteMatch(value, parameters)
-  end
-
-  for _, wanted in ipairs(parameters) do
-    if isDiscreteMatch(value, wanted) then
-      return true
-    end
-  end
-  return false
-end
-
-local function doesVehicleMatchFilterList(vehicleInfo, filters, requireAll)
-  if type(filters) ~= 'table' or next(filters) == nil then
-    return requireAll and true or false
-  end
-
-  for filterName, parameters in pairs(filters) do
-    local matched = doesVehicleMatchFilterRule(vehicleInfo, filterName, parameters)
-    if requireAll then
-      if not matched then
-        return false
-      end
-    elseif matched then
-      return true
-    end
-  end
-
-  return requireAll and true or false
-end
-
-local function doesVehiclePassAuctionFilter(vehicleInfo, filter)
-  local normalized = normalizeFilterDefinition(filter)
-  if not doesVehicleMatchFilterList(vehicleInfo, normalized.whiteList, true) then
-    return false
-  end
-  if doesVehicleMatchFilterList(vehicleInfo, normalized.blackList, false) then
-    return false
-  end
-  return true
-end
-
-local function buildRelaxedFallbackFilter(filter)
-  local normalized = normalizeFilterDefinition(filter)
-  local relaxed = {
-    whiteList = {},
-    blackList = deepCopy(normalized.blackList or {})
-  }
-
-  for filterName, parameters in pairs(normalized.whiteList or {}) do
-    local key = normalizeToken(filterName)
-    if not isRangeParams(parameters) and key ~= 'years' and key ~= 'mileage' and key ~= 'population' and key ~= 'value' then
-      relaxed.whiteList[filterName] = deepCopy(parameters)
-    end
-  end
-
-  return relaxed
-end
-
-local function getRandomVehicleDefWithFilter(filter)
-  local eligibleVehicles = util_configListGenerator.getEligibleVehicles(false, false)
-  local normalizedFilter = normalizeFilterDefinition(filter or {})
-  local infos = util_configListGenerator.getRandomVehicleInfos({filter = {}}, 140, eligibleVehicles, 'Population')
-
-  for _, info in ipairs(infos or {}) do
-    if doesVehiclePassAuctionFilter(info, normalizedFilter) then
-      local configPath = getVehicleConfigPath(info)
-      if configPath and (not usedConfigKeys[configPath]) and (not isRollerLikeInfo(info)) then
-        usedConfigKeys[configPath] = true
-
-        local brand = tostring(info.Brand or '')
-        local name = tostring(info.Name or info.key or info.model_key)
-        local title = ((brand ~= '' and (brand .. ' ') or '') .. name)
-
-        return {
-          model = info.model_key,
-          config = configPath,
-          title = title,
-          basePrice = math.max(1500, math.floor(tonumber(info.Value or 4500))),
-          mileage = getMileageFromInfo(info) or getFallbackMileage(),
-          year = tonumber(info.Year) or tonumber(info.year) or
-            (type(info.Years) == 'table' and tonumber(info.Years.max)) or getCurrentYear()
-        }
-      end
-    end
-  end
-
-  return nil
 end
 
 local function getGarageFreeSlots()
@@ -1613,112 +1257,13 @@ local function hasGarageSpaceForPurchase()
   return getGarageFreeSlots() > 0
 end
 
-local function getRandomVehicleDefNoFilter(enforceFilter)
-  local eligibleVehicles = util_configListGenerator.getEligibleVehicles(false, false)
-  local infos = util_configListGenerator.getRandomVehicleInfos({filter = {}}, 80, eligibleVehicles, 'Population')
-  local normalizedFilter = normalizeFilterDefinition(enforceFilter or {})
-
-  for _, info in ipairs(infos or {}) do
-    if doesVehiclePassAuctionFilter(info, normalizedFilter) then
-      local configPath = getVehicleConfigPath(info)
-      if configPath and (not usedConfigKeys[configPath]) and (not isRollerLikeInfo(info)) then
-        usedConfigKeys[configPath] = true
-
-        local brand = tostring(info.Brand or '')
-        local name = tostring(info.Name or info.key or info.model_key)
-        local title = ((brand ~= '' and (brand .. ' ') or '') .. name)
-
-        return {
-          model = info.model_key,
-          config = configPath,
-          title = title,
-          basePrice = math.max(1500, math.floor(tonumber(info.Value or 4500))),
-          mileage = getMileageFromInfo(info) or getFallbackMileage(),
-          year = tonumber(info.Year) or tonumber(info.year) or
-            (type(info.Years) == 'table' and tonumber(info.Years.max)) or getCurrentYear()
-        }
-      end
-    end
-  end
-
-  return nil
-end
-
-local function roundToNearestStep(value, step)
-  local s = math.max(1, tonumber(step) or 1)
-  local normalized = math.max(0, tonumber(value) or 0) / s
-  return math.floor(normalized + 0.5) * s
-end
-
-local function prepareLots(spawnSpots, blockSpots, lotCount)
-  local lots = {}
-  local spawnCount = #(spawnSpots or {})
-  if spawnCount <= 0 then
-    return lots
-  end
-
-  lotCount = math.max(1, tonumber(lotCount) or constants.DEFAULT_LOT_COUNT)
-  local blockCount = #(blockSpots or {})
-  local weightedFilters = buildWeightedFilters()
-
-  table.clear(usedConfigKeys)
-
-  for i = 1, lotCount do
-    local spawnSpot = spawnSpots[((i - 1) % spawnCount) + 1]
-    local blockSpot = spawnSpot
-    if blockCount > 0 then
-      blockSpot = blockSpots[((i - 1) % blockCount) + 1]
-    end
-
-    local lotFilter = pickWeightedFilter(weightedFilters)
-    local vehicleDef = getRandomVehicleDefWithFilter(lotFilter)
-    if not vehicleDef then
-      local relaxedFallbackFilter = buildRelaxedFallbackFilter(lotFilter)
-      vehicleDef = getRandomVehicleDefWithFilter(relaxedFallbackFilter)
-      if not vehicleDef then
-        vehicleDef = getRandomVehicleDefNoFilter(relaxedFallbackFilter)
-      end
-    end
-    if not vehicleDef then
-      vehicleDef = fallbackPool[math.random(1, #fallbackPool)]
-    end
-
-    local minStep = 250
-    local startBid = roundToNearestStep(vehicleDef.basePrice * (0.55 + math.random() * 0.2), 500)
-
-    table.insert(lots, {
-      lotIndex = i,
-      spawnSpot = spawnSpot,
-      blockSpot = blockSpot,
-      model = vehicleDef.model,
-      config = vehicleDef.config,
-      title = vehicleDef.title,
-      basePrice = vehicleDef.basePrice,
-      mileage = vehicleDef.mileage or getFallbackMileage(),
-      year = vehicleDef.year or getCurrentYear(),
-      minStep = minStep,
-      currentBid = startBid,
-      previewStartBid = startBid,
-      highestBidder = 'npc',
-      highestBidderName = 'NPC',
-      leadingNpcPersonaId = nil,
-      npcMaxBidsByPersonaId = {},
-      npcPersonaNamesById = {},
-      extensionCount = 0,
-      endTime = 0,
-      state = 'pending',
-      vehId = nil,
-      wonByPlayer = false,
-      wonInventoryId = nil,
-      driveState = nil,
-      driveStartedAt = 0,
-      lastMotionPos = nil,
-      lastMotionAt = 0,
-      nextApproachControlAt = 0
-    })
-  end
-
-  return lots
+local function buildNextLotEntry(lotIndex)
+  local layout = auctionState.siteLayout or {}
+  return career_modules_usedCarAuctionLots.buildNextLotEntry(
+    lotIndex,
+    layout.spawnSpots or {},
+    layout.blockSpots or {}
+  )
 end
 
 local showLiveAuctionStatus
@@ -2007,7 +1552,7 @@ local function setAuctionComplete()
   setAuctionRunningTriggerState()
 end
 
-local function startLotByIndex(idx)
+startLotByIndex = function(idx)
   local lot = auctionState.lots[idx]
   if not lot then
     return false
@@ -2090,7 +1635,7 @@ local function refreshLotMotionProgress(lot, veh, tNow)
   end
 end
 
-local function hasLiveTransitionLots()
+hasLiveTransitionLots = function()
   for _, checkLot in ipairs(auctionState.lots or {}) do
     if checkLot.state == 'approaching' or checkLot.state == 'active' or checkLot.state == 'exiting' then
       return true
@@ -2168,6 +1713,7 @@ end
 
 local function requestAuctionState()
   local now = getAuctionTime()
+  local nextLotFee = getNextLotRegistrationFee()
   local lotsOut = {}
   for _, lot in ipairs(auctionState.lots or {}) do
     local lotOut = {
@@ -2246,18 +1792,30 @@ local function requestAuctionState()
     else
       status = string.format('Not enough money. $%d required to enter.', fee)
     end
+  elseif derivedPhase == 'starting' then
+    status = 'Entering the vault…'
+  elseif derivedPhase == 'vaultIdle' then
+    status = 'Go to the counter to start the auction.'
   elseif derivedPhase == 'bidding' then
     status = 'Auction in progress.'
   elseif derivedPhase == 'complete' then
-    status = 'Auction complete. Use exit trigger to return.'
+    status = 'Go to the counter to start another auction.'
   end
+
+  local mainAuctionPanelActive = (auctionState.phase == 'bidding') or hasLiveTransitionLots()
 
   return {
     phase = derivedPhase,
     entryPromptActive = auctionState.entryPromptActive and true or false,
+    counterPromptActive = auctionState.counterPromptActive and true or false,
     musicEnabled = auctionState.musicEnabled ~= false,
     entryFee = getAuctionEntryFee(),
     canPayEntryFee = canAffordAuctionEntry(),
+    nextLotRegistrationFee = nextLotFee,
+    nextLotFeeCoveredByEntry = nextLotFee <= 0,
+    canAffordNextLotRegistration = canAffordNextLotRegistration(),
+    canRegisterMoreLots = canRegisterMoreLots(),
+    lotsRegisteredThisVisit = auctionState.lotsRegisteredThisVisit or 0,
     hasFreeGarageSlot = hasGarageSpaceForPurchase(),
     activeLotIndex = auctionState.activeLotIndex,
     currentLotIndex = derivedCurrentLotIndex,
@@ -2270,7 +1828,9 @@ local function requestAuctionState()
     bidMessage = bidMessage,
     playerBalance = career_modules_playerAttributes and career_modules_playerAttributes.getAttributeValue("money") or 0,
     totalLots = #(auctionState.lots or {}),
-    lots = lotsOut
+    lots = lotsOut,
+    mainAuctionPanelActive = mainAuctionPanelActive,
+    lotBatchSize = constants.DEFAULT_LOT_COUNT
   }
 end
 
@@ -2307,6 +1867,13 @@ end
 
 local function closeMenuUiOnly()
   closeAuctionOverlayUi()
+end
+
+local function closeMenuIfCounterOnly()
+  if auctionState.phase ~= 'idle' then
+    return
+  end
+  closeMenuUiOnly()
 end
 
 local function canStartAuctionFromPrompt()
@@ -2376,6 +1943,125 @@ local function cancelEntryPrompt(closeUi)
   return true
 end
 
+local function canUseAuctionCounter()
+  return auctionState.phase == 'vaultIdle' or auctionState.phase == 'complete'
+end
+
+local function openCounterPrompt()
+  if not canUseAuctionCounter() or auctionState.transitionActive then
+    return false
+  end
+  auctionState.counterPromptActive = true
+  openMenu()
+  pcall(function() guihooks.trigger('UsedAuctionCounterShow') end)
+  return true
+end
+
+local function cancelCounterPrompt(closeUi)
+  if not auctionState.counterPromptActive then
+    if closeUi then
+      closeMenuIfCounterOnly()
+    end
+    return false
+  end
+
+  auctionState.counterPromptActive = false
+  closeCounterOverlayUi()
+  if closeUi then
+    closeMenuIfCounterOnly()
+  end
+  return true
+end
+
+local function clearLotsForNextBatch()
+  for _, lot in ipairs(auctionState.lots or {}) do
+    if lot.vehId and not lot.wonInventoryId then
+      deleteVehicleSafe(lot.vehId)
+    end
+  end
+
+  auctionState.lots = {}
+  auctionState.activeLotIndex = 1
+  auctionState.awaitingFinalExit = false
+  auctionState.nextPlayerBidCheckAt = 0
+  auctionState.nextLiveStatusAt = 0
+  auctionState.bidHint = nil
+  auctionState.bidHintUntil = 0
+end
+
+local function queueNextLotBatch()
+  if not canUseAuctionCounter() then
+    return false
+  end
+  if auctionState.transitionActive then
+    return false
+  end
+  if not hasGarageSpaceForPurchase() then
+    return false
+  end
+  if not canRegisterMoreLots() then
+    return false
+  end
+  if not canAffordNextLotRegistration() then
+    return false
+  end
+
+  local layout = auctionState.siteLayout or {}
+  local spawnSpots = layout.spawnSpots or {}
+  local blockSpots = layout.blockSpots or {}
+  local lotBatch = career_modules_usedCarAuctionLots.buildLotBatch(1, constants.DEFAULT_LOT_COUNT, spawnSpots, blockSpots)
+  if type(lotBatch) ~= 'table' or #lotBatch < 1 then
+    return false
+  end
+
+  if not payNextLotRegistrationFee() then
+    return false
+  end
+
+  clearLotsForNextBatch()
+  auctionState.lots = lotBatch
+  auctionState.lotsRegisteredThisVisit = (auctionState.lotsRegisteredThisVisit or 0) + 1
+
+  local npcModule = career_modules_usedCarAuctionNpcs
+  auctionState.npcPersonas = npcModule.generatePersonas(#auctionState.lots)
+  npcModule.initSession({
+    getAuctionTime = getAuctionTime,
+    commitNpcBid = function(lot, persona, increment)
+      lot.currentBid = lot.currentBid + increment
+      setNpcAsLeader(lot, persona)
+      playBidAcceptedSound()
+      maybeExtendLotTimer(lot)
+      showLiveAuctionStatus(true)
+    end
+  }, auctionState.npcPersonas, auctionState.lots)
+
+  auctionState.activeLotIndex = 0
+  auctionState.awaitingFinalExit = false
+  local started = startNextLotAfter(0)
+  if not started then
+    setAuctionComplete()
+    return false
+  end
+
+  auctionState.phase = 'bidding'
+  return true
+end
+
+local function confirmRegisterNextLot()
+  if not auctionState.counterPromptActive then
+    return false
+  end
+
+  local queued = queueNextLotBatch()
+  if not queued then
+    return false
+  end
+
+  auctionState.counterPromptActive = false
+  closeCounterOverlayUi()
+  return true
+end
+
 local function confirmEntryPaymentAndStartAuction()
   if auctionState.phase ~= 'idle' or not auctionState.entryPromptActive then
     return false
@@ -2430,6 +2116,9 @@ end
 local function closeMenu()
   if auctionState.phase == 'idle' and auctionState.entryPromptActive then
     return cancelEntryPrompt(true)
+  end
+  if auctionState.counterPromptActive then
+    return cancelCounterPrompt(true)
   end
   closeMenuUiOnly()
   return true
@@ -2520,6 +2209,7 @@ end
 local function resetAuction(keepPurchases)
   closeAuctionOverlayUi()
   clearAuctionExitMarker()
+  clearAuctionCounterMarker()
 
   for _, lot in ipairs(auctionState.lots) do
     if lot.vehId then
@@ -2553,9 +2243,12 @@ local function resetAuction(keepPurchases)
   auctionState.switchWarnCooldownUntil = 0
   auctionState.lastValidPlayerVehId = nil
   auctionState.entryPromptActive = false
+  auctionState.counterPromptActive = false
   auctionState.awaitingFinalExit = false
   auctionState.npcPersonas = {}
+  auctionState.lotsRegisteredThisVisit = 0
   career_modules_usedCarAuctionNpcs.resetSession()
+  career_modules_usedCarAuctionLots.resetUsedConfigs()
   auctionState.winEmitterPulseToken = (auctionState.winEmitterPulseToken or 0) + 1
   setAuctionWinEmittersEnabled(false)
   setAuctionActiveAssetsEnabled(false)
@@ -2589,10 +2282,12 @@ startAuctionImmediate = function()
 
   setAuctionRunningTriggerState()
   auctionState.phase = 'starting'
+  auctionState.counterPromptActive = false
   auctionState.returnTransform = {
     pos = playerVeh:getPosition(),
     rot = quat(playerVeh:getRefNodeRotation())
   }
+  career_modules_usedCarAuctionLots.resetUsedConfigs()
 
   runFadedTransition(function()
     local layout = buildSiteLayout(spots)
@@ -2620,10 +2315,12 @@ startAuctionImmediate = function()
     teleportVehicleToSpot(playerVeh, auctionState.auctionSpot)
     setAuctionActiveAssetsEnabled(true)
     ensureAuctionExitMarker(layout)
+    ensureAuctionCounterMarker()
 
     local npcModule = career_modules_usedCarAuctionNpcs
-    auctionState.lots = prepareLots(layout.spawnSpots, layout.blockSpots, constants.DEFAULT_LOT_COUNT)
-    auctionState.npcPersonas = npcModule.generatePersonas(#auctionState.lots)
+    auctionState.lots = {}
+    auctionState.lotsRegisteredThisVisit = 0
+    auctionState.npcPersonas = npcModule.generatePersonas(constants.DEFAULT_LOT_COUNT)
     npcModule.initSession({
       getAuctionTime = getAuctionTime,
       commitNpcBid = function(lot, persona, increment)
@@ -2633,17 +2330,10 @@ startAuctionImmediate = function()
         maybeExtendLotTimer(lot)
         showLiveAuctionStatus(true)
       end
-    }, auctionState.npcPersonas, auctionState.lots)
+    }, auctionState.npcPersonas, {})
     auctionState.activeLotIndex = 0
     auctionState.awaitingFinalExit = false
-
-    local started = startNextLotAfter(0)
-    if not started then
-      setAuctionComplete()
-      return
-    end
-
-    auctionState.phase = 'bidding'
+    auctionState.phase = 'vaultIdle'
     openMenu()
   end)
 
@@ -2836,8 +2526,10 @@ local function onBeamNGTrigger(data)
     return
   end
 
+  local isWalking = gameplay_walk and gameplay_walk.isWalking and gameplay_walk.isWalking()
+
   if data.triggerName and data.triggerName:find(constants.ENTRY_TRIGGER) then
-    if not (gameplay_walk and gameplay_walk.isWalking and gameplay_walk.isWalking()) then
+    if not isWalking then
       return
     end
 
@@ -2847,6 +2539,17 @@ local function onBeamNGTrigger(data)
 
     if auctionState.phase == 'idle' then
       openEntryPrompt()
+    end
+    return
+  end
+
+  if data.triggerName and data.triggerName:find(constants.COUNTER_TRIGGER_PREFIX, 1, true) then
+    if not isWalking then
+      return
+    end
+
+    if canUseAuctionCounter() then
+      openCounterPrompt()
     end
     return
   end
@@ -2938,6 +2641,7 @@ end
 local function hideAuctionUiAndDisableAssets()
   hardDisableAuctionAudioVisuals()
   auctionState.uiOpen = false
+  closeCounterOverlayUi()
   pcall(function() guihooks.trigger('UsedAuctionHide') end)
 end
 
@@ -2959,6 +2663,7 @@ local function onSetupInventoryFinished()
 end
 
 local function onCareerDeactivatedWhileLevelLoaded()
+  closeCounterOverlayUi()
   pcall(function() guihooks.trigger('UsedAuctionHide') end)
   resetAuction(false)
 end
@@ -3002,6 +2707,8 @@ M.exitAuctionArea = exitAuctionArea
 M.requestAuctionState = requestAuctionState
 M.startAuction = startAuction
 M.cancelTravelPrompt = cancelTravelPrompt
+M.cancelCounterPrompt = cancelCounterPrompt
+M.confirmRegisterNextLot = confirmRegisterNextLot
 M.placeBid = placeBid
 M.passCurrentLot = passCurrentLot
 M.setAutoBidEnabled = setAutoBidEnabled

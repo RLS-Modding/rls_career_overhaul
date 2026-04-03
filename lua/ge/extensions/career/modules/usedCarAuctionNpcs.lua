@@ -384,6 +384,24 @@ local function initSession(host, personas, lots)
   end
 end
 
+local function registerLot(lot, personas, lots)
+  if not lot or not personas or not session.active then
+    return false
+  end
+
+  local allLots = lots or {lot}
+  assignSparseFavoriteInterests(personas, allLots)
+  seedLotInterest(lot, personas)
+  refreshLotNpcCaps(lot, personas)
+
+  local leader = chooseInitialLeader(lot, personas)
+  if leader then
+    setLotLeader(lot, leader)
+  end
+
+  return true
+end
+
 local function repriceLot(lot, newBasePrice, personas)
   if not lot or not personas then return end
   lot.basePrice = newBasePrice
@@ -601,6 +619,7 @@ end
 
 M.generatePersonas = generatePersonas
 M.initSession = initSession
+M.registerLot = registerLot
 M.repriceLot = repriceLot
 M.onLotBiddingBegin = onLotBiddingBegin
 M.onPlayerBid = onPlayerBid

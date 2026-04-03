@@ -1,0 +1,31 @@
+<link rel="stylesheet" type="text/css" href="/ui/modModules/usedAuction/usedAuction.css" />
+
+<div class="ua-counter-overlay-root" ng-if="visible">
+  <div class="ua-entry-backdrop">
+    <div class="ua-entry-modal">
+      <div class="ua-entry-title">Auction Counter</div>
+      <div class="ua-entry-fee">
+        <span class="ua-entry-fee-label">Auction Size</span>
+        <span class="ua-entry-fee-amount">{{ state.lotBatchSize || 8 }} Lots</span>
+      </div>
+      <div class="ua-entry-fee">
+        <span class="ua-entry-fee-label">Auction Fee</span>
+        <span class="ua-entry-fee-amount" ng-if="state.nextLotFeeCoveredByEntry">Covered by entry fee</span>
+        <span class="ua-entry-fee-amount" ng-if="!state.nextLotFeeCoveredByEntry">{{ formatCurrency(state.nextLotRegistrationFee) }}</span>
+      </div>
+      <div class="ua-entry-warning" ng-if="state.canRegisterMoreLots === false">
+        Finish the current lot group before registering another one.
+      </div>
+      <div class="ua-entry-warning" ng-if="state.canRegisterMoreLots !== false && state.hasFreeGarageSlot === false">
+        You need at least one free garage slot to register a lot group.
+      </div>
+      <div class="ua-entry-warning" ng-if="state.canRegisterMoreLots !== false && state.hasFreeGarageSlot !== false && !state.canAffordNextLotRegistration">
+        Not enough money to register this lot group.
+      </div>
+      <div class="ua-entry-actions">
+        <button type="button" class="ua-btn ua-btn-secondary" ng-click="cancelCounterPrompt()">Close</button>
+        <button type="button" class="ua-btn ua-btn-primary" ng-disabled="state.canRegisterMoreLots === false || state.hasFreeGarageSlot === false || !state.canAffordNextLotRegistration" ng-click="confirmRegisterNextLot()">Generate {{ state.lotBatchSize || 8 }} Lots</button>
+      </div>
+    </div>
+  </div>
+</div>
