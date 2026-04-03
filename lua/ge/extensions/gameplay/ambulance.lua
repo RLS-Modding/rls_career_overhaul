@@ -17,7 +17,7 @@ local config = {
     maxDelay = 90,
     
     -- Distances (meters)
-    stopRadius = 5,
+    stopRadius = 8,
     
     -- Payouts
     baseFare = 1500,
