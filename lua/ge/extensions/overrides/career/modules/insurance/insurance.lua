@@ -21,7 +21,9 @@ local groupDiscountTiers = {
 }
 
 local insuranceEditTime = 600 -- have to wait between coverage editing
-local testDriveClaimPrice = {money = { amount = 500, canBeNegative = true}}
+local testDriveDamagePlayerShare = 0.5
+local testDriveBaselineRepair = 0
+local lastTestDriveCharge = 0
 local minimumDriverScore = 0
 local maximumDriverScore = 100
 local insuranceRepairScorePenaltySqrtDivisor = 6250
@@ -552,22 +554,79 @@ local function repairPartConditions(data)
   end
 end
 
--- when you damage a test drive vehicle, insurance needs to know
+local function onTestDriveStarted()
+  local vehId = be:getPlayerVehicleID(0)
+  local veh = getObjectByID(vehId)
+  if not veh then
+    testDriveBaselineRepair = 0
+    return
+  end
+  core_vehicleBridge.requestValue(veh,
+    function(res)
+      testDriveBaselineRepair = career_modules_valueCalculator.getSpawnedVehicleRepairPrice(vehId, res.result)
+    end,
+    'getPartConditions')
+end
+
+local function handleTestDriveEndDamage(vehId, onComplete)
+  local veh = getObjectByID(vehId)
+  if not veh then
+    testDriveBaselineRepair = 0
+    if onComplete then onComplete() end
+    return
+  end
+  core_vehicleBridge.requestValue(veh,
+    function(res)
+      local partConditions = res.result
+      local needsRepair = career_modules_valueCalculator.partConditionsNeedRepair(partConditions)
+      if not needsRepair then
+        testDriveBaselineRepair = 0
+        lastTestDriveCharge = 0
+        if onComplete then onComplete() end
+        return
+      end
+
+      local currentRepair = career_modules_valueCalculator.getSpawnedVehicleRepairPrice(vehId, partConditions)
+      local deltaRepair = math.max(0, currentRepair - testDriveBaselineRepair)
+      local charge = math.floor(deltaRepair * testDriveDamagePlayerShare + 0.5)
+
+      if charge <= 0 then
+        testDriveBaselineRepair = 0
+        lastTestDriveCharge = 0
+        if onComplete then onComplete() end
+        return
+      end
+
+      lastTestDriveCharge = charge
+      local label = string.format("Test drive vehicle damaged: -%i$", charge)
+      ui_message(label)
+
+      career_modules_payment.pay({money = {amount = charge, canBeNegative = true}}, {label = label})
+
+      local vehName = "Test drive vehicle"
+      local spawnedInfo = career_modules_inspectVehicle and career_modules_inspectVehicle.getSpawnedVehicleInfo and career_modules_inspectVehicle.getSpawnedVehicleInfo()
+      if spawnedInfo and spawnedInfo.name then
+        vehName = spawnedInfo.name
+      end
+
+      career_modules_insurance_history.addToPlHistory({
+        type = "testDriveClaim",
+        title = "Test drive vehicle damaged",
+        effects = {{type = "money", label = "Money", changedBy = -charge, newValue = career_modules_playerAttributes.getAttributeValue("money")}},
+        concernedInsuranceName = "Test Drive",
+        other = {
+          vehName = vehName
+        }
+      })
+
+      testDriveBaselineRepair = 0
+      if onComplete then onComplete() end
+    end,
+    'getPartConditions')
+end
+
 local function makeTestDriveDamageClaim(vehId)
-  local label = string.format("Test drive vehicle damaged: -%i$", testDriveClaimPrice.money.amount)
-  ui_message(label)
-
-  career_modules_payment.pay(testDriveClaimPrice, {label = label})
-
-  career_modules_insurance_history.addToPlHistory({
-    type = "testDriveClaim",
-    title = "Test drive vehicle damaged",
-    effects = {{type = "money", label = "Money", changedBy = -testDriveClaimPrice.money.amount, newValue = career_modules_playerAttributes.getAttributeValue("money")}},
-    concernedInsuranceName = "Test Drive",
-    other = {
-      vehName = "ibishu n"
-    }
-  })
+  handleTestDriveEndDamage(vehId)
 end
 local function getInsuranceRepairDriverScorePenalty(vehInfo, costs)
   local damageEstimate = career_modules_valueCalculator.getRepairDetails(vehInfo).price
@@ -1951,7 +2010,11 @@ local function useRoadsideAssistance(invVehId)
 end
 
 local function getTestDriveClaimPrice()
-  return testDriveClaimPrice.money.amount
+  return lastTestDriveCharge
+end
+
+local function getTestDriveDamagePlayerShare()
+  return testDriveDamagePlayerShare
 end
 
 local function getPerkValueByInsuranceId(insuranceId, perkId)
@@ -2062,6 +2125,8 @@ M.getInvVehRepairTime = getInvVehRepairTime
 M.getPlayerInsurancesData = getPlayerInsurancesData
 M.getPlHistory = career_modules_insurance_history.getPlHistory
 M.getTestDriveClaimPrice = getTestDriveClaimPrice
+M.getTestDriveDamagePlayerShare = getTestDriveDamagePlayerShare
+M.handleTestDriveEndDamage = handleTestDriveEndDamage
 M.getDefaultInsuranceForClassId = getDefaultInsuranceForClassId
 M.getDriverScore = getDriverScore
 M.resetDriverScore = resetDriverScore
@@ -2082,6 +2147,7 @@ M.onVehicleSwitched = onVehicleSwitched
 M.onEnterVehicleFinished = onEnterVehicleFinished
 M.onExitInsurancesComputerScreen = onExitInsurancesComputerScreen
 M.onVehicleSaveFinished = onVehicleSaveFinished
+M.onTestDriveStarted = onTestDriveStarted
 
 -- from vehicle inventory
 M.onVehicleAddedToInventory = onVehicleAddedToInventory

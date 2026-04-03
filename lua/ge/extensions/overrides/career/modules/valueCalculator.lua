@@ -360,6 +360,40 @@ local function getBrokenPartsThreshold()
   return brokenPartsThreshold
 end
 
+local function getSpawnedVehicleRepairPrice(vehId, partConditions)
+  local vehicleData = extensions.core_vehicle_manager.getVehicleData(vehId)
+  if not vehicleData or not partConditions then return 0 end
+
+  local price = 0
+  local function walkTree(node)
+    if not node.partPath then return end
+    local pc = partConditions[node.partPath]
+    if pc and pc.integrityValue and pc.integrityValue == 0 then
+      local partValue = 700
+      local activePartIdx = vehicleData.vdata.activeParts[node.partPath]
+      if activePartIdx and vehicleData.vdata.activePartsData[activePartIdx] then
+        partValue = vehicleData.vdata.activePartsData[activePartIdx].information.value or 700
+      end
+      local partPrice = partValue * getPartMarketMultiplier()
+      if isHardcoreMode() then
+        price = math.floor((price + partPrice * 1.25) * 100) / 100
+      else
+        price = math.floor((price + partPrice * 0.9) * 100) / 100
+      end
+    end
+    if node.children then
+      for _, child in pairs(node.children) do
+        walkTree(child)
+      end
+    end
+  end
+
+  if vehicleData.config and vehicleData.config.partsTree then
+    walkTree(vehicleData.config.partsTree)
+  end
+  return price
+end
+
 M.getPartDifference = getPartDifference
 
 M.getInventoryVehicleValue = getInventoryVehicleValue
@@ -374,4 +408,5 @@ M.getBrokenPartsThreshold = getBrokenPartsThreshold
 M.getRepairDetails = getRepairDetails
 M.getNumberOfBrokenParts = getNumberOfBrokenParts
 M.partConditionsNeedRepair = partConditionsNeedRepair
+M.getSpawnedVehicleRepairPrice = getSpawnedVehicleRepairPrice
 return M
