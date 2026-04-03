@@ -4,7 +4,7 @@ local RANK_VALUES = {A=14, ["2"]=2,["3"]=3,["4"]=4,["5"]=5,["6"]=6,["7"]=7,["8"]
 
 local ROUND_KINDS = {"redblack", "highlow", "inout", "suit"}
 local ROUND_LABELS = {redblack="Red or Black", highlow="Higher or Lower", inout="Inside or Outside", suit="Pick a Suit"}
-local ROUND_MULTIPLIERS = {2, 3, 4, 20}
+local ROUND_MULTIPLIERS = {1.5, 2, 4, 20}
 local TIMER_DURATION = 10
 
 local RED_SUITS = {hearts = true, diamonds = true}
