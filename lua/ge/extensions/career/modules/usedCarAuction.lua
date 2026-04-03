@@ -2389,7 +2389,6 @@ local function queueNextLotBatch(selectedTypeId, requestedLotCount)
 
   auctionState.activeLotIndex = 0
   auctionState.awaitingFinalExit = false
-  auctionState.counterOffers = {}
   local started = startNextLotAfter(0)
   if not started then
     clearLotsForNextBatch()
