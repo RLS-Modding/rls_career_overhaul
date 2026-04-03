@@ -217,7 +217,7 @@ const tradeInButtonMessage = computed(() => {
 const testDriveButtonMessage = computed(() => {
   if (vehiclePurchaseStore.purchaseType !== 'inspect') return "Test drive only available for inspect purchases"
   if (vehiclePurchaseStore.alreadyDidTestDrive) return "You have already done a test drive"
-  return undefined
+  return "You will be charged 50% of repair costs for any damage caused"
 })
 
 const vehicleFitsInventory = computed(() => {
