@@ -61,12 +61,15 @@ function M.onGetRawPoiListForLevel(levelIdentifier, elements)
     local pos = switchToObj:getPosition()
     if not pos then return end
     
-    -- Create description listing all available maps
     local description = "Available maps to switch to:\n"
-    local mapCount = 0
+    local mapRows = {}
     for level, levelName in pairs(overhaul_maps.getOtherAvailableMaps(levelIdentifier)) do
+        mapRows[#mapRows + 1] = levelName
+    end
+    table.sort(mapRows, function(a, b) return string.lower(a) < string.lower(b) end)
+    local mapCount = #mapRows
+    for _, levelName in ipairs(mapRows) do
         description = description .. "• " .. levelName .. "\n"
-        mapCount = mapCount + 1
     end
     
     if mapCount > 0 then

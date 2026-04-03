@@ -992,10 +992,12 @@ onMounted(async () => {
   try {
     const maps = await lua.overhaul_maps.getCompatibleMaps()
     if (maps && Object.keys(maps).length > 0) {
-      mapOptions.value = Object.entries(maps).map(([key, value]) => ({
-        id: key,
-        name: value
-      }))
+      mapOptions.value = Object.entries(maps)
+        .map(([key, value]) => ({
+          id: key,
+          name: value
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
     }
   } catch (error) {
     console.error('Failed to load maps:', error)
