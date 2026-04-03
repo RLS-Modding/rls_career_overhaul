@@ -44,10 +44,35 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   max-width: 900px;
   width: 90%;
+  max-height: 80vh;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  box-sizing: border-box;
   animation: slideUp 0.4s ease-out;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+}
+
+.guide-content::-webkit-scrollbar {
+  width: 10px;
+}
+
+.guide-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  margin: 6px 0;
+}
+
+.guide-content::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(255, 140, 0, 0.75), rgba(255, 159, 67, 0.55));
+  border-radius: 8px;
+  border: 2px solid rgba(16, 16, 16, 0.96);
+}
+
+.guide-content::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(255, 159, 67, 0.9), rgba(255, 180, 100, 0.75));
 }
 
 @keyframes slideUp {
@@ -63,11 +88,13 @@
 
 .guide-image-container {
   width: 100%;
+  max-height: min(40vh, 22.5rem);
   aspect-ratio: 16 / 9;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
   background: rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
 }
 
 .guide-image {
@@ -214,6 +241,18 @@
   cursor: not-allowed;
   filter: grayscale(0.2);
   box-shadow: none;
+}
+
+@media (max-height: 900px) {
+  .guide-content {
+    max-height: 85vh;
+    padding: 1.5rem 2rem;
+    gap: 1rem;
+  }
+
+  .guide-image-container {
+    max-height: min(34vh, 18rem);
+  }
 }
 
 @media (max-width: 768px) {

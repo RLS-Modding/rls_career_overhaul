@@ -1,0 +1,86 @@
+.intro-popup * {
+    position: relative;
+}
+
+/* non-dialog version * /
+.intro-popup {
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    background-color: rgba(0,0,0, 0.5);
+    pointer-events: all;
+    z-index: 10101;
+}
+.intro-popup-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60em !important;
+    max-width: 80%;
+    min-height: 25em !important;
+    max-height: 80%;
+}
+.intro-popup-fixed-height .intro-popup-container {
+    height: 48em;
+}
+/**/
+
+/* dialog version */
+.intro-popup {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60em;
+    max-width: 80%;
+    min-height: min(25em, 80vh);
+    /* height: auto; */
+    max-height: 80vh;
+    margin: 0;
+    padding: 0;
+    background-color: transparent;
+    border: none;
+    pointer-events: all;
+    z-index: 10101;
+}
+.intro-popup::backdrop {
+    background-color: rgba(0,0,0, 0.5);
+}
+
+.intro-popup-container {
+    width: 100% !important;
+    height: 100% !important;
+}
+/**/
+
+.intro-popup:focus,
+.intro-popup:focus::before,
+.intro-popup-container:focus,
+.intro-popup-container:focus::before {
+    content: none;
+    box-shadow: none;
+}
+/* TODO: responsive sizes! */
+
+
+.intro-popup-default {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0, 0.5);
+    color: #fff;
+}
+
+.intro-popup .branch-column .ratio3x4 + h3 {
+    margin-bottom: 0.1em;
+}
+
+.intro-popup-lock {
+    pointer-events: none !important;
+}
+
+.intro-popup-container > .card-footer-container {
+    padding-top: 1em;
+}
