@@ -40,6 +40,9 @@ local SUB_MARKET_IMPULSE_LARGE_MOVE_PROB = 0.25
 local SUB_MARKET_IMPULSE_MIN = 0.012
 local SUB_MARKET_IMPULSE_MAX = 0.04
 
+-- Global index is gently pulled toward 1.0 every tick (in addition to momentum mean reversion).
+local GLOBAL_INDEX_ANCHOR_PULL = 0.26
+
 -- Sub-market config templates
 local SUB_MARKET_DEFAULTS = {
   housingMarket = { sensitivity = 0.7, lagDays = 5,  noiseRange = 0.032, impulseScale = 0.85 },
@@ -157,8 +160,8 @@ local function updateGlobalIndex(dtSim)
     d.momentum = d.momentum + (baseMomentum - d.momentum) * 0.05 + noise
   end
 
-  -- Mean reversion keeps long-term drift in check without hard-capping highs.
-  local reversion = -deviation * (0.001 + math.min(absDeviation, 2.0) * 0.0015)
+  -- Mean reversion on momentum: stronger when the economy is far from normal.
+  local reversion = -deviation * (0.0022 + math.min(absDeviation, 2.0) * 0.0028)
   d.momentum = d.momentum + reversion * cycleDays
 
   -- Apply momentum to index
@@ -167,6 +170,10 @@ local function updateGlobalIndex(dtSim)
   -- Apply global events
   local eventMod = getActiveEventModifier(d.globalEvents, "modifier")
   d.index = clamp(d.index + eventMod * cycleDays, MIN_INDEX, MAX_INDEX)
+
+  -- Direct anchor toward 1.0 so the global economy keeps returning to "normal" after shocks and cycles.
+  deviation = d.index - 1.0
+  d.index = clamp(d.index - deviation * GLOBAL_INDEX_ANCHOR_PULL * cycleDays, MIN_INDEX, MAX_INDEX)
 
   -- Phase transition check
   if d.phaseProgress >= 1.0 or
