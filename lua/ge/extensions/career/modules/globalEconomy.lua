@@ -27,11 +27,27 @@ local PHASE_MOMENTUM = {
   trough  =  0.0,
 }
 
+local GLOBAL_MOMENTUM_NOISE = 0.0022
+local GLOBAL_MOMENTUM_NOISE_BURST_PROB = 0.16
+local GLOBAL_MOMENTUM_NOISE_BURST_MULT = 4.5
+local IMPULSE_PROB_PER_TICK = 0.09
+local IMPULSE_LARGE_MOVE_PROB = 0.30
+local IMPULSE_GLOBAL_MIN = 0.02
+local IMPULSE_GLOBAL_MAX = 0.065
+local IMPULSE_MOMENTUM_DAMP = 0.50
+local SUB_MARKET_IMPULSE_PROB = 0.05
+local SUB_MARKET_IMPULSE_LARGE_MOVE_PROB = 0.25
+local SUB_MARKET_IMPULSE_MIN = 0.012
+local SUB_MARKET_IMPULSE_MAX = 0.04
+
+-- Global index is gently pulled toward 1.0 every tick (in addition to momentum mean reversion).
+local GLOBAL_INDEX_ANCHOR_PULL = 0.26
+
 -- Sub-market config templates
 local SUB_MARKET_DEFAULTS = {
-  housingMarket = { sensitivity = 0.7, lagDays = 5,  noiseRange = 0.02 },
-  jobMarket     = { sensitivity = 1.3, lagDays = -2, noiseRange = 0.03 },
-  vehicleMarket = { sensitivity = 0.8, lagDays = 3,  noiseRange = 0.02 },
+  housingMarket = { sensitivity = 0.7, lagDays = 5,  noiseRange = 0.032, impulseScale = 0.85 },
+  jobMarket     = { sensitivity = 1.3, lagDays = -2, noiseRange = 0.05, impulseScale = 1.15 },
+  vehicleMarket = { sensitivity = 0.8, lagDays = 3,  noiseRange = 0.034, impulseScale = 1.0 },
 }
 
 -- History & News
@@ -49,6 +65,30 @@ local previousIndices = nil  -- snapshot of indices before tick for change detec
 local function clamp(v, lo, hi) return math.max(lo, math.min(hi, v)) end
 
 local function randomInRange(lo, hi) return lo + math.random() * (hi - lo) end
+
+local function randomShockMagnitude(minValue, maxValue, largeMoveProbability)
+  local spread = maxValue - minValue
+  if spread <= 0 then return minValue end
+  if math.random() < (largeMoveProbability or 0) then
+    return randomInRange(minValue + spread * 0.45, maxValue)
+  end
+  return randomInRange(minValue, minValue + spread * 0.55)
+end
+
+local function getCounterTrendImpulseDirection(index)
+  local deviation = (index or 1.0) - 1.0
+  local upChance = 0.5
+  if deviation <= -0.15 then
+    upChance = 0.80
+  elseif deviation <= -0.05 then
+    upChance = 0.68
+  elseif deviation >= 0.15 then
+    upChance = 0.20
+  elseif deviation >= 0.05 then
+    upChance = 0.32
+  end
+  return math.random() < upChance and 1 or -1
+end
 
 local function randomPhaseDuration(phase)
   local range = PHASE_DURATIONS[phase]
@@ -113,12 +153,15 @@ local function updateGlobalIndex(dtSim)
     elseif d.cyclePhase == "decline" and deviation > 0 then
       baseMomentum = baseMomentum - math.min(deviation, 2.0) * 0.0025
     end
-    local noise = (math.random() - 0.5) * 0.001
+    local noise = (math.random() - 0.5) * GLOBAL_MOMENTUM_NOISE
+    if math.random() < GLOBAL_MOMENTUM_NOISE_BURST_PROB then
+      noise = noise * GLOBAL_MOMENTUM_NOISE_BURST_MULT
+    end
     d.momentum = d.momentum + (baseMomentum - d.momentum) * 0.05 + noise
   end
 
-  -- Mean reversion keeps long-term drift in check without hard-capping highs.
-  local reversion = -deviation * (0.001 + math.min(absDeviation, 2.0) * 0.0015)
+  -- Mean reversion on momentum: stronger when the economy is far from normal.
+  local reversion = -deviation * (0.0022 + math.min(absDeviation, 2.0) * 0.0028)
   d.momentum = d.momentum + reversion * cycleDays
 
   -- Apply momentum to index
@@ -127,6 +170,10 @@ local function updateGlobalIndex(dtSim)
   -- Apply global events
   local eventMod = getActiveEventModifier(d.globalEvents, "modifier")
   d.index = clamp(d.index + eventMod * cycleDays, MIN_INDEX, MAX_INDEX)
+
+  -- Direct anchor toward 1.0 so the global economy keeps returning to "normal" after shocks and cycles.
+  deviation = d.index - 1.0
+  d.index = clamp(d.index - deviation * GLOBAL_INDEX_ANCHOR_PULL * cycleDays, MIN_INDEX, MAX_INDEX)
 
   -- Phase transition check
   if d.phaseProgress >= 1.0 or
@@ -166,6 +213,19 @@ local function updateSubMarket(market, config)
   market.lastUpdate = accumulatedSimTime
 end
 
+local function applySubMarketImpulse(marketKey, config)
+  if not economyData or not config then return end
+  local market = economyData[marketKey]
+  if not market or math.random() >= SUB_MARKET_IMPULSE_PROB then return end
+
+  local direction = getCounterTrendImpulseDirection(market.index)
+  local magnitude = randomShockMagnitude(SUB_MARKET_IMPULSE_MIN, SUB_MARKET_IMPULSE_MAX, SUB_MARKET_IMPULSE_LARGE_MOVE_PROB) * (config.impulseScale or 1.0)
+  local delta = magnitude * direction
+
+  market.index = clamp(market.index + delta, MIN_INDEX, MAX_INDEX)
+  market.noise = (market.noise or 0) + delta
+end
+
 -- ── Random Event Rolling ──
 
 -- Event display names for notifications
@@ -175,6 +235,8 @@ local EVENT_DISPLAY_NAMES = {
   trade_deal         = "Trade Deal Signed",
   market_panic       = "Market Panic",
   tech_boom          = "Tech Boom",
+  consumer_confidence = "Consumer Confidence Jump",
+  credit_crunch      = "Credit Crunch",
   hiring_boom        = "Hiring Boom",
   layoff_wave        = "Layoff Wave",
   gig_surge          = "Gig Economy Surge",
@@ -194,11 +256,13 @@ local EVENT_DISPLAY_NAMES = {
 }
 
 local GLOBAL_EVENTS = {
-  { id = "economic_stimulus",  modifier =  0.008, durationDaysMin = 10, durationDaysMax = 20, probability = 0.03 },
-  { id = "recession_warning",  modifier = -0.006, durationDaysMin = 5,  durationDaysMax = 15, probability = 0.04 },
-  { id = "trade_deal",         modifier =  0.004, durationDaysMin = 7,  durationDaysMax = 12, probability = 0.03 },
-  { id = "market_panic",       modifier = -0.012, durationDaysMin = 3,  durationDaysMax = 5,  probability = 0.02 },
-  { id = "tech_boom",          modifier =  0.010, durationDaysMin = 10, durationDaysMax = 20, probability = 0.02 },
+  { id = "economic_stimulus",  modifier =  0.008, durationDaysMin = 10, durationDaysMax = 20, probability = 0.045 },
+  { id = "recession_warning",  modifier = -0.006, durationDaysMin = 5,  durationDaysMax = 15, probability = 0.05 },
+  { id = "trade_deal",         modifier =  0.004, durationDaysMin = 7,  durationDaysMax = 12, probability = 0.045 },
+  { id = "market_panic",       modifier = -0.012, durationDaysMin = 3,  durationDaysMax = 5,  probability = 0.03 },
+  { id = "tech_boom",          modifier =  0.010, durationDaysMin = 10, durationDaysMax = 20, probability = 0.03 },
+  { id = "consumer_confidence", modifier =  0.006, durationDaysMin = 3,  durationDaysMax = 7,  probability = 0.03 },
+  { id = "credit_crunch",      modifier = -0.009, durationDaysMin = 3,  durationDaysMax = 6,  probability = 0.025 },
 }
 
 local JOB_EVENTS = {
@@ -307,6 +371,8 @@ local EVENT_ARTICLES = {
   trade_deal         = { headline = "New Trade Agreement Signed", body = "A new trade deal promises to bring more business opportunities and lower costs for consumers.", sector = "global" },
   market_panic       = { headline = "Markets in Turmoil", body = "Sudden market volatility has investors worried. Hold steady and avoid panic selling.", sector = "global" },
   tech_boom          = { headline = "Tech Sector Drives Growth", body = "A surge in technology spending is lifting the entire economy. Good times ahead for workers.", sector = "global" },
+  consumer_confidence = { headline = "Shoppers Open Their Wallets Again", body = "A burst of consumer confidence is lifting local businesses and pushing the economy higher.", sector = "global" },
+  credit_crunch      = { headline = "Lenders Tighten the Screws", body = "Credit is getting harder to find, cooling spending and putting fresh pressure on the broader economy.", sector = "global" },
   hiring_boom        = { headline = "Hiring Spree Underway", body = "Companies are adding staff at a rapid pace. Now is a great time to look for better-paying work.", sector = "jobs" },
   layoff_wave        = { headline = "Layoffs Sweep Through Businesses", body = "Several employers have announced cutbacks. Job seekers may face stiff competition for a while.", sector = "jobs" },
   gig_surge          = { headline = "Gig Work Demand Explodes", body = "Delivery and freelance jobs are booming. Independent drivers can expect more work and better tips.", sector = "jobs" },
@@ -368,6 +434,43 @@ generateEventArticle = function(eventId)
   end
 end
 
+local function generateImpulseArticle(delta)
+  local magnitude = math.abs(delta or 0)
+  if magnitude <= 0 then return end
+
+  local positive = (delta or 0) > 0
+  local calmPool = positive and {
+    { headline = "Market Sentiment Turns Up", body = "A quick burst of optimism has pushed the economy higher, giving buyers and workers a little breathing room." },
+    { headline = "Unexpected Rally Lifts Economy", body = "A sharp move higher has broken the recent pattern, though traders expect things to settle back down soon." },
+  } or {
+    { headline = "Sudden Selloff Shakes Economy", body = "A quick wave of caution has dragged the economy lower, reminding everyone how fast conditions can change." },
+    { headline = "Confidence Slips in a Hurry", body = "The market took a sudden step down today, cooling prices and pay expectations across the board." },
+  }
+  local bigMovePool = positive and {
+    { headline = "Economic Rebound Surprises Analysts", body = "The economy just posted a sharp upside move, snapping back harder than most observers expected." },
+    { headline = "Buying Frenzy Sparks Broad Rally", body = "A strong jump in activity has sent the economy surging higher in short order." },
+  } or {
+    { headline = "Market Reversal Hits Hard", body = "A fast downside move just cut into recent gains, leaving businesses and shoppers on edge." },
+    { headline = "Sharp Downturn Jolts Local Economy", body = "Conditions shifted quickly today as a heavy selloff pushed the economy lower." },
+  }
+  local pool = magnitude >= 0.045 and bigMovePool or calmPool
+  local article = pool[math.random(#pool)]
+  addArticle(article.headline, article.body, "global")
+end
+
+local function applyImpulseShocks()
+  if not economyData or math.random() >= IMPULSE_PROB_PER_TICK then return end
+
+  local direction = getCounterTrendImpulseDirection(economyData.index)
+  local magnitude = randomShockMagnitude(IMPULSE_GLOBAL_MIN, IMPULSE_GLOBAL_MAX, IMPULSE_LARGE_MOVE_PROB)
+  local delta = magnitude * direction
+
+  economyData.index = clamp(economyData.index + delta, MIN_INDEX, MAX_INDEX)
+  economyData.momentum = economyData.momentum * IMPULSE_MOMENTUM_DAMP
+
+  generateImpulseArticle(delta)
+end
+
 local function generateStartingArticle()
   if not economyData then return end
   local idx = economyData.index
@@ -415,15 +518,15 @@ local function getDefaultEconomyData(startingIndex)
     globalEvents = {},
 
     housingMarket = {
-      index = 1.0, sensitivity = 0.7, lagDays = 5, noiseRange = 0.02,
+      index = 1.0, sensitivity = SUB_MARKET_DEFAULTS.housingMarket.sensitivity, lagDays = SUB_MARKET_DEFAULTS.housingMarket.lagDays, noiseRange = SUB_MARKET_DEFAULTS.housingMarket.noiseRange,
       noise = 0, activeEvents = {}, lastUpdate = 0,
     },
     jobMarket = {
-      index = 1.0, sensitivity = 1.3, lagDays = -2, noiseRange = 0.03,
+      index = 1.0, sensitivity = SUB_MARKET_DEFAULTS.jobMarket.sensitivity, lagDays = SUB_MARKET_DEFAULTS.jobMarket.lagDays, noiseRange = SUB_MARKET_DEFAULTS.jobMarket.noiseRange,
       noise = 0, activeEvents = {}, lastUpdate = 0,
     },
     vehicleMarket = {
-      index = 1.0, sensitivity = 0.8, lagDays = 3, noiseRange = 0.02,
+      index = 1.0, sensitivity = SUB_MARKET_DEFAULTS.vehicleMarket.sensitivity, lagDays = SUB_MARKET_DEFAULTS.vehicleMarket.lagDays, noiseRange = SUB_MARKET_DEFAULTS.vehicleMarket.noiseRange,
       noise = 0, activeEvents = {}, lastUpdate = 0,
     },
   }
@@ -455,13 +558,13 @@ local function loadEconomy()
       end
     end
     if not economyData.housingMarket then
-      economyData.housingMarket = { index = economyData.index, sensitivity = 0.7, lagDays = 5, noiseRange = 0.02, noise = 0, activeEvents = {}, lastUpdate = 0 }
+      economyData.housingMarket = { index = economyData.index, sensitivity = SUB_MARKET_DEFAULTS.housingMarket.sensitivity, lagDays = SUB_MARKET_DEFAULTS.housingMarket.lagDays, noiseRange = SUB_MARKET_DEFAULTS.housingMarket.noiseRange, noise = 0, activeEvents = {}, lastUpdate = 0 }
     end
     if not economyData.jobMarket then
-      economyData.jobMarket = { index = economyData.index, sensitivity = 1.3, lagDays = -2, noiseRange = 0.03, noise = 0, activeEvents = {}, lastUpdate = 0 }
+      economyData.jobMarket = { index = economyData.index, sensitivity = SUB_MARKET_DEFAULTS.jobMarket.sensitivity, lagDays = SUB_MARKET_DEFAULTS.jobMarket.lagDays, noiseRange = SUB_MARKET_DEFAULTS.jobMarket.noiseRange, noise = 0, activeEvents = {}, lastUpdate = 0 }
     end
     if not economyData.vehicleMarket then
-      economyData.vehicleMarket = { index = economyData.index, sensitivity = 0.8, lagDays = 3, noiseRange = 0.02, noise = 0, activeEvents = {}, lastUpdate = 0 }
+      economyData.vehicleMarket = { index = economyData.index, sensitivity = SUB_MARKET_DEFAULTS.vehicleMarket.sensitivity, lagDays = SUB_MARKET_DEFAULTS.vehicleMarket.lagDays, noiseRange = SUB_MARKET_DEFAULTS.vehicleMarket.noiseRange, noise = 0, activeEvents = {}, lastUpdate = 0 }
     end
     accumulatedSimTime = economyData.lastUpdate or 0
     timeSinceLastUpdate = economyData.timeSinceLastUpdate or 0
@@ -614,14 +717,7 @@ local function setStartingIndex(idx)
   economyData = getDefaultEconomyData(idx)
 end
 
-local function performEconomyTick()
-  if not career_career or not career_career.isActive() then return false end
-  if not economyData then return false end
-
-  local elapsed = UPDATE_INTERVAL_SIM
-  accumulatedSimTime = accumulatedSimTime + elapsed
-  timeSinceLastUpdate = 0
-
+local function runEconomyTickCore(elapsed, requestMarketWatch)
   previousIndices = {
     global = economyData.index,
     jobs = economyData.jobMarket.index,
@@ -631,10 +727,15 @@ local function performEconomyTick()
   local previousPhase = economyData.cyclePhase
 
   updateGlobalIndex(elapsed)
+  applyImpulseShocks()
 
   updateSubMarket(economyData.housingMarket, SUB_MARKET_DEFAULTS.housingMarket)
   updateSubMarket(economyData.jobMarket, SUB_MARKET_DEFAULTS.jobMarket)
   updateSubMarket(economyData.vehicleMarket, SUB_MARKET_DEFAULTS.vehicleMarket)
+
+  applySubMarketImpulse("housingMarket", SUB_MARKET_DEFAULTS.housingMarket)
+  applySubMarketImpulse("jobMarket", SUB_MARKET_DEFAULTS.jobMarket)
+  applySubMarketImpulse("vehicleMarket", SUB_MARKET_DEFAULTS.vehicleMarket)
 
   rollEvents(economyData.globalEvents, GLOBAL_EVENTS)
   rollEvents(economyData.jobMarket.activeEvents, JOB_EVENTS)
@@ -653,8 +754,19 @@ local function performEconomyTick()
   end
 
   saveEconomy()
-  
-  requestMarketWatchData()
+  if requestMarketWatch then
+    requestMarketWatchData()
+  end
+end
+
+local function performEconomyTick()
+  if not career_career or not career_career.isActive() then return false end
+  if not economyData then return false end
+
+  local elapsed = UPDATE_INTERVAL_SIM
+  accumulatedSimTime = accumulatedSimTime + elapsed
+  timeSinceLastUpdate = 0
+  runEconomyTickCore(elapsed, true)
   return true
 end
 
@@ -670,38 +782,7 @@ local function onUpdate(dtReal, dtSim, dtRaw)
   if timeSinceLastUpdate >= UPDATE_INTERVAL_SIM then
     local elapsed = timeSinceLastUpdate
     timeSinceLastUpdate = 0
-
-    previousIndices = {
-      global = economyData.index,
-      jobs = economyData.jobMarket.index,
-      housing = economyData.housingMarket.index,
-      vehicles = economyData.vehicleMarket.index,
-    }
-    local previousPhase = economyData.cyclePhase
-
-    updateGlobalIndex(elapsed)
-
-    updateSubMarket(economyData.housingMarket, SUB_MARKET_DEFAULTS.housingMarket)
-    updateSubMarket(economyData.jobMarket, SUB_MARKET_DEFAULTS.jobMarket)
-    updateSubMarket(economyData.vehicleMarket, SUB_MARKET_DEFAULTS.vehicleMarket)
-
-    rollEvents(economyData.globalEvents, GLOBAL_EVENTS)
-    rollEvents(economyData.jobMarket.activeEvents, JOB_EVENTS)
-    rollEvents(economyData.vehicleMarket.activeEvents, VEHICLE_EVENTS)
-    rollEvents(economyData.housingMarket.activeEvents, HOUSING_EVENTS)
-
-    if economyData.cyclePhase ~= previousPhase then
-      generatePhaseTransitionArticle(economyData.cyclePhase)
-    end
-    generateThresholdArticles()
-
-    recordHistory()
-
-    if freeroam_facilities_fuelPrice and freeroam_facilities_fuelPrice.onEconomyUpdated then
-      freeroam_facilities_fuelPrice.onEconomyUpdated()
-    end
-
-    saveEconomy()
+    runEconomyTickCore(elapsed, false)
   end
 end
 
