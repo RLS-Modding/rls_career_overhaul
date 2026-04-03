@@ -59,7 +59,7 @@ local auctionTypes = {
     mileage = { minMul = 1.05, maxMul = 1.28 }
   },
   rare_finds = {
-    whiteList = { Population = { min = 1, max = 20000 } },
+    whiteList = { Population = { min = 1, max = 500 } },
     implicitYears = { min = 1990 },
     mileage = { minMul = 0.5, maxMul = 0.78 }
   },
@@ -604,12 +604,35 @@ local function shuffleIndicesInclusive(n)
   return order
 end
 
+local function shallowCopyVehicleInfo(src)
+  if type(src) ~= 'table' then
+    return src
+  end
+  local out = {}
+  for k, v in pairs(src) do
+    out[k] = v
+  end
+  return out
+end
+
 local function getRandomVehicleDefWithFilter(filter, sampleCount)
   local eligibleVehicles = util_configListGenerator.getEligibleVehicles(false, false)
   local normalizedFilter = normalizeFilterDefinition(filter or {})
   local safeCount = math.max(1, math.floor(tonumber(sampleCount) or 140))
   local filterSet = { filter = normalizedFilter }
-  local infos = util_configListGenerator.getRandomVehicleInfos(filterSet, safeCount, eligibleVehicles, 'Population')
+  local popKey = 'Population'
+  local vehiclesForInfos = eligibleVehicles
+  if normalizedFilter._auctionSpawnInversePopulation then
+    popKey = '_auctionSpawnWeight'
+    vehiclesForInfos = {}
+    for _, v in ipairs(eligibleVehicles or {}) do
+      local w = shallowCopyVehicleInfo(v)
+      local p = math.max(1, tonumber(w.Population) or 1)
+      w._auctionSpawnWeight = math.max(1, math.min(2000000, math.floor(2000000 / p)))
+      table.insert(vehiclesForInfos, w)
+    end
+  end
+  local infos = util_configListGenerator.getRandomVehicleInfos(filterSet, safeCount, vehiclesForInfos, popKey)
 
   for _, info in ipairs(infos or {}) do
     if doesVehiclePassAuctionFilter(info, normalizedFilter) then
@@ -766,7 +789,11 @@ function M.composeAuctionTypeFilter(typeId)
   local merged = mergeFilter(M.getSafetyAuctionFilter(), {
     whiteList = deepCopy(typeDef.whiteList)
   })
-  return applyDerivedMileageFromYears(merged, typeDef)
+  merged = applyDerivedMileageFromYears(merged, typeDef)
+  if typeId == 'rare_finds' then
+    merged._auctionSpawnInversePopulation = true
+  end
+  return merged
 end
 
 function M.buildNextLotEntry(lotIndex, spawnSpots, blockSpots, fixedFilter)
