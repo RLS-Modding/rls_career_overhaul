@@ -302,6 +302,8 @@ export default {
     sendChooseInsuranceDataToTheUI: (purchaseType, shopId, defaultInsuranceId) => [String, Number, Number],
     sendChangeInsuranceDataToTheUI: (vehicleId) => [Number],
     resetDriverScore: () => {},
+    getTestDriveClaimPrice: () => {},
+    getTestDriveDamagePlayerShare: () => {},
   },
 
   career_modules_insurance_repairScreen: {
