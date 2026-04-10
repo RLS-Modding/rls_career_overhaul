@@ -189,11 +189,7 @@ local function setupTraffic(forceSetup)
     if not career_career.tutorialEnabled then
       setPlayerData(be:getPlayerVehicleID(0))
     end
-  end -- Added end to close the main if-else block
-end -- Added end to close the function
-
-local function onPlayerCameraReady()
-  setupTraffic() -- spawns traffic while the loading screen did not fade out yet
+  end
 end
 
 local function onVehicleSwitched(oldId, newId)
@@ -343,6 +339,66 @@ local function onTrafficStopped()
 
   if M.ensureTraffic then -- temp solution to reset traffic
     setupTraffic(true)
+  end
+end
+
+local function calculateSuspectPursuitFine(pursuitData)
+  local violations = math.max(1, tonumber(pursuitData.uniqueOffensesCount) or tonumber(pursuitData.offensesCount) or 1)
+  local score = math.max(0, tonumber(pursuitData.score) or 0)
+  local mode = math.max(1, tonumber(pursuitData.mode) or 1)
+  local globalIndex = 1
+  if career_modules_globalEconomy and career_modules_globalEconomy.getGlobalIndex then
+    globalIndex = career_modules_globalEconomy.getGlobalIndex() or 1
+  end
+  local sectionMult = 1
+  if career_economyAdjuster and career_economyAdjuster.getSectionMultiplier then
+    sectionMult = career_economyAdjuster.getSectionMultiplier("police") or 1
+  end
+  local base = violations * 100 + score * 0.5 + mode * 75
+  local fine = math.floor(base * globalIndex * sectionMult)
+  return math.max(150, math.min(fine, 750000))
+end
+
+local function onPursuitAction(vehId, action, data)
+  if gameplay_cab and gameplay_cab.inCab() then
+    return
+  end
+  if vehId ~= be:getPlayerVehicleID(0) then
+    return
+  end
+  if gameplay_missions_missionManager.getForegroundMissionId() or career_modules_linearTutorial.isLinearTutorialActive() then
+    return
+  end
+
+  if action == "start" then
+    gameplay_parking.disableTracking(vehId)
+    log("I", "career", "Police pursuing player, now deactivating recovery prompt buttons")
+  elseif action == "reset" or action == "evade" then
+    if not gameplay_walk.isWalking() then
+      gameplay_parking.enableTracking(vehId)
+    end
+    log("I", "career", "Pursuit ended, now activating recovery prompt buttons")
+  elseif action == "arrest" then
+    if getPlayerIsCop() then
+      return
+    end
+    local fine = calculateSuspectPursuitFine(data)
+    career_modules_payment.pay({money = {amount = fine, canBeNegative = true}}, {label = "Police fine", tags = {"fine"}})
+    local mode = tonumber(data.mode) or 1
+    local prefix = mode == 1 and "Citation fine" or "Arrest fine"
+    ui_message(
+      string.format("%s: $%d (%d violations, pursuit score %.0f)", prefix, fine,
+        math.max(1, tonumber(data.uniqueOffensesCount) or tonumber(data.offensesCount) or 1),
+        math.max(0, tonumber(data.score) or 0)),
+      5, "careerPursuit")
+    local invId = career_modules_inventory.getInventoryIdFromVehicleId(vehId)
+    if invId then
+      if mode == 1 then
+        career_modules_inventory.addTicket(invId)
+      else
+        career_modules_inventory.addArrest(invId)
+      end
+    end
   end
 end
 
