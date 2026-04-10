@@ -23,7 +23,8 @@ export const useProfilesStore = defineStore("profiles", () => {
 
     if (/^ +| +$/.test(profileName)) profileName = profileName.replace(/^ +| +$/g, "")
     const hardcoreMode = difficultyMode === "hardcore" ? true : null
-    await lua.career_career.createOrLoadCareerAndStart(profileName, null, tutorialEnabled, hardcoreMode, challengeSelection, cheatsMode, startingMap, difficultyMode)
+    const mapForStart = difficultyMode === "hardcore" ? null : startingMap
+    await lua.career_career.createOrLoadCareerAndStart(profileName, null, tutorialEnabled, hardcoreMode, challengeSelection, cheatsMode, mapForStart, difficultyMode)
 
     const toastrMessage = isAdd ? "added" : "loaded"
 
