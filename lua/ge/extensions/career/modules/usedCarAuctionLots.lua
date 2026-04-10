@@ -46,7 +46,7 @@ local auctionTypes = {
   budget = {
     whiteList = {
       Value = { min = 1, max = 50000 },
-      Mileage = { min = 965606400, max = 1287475200 },
+      Mileage = { min = 100000, max = 250000 },
       Years = { min = 1980, max = 2015 }
     }
   },
