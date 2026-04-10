@@ -131,7 +131,7 @@ const emit = defineEmits(["card:activate", "load"])
 const profileName = defineModel("profileName", { required: true })
 const isActive = defineModel("active", { type: Boolean, default: false })
 
-const difficultyMode = ref("normal")
+const difficultyMode = ref("easy")
 const cheatsMode = ref(false)
 
 const modeOptions = [
@@ -142,7 +142,7 @@ const modeOptions = [
   { value: "hardcore", label: "Hardcore" },
 ]
 const selectedMode = computed(() => cheatsMode.value ? "freeroam" : difficultyMode.value)
-const selectedModeLabel = computed(() => modeOptions.find(o => o.value === selectedMode.value)?.label || "Standard")
+const selectedModeLabel = computed(() => modeOptions.find(o => o.value === selectedMode.value)?.label || "Casual")
 
 const validateName = inject("validateName")
 const nameError = ref(null)
@@ -185,7 +185,7 @@ const selectedMapLabel = computed(() => {
 function selectMode(value) {
   if (value === "freeroam") {
     cheatsMode.value = true
-    difficultyMode.value = "normal"
+    difficultyMode.value = "easy"
   } else {
     cheatsMode.value = false
     difficultyMode.value = value
@@ -285,7 +285,7 @@ onBeforeUnmount(() => {
 
 watch(cheatsMode, newVal => {
   if (newVal && challengeId.value !== null) challengeId.value = null
-  if (newVal && difficultyMode.value !== "normal") difficultyMode.value = "normal"
+  if (newVal && difficultyMode.value !== "normal" && difficultyMode.value !== "easy") difficultyMode.value = "normal"
 })
 
 watch(challengeId, async newVal => {
