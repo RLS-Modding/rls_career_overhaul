@@ -470,7 +470,11 @@ local function createOrLoadCareerAndStart(name, specificAutosave, tutorial, hard
           end
         end
       end
-      
+      if resolveDifficultyMode(difficultyMode, hardcore == true) == "hardcore" then
+        mapToUse = nil
+        log("I","","Hardcore: starting map locked to West Coast USA.")
+      end
+
       activateCareer(true, mapToUse)
     end
   end)

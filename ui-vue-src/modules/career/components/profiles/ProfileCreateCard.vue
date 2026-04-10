@@ -171,6 +171,7 @@ const modeDropdownOpen = ref(false)
 const modeDropdownStyle = ref("")
 
 const isMapDisabled = computed(() => {
+  if (selectedMode.value === "hardcore") return true
   if (!selectedChallenge.value) return false
   return selectedChallenge.value.map !== null && selectedChallenge.value.map !== undefined
 })
@@ -188,6 +189,10 @@ function selectMode(value) {
   } else {
     cheatsMode.value = false
     difficultyMode.value = value
+    if (value === "hardcore") {
+      selectedMap.value = null
+      mapDropdownOpen.value = false
+    }
   }
   modeDropdownOpen.value = false
 }
@@ -311,6 +316,10 @@ watch(challengeId, async newVal => {
 watch(difficultyMode, newVal => {
   if (newVal !== "normal" && challengeId.value !== null) challengeId.value = null
   if (newVal !== "normal" && cheatsMode.value) cheatsMode.value = false
+  if (newVal === "hardcore") {
+    selectedMap.value = null
+    mapDropdownOpen.value = false
+  }
 })
 
 const load = () => emit("load", profileName.value, false, difficultyMode.value, challengeId.value, cheatsMode.value, selectedMap.value)
