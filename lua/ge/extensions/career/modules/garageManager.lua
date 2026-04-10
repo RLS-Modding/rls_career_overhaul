@@ -331,8 +331,7 @@ local function loadPurchasedGarages()
   local data = jsonReadFile(filePath) or {}
   purchasedGarages = data.garages or {}
   discoveredGarages = data.discovered or {}
-  -- Check general data
-  if career_career.hardcoreMode then
+  if career_career.hardcoreMode and not data.garages then
     purchasedGarages = {}
     discoveredGarages = {}
   end
