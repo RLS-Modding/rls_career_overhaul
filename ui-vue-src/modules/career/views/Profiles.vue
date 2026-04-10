@@ -147,7 +147,7 @@ const filterDropdownRef = ref(null)
 const filterOpen = ref(false)
 const filterStyle = ref("")
 
-const difficultyFilterOptions = ["Freeroam+", "Easy", "Normal", "Hard", "Hardcore"]
+const difficultyFilterOptions = ["Freeroam+", "Casual", "Standard", "Hard", "Hardcore"]
 
 const challengeFilterOptions = computed(() => {
   if (!profiles.value) return []
@@ -166,8 +166,8 @@ const activeFilterCount = computed(() => activeDifficulties.size + activeChallen
 function getProfileDifficulty(p) {
   if (p.cheatsMode) return "Freeroam+"
   const m = typeof p.difficultyMode === "string" ? p.difficultyMode.toLowerCase() : "normal"
-  const map = { easy: "Easy", normal: "Normal", hard: "Hard", hardcore: "Hardcore" }
-  return map[m] || "Normal"
+  const map = { easy: "Casual", normal: "Standard", hard: "Hard", hardcore: "Hardcore" }
+  return map[m] || "Standard"
 }
 
 function getProfileChallengeName(p) {

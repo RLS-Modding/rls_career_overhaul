@@ -252,7 +252,7 @@ const challengeInfo = computed(() => {
   return typeof v === "string" ? { name: v } : v
 })
 
-const DIFFICULTY_MODE_LABELS = { easy: "Easy", hard: "Hard", hardcore: "Hardcore" }
+const DIFFICULTY_MODE_LABELS = { easy: "Casual", hard: "Hard", hardcore: "Hardcore" }
 const difficultyChipLabel = computed(() => {
   const mode = typeof props.difficultyMode === "string" ? props.difficultyMode.toLowerCase() : "normal"
   return mode === "normal" ? null : (DIFFICULTY_MODE_LABELS[mode] || mode)

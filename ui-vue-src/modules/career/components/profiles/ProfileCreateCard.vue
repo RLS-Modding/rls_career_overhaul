@@ -136,13 +136,13 @@ const cheatsMode = ref(false)
 
 const modeOptions = [
   { value: "freeroam", label: "Freeroam+" },
-  { value: "easy", label: "Easy" },
-  { value: "normal", label: "Normal" },
+  { value: "easy", label: "Casual" },
+  { value: "normal", label: "Standard" },
   { value: "hard", label: "Hard" },
   { value: "hardcore", label: "Hardcore" },
 ]
 const selectedMode = computed(() => cheatsMode.value ? "freeroam" : difficultyMode.value)
-const selectedModeLabel = computed(() => modeOptions.find(o => o.value === selectedMode.value)?.label || "Normal")
+const selectedModeLabel = computed(() => modeOptions.find(o => o.value === selectedMode.value)?.label || "Standard")
 
 const validateName = inject("validateName")
 const nameError = ref(null)
