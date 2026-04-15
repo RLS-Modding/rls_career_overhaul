@@ -40,7 +40,7 @@ local reservedDropoffSpot = nil
 local distanceMultiplier = 4.5
 local suggestedSpeed = 18
 local TAXI_REWARD_CONFIG_PATH = "gameplay/taxi/rewardConfig.json"
-local DEFAULT_GLOBAL_TAXI_REWARD_MULTIPLIER = 0.7
+local DEFAULT_GLOBAL_TAXI_REWARD_MULTIPLIER = 0.35
 local taxiRewardConfig = nil
 
 M.rideData = {}

@@ -11,6 +11,7 @@ local CONSTANTS = {
   POLICE_PAYOUT_MULTIPLIER = 0.70,
   REWARD_DIVISOR = 6,
   POLICE_SKILL_XP_DIVISOR = 60,
+  ARREST_POLICE_SKILL_XP_DIVISOR = 1.2,
   COP_PROXIMITY_DISTANCE = 15,
   LICENSE_PLATE_EVADE_BONUS = 55,
   NO_LICENSE_PLATE_EVADE_PENALTY = 35,
@@ -88,6 +89,10 @@ end
 
 local function calculatePoliceSkillXp(amount)
   return math.floor(amount / CONSTANTS.POLICE_SKILL_XP_DIVISOR)
+end
+
+local function calculateArrestPoliceSkillXp(amount)
+  return math.floor(amount / CONSTANTS.ARREST_POLICE_SKILL_XP_DIVISOR)
 end
 
 local function getBranchLevelByPathIds(pathIds)
@@ -210,7 +215,7 @@ local function handleArrestReward(data, playerData)
   local rewardData = {
     money = { amount = bonus },
     beamXP = { amount = math.floor(bonus / CONSTANTS.REWARD_DIVISOR) },
-    [CONSTANTS.POLICE_SKILL_ATTRIBUTE_KEY] = { amount = calculatePoliceSkillXp(bonus) },
+    [CONSTANTS.POLICE_SKILL_ATTRIBUTE_KEY] = { amount = calculateArrestPoliceSkillXp(bonus) },
     specialized = { amount = math.floor(bonus / CONSTANTS.REWARD_DIVISOR) },
     policeLoanerReputation = { amount = CONSTANTS.REPUTATION_BONUS_AMOUNT }
   }
