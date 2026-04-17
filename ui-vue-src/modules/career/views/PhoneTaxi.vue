@@ -114,7 +114,7 @@
 
             <!-- Complete State -->
             <div class="complete-overlay" v-if="currentState === 'complete'">
-                <div class="complete-modal">
+                <div class="complete-modal" @click.stop>
                     <div class="fare-header">
                         <div class="fare-display center">${{ formatCurrency(totalFare) }}</div>
                         <div class="fare-rating"> ★ {{ passengerRatingDisplay }}</div>
