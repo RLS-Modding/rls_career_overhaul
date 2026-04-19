@@ -19,7 +19,7 @@ local luxuryPassenger = {
         local tipBreakdown = {}
         local baseFare = tonumber(fare.baseFare) or 0
         
-        local actualSpeed = (tonumber(fare.totalDistance) or 0) / math.max(1, elapsedTime) * 1000
+        local actualSpeed = (tonumber(fare.totalDistance) or 0) / math.max(1, elapsedTime)
         local suggestedSpeed = 18
         local minSpeed = 2
         
