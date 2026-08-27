@@ -628,11 +628,18 @@ end
 local function makeTestDriveDamageClaim(vehId)
   handleTestDriveEndDamage(vehId)
 end
+local function toMoneyAmount(cost)
+  if type(cost) == "table" then
+    return cost.money or 0
+  end
+  return cost or 0
+end
+
 local function getInsuranceRepairDriverScorePenalty(vehInfo, costs)
   local damageEstimate = career_modules_valueCalculator.getRepairDetails(vehInfo).price
   local deductible = 0
   if type(costs) == "table" then
-    deductible = costs.deductible or 0
+    deductible = toMoneyAmount(costs.deductible)
   end
   local covered = math.max(0, damageEstimate - deductible)
   if covered <= 0 then
@@ -646,7 +653,7 @@ local originComputerId
 local function makeRepairClaim(invVehId, costs, vehInfo)
   local totalCost = 0
   for _, cost in pairs(costs) do
-    totalCost = totalCost + cost
+    totalCost = totalCost + toMoneyAmount(cost)
   end
 
   local insuranceId = invVehs[invVehId].insuranceId or -1
@@ -676,7 +683,7 @@ local function makeRepairClaim(invVehId, costs, vehInfo)
     overrideText = hasUsedAccidentForgiveness and "Use accident forgiveness" or nil,
     other = {
       vehDamagePrice = career_modules_valueCalculator.getRepairDetails(vehInfo).price,
-      deductible = costs.deductible or 0
+      deductible = toMoneyAmount(costs.deductible)
     }
   })
 
@@ -756,7 +763,7 @@ local function startRepair(vehInvId, repairOptionData, callback)
   local totalCost = 0
   if repairOptionData.cost then
     for _, cost in pairs(repairOptionData.cost) do
-      totalCost = totalCost + cost
+      totalCost = totalCost + toMoneyAmount(cost)
     end
   end
 
