@@ -78,3 +78,7 @@ Keep save backups when troubleshooting. Check logs for personal paths or other i
 Created and maintained by **RLS Modding**, with help from contributors, testers and the community. See the [contributors](https://github.com/RLS-Modding/rls_career_overhaul/graphs/contributors) and bundled `licenses` for included third-party material.
 
 RLS Career Overhaul is a community mod and is not affiliated with BeamNG GmbH.
+
+## Licensing
+
+See [Licensing](LICENSING.md) and [third-party notices](THIRD_PARTY_NOTICES.md) for the applicable terms and current license scope.
