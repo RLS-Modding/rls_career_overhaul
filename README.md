@@ -10,7 +10,7 @@ Build a career around the way you like to drive. Race, deliver cargo, run busine
 
 ## Your career
 
-Overhaul has its own career mode, saves and RLS West Coast map. Start a new career or import an older career as a separate copy, keeping the original save.
+Overhaul has its own career mode, saves and RLS West Coast map. Start a new career or import an older RLS career as a separate copy, keeping the original save.
 
 - **Jobs and deliveries:** Find work in Job Broker, group matching jobs in My Loads, and haul parcels, materials, fluids and vehicles with suitable equipment.
 - **Shifts and passengers:** Work for employers, drive taxis and buses, and take on recovery, quarry and facility work.
@@ -24,7 +24,7 @@ Available jobs, facilities and events depend on your map, equipment and career p
 
 ## What's new in v2.8.0
 
-- Separate career mode and a clearer path for importing older saves.
+- Separate career mode and a clearer path for importing older RLS saves.
 - Refreshed phone apps, controller navigation and shortcut setup.
 - Wallet, expanded financial history and a redesigned Pause Home.
 - Better delivery progress, pickups, shifts and map travel.
@@ -49,11 +49,11 @@ Use the named release ZIP for installation. You do not need to build anything fr
 
 ## Returning players
 
-Back up your saves before updating. In the Overhaul profile screen, use **Create migrated copy** for a detected older career. This creates a separate Overhaul save and preserves the original.
+Back up your saves before updating. In the Overhaul profile screen, choose **Load** on a detected older RLS career to open its **Compatibility report**. Continue to **Choose what to keep**, review any keep/cash-out choices, then choose **Create migrated copy**. The original save stays untouched. Stock-only careers are not supported by this importer.
 
 If your save is missing, check that you opened the same BeamNG user folder/profile where it was saved. Do not delete or overwrite the original to make it appear. See [Saves and migration](https://github.com/RLS-Modding/rls_career_overhaul/wiki/Saves-and-Migration).
 
-The final page of the update intro lets you choose a phone shortcut. Existing custom bindings stay saved. You can also manage the shortcut through the phone’s **Controls** app; there is no default phone shortcut for a fresh setup.
+The final page of the update intro lets you choose a phone shortcut. Existing custom bindings stay saved. You can also manage the shortcut through the phone’s **Controls** app; there is no default phone shortcut for a fresh setup. If you skipped setup or cannot open the phone, use **Options → Controls**, search for **Toggle Phone**, and assign a key or controller button there.
 
 ## Maps and companions
 
