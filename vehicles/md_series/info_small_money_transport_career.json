@@ -16,6 +16,7 @@
   ],
   "Config Type":"dns",
   "Configuration":"Bank Truck Small Capacity",
+  "capacity":[{"amount":300,"type":"cash"}],
   "Drivetrain":"RWD",
   "Fuel Type":"Diesel",
   "Induction Type":"Turbo",

@@ -13,6 +13,7 @@ local MATERIAL_CAPACITY_TYPES = {
   fluid = true,
   dryBulk = true,
   cement = true,
+  cash = true,
 }
 -- Generic company vehicles for shifts with no fleet truck; each entry's minimum org rep is in the data file.
 local EMPLOYMENT_POOL_PATH = "/gameplay/overhaul/loaners/employmentPool.json"
@@ -251,7 +252,6 @@ function M.isTrailer(offer)
 end
 
 function M.canHaulMaterial(offer, cargoType, minAmount)
-  if cargoType == "cash" then return M.canDoParcelJob(offer) end
   if not cargoType or not MATERIAL_CAPACITY_TYPES[cargoType] then return false end
   local profile = M.getProfile(offer)
   if not profile then return false end
@@ -261,7 +261,7 @@ function M.canHaulMaterial(offer, cargoType, minAmount)
     if minAmount and minAmount > 0 and amount > 0 and amount < minAmount then return false end
     return true
   end
-  if profile.hasMaterialsBody and not next(profile.materialTypes) then
+  if cargoType ~= "cash" and profile.hasMaterialsBody and not next(profile.materialTypes) then
     -- Body style suggests materials gear but capacity metadata is missing.
     return true
   end
