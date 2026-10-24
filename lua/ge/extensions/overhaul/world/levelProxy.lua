@@ -11,7 +11,7 @@ require('overhaul/lib/save/store').registerKeys({
     files = {'career/rls_career/levelRenamed.json'}, phase = 'profile', required = true},
 })
 local RECIPES = '/gameplay/overhaul/world/levelProxies/'
-local CACHE = '/temp/rls_career/levelCache/'
+local CACHE = '/temp/rls_career/levelcache/'
 local MOUNT = CACHE .. 'mount/'
 local PLATE_ROOT = '/vehicles/common/licenseplates/'
 local PLATE_FILE = 'licensePlate-default.sktemplate.json'
