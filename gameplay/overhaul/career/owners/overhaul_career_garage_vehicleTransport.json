@@ -1,0 +1,10 @@
+{
+  "id": "overhaul_career_garage_vehicleTransport",
+  "order": 1000,
+  "module": "overhaul/career/garage/vehicleTransport",
+  "scopes": [],
+  "policyOnly": true,
+  "modulePolicy": {
+    "career": false
+  }
+}

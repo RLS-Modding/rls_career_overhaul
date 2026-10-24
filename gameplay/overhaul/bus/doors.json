@@ -1,0 +1,18 @@
+{
+  "_comment": "Bus doors for the walking passengers (jobs/bus/paxWalkers.lua). Keyed by JBeam model; each door is the average of fixed frame nodes that do not move when the door opens. role: board, alight or both. Add-on buses can ship their own gameplay/overhaul/bus/doors_<name>.json with the same layout; later files add models. Models not listed use the fallback, built from the vehicle's bounding box on the stop's curb side.",
+  "models": {
+    "citybus": {
+      "doors": [
+        {"id": "front", "nodes": ["fm2rr"], "role": "board"},
+        {"id": "rear", "nodes": ["fm9rr", "fm11rr"], "role": "alight"}
+      ]
+    },
+    "md_series": {
+      "_comment": "School, prison and derby buses: the front door hinge edges (schoolbus_door_F); the rear door is a raised emergency exit, so it is not used.",
+      "doors": [
+        {"id": "front", "nodes": ["fd1rr", "fd1ll"], "role": "both"}
+      ]
+    }
+  },
+  "fallback": {"frontInsetM": 1.6, "rearFraction": 0.55}
+}

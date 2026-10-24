@@ -1,0 +1,15 @@
+{
+  "id": "overhaul_integration_patches_groundMarkerOwnership",
+  "order": 47,
+  "module": "overhaul/integration/patches/groundMarkerOwnership",
+  "scopes": [
+    {
+      "id": "bootManual",
+      "order": 28
+    },
+    {
+      "id": "late",
+      "order": 4
+    }
+  ]
+}

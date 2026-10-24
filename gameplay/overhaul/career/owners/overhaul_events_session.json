@@ -1,0 +1,13 @@
+{
+  "id": "overhaul_events_session",
+  "order": 39,
+  "module": "overhaul/events/session",
+  "scopes": [
+    {
+      "id": "children",
+      "order": 39,
+      "parent": "overhaul_events_host",
+      "preserveOnLoad": true
+    }
+  ]
+}

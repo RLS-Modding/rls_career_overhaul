@@ -1,0 +1,84 @@
+{
+  "Body Style":"Wheel Loader",
+  "BoundingBox":[
+    [
+      -1.21,
+      -8.5577,
+      -1.14
+    ],
+    [
+      2.35,
+      3.901,
+      3.156
+    ]
+  ],
+  "Config Type":"Loaner",
+  "Configuration":"Montevalle Block Forks Medium",
+  "Drivetrain":"4WD",
+  "Fuel Type":"Diesel",
+  "Induction Type":"Turbo",
+  "Name":"WL-40 Montevalle Block Forks Medium",
+  "Off-Road Score":25,
+  "Population":7000,
+  "Power":537,
+  "PowerPeakRPM":1850,
+  "Propulsion":"ICE",
+  "Source":"Custom",
+  "Top Speed":10.019216732331,
+  "Torque":2325,
+  "TorquePeakRPM":1150,
+  "Transmission":"Automatic",
+  "Value":200000,
+  "Weight":56320,
+  "Weight/Power":104.87895716946,
+  "aggregates":{
+    "Body Style":{
+      "Wheel Loader":true
+    },
+    "Brand":{
+      "Hirochi":true
+    },
+    "Country":{
+      "Japan":true
+    },
+    "Derby Class":{
+      "Wheel Loader":true
+    },
+    "InsuranceClass":{
+      "commercial":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Type":{
+      "Heavy Machinery":true
+    },
+    "Years":{
+      "max":2007,
+      "min":2000
+    }
+  },
+  "defaultPaint":{
+    "baseColor":[
+      0.8,
+      0.6,
+      0.07,
+      2
+    ],
+    "class":"custom",
+    "clearcoat":1,
+    "clearcoatRoughness":0.75,
+    "id":"heavy_machinery_yellow",
+    "metallic":0,
+    "name":"Yellow",
+    "roughness":1
+  },
+  "defaultPaintName1":"heavy_machinery_yellow",
+  "defaultPaintName2":"heavy_machinery_yellow",
+  "defaultPaintName3":"heavy_machinery_yellow",
+  "is_default_config":false,
+  "paints":{},
+  "pcFilename":"/vehicles/wl40/Montevalle Block Forks Medium.pc",
+  "preview":"/vehicles/wl40/Montevalle Block Forks Medium.jpg"
+}

@@ -1,0 +1,374 @@
+{
+"schoolbus_junk_hatch_R": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Well Too Bad Rear Emergency Hatch",
+        "value":150,
+    },
+    "slotType" : "schoolbus_hatch_R",
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["schoolbus_c_hatch_2_frame",   ["schoolbus_body"]],
+        ["schoolbus_c_hatch_2_hinge_L", ["schoolbus_hatch_2_hinge_L"]],
+        ["schoolbus_c_hatch_2_hinge_R", ["schoolbus_hatch_2_hinge_R"]],
+        ["schoolbus_c_hatch_2_piston",  ["schoolbus_hatch_2_piston"]],
+        ["schoolbus_c_hatch_2_latch",   ["schoolbus_hatch_2_latch"]],
+        ["schoolbus_c_hatch_2_lid",     ["schoolbus_hatch_2_lid"]],
+    ],
+    "sounds": {
+        "$+cabinFilterCoef": 0.00,
+    },
+    "props": [
+        ["func",                              "mesh",                     "idRef:","idX:","idY:",     "baseRotation",         "rotation",  "translation", "min", "max", "offset", "multiplier"],
+        ["rearHatchOpenCoupler_notAttached", "schoolbus_c_hatch_2_knob",   "rha2rr","rha2ll","rha1rr", {"x":-90, "y":0, "z":0}, {"x":0, "y":0, "z":90}, {"x":0, "y":0, "z":0}, 0, 1, 0, 1],
+        ["rearHatchOpenCoupler_notAttached", "schoolbus_c_hatch_2_handle", "rha2rr","rha2ll","rha1rr", {"x":-90, "y":0, "z":0}, {"x":0, "y":0, "z":90}, {"x":0, "y":0, "z":0}, 0, 1, 0, 1],
+    ],
+    "controller": [
+        ["fileName"],
+        ["advancedCouplerControl", {"name":"rearHatchPopUpCoupler"}],
+        ["advancedCouplerControl", {"name":"rearHatchOpenCoupler"}],
+    ],
+    "rearHatchPopUpCoupler":{
+        "couplerNodes":[
+            ["cid1",    "cid2",     "autoCouplingStrength",    "autoCouplingRadius",   "autoCouplingLockRadius",   "autoCouplingSpeed", "couplingStartRadius",  "breakGroup"]
+            ["rha7",  "b85",     40000,                     0.01,                   0.005,                      0.2,                 0.1,                   "hatch_R_hinge", {"forceCid1":"rha6", "forceCid2":"rha7"}]
+        ],
+        "groupType": "autoCoupling",
+        "attachSoundVolume":1,
+        "detachSoundVolume":1,
+        "soundNode:":["b85"]
+        "attachSoundEvent": "event:>Vehicle>Latches>Special>roofhatch_down",
+        "detachSoundEvent": "event:>Vehicle>Latches>Special>roofhatch_up",
+        "breakSoundEvent":""
+        "openForceMagnitude": 10,
+        "openForceDuration": 0.5,
+        "closeForceMagnitude": 2000,
+        "closeForceDuration": 1.6
+    },
+    "rearHatchOpenCoupler":{
+        "couplerNodes":[
+            ["cid1",    "cid2",     "autoCouplingStrength",    "autoCouplingRadius",   "autoCouplingLockRadius",   "autoCouplingSpeed", "couplingStartRadius",  "breakGroup"]
+            ["rha2rr",  "rha4rr",     20000,                     0.01,                   0.005,                      0.2,                 0.1,                   "hatch_R_hinge", {"forceCid1":"rha8", "forceCid2":"rha2rr"}]
+            ["rha2ll",  "rha4ll",     20000,                     0.01,                   0.005,                      0.2,                 0.1,                   "hatch_R_hinge", {"forceCid1":"rha8", "forceCid2":"rha2ll"}]
+        ],
+        "groupType": "manualClose",
+        "attachSoundVolume":1,
+        "detachSoundVolume":1,
+        "soundNode:":["rha4r"]
+        "attachSoundEvent": "event:>Vehicle>Latches>Special>roofhatch_close",
+        "detachSoundEvent": "event:>Vehicle>Latches>Special>roofhatch_open",
+        "breakSoundEvent":""
+        "openForceMagnitude": 60,
+        "openForceDuration": 2,
+        "closeForceMagnitude": 70,
+        "closeForceDuration": 3.2
+    },
+    "triggers2":[
+        ["id", "idRef:", "idX:", "idY:", "type", "size", "baseRotation", "rotation", "translation", "baseTranslation"],
+        ["rearHatch_popUp", "rha1rr","rha1ll","rha2rr", "box", {"x":0.50, "y":0.025, "z":0.30}, {"x":0, "y":0, "z":0}, {"x":0, "y":0, "z":0}, {"x":0, "y":0, "z":0}, {"x":0.060, "y":0.06, "z":-0.000}],
+        ["rearHatch_open_b","rha1rr","rha1ll","rha2rr", "sphere", 0.04,                         {"x":0, "y":0, "z":0}, {"x":0, "y":0, "z":0}, {"x":0, "y":0, "z":0}, {"x":0.305, "y":0.48, "z":-0.000}],
+        ["rearHatch_open_t","rha1rr","rha1ll","rha2rr", "sphere", 0.03,                         {"x":0, "y":0, "z":0}, {"x":0, "y":0, "z":0}, {"x":0, "y":0, "z":0}, {"x":0.305, "y":0.47, "z":-0.075}],
+    ],
+    "actionsEnabled": [
+        ["id"],
+        ["rearHatch_popUp"],
+        ["rearHatch_open"],
+    ],
+    "triggerEventLinks2":[
+        ["triggerId:triggers2", "triggerInput", "inputAction"],
+        ["rearHatch_popUp", "action0", ""],
+        ["rearHatch_open_b","action0", ""],
+        ["rearHatch_open_t","action0", ""],
+    ],
+    "nodes": [
+        ["id",     "posX", "posY", "posZ"],
+        {"selfCollision":false},
+        {"collision":false},
+        //--ROOF HATCH--
+        {"frictionCoef":0.5},
+        {"nodeMaterial":"|NM_METAL"},
+
+        //hinges
+        {"nodeWeight":5.5},
+        {"group":"schoolbus_hatch_2_hinge_R"},
+        ["rha1r", -0.143,  5.425,  2.990],
+        ["rha2r", -0.143,  5.999,  2.990],
+        {"group":"schoolbus_hatch_2_hinge_L"},
+        ["rha1l",  0.143,  5.425,  2.990],
+        ["rha2l",  0.143,  5.999,  2.990],
+
+        {"group":["schoolbus_hatch_2_hinge_R","schoolbus_hatch_2_piston"]},
+        ["rha3r", -0.084,  5.425,  2.971],
+        ["rha4r", -0.084,  5.999,  2.971],
+        {"group":["schoolbus_hatch_2_hinge_L","schoolbus_hatch_2_piston"]},
+        ["rha3l",  0.084,  5.425,  2.971],
+        ["rha4l",  0.084,  5.999,  2.971],
+
+        //pop up frame
+        {"collision":true},
+        {"nodeWeight":1.0},
+        {"group":"schoolbus_hatch_2_latch"},
+        ["rha3rr",-0.305,  5.425,  2.971,  {"tag":"latch_R_hinge","breakGroup":"hatch_R_hinge"}],
+        ["rha4rr",-0.305,  5.999,  2.971],
+        ["rha3ll", 0.305,  5.425,  2.971,  {"tag":"latch_R_hinge","breakGroup":"hatch_R_hinge"}],
+        ["rha4ll", 0.305,  5.999,  2.971],
+
+        //lid
+        {"selfCollision":true},
+        {"group":"schoolbus_hatch_2_lid"},
+        ["rha1rr",-0.305,  5.425,  2.971,  {"couplerTag":"latch_R_hinge","breakGroup":"latch_R_hinge","couplerStrength":12000,"couplerRadius":0.01,"couplerStartRadius":0.01,"couplerWeld":true}],
+        ["rha2rr",-0.305,  5.999,  2.971],
+        ["rha1ll", 0.305,  5.425,  2.971,  {"couplerTag":"latch_R_hinge","breakGroup":"latch_R_hinge","couplerStrength":12000,"couplerRadius":0.01,"couplerStartRadius":0.01,"couplerWeld":true}],
+        ["rha2ll", 0.305,  5.999,  2.971],
+
+        //rigidifiers
+        {"collision":false},
+        {"selfCollision":false},
+        {"group":""},
+        {"nodeWeight":2.5},
+        ["rha5",   0,      5.712,  2.500],
+        ["rha6",   0,      5.712,  2.750,  {"nodeWeight":6.5}],
+        //pop latch
+        ["rha7",   0,      5.712,  3.003],
+        //lid rigidifier
+        ["rha8",   0,      5.712,  2.750],
+        {"group":""},
+    ],
+    "rails": {
+        "rha3":{"links:":["rha3rr", "rha3ll"], "broken:":[], "looped":false, "capped":true},
+        "rha4":{"links:":["rha4rr", "rha4ll"], "broken:":[], "looped":false, "capped":true},
+        "rmid":{"links:":["rha5", "b85"], "broken:":[], "looped":false, "capped":true},
+    },
+    "slidenodes": [
+        ["id:", "railName", "attached", "fixToRail", "tolerance", "spring", "strength", "capStrength"],
+        ["rha3r", "rha3", true, true, 0.0, 751000, "FLT_MAX", "FLT_MAX"],
+        ["rha3l", "rha3", true, true, 0.0, 751000, "FLT_MAX", "FLT_MAX"],
+        ["rha4r", "rha4", true, true, 0.0, 751000, "FLT_MAX", "FLT_MAX"],
+        ["rha4l", "rha4", true, true, 0.0, 751000, "FLT_MAX", "FLT_MAX"],
+        ["rha6",  "rmid", true, true, 0.0, 251000, "FLT_MAX", "FLT_MAX"],
+    ],
+    "beams": [
+        ["id1:",   "id2:"],
+        {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+
+        //---ROOF HATCH---
+
+        //frame structure
+        {"deformLimitExpansion":1.2},
+        {"beamSpring":5001000,"beamDamp":900},
+        {"beamDeform":11000,"beamStrength":"FLT_MAX"},
+        ["rha1r",  "rha1l"],
+        ["rha2r",  "rha2l"],
+        ["rha1r",  "rha2r"],
+        ["rha1l",  "rha2l"],
+
+        //across
+        {"beamDeform":5000,"beamStrength":"FLT_MAX"},
+        {"deformLimitExpansion":""},
+        ["rha1r",  "rha2l"],
+        ["rha1l",  "rha2r"],
+
+        //rigidifier
+        {"beamSpring":1001000,"beamDamp":200},
+        ["rha1r",  "rha6"],
+        ["rha2r",  "rha6"],
+        ["rha1l",  "rha6"],
+        ["rha2l",  "rha6"],
+
+        //to roof
+        {"deformLimitExpansion":1.01},
+        {"beamSpring":5501000,"beamDamp":900},
+        {"beamDeform":31000,"beamStrength":"FLT_MAX"},
+        ["rha1r",  "b75r"],
+        ["rha1r",  "b75"],
+        ["rha1r",  "b85r"],
+        ["rha1r",  "b75rrr"],
+        ["rha1l",  "b75"],
+        ["rha1l",  "b75l"],
+        ["rha1l",  "b85l"],
+        ["rha1l",  "b75lll"],
+        ["rha2r",  "b95r"],
+        ["rha2r",  "b95"],
+        ["rha2r",  "b85r"],
+        ["rha2r",  "b95rrr"],
+        ["rha2l",  "b95"],
+        ["rha2l",  "b95l"],
+        ["rha2l",  "b85l"],
+        ["rha2l",  "b95lll"],
+
+        ["rha1r",  "b85"],
+        ["rha2r",  "b85"],
+        ["rha1l",  "b85"],
+        ["rha2l",  "b85"],
+
+        {"beamSpring":4001000,"beamDamp":900},
+        ["rha6",   "b75r"],
+        ["rha6",   "b75"],
+        ["rha6",   "b85r"],
+        ["rha6",   "b85rrr"],
+        ["rha6",   "b75rrr"],
+        ["rha6",   "b75l"],
+        ["rha6",   "b85l"],
+        ["rha6",   "b85lll"],
+        ["rha6",   "b75lll"],
+        ["rha6",   "b95r"],
+        ["rha6",   "b95"],
+        ["rha6",   "b95rrr"],
+        ["rha6",   "b95l"],
+        ["rha6",   "b95lll"],
+
+        //hinges
+        {"beamSpring":7501000,"beamDamp":900},
+        {"beamDeform":31000,"beamStrength":"FLT_MAX"},
+        ["rha1r",  "rha3r"],
+        ["rha2r",  "rha3r"],
+        ["rha1r",  "rha4r"],
+        ["rha2r",  "rha4r"],
+        ["rha3r",  "rha4r"],
+        ["rha1l",  "rha3l"],
+        ["rha2l",  "rha3l"],
+        ["rha1l",  "rha4l"],
+        ["rha2l",  "rha4l"],
+        ["rha3l",  "rha4l"],
+
+        //pop up frame
+        {"beamSpring":1001000,"beamDamp":100},
+        {"beamDeform":2000,"beamStrength":"FLT_MAX"},
+        ["rha3rr", "rha4rr"],
+        ["rha3ll", "rha4ll"],
+        ["rha3rr", "rha3ll"],
+        ["rha4rr", "rha4ll"],
+
+        //crossing
+        {"beamDeform":1000,"beamStrength":"FLT_MAX"},
+        {"deformLimitExpansion":""},
+        ["rha3rr", "rha4ll"],
+        ["rha3ll", "rha4rr"],
+
+        //rigidifier
+        {"beamDeform":3000,"beamStrength":"FLT_MAX"},
+        ["rha3rr", "rha5"],
+        ["rha3ll", "rha5"],
+        ["rha4rr", "rha5"],
+        ["rha4ll", "rha5"],
+        ["rha7",   "rha5",   {"beamDeform":12000}],
+        ["rha3rr", "rha7"],
+        ["rha3ll", "rha7"],
+        ["rha4rr", "rha7"],
+        ["rha4ll", "rha7"],
+
+        //to hinges
+        {"beamSpring":1001000,"beamDamp":100},
+        {"beamDeform":3000,"beamStrength":"FLT_MAX"},
+        ["rha3r",  "rha5"],
+        ["rha3l",  "rha5"],
+        ["rha4r",  "rha5"],
+        ["rha4l",  "rha5"],
+
+        //lid
+        {"beamSpring":1001000,"beamDamp":100},
+        {"beamDeform":2000,"beamStrength":"FLT_MAX"},
+        ["rha1rr", "rha2rr"],
+        ["rha1ll", "rha2ll"],
+        ["rha1rr", "rha1ll"],
+        ["rha2rr", "rha2ll"],
+
+        //crossing
+        {"beamDeform":1000,"beamStrength":"FLT_MAX"},
+        {"deformLimitExpansion":""},
+        ["rha1rr", "rha2ll"],
+        ["rha1ll", "rha2rr"],
+
+        //rigidifier
+        {"beamDeform":4000,"beamStrength":"FLT_MAX"},
+        ["rha1rr", "rha8"],
+        ["rha1ll", "rha8"],
+        ["rha2rr", "rha8"],
+        ["rha2ll", "rha8"],
+
+        //pistons
+        {"beamSpring":11000,"beamDamp":100},
+        {"beamDeform":1001000,"beamStrength":"FLT_MAX"},
+        {"beamPrecompression":1.1},
+        ["rha3l",  "rha3r"],
+        ["rha4l",  "rha4r"],
+        {"beamPrecompression":0.9},
+        ["rha3l",  "rha3ll"],
+        ["rha3r",  "rha3rr"],
+        ["rha4l",  "rha4ll"],
+        ["rha4r",  "rha4rr"],
+
+        //pop open
+        {"beamSpring":11000,"beamDamp":1500},
+        {"beamPrecompression":0.75},
+        ["b85",    "rha5"],
+
+        //dampers
+        {"beamSpring":0,"beamDamp":1000},
+        {"beamPrecompression":1.0},
+        ["rha3rr", "rha6"],
+        ["rha3ll", "rha6"],
+        ["rha4rr", "rha6"],
+        ["rha4ll", "rha6"],
+
+        {"beamSpring":0,"beamDamp":100},
+        ["b75r",   "rha5"],
+        ["b75l",   "rha5"],
+        ["b85r",   "rha5"],
+        ["b85l",   "rha5"],
+        ["b95r",   "rha5"],
+        ["b95l",   "rha5"],
+        ["b75rrr", "rha5"],
+        ["b75lll", "rha5"],
+        ["b85rrr", "rha5"],
+        ["b85lll", "rha5"],
+        ["b95rrr", "rha5"],
+        ["b95lll", "rha5"],
+
+        //lid pop open
+        {"beamPrecompression":1.01, "beamType":"|SUPPORT","beamLongBound":5.0, "beamShortBound":1.0},
+        {"beamSpring":101000,"beamDamp":10},
+        {"beamDeform":5000,"beamStrength":"FLT_MAX"},
+        {"breakGroup":"hatch_R_supportBeams"},
+        ["rha2rr", "rha5"],
+        ["rha2ll", "rha5"],
+
+        //limiters
+        {"beamPrecompression":0.35, "beamType":"|SUPPORT","beamLongBound":30.0, "beamShortBound":1.0},
+        {"beamSpring":75000,"beamDamp":200},
+        ["rha2rr", "b75"],
+        ["rha2ll", "b75"],
+        ["rha2rr", "b75r"],
+        ["rha2ll", "b75l"],
+        {"beamPrecompression":0.99, "beamType":"|SUPPORT","beamLongBound":5.0, "beamShortBound":1.0},
+        ["rha2rr", "b95r"],
+        ["rha2ll", "b95l"],
+        {"breakGroup":""},
+        {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+    ],
+    "triangles": [
+        ["id1:",   "id2:",   "id3:"],
+        {"groundModel":"metal"},
+
+        //roof gap fill
+        {"dragCoef":5},
+        {"group":"schoolbus_roof"},
+
+        ["b75",    "rha3ll", "rha3rr"],
+        ["b75",    "b85l",   "rha3ll"],
+        ["b85l",   "rha4ll", "rha3ll"],
+        ["b85l",   "b95",    "rha4ll"],
+        ["b95",    "rha4rr", "rha4ll"],
+        ["b95",    "b85r",   "rha4rr"],
+        ["b85r",   "rha3rr", "rha4rr"],
+        ["b75",    "rha3rr", "b85r"],
+
+        //lid
+        {"dragCoef":10},
+        {"group":"schoolbus_hatch"},
+        ["rha1rr", "rha1ll", "rha2rr"],
+        ["rha2ll", "rha2rr", "rha1ll"],
+    ],
+},
+
+}

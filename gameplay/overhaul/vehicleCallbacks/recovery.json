@@ -1,0 +1,8 @@
+{
+  "id": "recovery",
+  "order": 190,
+  "callbacks": [
+    {"id": "recoveryDamageSnapshot", "extension": "overhaul_jobs_recovery", "fn": "onDamageSnapshotSaved", "guard": "none"},
+    {"id": "recoveryInitialCondition", "extension": "overhaul_jobs_recovery", "fn": "onInitialConditionApplied", "guard": "none"}
+  ]
+}

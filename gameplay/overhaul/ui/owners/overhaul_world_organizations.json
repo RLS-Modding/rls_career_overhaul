@@ -1,0 +1,10 @@
+{
+  "id": "overhaul_world_organizations",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "other",
+    "namespaceOrder": 100,
+    "aliases": []
+  }
+}

@@ -1,0 +1,250 @@
+{
+  "deliveryProviders": [
+    {
+      "id": "wcusaDinoCafeReceiving",
+      "name": "Dino Cafe",
+      "description": "Receiving area for the owned Dino Cafe.",
+      "manualAccessPoints": [
+        {
+          "psName": "dinoCafe",
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": [
+            "specialtyRetailSupplies"
+          ]
+        }
+      ],
+      "sitesFile": "businesses.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": [
+        "specialtyRetailSupplies"
+      ],
+      "logisticGenerators": [],
+      "logisticMaxItems": 0
+    },
+    {
+      "id": "wcusaMiniMartReceiving",
+      "name": "Mini Mart",
+      "description": "Receiving area for an owned Mini Mart.",
+      "manualAccessPoints": [
+        {
+          "psName": "miniMart",
+          "logisticTypesProvided": [],
+          "logisticTypesReceived": ["miniMartSupplies"]
+        }
+      ],
+      "sitesFile": "businesses.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": ["miniMartSupplies"],
+      "logisticGenerators": [],
+      "logisticMaxItems": 0
+    },
+    {
+      "id": "wcusaCanalStMartReceiving",
+      "name": "Canal Street Deli & Food Mart",
+      "description": "Receiving area for the owned Canal Street Deli & Food Mart.",
+      "manualAccessPoints": [
+        {"psName": "canalStDeli&FoodMart", "logisticTypesProvided": [], "logisticTypesReceived": ["miniMartSupplies"]}
+      ],
+      "sitesFile": "businesses.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": ["miniMartSupplies"],
+      "logisticGenerators": [],
+      "logisticMaxItems": 0
+    },
+    {
+      "id": "wcusaLuCafeReceiving",
+      "name": "Lu Cafe",
+      "description": "Receiving area for the owned Lu Cafe.",
+      "manualAccessPoints": [
+        {"psName": "luCafe", "logisticTypesProvided": [], "logisticTypesReceived": ["cafeSupplies"]}
+      ],
+      "sitesFile": "businesses.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": ["cafeSupplies"],
+      "logisticGenerators": [],
+      "logisticMaxItems": 0
+    },
+    {
+      "id": "wcusaHongCafeReceiving",
+      "name": "Hong Cafe",
+      "description": "Receiving area for the owned Hong Cafe.",
+      "manualAccessPoints": [
+        {"psName": "hongCafe", "logisticTypesProvided": [], "logisticTypesReceived": ["cafeSupplies"]}
+      ],
+      "sitesFile": "businesses.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": ["cafeSupplies"],
+      "logisticGenerators": [],
+      "logisticMaxItems": 0
+    },
+    {
+      "id": "wcusaRainbowBoutiqueReceiving",
+      "name": "Rainbow Boutique",
+      "description": "Receiving area for the owned Rainbow Boutique.",
+      "manualAccessPoints": [
+        {"psName": "rainbowBoutique", "logisticTypesProvided": [], "logisticTypesReceived": ["boutiqueSupplies"]}
+      ],
+      "sitesFile": "businesses.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": ["boutiqueSupplies"],
+      "logisticGenerators": [],
+      "logisticMaxItems": 0
+    },
+    {
+      "id": "wcusaChineseSupermarketReceiving",
+      "name": "Chinese Supermarket",
+      "description": "Receiving area for the owned Chinese Supermarket.",
+      "manualAccessPoints": [
+        {"psName": "chineseSupermarket", "logisticTypesProvided": [], "logisticTypesReceived": ["supermarketSupplies"]}
+      ],
+      "sitesFile": "businesses.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": ["supermarketSupplies"],
+      "logisticGenerators": [],
+      "logisticMaxItems": 0
+    },
+    {
+      "id": "wcusaHongNailSalonReceiving",
+      "name": "Hong Nail Salon",
+      "description": "Receiving area for the owned Hong Nail Salon.",
+      "manualAccessPoints": [
+        {"psName": "hongNailSalon", "logisticTypesProvided": [], "logisticTypesReceived": ["salonSupplies"]}
+      ],
+      "sitesFile": "businesses.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": ["salonSupplies"],
+      "logisticGenerators": [],
+      "logisticMaxItems": 0
+    },
+    {
+      "id": "wcusaLuNailSalonReceiving",
+      "name": "Lu Nail Salon",
+      "description": "Receiving area for the owned Lu Nail Salon.",
+      "manualAccessPoints": [
+        {"psName": "luNailSalon", "logisticTypesProvided": [], "logisticTypesReceived": ["salonSupplies"]}
+      ],
+      "sitesFile": "businesses.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": ["salonSupplies"],
+      "logisticGenerators": [],
+      "logisticMaxItems": 0
+    },
+    {
+      "id": "wcusaGreenNailsAndSpaReceiving",
+      "name": "Green Nails & Spa",
+      "description": "Receiving area for the owned Green Nails & Spa.",
+      "manualAccessPoints": [
+        {"psName": "greenNailsAndSpa", "logisticTypesProvided": [], "logisticTypesReceived": ["salonSupplies"]}
+      ],
+      "sitesFile": "businesses.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": ["salonSupplies"],
+      "logisticGenerators": [],
+      "logisticMaxItems": 0
+    },
+    {
+      "id": "wcusaHongGiftShopReceiving",
+      "name": "Hong Gift Shop",
+      "description": "Receiving area for the owned Hong Gift Shop.",
+      "manualAccessPoints": [
+        {"psName": "hongGiftShop", "logisticTypesProvided": [], "logisticTypesReceived": ["giftShopSupplies"]}
+      ],
+      "sitesFile": "businesses.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": ["giftShopSupplies"],
+      "logisticGenerators": [],
+      "logisticMaxItems": 0
+    },
+    {
+      "id": "wcusaRedFortuneGiftsReceiving",
+      "name": "Red Fortune Gifts",
+      "description": "Receiving area for the owned Red Fortune Gifts.",
+      "manualAccessPoints": [
+        {"psName": "redFortuneGifts", "logisticTypesProvided": [], "logisticTypesReceived": ["giftShopSupplies"]}
+      ],
+      "sitesFile": "businesses.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": ["giftShopSupplies"],
+      "logisticGenerators": [],
+      "logisticMaxItems": 0
+    },
+    {
+      "id": "wcusaLuGiftShopReceiving",
+      "name": "Lu Gift Shop",
+      "description": "Receiving area for the owned Lu Gift Shop.",
+      "manualAccessPoints": [
+        {"psName": "luGiftShop", "logisticTypesProvided": [], "logisticTypesReceived": ["giftShopSupplies"]}
+      ],
+      "sitesFile": "businesses.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": ["giftShopSupplies"],
+      "logisticGenerators": [],
+      "logisticMaxItems": 0
+    },
+    {
+      "id": "wcusaHongBaoJewelryReceiving",
+      "name": "Hong Bao Jewelry",
+      "description": "Receiving area for the owned Hong Bao Jewelry.",
+      "manualAccessPoints": [
+        {"psName": "hongBaoJewelry", "logisticTypesProvided": [], "logisticTypesReceived": ["jewelrySupplies"]}
+      ],
+      "sitesFile": "businesses.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": ["jewelrySupplies"],
+      "logisticGenerators": [],
+      "logisticMaxItems": 0
+    },
+    {
+      "id": "wcusaJinYuJewelersReceiving",
+      "name": "Jin Yu Jewelers",
+      "description": "Receiving area for the owned Jin Yu Jewelers.",
+      "manualAccessPoints": [
+        {"psName": "jinYuJewelers", "logisticTypesProvided": [], "logisticTypesReceived": ["jewelrySupplies"]}
+      ],
+      "sitesFile": "businesses.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": ["jewelrySupplies"],
+      "logisticGenerators": [],
+      "logisticMaxItems": 0
+    },
+    {
+      "id": "wcusaDryCleaningReceiving",
+      "name": "Dry Cleaning",
+      "description": "Receiving area for the owned dry cleaner.",
+      "manualAccessPoints": [
+        {"psName": "dryCleaning", "logisticTypesProvided": [], "logisticTypesReceived": ["dryCleaningSupplies"]}
+      ],
+      "sitesFile": "businesses.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": ["dryCleaningSupplies"],
+      "logisticGenerators": [],
+      "logisticMaxItems": 0
+    },
+    {
+      "id": "wcusaMenteStoreReceiving",
+      "name": "Mente Store",
+      "description": "Receiving area for the owned Mente Store.",
+      "manualAccessPoints": [
+        {"psName": "menteStore", "logisticTypesProvided": [], "logisticTypesReceived": ["specialtyRetailSupplies"]}
+      ],
+      "sitesFile": "businesses.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": ["specialtyRetailSupplies"],
+      "logisticGenerators": [],
+      "logisticMaxItems": 0
+    },
+    {
+      "id": "wcusaAsianShopReceiving",
+      "name": "Asian Shop",
+      "description": "Receiving area for the owned Asian Shop.",
+      "manualAccessPoints": [
+        {"psName": "asianShop", "logisticTypesProvided": [], "logisticTypesReceived": ["specialtyRetailSupplies"]}
+      ],
+      "sitesFile": "businesses.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": ["specialtyRetailSupplies"],
+      "logisticGenerators": [],
+      "logisticMaxItems": 0
+    }
+  ]
+}

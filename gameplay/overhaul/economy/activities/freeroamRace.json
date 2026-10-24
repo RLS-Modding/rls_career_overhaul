@@ -1,0 +1,78 @@
+{
+  "id": "freeroamRace",
+  "order": 90,
+  "excludedEarningTags": [
+    "race",
+    "sanctioned_race",
+    "drag",
+    "fre",
+    "freContract",
+    "fre_contract"
+  ],
+  "challengeDisplay": [
+    {
+      "order": 50,
+      "name": "Rally Racing",
+      "category": "Racing",
+      "prefix": "rally"
+    },
+    {
+      "order": 60,
+      "name": "Drift Racing",
+      "category": "Racing",
+      "prefix": "drift"
+    },
+    {
+      "order": 70,
+      "name": "Motorsport",
+      "category": "Racing",
+      "prefix": "motorsport"
+    },
+    {
+      "order": 100,
+      "name": "Freeroam Activities",
+      "category": "Activity",
+      "prefix": "freeroam"
+    },
+    {
+      "order": 72,
+      "name": "Drag Racing",
+      "category": "Racing",
+      "key": "drag"
+    },
+    {
+      "order": 74,
+      "name": "Road Racing",
+      "category": "Racing",
+      "key": "roadracing"
+    },
+    {
+      "order": 76,
+      "name": "Oval Racing",
+      "category": "Racing",
+      "key": "oval"
+    },
+    {
+      "order": 84,
+      "name": "Rock Crawling",
+      "category": "Racing",
+      "key": "crawling"
+    },
+    {
+      "order": 86,
+      "name": "Mudding",
+      "category": "Racing",
+      "key": "mudding"
+    },
+    {
+      "order": 88,
+      "name": "Tractor Pulling",
+      "category": "Racing",
+      "key": "pulling"
+    }
+  ],
+  "source": "freeroam_module",
+  "keys": ["freeroam"],
+  "extension": "overhaul_events_host",
+  "activity": "freeroamRace"
+}

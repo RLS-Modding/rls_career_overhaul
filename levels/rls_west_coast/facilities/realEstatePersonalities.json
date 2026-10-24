@@ -1,0 +1,429 @@
+{
+  "randomSellerArchetypes": [
+    "private_seller_motivated",
+    "private_seller_firm",
+    "bank_foreclosure",
+    "estate_sale",
+    "property_management",
+    "investor_flipper"
+  ],
+  "randomBuyerArchetypes": [
+    "first_time_buyer",
+    "investor_rental",
+    "investor_flip",
+    "upgrader",
+    "property_management_buyer",
+    "developer"
+  ],
+  "archetypes": {
+    "private_seller_motivated": {
+      "isDealership": false,
+      "startingPatience": 0.7,
+      "patienceVariance": 0.1,
+      "desperation": 0.08,
+      "desperationMaxDiscount": 0.08,
+      "insultThresholdBase": 0.82,
+      "insultThresholdVariance": 0.03,
+      "priceMultiplier": 0.02,
+      "counterOfferReadiness": 0.6,
+      "names": ["John S.", "Sarah M.", "Michael T.", "Lisa R.", "David K."],
+      "quotesByPriceTier": {
+        "low": [
+          "I need to move this property quickly.",
+          "Let's see if we can work something out.",
+          "I'm open to reasonable offers.",
+          "I'd like to close this deal soon."
+        ],
+        "mid": [
+          "I'd like to close this deal soon.",
+          "We can probably find a number that works.",
+          "I'm motivated to sell.",
+          "Let's talk numbers."
+        ],
+        "high": [
+          "This is a valuable property, but I'm flexible.",
+          "I'd prefer to close sooner rather than later.",
+          "Let's talk numbers.",
+          "I'm ready to negotiate seriously."
+        ]
+      },
+      "insultQuotes": [
+        "That's way too low for this property.",
+        "I can't accept an offer that far below market value.",
+        "Let's be realistic here.",
+        "That's not even close to what I'm looking for."
+      ],
+      "happyQuotes": [
+        "That works for me. Deal.",
+        "I'm satisfied with that price.",
+        "You've got yourself a property.",
+        "Perfect, let's move forward."
+      ]
+    },
+    "private_seller_firm": {
+      "isDealership": false,
+      "startingPatience": 0.9,
+      "patienceVariance": 0.05,
+      "desperation": 0.02,
+      "desperationMaxDiscount": 0.04,
+      "insultThresholdBase": 0.88,
+      "insultThresholdVariance": 0.02,
+      "priceMultiplier": 0.03,
+      "counterOfferReadiness": 0.4,
+      "names": ["Robert H.", "Patricia W.", "James L.", "Jennifer C.", "William B."],
+      "quotesByPriceTier": {
+        "low": [
+          "I know what this property is worth.",
+          "I'm not in a rush to sell.",
+          "The price reflects the value."
+        ],
+        "mid": [
+          "This is a fair price for what you're getting.",
+          "I've done my research on the market.",
+          "I'm confident in my asking price."
+        ],
+        "high": [
+          "This is a premium property at a fair price.",
+          "Quality like this doesn't come cheap.",
+          "I've already priced it competitively."
+        ]
+      },
+      "insultQuotes": [
+        "That's insulting for a property of this caliber.",
+        "I won't consider offers that low.",
+        "You're wasting both our time with that offer.",
+        "I know what my property is worth."
+      ],
+      "happyQuotes": [
+        "You're getting a great property. Deal.",
+        "Smart decision. We have a deal.",
+        "Excellent. I'll get the paperwork ready.",
+        "Deal. You won't regret this purchase."
+      ]
+    },
+    "bank_foreclosure": {
+      "isDealership": true,
+      "startingPatience": 0.5,
+      "patienceVariance": 0.1,
+      "desperation": 0.25,
+      "desperationMaxDiscount": 0.10,
+      "insultThresholdBase": 0.75,
+      "insultThresholdVariance": 0.05,
+      "minimumOverMarket": -20000,
+      "priceMultiplier": -0.02,
+      "counterOfferReadiness": 0.7,
+      "names": ["First National Bank", "Coastal Credit Union", "Regional Bank", "Pacific Trust", "Heritage Financial"],
+      "quotesByPriceTier": {
+        "low": [
+          "We need to liquidate this asset.",
+          "Our goal is to move this property.",
+          "We can be flexible on price.",
+          "The bank is motivated to close."
+        ],
+        "mid": [
+          "The bank is motivated to close.",
+          "We have flexibility to negotiate.",
+          "Let's find a number that works.",
+          "We're authorized to consider reasonable offers."
+        ],
+        "high": [
+          "We're authorized to negotiate.",
+          "The bank wants this resolved quickly.",
+          "We can work with you on price.",
+          "Let's discuss what makes sense for both parties."
+        ]
+      },
+      "insultQuotes": [
+        "That's below our minimum acceptable offer.",
+        "We can't go that low, even for foreclosure.",
+        "You'll need to come up significantly.",
+        "That doesn't meet the bank's requirements."
+      ],
+      "happyQuotes": [
+        "The bank accepts your offer.",
+        "We can close on those terms.",
+        "Deal. We'll start the paperwork.",
+        "Approved. We'll proceed with closing."
+      ]
+    },
+    "estate_sale": {
+      "isDealership": false,
+      "startingPatience": 0.6,
+      "patienceVariance": 0.1,
+      "desperation": 0.15,
+      "desperationMaxDiscount": 0.07,
+      "insultThresholdBase": 0.80,
+      "insultThresholdVariance": 0.04,
+      "priceMultiplier": 0.0,
+      "counterOfferReadiness": 0.65,
+      "names": ["Estate Representative", "Family Trust", "Anderson Estate", "Miller Family Trust"],
+      "quotesByPriceTier": {
+        "low": [
+          "The family needs to settle the estate.",
+          "We're looking for a fair offer.",
+          "We want to close this chapter."
+        ],
+        "mid": [
+          "We need to finalize the estate.",
+          "The family is ready to negotiate.",
+          "Let's work toward a resolution."
+        ],
+        "high": [
+          "The estate is ready to move forward.",
+          "We're prepared to consider fair offers.",
+          "Let's find a price that works."
+        ]
+      },
+      "insultQuotes": [
+        "That's not fair to the estate.",
+        "We need a more reasonable offer.",
+        "The family can't accept that.",
+        "We're looking for something closer to market value."
+      ],
+      "happyQuotes": [
+        "The family accepts your offer.",
+        "That's acceptable. We have a deal.",
+        "Thank you. The estate will proceed with the sale.",
+        "Deal. We'll finalize the paperwork."
+      ]
+    },
+    "property_management": {
+      "isDealership": true,
+      "startingPatience": 0.85,
+      "patienceVariance": 0.05,
+      "desperation": 0.03,
+      "desperationMaxDiscount": 0.05,
+      "insultThresholdBase": 0.87,
+      "insultThresholdVariance": 0.02,
+      "priceMultiplier": 0.02,
+      "counterOfferReadiness": 0.5,
+      "names": ["Coastal Property Management", "Summit Realty Group", "Pacific Properties", "Premier Real Estate"],
+      "quotesByPriceTier": {
+        "low": [
+          "We manage this property professionally.",
+          "Our pricing reflects market conditions.",
+          "We're open to serious offers."
+        ],
+        "mid": [
+          "We price our properties competitively.",
+          "We can discuss terms.",
+          "Let's see what we can work out."
+        ],
+        "high": [
+          "This is a premium managed property.",
+          "We're confident in the value proposition.",
+          "We can negotiate within reason."
+        ]
+      },
+      "insultQuotes": [
+        "That's below our acceptable range.",
+        "We need to see a more competitive offer.",
+        "Our client won't consider that price.",
+        "That doesn't align with market values."
+      ],
+      "happyQuotes": [
+        "Our client accepts your offer.",
+        "We can proceed at that price.",
+        "Deal. We'll handle the details.",
+        "Excellent. We'll move forward."
+      ]
+    },
+    "investor_flipper": {
+      "isDealership": false,
+      "startingPatience": 0.95,
+      "patienceVariance": 0.05,
+      "desperation": 0.01,
+      "desperationMaxDiscount": 0.03,
+      "insultThresholdBase": 0.90,
+      "insultThresholdVariance": 0.02,
+      "priceMultiplier": 0.05,
+      "counterOfferReadiness": 0.3,
+      "names": ["Investment Properties LLC", "Apex Investments", "Coastal Flips", "Summit Holdings"],
+      "quotesByPriceTier": {
+        "low": [
+          "I've put work into this property.",
+          "The improvements justify the price.",
+          "This is a turn-key investment."
+        ],
+        "mid": [
+          "I know the value I've added here.",
+          "The renovation was extensive.",
+          "You're buying a fully updated property."
+        ],
+        "high": [
+          "This is a premium flip with top-quality finishes.",
+          "Every detail has been carefully renovated.",
+          "You're getting move-in ready luxury."
+        ]
+      },
+      "insultQuotes": [
+        "That doesn't account for the improvements.",
+        "I have too much invested to go that low.",
+        "You're not valuing the renovation work.",
+        "That's a non-starter."
+      ],
+      "happyQuotes": [
+        "You're getting a great property. Deal.",
+        "Smart investment. We have a deal.",
+        "Deal. You won't find better in this condition.",
+        "Sold. You made the right choice."
+      ]
+    },
+    "first_time_buyer": {
+      "isDealership": false,
+      "priceMultiplier": 0.90,
+      "desperation": 0.10,
+      "maxOverMarket": 0.02,
+      "startingPatience": 0.6,
+      "counterOfferReadiness": 0.7,
+      "names": ["John D.", "Sarah P.", "Michael R.", "Emily T.", "Chris L."],
+      "quotesByPriceTier": {
+        "low": [
+          "This would be perfect for us.",
+          "We're ready to make an offer.",
+          "We've been looking for a place like this."
+        ],
+        "mid": [
+          "We're very interested in this property.",
+          "We'd like to make a competitive offer.",
+          "This fits our needs perfectly."
+        ],
+        "high": [
+          "We're prepared to move quickly on this.",
+          "We're serious buyers.",
+          "We can close fast if the price is right."
+        ]
+      }
+    },
+    "investor_rental": {
+      "isDealership": false,
+      "priceMultiplier": 0.85,
+      "desperation": 0.03,
+      "maxOverMarket": 0.00,
+      "startingPatience": 0.8,
+      "counterOfferReadiness": 0.5,
+      "names": ["Rental Properties Inc.", "Income Realty", "Landlord Holdings"],
+      "quotesByPriceTier": {
+        "low": [
+          "We're looking at the rental income potential.",
+          "The numbers need to work for our portfolio.",
+          "We run this as a business."
+        ],
+        "mid": [
+          "We evaluate based on cap rate.",
+          "Our offer reflects rental market analysis.",
+          "We need a profitable investment."
+        ],
+        "high": [
+          "Even premium properties need positive cash flow.",
+          "We're interested but it has to pencil out.",
+          "We factor in all operating costs."
+        ]
+      }
+    },
+    "investor_flip": {
+      "isDealership": false,
+      "priceMultiplier": 0.80,
+      "desperation": 0.02,
+      "maxOverMarket": -0.05,
+      "startingPatience": 0.9,
+      "counterOfferReadiness": 0.4,
+      "names": ["Apex Investments", "Coastal Properties LLC", "Summit Realty Group", "Flip Masters"],
+      "quotesByPriceTier": {
+        "low": [
+          "We're looking at this as a project.",
+          "We need room for renovation costs.",
+          "Our offer accounts for necessary repairs."
+        ],
+        "mid": [
+          "We're cash buyers, but the numbers need to work.",
+          "We factor in flip costs when making offers.",
+          "We can close quickly if the price is realistic."
+        ],
+        "high": [
+          "Even premium properties need to pencil out.",
+          "We're interested, but only at the right price.",
+          "We run the numbers carefully on every deal."
+        ]
+      }
+    },
+    "upgrader": {
+      "isDealership": false,
+      "priceMultiplier": 0.95,
+      "desperation": 0.15,
+      "maxOverMarket": 0.05,
+      "startingPatience": 0.55,
+      "counterOfferReadiness": 0.75,
+      "names": ["Thompson Family", "Garcia Household", "Wilson Family"],
+      "quotesByPriceTier": {
+        "low": [
+          "We're ready to upgrade from our current place.",
+          "This is exactly what we're looking for.",
+          "We need more space for our growing family."
+        ],
+        "mid": [
+          "We've outgrown our current home.",
+          "This is the next step for us.",
+          "We're ready to make a strong offer."
+        ],
+        "high": [
+          "This is our dream upgrade.",
+          "We're very motivated buyers.",
+          "We can be flexible to make this work."
+        ]
+      }
+    },
+    "property_management_buyer": {
+      "isDealership": true,
+      "priceMultiplier": 0.88,
+      "desperation": 0.05,
+      "maxOverMarket": 0.01,
+      "startingPatience": 0.75,
+      "counterOfferReadiness": 0.55,
+      "names": ["Coastal Property Management", "Summit Holdings", "Premier Real Estate Group"],
+      "quotesByPriceTier": {
+        "low": [
+          "We're expanding our portfolio.",
+          "This fits our investment criteria.",
+          "We're looking for the right price point."
+        ],
+        "mid": [
+          "We manage properties professionally.",
+          "We can close efficiently.",
+          "Our offer is based on market analysis."
+        ],
+        "high": [
+          "We're interested in quality properties.",
+          "We have the resources to close quickly.",
+          "Let's discuss terms."
+        ]
+      }
+    },
+    "developer": {
+      "isDealership": true,
+      "priceMultiplier": 0.88,
+      "desperation": 0.08,
+      "maxOverMarket": 0.03,
+      "startingPatience": 0.7,
+      "counterOfferReadiness": 0.6,
+      "names": ["Coastal Development Corp", "Urban Builders LLC", "Summit Developments"],
+      "quotesByPriceTier": {
+        "low": [
+          "We're looking at development potential.",
+          "Location is key for our projects.",
+          "We factor in development costs."
+        ],
+        "mid": [
+          "This fits into our development plans.",
+          "We can move quickly with the right terms.",
+          "We're serious about this location."
+        ],
+        "high": [
+          "This is a strategic acquisition for us.",
+          "We're prepared to pay for the right property.",
+          "Let's discuss how we can make this work."
+        ]
+      }
+    }
+  }
+}

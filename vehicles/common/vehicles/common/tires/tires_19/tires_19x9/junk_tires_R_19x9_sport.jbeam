@@ -1,0 +1,159 @@
+{
+"tire_junk_R_245_35_19_sport": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Worn Out 245/35R19 Sport Rear Tires",
+        "value":25,
+    },
+    "slotType" : "tire_R_19x9",
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["tire_01a_19x9_26", ["tire_RR","wheel_RR"], [], {"pos":{"x":-0.51, "y":0.0, "z":0.0}, "rot":{"x":0, "y":0, "z":180}, "scale":{"x":1.05, "y":0.995, "z":0.995}}],
+        ["tire_01a_19x9_26", ["tire_RL","wheel_RL"], [], {"pos":{"x": 0.51, "y":0.0, "z":0.0}, "rot":{"x":0, "y":0, "z":0},   "scale":{"x":1.05, "y":0.995, "z":0.995}}],
+    ],
+    "variables": [
+        ["name", "type", "unit", "category", "default", "min", "max", "title", "description"],
+        ["$tirepressure_R", "range", "psi", "Wheels", 30, 0, 50, "Tire Pressure", "Relative to atmospheric pressure", {"subCategory":"Rear"}],
+    ],
+    "pressureWheels": [
+        ["name","hubGroup","group","node1:","node2:","nodeS","nodeArm:","wheelDir"],
+        {"disableMeshBreaking":false,"disableHubMeshBreaking":false},
+        {"hasTire":true},
+        {"enableTireReinfBeams":false},
+        {"enableTireLbeams":true},
+        {"enableTireSideReinfBeams":false},
+        {"enableTreadReinfBeams":true},
+        {"enableTirePeripheryReinfBeams":true},
+
+        //general settings
+        {"radius":0.33},
+        {"tireWidth":0.225},
+
+        //tire options
+        {"wheelSideBeamSpring":"$=$tirepressure_R*1167","wheelSideBeamDamp":15},
+        {"wheelSideBeamSpringExpansion":481000,"wheelSideBeamDampExpansion":45},
+        {"wheelSideTransitionZone":0.12,"wheelSideBeamPrecompression":0.985},
+
+        {"wheelReinfBeamSpring":45000,"wheelReinfBeamDamp":195},
+        {"wheelReinfBeamDampCutoffHz":500,"wheelReinfBeamPrecompression":0.98},
+
+        {"wheelTreadBeamSpring":41000,"wheelTreadBeamDamp":110},
+        {"wheelTreadBeamDampCutoffHz":500,"wheelTreadBeamPrecompression":0.98},
+
+        {"wheelTreadReinfBeamSpring":201000,"wheelTreadReinfBeamDamp":60},
+        {"wheelTreadReinfBeamDampCutoffHz":500,"wheelTreadReinfBeamPrecompression":0.98},
+
+        {"wheelPeripheryBeamSpring":41000,"wheelPeripheryBeamDamp":35},
+        {"wheelPeripheryBeamDampCutoffHz":500,"wheelPeripheryBeamPrecompression":0.98},
+
+        {"wheelPeripheryReinfBeamSpring":131000,"wheelPeripheryReinfBeamDamp":35},
+        {"wheelPeripheryReinfBeamDampCutoffHz":500,"wheelPeripheryReinfBeamPrecompression":0.98},
+
+        //general tire values
+        {"nodeWeight":0.165},
+        {"nodeMaterial":"|NM_RUBBER"},
+        {"triangleCollision":false},
+        {"pressurePSI":"$tirepressure_R"},
+        {"dragCoef":5},
+
+        //groundmodel friction multipliers
+        {"frictionCoef":0.8},
+        {"slidingFrictionCoef":0.8},
+        {"stribeckExponent":1.5},
+        //{"stribeckVelMult":1.4},
+        {"treadCoef":0.0},
+
+        //advanced friction values
+        {"noLoadCoef":1.6},
+        {"loadSensitivitySlope":0.000158},
+        {"fullLoadCoef":0.5},
+        {"softnessCoef":0.8},
+
+        //deform values
+        {"wheelSideBeamDeform":17000,"wheelSideBeamStrength":5000},
+        {"wheelTreadBeamDeform":12000,"wheelTreadBeamStrength":2500},
+        {"wheelPeripheryBeamDeform":55000,"wheelPeripheryBeamStrength":55000},
+
+    ],
+},
+"tire_junk_R_245_35_19_sport_plus": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Worn Out 245/35R19 Sport Plus 2R Rear Tires",
+        "value":50,
+    },
+    "slotType" : "tire_R_19x9",
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["tire_245_35_19_sport", ["tire_RR","wheel_RR"], [], {"pos":{"x":-0.51, "y":0.0, "z":0.0}, "rot":{"x":0, "y":0, "z":180}, "scale":{"x":1, "y":1, "z":1}}],
+        ["tire_245_35_19_sport", ["tire_RL","wheel_RL"], [], {"pos":{"x": 0.51, "y":0.0, "z":0.0}, "rot":{"x":0, "y":0, "z":0},   "scale":{"x":1, "y":1, "z":1}}],
+    ],
+    "variables": [
+        ["name", "type", "unit", "category", "default", "min", "max", "title", "description"],
+        ["$tirepressure_R", "range", "psi", "Wheels", 30, 0, 50, "Tire Pressure", "Relative to atmospheric pressure", {"subCategory":"Rear"}],
+    ],
+    "pressureWheels": [
+        ["name","hubGroup","group","node1:","node2:","nodeS","nodeArm:","wheelDir"],
+        {"disableMeshBreaking":false,"disableHubMeshBreaking":false},
+        {"hasTire":true},
+        {"enableTireReinfBeams":false},
+        {"enableTireLbeams":true},
+        {"enableTireSideReinfBeams":false},
+        {"enableTreadReinfBeams":true},
+        {"enableTirePeripheryReinfBeams":true},
+
+        //general settings
+        {"radius":0.33},
+        {"tireWidth":0.235},
+
+        //tire options
+      {"wheelSideBeamSpring":"$=$tirepressure_F*650","wheelSideBeamDamp":25},
+      {"wheelSideBeamSpringExpansion":491000,"wheelSideBeamDampExpansion":45},
+      {"wheelSideTransitionZone":0.12,"wheelSideBeamPrecompression":0.98},
+
+      //{"wheelSideReinfBeamSpring":"$=$tirepressure_F*833","wheelSideReinfBeamDamp":25},
+      //{"wheelSideReinfBeamSpringExpansion":151000,"wheelSideReinfBeamDampExpansion":45},
+      //{"wheelSideReinfTransitionZone":0.1,"wheelSideReinfBeamPrecompression":0.98},
+
+      {"wheelReinfBeamSpring":44000,"wheelReinfBeamDamp":200},
+      {"wheelReinfBeamDampCutoffHz":250,"wheelReinfBeamPrecompression":0.98},
+
+      {"wheelTreadBeamSpring":181000,"wheelTreadBeamDamp":140},
+      {"wheelTreadBeamDampCutoffHz":250,"wheelTreadBeamPrecompression":0.985},
+
+      {"wheelTreadReinfBeamSpring":161000,"wheelTreadReinfBeamDamp":140},
+      {"wheelTreadReinfBeamDampCutoffHz":250,"wheelTreadReinfBeamPrecompression":0.965},
+
+      {"wheelPeripheryBeamSpring":81000,"wheelPeripheryBeamDamp":100},
+      {"wheelPeripheryBeamDampCutoffHz":250,"wheelPeripheryBeamPrecompression":0.98},
+
+      {"wheelPeripheryReinfBeamSpring":81000,"wheelPeripheryReinfBeamDamp":100},
+      {"wheelPeripheryReinfBeamDampCutoffHz":250,"wheelPeripheryReinfBeamPrecompression":0.98},
+
+      //general tire values
+      {"nodeWeight":0.175},
+      {"nodeMaterial":"|NM_RUBBER"},
+      {"triangleCollision":false},
+      {"pressurePSI":"$tirepressure_R"},
+      {"dragCoef":5},
+
+      //groundmodel friction multipliers
+      {"frictionCoef":0.8},
+      {"slidingFrictionCoef":0.8},
+      {"stribeckExponent":1.25},
+      {"stribeckVelMult":2.35},
+      {"treadCoef":0.0},
+
+      //advanced friction values
+      {"noLoadCoef":1.52},
+      {"loadSensitivitySlope":0.00015},
+      {"fullLoadCoef":0.65},
+      {"softnessCoef":1},
+
+      //deform values
+      {"wheelSideBeamDeform":17000,"wheelSideBeamStrength":5000},
+      {"wheelTreadBeamDeform":12000,"wheelTreadBeamStrength":2500},
+      {"wheelPeripheryBeamDeform":55000,"wheelPeripheryBeamStrength":55000},
+    ],
+},
+}

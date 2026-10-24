@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":17500,  
+    "Configuration": "1.5 (M) ( Joe's Junk Career )",
+    "Description": "Small car that will give you big headaches.",
+    "Drivetrain": "FWD",
+    "Fuel Type": "Gasoline",
+    "Power": 120,
+    "Torque": 121,
+    "Value": 1150,
+    "Weight": 933,
+    "Years": {
+      "max": 1992,
+      "min": 1986
+    }  
+}
+
+

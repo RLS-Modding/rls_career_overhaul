@@ -1,0 +1,8 @@
+{
+  "id": "quarry",
+  "order": 180,
+  "callbacks": [
+    {"id": "loadingItemDamage", "extension": "overhaul_jobs_quarry_quarry", "fn": "onItemDamageCallback", "guard": "none"},
+    {"id": "loadingTruckDamage", "extension": "overhaul_jobs_quarry_manager", "fn": "onTruckDamageCallback", "guard": "none"}
+  ]
+}

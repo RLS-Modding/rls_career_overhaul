@@ -1,0 +1,1013 @@
+{
+  "roots": [
+    {
+      "name": "overhaul",
+      "path": "/overhaul",
+      "children": [
+        {
+          "name": "overhaul.refueling",
+          "path": "refueling",
+          "platformOrder": 1,
+          "owner": null,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/refuel/views/RefuelMain.vue",
+          "meta": {
+            "infoBar": {
+              "visible": true,
+              "showSysInfo": false
+            },
+            "uiApps": {
+              "shown": false
+            }
+          }
+        },
+        {
+          "name": "overhaul.logbook",
+          "path": "logbook/:id(\\*?.*?)?",
+          "platformOrder": 2,
+          "owner": null,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/Logbook.vue",
+          "meta": {
+            "uiApps": {
+              "shown": false
+            }
+          },
+          "props": true
+        },
+        {
+          "name": "overhaul.milestones",
+          "path": "milestones/:id(\\*?.*?)?",
+          "platformOrder": 3,
+          "owner": "overhaul_career_progression_milestones_milestones",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/Milestones.vue",
+          "meta": {
+            "uiApps": {
+              "shown": false
+            }
+          },
+          "props": true
+        },
+        {
+          "name": "overhaul.computer",
+          "path": "computer",
+          "platformOrder": 4,
+          "owner": null,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/ComputerMain.vue",
+          "meta": {
+            "uiApps": {
+              "shown": false
+            }
+          },
+          "props": true
+        },
+        {
+          "name": "overhaul.computer.vehicleInventory",
+          "path": "computer/vehicleInventory",
+          "platformOrder": 5,
+          "owner": null,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/VehicleInventoryMain.vue",
+          "meta": {
+            "handlesOwnReady": true
+          }
+        },
+        {
+          "name": "overhaul.computer.vehiclePerformance.certificationTest",
+          "path": "computer/vehiclePerformance/certificationTest",
+          "platformOrder": 6,
+          "owner": null,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/VehiclePerformanceCertificationTest.vue",
+          "meta": {
+            "infoBar": {
+              "visible": true,
+              "showSysInfo": true
+            },
+            "uiApps": {
+              "shown": false
+            }
+          }
+        },
+        {
+          "name": "overhaul.computer.vehiclePerformance",
+          "path": "computer/vehiclePerformance/:inventoryId?",
+          "platformOrder": 7,
+          "owner": null,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/VehiclePerformanceMain.vue",
+          "meta": {
+            "handlesOwnReady": true
+          },
+          "props": true
+        },
+        {
+          "name": "overhaul.computer.tuning",
+          "path": "computer/tuning",
+          "platformOrder": 8,
+          "owner": "overhaul_career_parts_tuning",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/TuningMain.vue",
+          "meta": {
+            "deferAutosave": true,
+            "handlesOwnReady": true
+          }
+        },
+        {
+          "name": "overhaul.computer.painting",
+          "path": "computer/painting",
+          "platformOrder": 9,
+          "owner": "overhaul_career_parts_painting",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/PaintingMain.vue",
+          "meta": {
+            "deferAutosave": true,
+            "handlesOwnReady": true
+          }
+        },
+        {
+          "name": "overhaul.computer.repair",
+          "path": "computer/repair/:header?",
+          "platformOrder": 10,
+          "owner": null,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/RepairMain.vue",
+          "props": true
+        },
+        {
+          "name": "overhaul.computer.partShopping",
+          "path": "computer/partShopping",
+          "platformOrder": 11,
+          "owner": "overhaul_career_parts_partShopping",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/PartShoppingMain.vue",
+          "meta": {
+            "deferAutosave": true,
+            "handlesOwnReady": true,
+            "uiApps": {
+              "shown": false
+            }
+          }
+        },
+        {
+          "name": "overhaul.computer.partShopping.category",
+          "path": "computer/partShopping/:category",
+          "platformOrder": 12,
+          "owner": null,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/PartShoppingMain.vue",
+          "meta": {
+            "handlesOwnReady": true,
+            "uiApps": {
+              "shown": false
+            }
+          },
+          "props": true
+        },
+        {
+          "name": "overhaul.computer.partShopping.category.slot",
+          "path": "computer/partShopping/:category/slot/:slotPath(.*)*",
+          "platformOrder": 13,
+          "owner": null,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/PartShoppingMain.vue",
+          "meta": {
+            "handlesOwnReady": true,
+            "uiApps": {
+              "shown": false
+            }
+          },
+          "props": true
+        },
+        {
+          "name": "overhaul.computer.partInventory",
+          "path": "computer/partInventory",
+          "platformOrder": 14,
+          "owner": "overhaul_career_parts_partInventory",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/PartInventoryMain.vue",
+          "meta": {
+            "deferAutosave": true,
+            "handlesOwnReady": true
+          }
+        },
+        {
+          "name": "overhaul.computer.enginePackages",
+          "path": "computer/enginePackages",
+          "platformOrder": 15,
+          "owner": "overhaul_career_parts_engines_enginePackages",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/EnginePackages.vue",
+          "meta": {
+            "infoBar": {
+              "visible": true,
+              "showSysInfo": true
+            },
+            "uiApps": {
+              "shown": false
+            }
+          }
+        },
+        {
+          "name": "overhaul.engineRetail",
+          "path": "engineRetail",
+          "platformOrder": 16,
+          "owner": "overhaul_career_parts_engines_engineRetail",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/EngineRetail.vue",
+          "meta": {
+            "infoBar": {
+              "visible": true,
+              "showSysInfo": true
+            },
+            "uiApps": {
+              "shown": false
+            }
+          }
+        },
+        {
+          "name": "overhaul.computer.vehicleShopping.vehicles",
+          "path": "computer/vehicleShopping/vehicles",
+          "platformOrder": 17,
+          "owner": null,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/VehicleShoppingVehiclesMain.vue",
+          "meta": {
+            "infoBar": {
+              "visible": true,
+              "showSysInfo": true
+            },
+            "uiApps": {
+              "shown": false
+            },
+            "handlesOwnReady": true
+          }
+        },
+        {
+          "name": "overhaul.computer.vehicleShopping.vehicles.vehiclePurchase.negotiation",
+          "path": "computer/vehicleShopping/vehicles/vehiclePurchase/negotiation",
+          "platformOrder": 18,
+          "owner": null,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/VehicleNegotiationMain.vue",
+          "meta": {
+            "infoBar": {
+              "visible": true,
+              "showSysInfo": true
+            },
+            "uiApps": {
+              "shown": false
+            },
+            "handlesOwnReady": true
+          }
+        },
+        {
+          "name": "overhaul.computer.vehicleShopping.vehicles.vehiclePurchase.chooseInsurance",
+          "path": "computer/vehicleShopping/vehicles/vehiclePurchase/chooseInsurance/:purchaseType/:shopId/:insuranceId?",
+          "platformOrder": 19,
+          "owner": null,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/ChooseInsuranceMain.vue",
+          "meta": {
+            "infoBar": {
+              "visible": true,
+              "showSysInfo": true
+            },
+            "uiApps": {
+              "shown": false
+            },
+            "handlesOwnReady": true
+          },
+          "props": {
+            "resolver": "overhaul.computer.vehicleShopping.vehicles.vehiclePurchase.chooseInsurance"
+          }
+        },
+        {
+          "name": "overhaul.computer.vehicleShopping.negotiation",
+          "path": "computer/vehicleShopping/negotiation",
+          "platformOrder": 20,
+          "owner": null,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/VehicleNegotiationMain.vue",
+          "meta": {
+            "infoBar": {
+              "visible": true,
+              "showSysInfo": true
+            },
+            "uiApps": {
+              "shown": false
+            },
+            "handlesOwnReady": true
+          }
+        },
+        {
+          "name": "overhaul.computer.vehicleShopping.vehicles.vehiclePurchase",
+          "path": "computer/vehicleShopping/vehicles/vehiclePurchase/:vehicleInfo?/:playerMoney?/:inventoryHasFreeSlot?/:lastVehicleInfo?",
+          "platformOrder": 21,
+          "owner": null,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/VehiclePurchaseMain.vue",
+          "meta": {
+            "handlesOwnReady": true,
+            "uiApps": {
+              "shown": false
+            }
+          },
+          "props": true
+        },
+        {
+          "name": "overhaul.computer.vehicleShopping",
+          "path": "computer/vehicleShopping/:screenTag?/:buyingAvailable?/:marketplaceAvailable?/:selectedSellerId?",
+          "platformOrder": 23,
+          "owner": null,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/VehicleShoppingMain.vue",
+          "meta": {
+            "handlesOwnReady": true,
+            "uiApps": {
+              "shown": false
+            }
+          },
+          "props": true
+        },
+        {
+          "name": "overhaul.computer.insurances.chooseInsurance",
+          "path": "computer/insurances/chooseInsurance/:vehicleId",
+          "platformOrder": 24,
+          "owner": null,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/ChooseInsuranceMain.vue",
+          "meta": {
+            "infoBar": {
+              "visible": true,
+              "showSysInfo": true
+            },
+            "uiApps": {
+              "shown": false
+            },
+            "handlesOwnReady": true
+          },
+          "props": {
+            "resolver": "overhaul.computer.insurances.chooseInsurance"
+          }
+        },
+        {
+          "name": "overhaul.computer.insurances",
+          "path": "computer/insurances",
+          "platformOrder": 25,
+          "owner": null,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/InsurancesMain.vue"
+        },
+        {
+          "name": "overhaul.organizations",
+          "path": "organizations/:orgId?",
+          "platformOrder": 26,
+          "owner": null,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/Organizations.vue",
+          "meta": {
+            "uiApps": {
+              "shown": false
+            },
+            "infoBar": {
+              "visible": true
+            }
+          },
+          "props": {
+            "resolver": "overhaul.organizations"
+          }
+        },
+        {
+          "name": "overhaul.computer.playerAbstract",
+          "path": "computer/playerAbstract",
+          "platformOrder": 27,
+          "owner": null,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/DriverAbstract.vue",
+          "meta": {
+            "handlesOwnReady": true
+          }
+        },
+        {
+          "name": "overhaul.cargoDropOff",
+          "path": "cargoDropOff/:facilityId?/:parkingSpotPath(\\*?.*?)?",
+          "platformOrder": 28,
+          "owner": null,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/CargoDropOff.vue",
+          "meta": {
+            "handlesOwnReady": true
+          },
+          "props": true
+        },
+        {
+          "name": "overhaul.employeeShift",
+          "path": "employeeShift/:facilityId?",
+          "platformOrder": 29,
+          "owner": "overhaul_career_work_employment",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/EmployeeShift.vue",
+          "meta": {
+            "uiApps": {
+              "shown": false
+            }
+          },
+          "props": true
+        },
+        {
+          "name": "overhaul.employeeDropOff",
+          "path": "employeeDropOff/:facilityId?/:parkingSpotPath(\\*?.*?)?",
+          "platformOrder": 30,
+          "owner": "overhaul_career_work_employment",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/EmployeeDropOff.vue",
+          "props": true
+        },
+        {
+          "name": "overhaul.styleGuide",
+          "path": "styleGuide",
+          "platformOrder": 31,
+          "owner": "overhaul_ui_routes",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/StyleGuide.vue",
+          "meta": {
+            "uiApps": {
+              "shown": false
+            }
+          }
+        },
+        {
+          "name": "overhaul.cargoOverview",
+          "path": "cargoOverview/:facilityId?/:parkingSpotPath(\\*?.*?)?",
+          "platformOrder": 32,
+          "owner": null,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/WorkMenuEntry.vue",
+          "meta": {
+            "uiApps": {
+              "shown": false
+            }
+          },
+          "props": true
+        },
+        {
+          "name": "overhaul.materialContractPickup",
+          "path": "materialContractPickup",
+          "platformOrder": 33,
+          "owner": "overhaul_career_logistics_cargoScreen",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/MaterialContractPickup.vue",
+          "meta": {
+            "uiApps": {
+              "shown": false
+            }
+          }
+        },
+        {
+          "name": "overhaul.passiveBusinessSupplyPickup",
+          "path": "passiveBusinessSupplyPickup",
+          "platformOrder": 34,
+          "owner": "overhaul_career_logistics_cargoScreen",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/PassiveBusinessSupplyPickup.vue",
+          "meta": {
+            "uiApps": {
+              "shown": false
+            }
+          }
+        },
+        {
+          "name": "overhaul.engineShopSupplyPickup",
+          "path": "engineShopSupplyPickup",
+          "platformOrder": 35,
+          "owner": "overhaul_career_business_engineShop",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/EngineShopSupplyPickup.vue",
+          "meta": {
+            "uiApps": {
+              "shown": false
+            }
+          }
+        },
+        {
+          "name": "overhaul.myCargo",
+          "path": "myCargo",
+          "platformOrder": 36,
+          "owner": null,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/WorkMenuEntry.vue",
+          "meta": {
+            "uiApps": {
+              "shown": false
+            }
+          },
+          "props": true
+        },
+        {
+          "name": "overhaul.progressLanding",
+          "path": "progressLanding/:pathId?/:comesFromBigMap?",
+          "platformOrder": 37,
+          "owner": null,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/ProgressLanding.vue",
+          "meta": {
+            "uiApps": {
+              "shown": false
+            },
+            "infoBar": {
+              "visible": true
+            }
+          },
+          "props": {
+            "resolver": "overhaul.progressLanding"
+          }
+        },
+        {
+          "name": "overhaul.branchPage",
+          "path": "branchPage/:pathId?/:comesFromBigMap?",
+          "platformOrder": 38,
+          "owner": null,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/ProgressLanding.vue",
+          "meta": {
+            "uiApps": {
+              "shown": false
+            },
+            "infoBar": {
+              "visible": true
+            }
+          },
+          "props": {
+            "resolver": "overhaul.branchPage"
+          }
+        },
+        {
+          "name": "overhaul.domainSelection",
+          "path": "domainSelection",
+          "platformOrder": 39,
+          "owner": null,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/ProgressLanding.vue",
+          "meta": {
+            "uiApps": {
+              "shown": false
+            },
+            "infoBar": {
+              "visible": true
+            }
+          },
+          "props": true
+        },
+        {
+          "name": "overhaul.cargoOverview.organizations",
+          "path": "cargoOverview/organizations/:orgId?",
+          "platformOrder": 40,
+          "owner": null,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/Organizations.vue",
+          "meta": {
+            "uiApps": {
+              "shown": false
+            },
+            "infoBar": {
+              "visible": true
+            }
+          },
+          "props": {
+            "resolver": "overhaul.cargoOverview.organizations"
+          }
+        },
+        {
+          "name": "overhaul.profiles",
+          "path": "profiles",
+          "platformOrder": 41,
+          "owner": "overhaul_ui_routes",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/profiles/views/ProfileSelect.vue",
+          "meta": {
+            "handlesOwnReady": true,
+            "uiApps": {
+              "shown": false
+            },
+            "infoBar": {
+              "visible": true,
+              "showSysInfo": true
+            }
+          }
+        },
+        {
+          "name": "overhaul.profiles.new",
+          "path": "profiles/new",
+          "platformOrder": 42,
+          "owner": null,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/profiles/views/ProfileNew.vue",
+          "meta": {
+            "uiApps": {
+              "shown": false
+            },
+            "infoBar": {
+              "visible": true,
+              "showSysInfo": true
+            }
+          }
+        },
+        {
+          "name": "overhaul.profiles.saves",
+          "path": "profiles/saves/:profileId?",
+          "platformOrder": 43,
+          "owner": "overhaul_ui_routes",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/profiles/views/ProfileSaveSelect.vue",
+          "meta": {
+            "handlesOwnReady": true,
+            "uiApps": {
+              "shown": false
+            },
+            "infoBar": {
+              "visible": true,
+              "showSysInfo": true
+            }
+          },
+          "props": {
+            "resolver": "overhaul.profiles.saves"
+          }
+        },
+        {
+          "name": "overhaul.profiles.saveAs",
+          "path": "profiles/saveAs",
+          "platformOrder": 44,
+          "owner": "overhaul_ui_routes",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/profiles/views/ProfileSaveSelect.vue",
+          "meta": {
+            "handlesOwnReady": true,
+            "uiApps": {
+              "shown": false
+            },
+            "infoBar": {
+              "visible": true,
+              "showSysInfo": true
+            }
+          },
+          "props": {
+            "resolver": "overhaul.profiles.saveAs"
+          }
+        },
+        {
+          "name": "sleep-menu",
+          "path": "sleep-menu",
+          "platformOrder": 45,
+          "owner": "overhaul_world_sleep",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/SleepMenu.vue"
+        },
+        {
+          "name": "loans-menu",
+          "path": "loans-menu",
+          "platformOrder": 46,
+          "owner": "overhaul_career_economy_loans",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/LoanMenu.vue"
+        },
+        {
+          "name": "maintenance",
+          "path": "maintenance",
+          "platformOrder": 47,
+          "owner": "overhaul_career_maintenance_maintenanceComputer",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/MaintenanceMenu.vue"
+        },
+        {
+          "name": "roadside-service",
+          "path": "roadside-service",
+          "platformOrder": 48,
+          "owner": "overhaul_career_repair_roadsideService",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/RoadsideServiceMain.vue",
+          "meta": {
+            "uiApps": {
+              "shown": false
+            }
+          }
+        },
+        {
+          "name": "equipment-rental",
+          "path": "equipment-rental",
+          "platformOrder": 49,
+          "owner": "overhaul_career_work_equipmentRental",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/EquipmentRentalMain.vue",
+          "meta": {
+            "uiApps": {
+              "shown": false
+            }
+          }
+        },
+        {
+          "name": "roleAssignment",
+          "path": "roleAssignment",
+          "platformOrder": 50,
+          "owner": "overhaul_career_police_certification",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/RoleAssignment.vue"
+        },
+        {
+          "name": "dynoSession",
+          "path": "dynoSession",
+          "platformOrder": 51,
+          "owner": null,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/DynoSession.vue",
+          "meta": {
+            "uiApps": {
+              "shown": false
+            }
+          }
+        },
+        {
+          "name": "used-car-auction",
+          "path": "used-car-auction",
+          "platformOrder": 52,
+          "owner": "overhaul_career_market_auction_auction",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/UsedCarAuction.vue",
+          "meta": {
+            "uiNav": false,
+            "uiApps": {
+              "shown": false
+            }
+          }
+        },
+        {
+          "name": "travel-journal",
+          "path": "travel-journal",
+          "platformOrder": 53,
+          "owner": "overhaul_phone_travelJournal",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/TravelJournal.vue",
+          "meta": {
+            "uiApps": {
+              "shown": false
+            }
+          }
+        },
+        {
+          "name": "dakar",
+          "path": "dakar/:tab?",
+          "platformOrder": 54,
+          "owner": "overhaul_world_maps",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/DakarMenu.vue",
+          "meta": {
+            "uiApps": {
+              "shown": false
+            }
+          },
+          "props": true
+        },
+        {
+          "name": "purchase-garage",
+          "path": "purchase-garage",
+          "platformOrder": 55,
+          "owner": "overhaul_career_garage_property_propertyOwners",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/PurchaseGarage.vue"
+        },
+        {
+          "name": "garage-listing",
+          "path": "garage-listing",
+          "platformOrder": 56,
+          "owner": "overhaul_career_garage_property_propertyOwners",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/GarageListing.vue"
+        },
+        {
+          "name": "realEstateNegotiation",
+          "path": "realEstateNegotiation",
+          "platformOrder": 57,
+          "owner": "overhaul_career_garage_property_realEstateNegotiation",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/RealEstateNegotiation.vue"
+        },
+        {
+          "name": "garage-listings",
+          "path": "garage-listings",
+          "platformOrder": 58,
+          "owner": "overhaul_career_garage_property_propertyOwners",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/GarageListings.vue",
+          "meta": {
+            "uiApps": {
+              "shown": false
+            }
+          }
+        },
+        {
+          "name": "garage-offers",
+          "path": "garage-offers/:garageId",
+          "platformOrder": 59,
+          "owner": "overhaul_career_garage_property_propertyOwners",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/GarageOffers.vue",
+          "meta": {
+            "uiApps": {
+              "shown": false
+            }
+          },
+          "props": true
+        },
+        {
+          "name": "purchase-business",
+          "path": "purchase-business",
+          "platformOrder": 60,
+          "owner": "overhaul_career_business_manager",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/PurchaseBusiness.vue"
+        },
+        {
+          "name": "challenge-completed",
+          "path": "challenge-completed",
+          "platformOrder": 109,
+          "owner": "overhaul_career_challengeModes",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/ChallengeComplete.vue"
+        },
+        {
+          "name": "phone-shell",
+          "path": "phone",
+          "platformOrder": 62,
+          "owner": "overhaul_phone_phone",
+          "hostsChildren": true,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneShell.vue",
+          "children": [
+            {
+              "name": "phone-main",
+              "path": "/overhaul/phone-main",
+              "owner": "overhaul_phone_phone",
+              "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneHomescreen.vue",
+              "meta": {
+                "phone": {
+                  "depth": 0,
+                  "title": "Home"
+                }
+              }
+            },
+            {
+              "name": "phone-minimap",
+              "path": "/overhaul/phone-minimap",
+              "owner": "overhaul_phone_apps_minimap",
+              "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneMinimap.vue",
+              "meta": {
+                "phone": {
+                  "depth": 1,
+                  "title": "Minimap",
+                  "appId": "minimap"
+                }
+              }
+            },
+            {
+              "name": "phone-app",
+              "path": "/overhaul/phone-app/:appId",
+              "owner": "overhaul_phone_apps_layout",
+              "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneAppHost.vue",
+              "props": true,
+              "meta": {
+                "phone": {
+                  "depth": 1
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "business-computer",
+          "path": "business-computer/:businessType/:businessId",
+          "platformOrder": 110,
+          "owner": "overhaul_career_business_computer",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/BusinessComputerMain.vue",
+          "meta": {
+            "uiApps": {
+              "shown": false
+            }
+          },
+          "props": true
+        },
+        {
+          "name": "card-tester",
+          "path": "card-tester",
+          "platformOrder": 111,
+          "owner": "overhaul_dev_testerMenu",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/CardTester.vue",
+          "meta": {
+            "uiApps": {
+              "shown": false
+            }
+          }
+        },
+        {
+          "name": "card-games",
+          "path": "card-games",
+          "platformOrder": 112,
+          "owner": "overhaul_jobs_cardGames_cardGames",
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/CardGames.vue",
+          "meta": {
+              "inWorldActivity": true,
+            "uiApps": {
+              "shown": false
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "overlays": [
+    {
+      "id": "RacingTeamProxyOverlay",
+      "owner": "overhaul_events_competitiveTrackFlow",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/RacingTeamProxyOverlay.vue",
+      "mountOn": {
+        "event": "racingTeamProxyOverlay",
+        "when": {
+          "visible": true
+        }
+      }
+    },
+    {
+      "id": "RacingTeamProxyTeamLoading",
+      "owner": "overhaul_events_competitiveTrackFlow",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/RacingTeamProxyTeamLoading.vue"
+    },
+    {
+      "id": "RlsCareerLoadingOverlay",
+      "owner": "overhaul_career_work_employment",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/RlsCareerLoadingOverlay.vue"
+    },
+    {
+      "id": "BetaCycleSplash",
+      "owner": "overhaul_career_guide_betaWelcome",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/BetaCycleSplash.vue"
+    },
+    {
+      "id": "RacingTeamMilestoneSplash",
+      "owner": "overhaul_career_business_racingTeam_racingTeam",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/RacingTeamMilestoneSplash.vue",
+      "mountOn": {
+        "event": "RacingTeamMilestoneSplashShow"
+      }
+    },
+    {
+      "id": "SceneToastOverlay",
+      "owner": "overhaul_phone_travelJournal",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/SceneToastOverlay.vue"
+    },
+    {
+      "id": "TravelJournalScenePrompt",
+      "owner": "overhaul_phone_travelJournal",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/TravelJournalScenePrompt.vue",
+      "mountOn": {
+        "event": "TravelJournalScenePrompt",
+        "when": {
+          "visible": true
+        }
+      }
+    },
+    {
+      "id": "MapTravelPanel",
+      "owner": "overhaul_career_garage_switchMap",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/MapTravelPanel.vue",
+      "mountOn": {
+        "event": "MapTravelStaging",
+        "when": {
+          "visible": true
+        },
+        "bufferEvents": [
+          "MapTravelBlocked",
+          "MapTravelUnavailable"
+        ]
+      },
+      "resync": {
+        "method": "overhaul_career_garage_switchMap.requestStagingData"
+      }
+    },
+    {
+      "id": "PhoneLockNotificationOverlay",
+      "owner": "overhaul_phone_apps_layout",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/PhoneLockNotificationOverlay.vue"
+    },
+    {
+      "id": "PhoneTutorialOverlay",
+      "owner": "overhaul_career_guide_guide",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/PhoneTutorialOverlay.vue",
+      "mountOn": {
+        "event": "PhoneTutorialStart"
+      }
+    },
+    {
+      "id": "RoadsideRepairOverlay",
+      "owner": "overhaul_career_repair_repairScreen",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/RoadsideRepairOverlay.vue",
+      "mountOn": {
+        "event": "roadsideRepairPopup",
+        "when": {
+          "visible": true
+        }
+      }
+    },
+    {
+      "id": "ActivityPromptHost",
+      "owner": null,
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/activitystart/ActivityPromptHost.vue",
+      "mountOn": {
+        "event": "OverhaulActivityAcceptUpdate",
+        "bufferEvents": [
+          "ActivityAcceptUpdate",
+          "ActivityAcceptClose",
+          "MenuOpenModule",
+          "ChangeState"
+        ]
+      }
+    },
+    {
+      "id": "CareerSaveIndicator",
+      "owner": "overhaul_career_saveSystem",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/CareerSaveIndicator.vue",
+      "mountOn": {
+        "event": "OverhaulSaveStatus"
+      }
+    },
+    {
+      "id": "StudioRentalOverlay",
+      "owner": "overhaul_career_garage_studioRentals_studioRentals",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/StudioRentalOverlay.vue",
+      "mountOn": {
+        "event": "StudioRentalState",
+        "when": {
+          "visible": true
+        }
+      },
+      "resync": {
+        "method": "overhaul_career_garage_studioRentals_studioRentals.requestState"
+      }
+    },
+    {
+      "id": "auction-strip",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/AuctionStripOverlay.vue",
+      "mountOn": {
+        "event": "UsedAuctionState",
+        "when": {
+          "sessionActive": true
+        }
+      },
+      "resync": {
+        "method": "overhaul_career_market_auction_auction.publishAuctionState"
+      }
+    }
+  ],
+  "reservedRouteOwners": {
+    "menu.overhaulManager": "overhaul_ui_routes"
+  }
+}

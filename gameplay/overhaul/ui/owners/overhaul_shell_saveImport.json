@@ -1,0 +1,22 @@
+{
+  "id": "overhaul_shell_saveImport",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "aliases": []
+  },
+  "acquisitions": [
+    {
+      "id": "profiles.saveImport",
+      "order": 180,
+      "modes": {
+        "overhaul": true
+      },
+      "extensions": [
+        "overhaul_shell_saveImport"
+      ],
+      "release": [],
+      "namespace": true
+    }
+  ]
+}

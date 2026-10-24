@@ -1,0 +1,6 @@
+{
+  "id": "cleanupClub",
+  "order": 160,
+  "extension": "overhaul_jobs_cleanupClub",
+  "definition": "overhaul/jobs/cleanupClub/activity"
+}

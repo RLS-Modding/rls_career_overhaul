@@ -1,0 +1,173 @@
+// RLS career house style for full-screen card UIs (Employee Shift, Drop Off, supply pickups).
+// Import inside a scoped <style lang="scss"> block; everything is em-based off .rls-shell so the
+// screen keeps the same share of the display at 720p..4K while honouring the player's UI scale.
+
+.rls-shell {
+  font-size: clamp(0.7rem, calc(1.48vh * var(--ui-scale, 1)), 2.4rem);
+  color: #fff;
+  min-width: 0;
+  max-height: 100%;
+  min-height: 0;
+  align-self: flex-start;
+  display: flex;
+  --accent: var(--bng-orange-b400, #ff6600);
+  --panel: rgba(255, 255, 255, 0.06);
+  --panel-2: rgba(255, 255, 255, 0.1);
+  --line: rgba(255, 255, 255, 0.1);
+  --muted: rgba(255, 255, 255, 0.72);
+  --faint: rgba(255, 255, 255, 0.55);
+  --money: #fde68a;
+  --ok: #4ade80;
+  --warn: #fbbf24;
+  --bad: #fca5a5;
+}
+.rls-shell > .rls-card {
+  --bng-card-height: auto;
+  --bg-opacity: 0.9;
+  --bng-icon-color: currentColor;
+  font-size: inherit;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 100%;
+  border-radius: 0.6em;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 14px 40px rgba(0, 0, 0, 0.45);
+}
+.rls-card :deep(.card-cnt) { border-radius: 0.6em; }
+.rls-card :deep(.card-heading) { font-size: 1.45em; display: flex; align-items: center; gap: 0.6em; padding-right: 0.9em; }
+.hd-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hd-status { flex: 0 0 auto; font-size: 0.5em; font-style: normal; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.55em 0.75em 0.15em; line-height: 1; border-radius: 1em; background: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.75); }
+.hd-status.on { background: rgba(74, 222, 128, 0.18); color: #86efac; }
+.hd-status.ready { background: rgba(255, 102, 0, 0.22); color: #ffb27a; }
+.hd-status.warn { background: rgba(251, 191, 36, 0.2); color: #fde68a; }
+
+.card-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding: 0.25em 1em 0.9em;
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+.card-content::-webkit-scrollbar { width: 0.5em; height: 0.5em; }
+.card-content::-webkit-scrollbar-track { background: transparent; }
+.card-content::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.22); border-radius: 1em; border: 0.12em solid transparent; background-clip: padding-box; }
+.card-content::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.38); background-clip: padding-box; }
+.card-content::-webkit-scrollbar-thumb:active { background: var(--accent); background-clip: padding-box; }
+
+// ---- hero image band (facility / vehicle) with copy over a gradient
+.hero { position: relative; border-radius: 0.5em; overflow: hidden; background: rgba(0, 0, 0, 0.35); aspect-ratio: 16 / 5; min-height: 6em; }
+.hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to right, rgba(16, 16, 18, 0.85) 0%, rgba(16, 16, 18, 0.35) 55%, rgba(16, 16, 18, 0) 100%); pointer-events: none; }
+.hero-copy { position: absolute; left: 1em; right: 1em; bottom: 0.8em; z-index: 1; display: grid; gap: 0.15em; }
+.hero-copy strong { font-size: 1.25em; line-height: 1.15; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8); }
+.hero-copy span { color: rgba(255, 255, 255, 0.75); font-size: 0.9em; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8); }
+
+// ---- stat strip
+.stats { display: flex; flex-wrap: wrap; gap: 0.5em 1.9em; padding-bottom: 0.8em; border-bottom: 1px solid var(--line); }
+.stat { display: grid; gap: 0.15em; }
+.stat-key { font-size: 0.68em; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: rgba(255, 255, 255, 0.5); }
+.stat-value { font-weight: 700; font-size: 1.08em; line-height: 1.2; }
+.stat-value small { font-weight: 600; font-size: 0.75em; color: rgba(255, 255, 255, 0.55); margin-left: 0.2em; }
+.stat.money .stat-value { color: var(--money); }
+.stat.warn .stat-key { color: var(--warn); }
+.stat.warn .stat-value { color: var(--money); font-size: 0.95em; font-weight: 600; }
+.stat.ok .stat-value { color: var(--ok); }
+
+// ---- text
+.block { display: grid; gap: 0.65em; }
+.block-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 0.25em 1em; }
+.kicker { font-size: 0.75em; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--accent); }
+.kicker.spaced { margin-top: 0.4em; }
+.hint { font-size: 0.8em; font-weight: 600; color: var(--faint); }
+.block-title { margin: 0; font-size: 1.3em; font-weight: 700; line-height: 1.2; }
+.muted { margin: 0; color: var(--muted); font-size: 0.92em; font-weight: 600; }
+.note { margin: 0; color: #cbd5e1; font-size: 0.95em; font-weight: 600; }
+.note.accident, .note.warn { color: #fdba74; }
+.status-error { margin: 0; color: var(--bad); font-weight: 600; }
+.status-ok { margin: 0; color: #86efac; font-weight: 600; }
+
+// ---- pills
+.pills { display: flex; flex-wrap: wrap; gap: 0.3em; }
+.pill { display: inline-flex; align-items: center; gap: 0.25em; width: fit-content; justify-self: start; padding: 0.4em 0.5em 0.1em; line-height: 1; border-radius: 0.3em; background: rgba(255, 255, 255, 0.09); color: rgba(255, 255, 255, 0.8); font-size: 0.74em; font-weight: 700; white-space: nowrap; }
+.pill :deep(.bng-icon), .pill :deep(svg) { font-size: 1.15em; position: relative; top: -0.13em; }
+.pill.accent { background: rgba(255, 102, 0, 0.25); color: #ffb27a; }
+.pill.ok { background: rgba(74, 222, 128, 0.18); color: #86efac; }
+.pill.bad { background: rgba(252, 165, 165, 0.18); color: var(--bad); }
+.pill.soft { background: transparent; color: var(--faint); padding-left: 0; }
+.lock { width: 1.45em; height: 1.45em; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; flex: 0 0 auto; }
+.lock-pill .lock { width: 0.95em; height: 0.95em; position: relative; top: -0.13em; }
+
+// ---- ledger rows (wages, legs)
+.ledger { display: grid; gap: 0.3em; }
+// centred rows of one height; the amount is an inline-flex so the currency glyph (an empty inline-block that
+// otherwise sits on the baseline and towers over the digits) lines up with the numbers
+.ledger-row { display: flex; justify-content: space-between; align-items: center; gap: 1em; min-height: 2.3em; padding: 0.45em 0.6em; border-radius: 0.35em; background: var(--panel); }
+.ledger-row span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ledger-row strong { flex: 0 0 auto; display: inline-flex; align-items: center; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.ledger-row strong .cur { font-size: 1.15em; transform: translateY(-0.04em); margin-right: 0.12em; }
+.ledger-row.damage { color: #fde68a; }
+.ledger-row .negative { color: var(--bad); }
+.ledger-row .dim { color: var(--faint); }
+
+// ---- vehicle tiles: image first
+.fleet { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(14em, 100%), 1fr)); gap: 0.6em; }
+/* Long lists scroll inside their own box (slim scrollbar) instead of pushing the whole card off screen. */
+.scroll-list { display: flex; flex-direction: column; gap: 0.6em; max-height: clamp(16em, 48vh, 34em); overflow-y: auto; overflow-x: hidden; scrollbar-gutter: stable; padding-right: 0.35em; }
+.scroll-list > * { flex: 0 0 auto; }
+.scroll-list::-webkit-scrollbar { width: 0.5em; }
+.scroll-list::-webkit-scrollbar-track { background: transparent; }
+.scroll-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.22); border-radius: 1em; border: 0.12em solid transparent; background-clip: padding-box; }
+.scroll-list::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.38); background-clip: padding-box; }
+.scroll-list::-webkit-scrollbar-thumb:active { background: var(--accent); background-clip: padding-box; }
+.vehicle { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; border-radius: 0.4em; overflow: hidden; background: var(--panel); min-width: 0; }
+.vehicle-img { position: relative; aspect-ratio: 16 / 8; background: rgba(0, 0, 0, 0.35); }
+.vehicle-img img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.vehicle-img::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(20, 20, 22, 0.75), rgba(20, 20, 22, 0) 55%); pointer-events: none; }
+.vehicle.locked .vehicle-img img, .vehicle.off .vehicle-img img { filter: grayscale(0.9) brightness(0.55); }
+.vehicle.locked strong, .vehicle.off strong { color: rgba(255, 255, 255, 0.55); }
+.vehicle.assigned, .vehicle.picked { box-shadow: inset 0 0 0 1px rgba(255, 102, 0, 0.5); }
+.vehicle-copy { display: grid; gap: 0.3em; padding: 0.5em 0.65em 0.6em; min-width: 0; }
+/* vehicle names get two lines before they clip */
+.vehicle-copy strong { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; line-height: 1.2; align-self: start; max-height: 2.4em; }
+.img-lock { position: absolute; top: 0.45em; right: 0.45em; color: #fff; display: grid; place-items: center; z-index: 1; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.9)); }
+.img-badge { position: absolute; top: 0.45em; right: 0.45em; z-index: 1; }
+
+// ---- action row + buttons
+.actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 0.5em 0.6em; padding-top: 0.35em; }
+.actions-note { flex: 1 1 14em; min-width: 0; margin: 0; align-self: flex-end; padding-bottom: 0.45em; color: rgba(255, 255, 255, 0.6); font-size: 0.82em; line-height: 1.3; }
+// Controller / keyboard focus for the card screens: the house ring (same values as rlsHouse --focus),
+// drawn for the game's controller class (.focus-visible) and :focus-visible. position:relative keeps
+// the game's absolute ::before frame on the control (unanchored it grew into an oval over the card);
+// the frame itself is hidden because the ring replaces it.
+$card-focus-ring: 0 0 0 1.5px rgba(14, 14, 16, 0.95), 0 0 0 3.5px var(--bng-orange-b400, #ff6600), 0 0 0.9em -0.15em rgba(255, 102, 0, 0.55);
+@mixin card-focus {
+  position: relative;
+  &.focus-visible {
+    outline: none;
+    box-shadow: $card-focus-ring;
+  }
+  &.focus-visible::before {
+    display: none !important;
+  }
+}
+
+.btn { appearance: none; border: 0; margin: 0; padding: 0.72em 1.2em 0.58em; border-radius: 0.6em; font: inherit; font-weight: 700; line-height: 1; letter-spacing: 0.01em; color: #fff; background: rgba(255, 255, 255, 0.1); cursor: pointer; white-space: nowrap; transition: background-color 0.12s, transform 0.08s, box-shadow 0.12s; }
+.btn:hover { background: rgba(255, 255, 255, 0.18); }
+.btn:active { transform: translateY(1px); }
+.btn { @include card-focus; }
+.btn:disabled { opacity: 0.45; cursor: default; transform: none; }
+.btn-primary { background: var(--accent); }
+.btn-primary:hover { background: #ff7a1f; }
+.btn-primary:disabled { background: var(--accent); }
+.btn-danger { background: #b91c1c; }
+.btn-danger:hover { background: #dc2626; }
+
+// ---- two-column body for pickup screens
+.columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1em; align-items: start; }
+@media (max-width: 900px) { .columns { grid-template-columns: minmax(0, 1fr); } }
+.panel { padding: 0.75em 0.8em; border-radius: 0.5em; background: var(--panel); display: grid; gap: 0.4em; }
+.panel .big { font-size: 1.6em; font-weight: 800; line-height: 1.1; }

@@ -1,0 +1,8 @@
+{
+  "id": "damageManager",
+  "order": 230,
+  "callbacks": [
+    {"id": "damageDataWritten", "extension": "overhaul_career_repair_damageManager", "fn": "onDamageDataWritten", "guard": "none"},
+    {"id": "damageVehicleDelete", "extension": "overhaul_career_repair_damageManager", "fn": "deleteVehicleDelayed", "guard": "none"}
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "id": "computer",
+  "order": 400,
+  "listName": "computers",
+  "uiLabel": "ui.facilities.type.computer"
+}

@@ -1,0 +1,6 @@
+{
+  "id": "work",
+  "order": 20,
+  "module": "overhaul/career/work/employment/startDefaults",
+  "pendingField": "pendingEmploymentApprenticeship"
+}

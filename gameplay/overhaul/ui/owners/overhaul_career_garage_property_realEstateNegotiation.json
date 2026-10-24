@@ -1,0 +1,23 @@
+{
+  "id": "overhaul_career_garage_property_realEstateNegotiation",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 270,
+    "aliases": [
+      "career_modules_realEstateNegotiation"
+    ]
+  },
+  "routes": [
+    {
+      "name": "realEstateNegotiation",
+      "order": 70,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "play"
+        }
+      }
+    }
+  ]
+}

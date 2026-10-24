@@ -1,0 +1,148 @@
+{
+  "id": "commerce-passive",
+  "version": 1,
+  "aliases": [
+    {
+      "kind": "passiveOwnerMap",
+      "from": "wcusaDinoCafe",
+      "to": "rls_west_coast",
+      "facilityId": "wcusaDinoCafe",
+      "maxSaveVersion": 1
+    },
+    {
+      "kind": "passiveOwnerMap",
+      "from": "wcusaMiniMart",
+      "to": "rls_west_coast",
+      "facilityId": "wcusaMiniMart",
+      "maxSaveVersion": 1
+    },
+    {
+      "kind": "passiveOwnerMap",
+      "from": "wcusaCanalStMart",
+      "to": "rls_west_coast",
+      "facilityId": "wcusaCanalStMart",
+      "maxSaveVersion": 1
+    },
+    {
+      "kind": "passiveOwnerMap",
+      "from": "wcusaLuCafe",
+      "to": "rls_west_coast",
+      "facilityId": "wcusaLuCafe",
+      "maxSaveVersion": 1
+    },
+    {
+      "kind": "passiveOwnerMap",
+      "from": "wcusaHongCafe",
+      "to": "rls_west_coast",
+      "facilityId": "wcusaHongCafe",
+      "maxSaveVersion": 1
+    },
+    {
+      "kind": "passiveOwnerMap",
+      "from": "wcusaRainbowBoutique",
+      "to": "rls_west_coast",
+      "facilityId": "wcusaRainbowBoutique",
+      "maxSaveVersion": 1
+    },
+    {
+      "kind": "passiveOwnerMap",
+      "from": "wcusaChineseSupermarket",
+      "to": "rls_west_coast",
+      "facilityId": "wcusaChineseSupermarket",
+      "maxSaveVersion": 1
+    },
+    {
+      "kind": "passiveOwnerMap",
+      "from": "wcusaHongNailSalon",
+      "to": "rls_west_coast",
+      "facilityId": "wcusaHongNailSalon",
+      "maxSaveVersion": 1
+    },
+    {
+      "kind": "passiveOwnerMap",
+      "from": "wcusaLuNailSalon",
+      "to": "rls_west_coast",
+      "facilityId": "wcusaLuNailSalon",
+      "maxSaveVersion": 1
+    },
+    {
+      "kind": "passiveOwnerMap",
+      "from": "wcusaGreenNailsAndSpa",
+      "to": "rls_west_coast",
+      "facilityId": "wcusaGreenNailsAndSpa",
+      "maxSaveVersion": 1
+    },
+    {
+      "kind": "passiveOwnerMap",
+      "from": "wcusaHongGiftShop",
+      "to": "rls_west_coast",
+      "facilityId": "wcusaHongGiftShop",
+      "maxSaveVersion": 1
+    },
+    {
+      "kind": "passiveOwnerMap",
+      "from": "wcusaRedFortuneGifts",
+      "to": "rls_west_coast",
+      "facilityId": "wcusaRedFortuneGifts",
+      "maxSaveVersion": 1
+    },
+    {
+      "kind": "passiveOwnerMap",
+      "from": "wcusaLuGiftShop",
+      "to": "rls_west_coast",
+      "facilityId": "wcusaLuGiftShop",
+      "maxSaveVersion": 1
+    },
+    {
+      "kind": "passiveOwnerMap",
+      "from": "wcusaHongBaoJewelry",
+      "to": "rls_west_coast",
+      "facilityId": "wcusaHongBaoJewelry",
+      "maxSaveVersion": 1
+    },
+    {
+      "kind": "passiveOwnerMap",
+      "from": "wcusaJinYuJewelers",
+      "to": "rls_west_coast",
+      "facilityId": "wcusaJinYuJewelers",
+      "maxSaveVersion": 1
+    },
+    {
+      "kind": "passiveOwnerMap",
+      "from": "wcusaDryCleaning",
+      "to": "rls_west_coast",
+      "facilityId": "wcusaDryCleaning",
+      "maxSaveVersion": 1
+    },
+    {
+      "kind": "passiveOwnerMap",
+      "from": "wcusaMenteStore",
+      "to": "rls_west_coast",
+      "facilityId": "wcusaMenteStore",
+      "maxSaveVersion": 1
+    },
+    {
+      "kind": "passiveOwnerMap",
+      "from": "wcusaAsianShop",
+      "to": "rls_west_coast",
+      "facilityId": "wcusaAsianShop",
+      "maxSaveVersion": 1
+    },
+    {
+      "kind": "passiveParkingSpot",
+      "from": "spearleafLogistics_gate1",
+      "to": "spearleafLogistics_parkingA",
+      "levelId": "rls_west_coast",
+      "facilityId": "spearleafLogistics",
+      "maxSaveVersion": 1
+    },
+    {
+      "kind": "passiveParkingSpot",
+      "from": "Parking 696",
+      "to": "miniMart",
+      "levelId": "rls_west_coast",
+      "facilityId": "wcusaMiniMartReceiving",
+      "maxSaveVersion": 1
+    }
+  ]
+}

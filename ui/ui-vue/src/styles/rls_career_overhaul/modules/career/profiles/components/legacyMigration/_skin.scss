@@ -1,0 +1,75 @@
+// Shared skin for the migration modal's shell and children. Vue scopes each block to the component that includes it, so a
+// child includes only the blocks it renders. Include shared blocks before component-local rules so local rules take precedence.
+@use "./tokens" as *;
+
+@mixin lmm-section {
+  .lmm-section {
+    margin-top: 1.1em;
+
+    h3 { margin: 0; font-size: 0.95em; }
+    h4 { margin: 0; font-size: 0.85em; }
+  }
+}
+
+@mixin lmm-section-heading {
+  .lmm-section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    margin-bottom: 0.55em;
+  }
+}
+
+@mixin lmm-count {
+  .lmm-count {
+    color: $muted;
+    font-size: 0.78em;
+  }
+}
+
+@mixin lmm-summary-panel {
+  .lmm-summary {
+    margin-top: 0.75em;
+    border: 1px solid rgba(71, 85, 105, 0.35);
+    border-radius: 10px;
+    background: rgba(15, 23, 42, 0.4);
+    overflow: hidden;
+  }
+
+  .lmm-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .lmm-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.05em;
+    padding: 0.7em 0.9em;
+    border-left: 1px solid rgba(71, 85, 105, 0.28);
+
+    &:first-child { border-left: 0; }
+
+    strong { font-size: 1.3em; line-height: 1.15; }
+    span { color: $muted; font-size: 0.72em; }
+    em { color: $risk; font-style: normal; }
+  }
+}
+
+@mixin lmm-hint {
+  .lmm-hint {
+    margin: 0.35em 0 0;
+    color: $muted;
+    font-size: 0.74em;
+  }
+}
+
+/* Game currency glyph before amounts; inherits colour/size. */
+@mixin lmm-currency {
+  .cur {
+    margin-right: 0.1em;
+    transform: translateY(0.08em);
+  }
+}

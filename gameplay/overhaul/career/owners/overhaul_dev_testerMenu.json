@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_dev_testerMenu",
+  "order": 16,
+  "module": "overhaul/dev/testerMenu",
+  "scopes": [
+    {
+      "id": "testerMenu",
+      "order": 1
+    }
+  ],
+  "devKey": true
+}

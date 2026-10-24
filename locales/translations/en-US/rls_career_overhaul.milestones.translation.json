@@ -1,0 +1,14 @@
+{
+  "ui.career.milestones.status.clickToClaim": "Claim",
+  "ui.career.milestones.status.complete": "Completed",
+  "ui.career.milestones.tier": "Tier {{tier}} of {{tiers}}",
+  "ui.career.milestones.tierOpenEnded": "Tier {{tier}}",
+  "ui.career.milestones.duration.seconds": "{{seconds}} s",
+  "ui.career.milestones.duration.minutes": "{{minutes}} min",
+  "ui.career.milestones.duration.minutesSeconds": "{{minutes}} min {{seconds}} s",
+  "ui.career.milestones.insurance.repairClaims.descriptionOne": "Make 1 insurance claim.",
+  "ui.career.milestones.insurance.repairClaims.descriptionMany": "Make {{count}} insurance claims.",
+  "ui.career.milestones.statistic.rollovers.descriptionOne": "Roll a vehicle over once.",
+  "ui.career.milestones.statistic.rollovers.descriptionMany": "Roll vehicles over {{count}} times in total.",
+  "ui.career.milestones.statistic.airtime.descriptionTotal": "Spend a total of {{duration}} in the air."
+}

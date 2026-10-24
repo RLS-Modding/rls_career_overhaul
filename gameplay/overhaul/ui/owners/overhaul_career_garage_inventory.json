@@ -1,0 +1,19 @@
+{
+  "id": "overhaul_career_garage_inventory",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 440,
+    "aliases": [
+      "career_modules_inventory"
+    ]
+  },
+  "backHandlers": [
+    {
+      "id": "overhaulVehicleInventoryExitHandler",
+      "method": "requestPickerExit",
+      "alias": "vehicleInventoryExitHandler"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "id": "commerce-dealers",
+  "version": 1,
+  "aliases": [
+    {
+      "kind": "sellerStockRegeneration",
+      "from": "raceTab",
+      "to": "regenerate",
+      "levelId": "rls_west_coast",
+      "facilityId": "raceTab",
+      "maxSaveVersion": 0
+    },
+    {
+      "kind": "sellerStockRegeneration",
+      "from": "asotv",
+      "to": "regenerate",
+      "levelId": "rls_west_coast",
+      "facilityId": "asotv",
+      "maxSaveVersion": 0
+    }
+  ]
+}

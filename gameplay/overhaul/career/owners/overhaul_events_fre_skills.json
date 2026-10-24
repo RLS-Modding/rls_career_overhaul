@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_events_fre_skills",
+  "order": 30,
+  "module": "overhaul/events/fre/skills",
+  "scopes": [
+    {
+      "id": "children",
+      "order": 30,
+      "parent": "overhaul_events_fre_host"
+    }
+  ]
+}

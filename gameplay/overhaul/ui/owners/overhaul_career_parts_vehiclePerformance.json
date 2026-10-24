@@ -1,0 +1,39 @@
+{
+  "id": "overhaul_career_parts_vehiclePerformance",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 560,
+    "aliases": [
+      "career_modules_vehiclePerformance"
+    ]
+  },
+  "pauseActions": [
+    {
+      "id": "cancelCertification",
+      "order": 2,
+      "available": {
+        "owner": "overhaul_career_parts_vehiclePerformance",
+        "method": "isTestInProgress"
+      },
+      "execute": {
+        "owner": "overhaul_career_parts_vehiclePerformance",
+        "method": "cancelTest"
+      },
+      "button": {
+        "id": "cancelCertification",
+        "icon": "abandon",
+        "showIndicator": true
+      },
+      "labelKey": "ui.career.vehiclePerformance.cancelTest"
+    }
+  ],
+  "additionalMenuButtons": [
+    {
+      "id": "cancelCertification",
+      "order": 2,
+      "provider": "overhaul/career/parts/vehiclePerformance/menuButton"
+    }
+  ]
+}

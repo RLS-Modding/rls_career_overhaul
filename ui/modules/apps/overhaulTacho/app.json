@@ -1,0 +1,22 @@
+{
+  "domElement": "<overhaul-tacho></overhaul-tacho>",
+  "name": "Tachometer (Overhaul)",
+  "types": [
+    "ui.apps.categories.vehicle_info"
+  ],
+  "description": "The stock tachometer with the Career Overhaul low fuel warning sound.",
+  "css": {
+    "bottom": "5px",
+    "height": "300px",
+    "width": "300px",
+    "right": "5px"
+  },
+  "preserveAspectRatio": true,
+  "author": "RLS",
+  "version": "0.1",
+  "directive": "overhaulTacho",
+  "vue": true,
+  "category": "Dashboard",
+  "isAuxiliary": true,
+  "interactive": "no"
+}

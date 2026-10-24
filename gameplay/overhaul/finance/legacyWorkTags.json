@@ -1,0 +1,18 @@
+{
+  "deliveryReward": "delivery",
+  "delivery_parcel": "delivery",
+  "delivery_vehicle": "delivery",
+  "delivery_fluid": "delivery",
+  "delivery_dryBulk": "delivery",
+  "delivery_cement": "delivery",
+  "taxi": "taxi",
+  "police": "police",
+  "bus": "bus",
+  "repo": "repo",
+  "beamEats": "beamEats",
+  "ambulance": "ambulance",
+  "offroadRecovery": "recovery",
+  "facilityWork": "facilityWork",
+  "miningHaul": "miningHaul",
+  "cleanupClub": "cleanupClub"
+}

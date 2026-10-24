@@ -1,0 +1,52 @@
+{
+  "0-100 km/h":4.8,
+  "0-100 mph":8.3,
+  "0-200 km/h":11.7,
+  "0-200 mph":51,
+  "0-300 km/h":30.8,
+  "0-60 mph":4.6,
+  "100-0 km/h":32.4,
+  "100-200 km/h":6.9,
+  "60-0 mph":99.1,
+  "60-100 mph":3.7,
+  "Body Style":"Sedan",
+  "Braking G":1.214,
+  "Config Type":"Police",
+  "Configuration":"Police Redtail RWD (A)",
+  "Name":"Police Redtail RWD (A)",
+  "Off-Road Score":27,
+  "Population":500,
+  "Source":"Custom",
+  "Top Speed":91.62253242,
+  "Value":80000,
+  "aggregates":{
+    "Body Style":{
+      "Sedan":true
+    },
+    "Brand":{
+      "Bruckell":true
+    },
+    "Config Type":{
+      "Police":true
+    },
+    "Country":{
+      "United States":true
+    },
+    "Derby Class":{
+      "Full-Size Car":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Type":{
+      "Car":true
+    },
+    "Years":{
+      "max":2022,
+      "min":2016
+    }
+  },
+  "is_default_config":false,
+  "preview":"/vehicles/bastion/police_redtail.jpg"
+}

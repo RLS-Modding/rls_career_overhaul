@@ -1,0 +1,5 @@
+{
+  "id": "partShop",
+  "icon": "doorFrontCoins",
+  "routeTarget": "overhaul.computer.partShopping"
+}

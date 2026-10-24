@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":4500,  
+    "Configuration": "Used & Abused - Sedan ( Joe's Junk Career )",
+    "Description": "Beater Bluebuck Sedan with damaged body panels and misc junk parts.",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 112,
+    "Torque": 113,
+    "Value": 7500,
+    "Weight": 1605,
+    "Years": {
+      "max": 1963,
+      "min": 1962
+    }  
+}
+
+

@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":5000,  
+    "Configuration": "Simply Terrible ( Joe's Junk Career )",
+    "Description": "Terrible to drive, terrible to look at.",
+    "Drivetrain": "FWD",
+    "Fuel Type": "Gasoline",
+    "Power": 120,
+    "Torque": 121,
+    "Value": 2750,
+    "Weight": 1168,
+    "Years": {
+      "max": 1992,
+      "min": 1986
+    }  
+}
+
+

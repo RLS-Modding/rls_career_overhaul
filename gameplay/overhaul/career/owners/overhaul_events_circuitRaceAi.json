@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_events_circuitRaceAi",
+  "order": 20,
+  "module": "overhaul/events/circuitRaceAi",
+  "scopes": [
+    {
+      "id": "children",
+      "order": 20,
+      "parent": "overhaul_events_host"
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "perks" : {
+    "freeTowing" : {
+      "intro" : "insurance.perks.freeTowing.intro",
+      "description" : "insurance.perks.freeTowing.description",
+      "valueType" : "unit"
+    },
+    "accidentForgivenessAtRenewal" : {
+      "intro" : "insurance.perks.accidentForgivenessAtRenewal.intro",
+      "description" : "insurance.perks.accidentForgivenessAtRenewal.description",
+      "valueType" : "unit"
+    },
+    "instantRepair" : {
+      "intro" : "insurance.perks.instantRepair.intro",
+      "description" : "insurance.perks.instantRepair.description",
+      "valueType" : "boolean"
+    },
+    "fuelDiscount" : {
+      "intro" : "insurance.perks.fuelDiscount.intro",
+      "description" : "insurance.perks.fuelDiscount.description",
+      "valueType" : "percentage"
+    },
+    "freeRefuelDuringRepair" : {
+      "intro" : "insurance.perks.freeRefuelDuringRepair.intro",
+      "description" : "insurance.perks.freeRefuelDuringRepair.description",
+      "valueType" : "boolean"
+    },
+    "repairTimeDiscount" : {
+      "intro" : "insurance.perks.repairTimeDiscount.intro",
+      "description" : "insurance.perks.repairTimeDiscount.description",
+      "valueType" : "percentage"
+    },
+    "reduceDeductible" : {
+      "intro" : "insurance.perks.reduceDeductible.intro",
+      "description" : "insurance.perks.reduceDeductible.description",
+      "valueType" : "percentage"
+    },
+    "freeRepaintDuringRepair" : {
+      "intro" : "insurance.perks.freeRepaintDuringRepair.intro",
+      "description" : "insurance.perks.freeRepaintDuringRepair.description",
+      "valueType" : "boolean"
+    }
+  }
+}

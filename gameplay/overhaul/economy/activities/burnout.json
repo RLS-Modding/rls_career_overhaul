@@ -1,0 +1,22 @@
+{
+  "id": "burnout",
+  "order": 110,
+  "challengeDisplay": [
+    {
+      "order": 92,
+      "name": "Burnout",
+      "category": "Activity",
+      "key": "burnout"
+    },
+    {
+      "order": 94,
+      "name": "Burnout Competition",
+      "category": "Racing",
+      "key": "burnoutComp"
+    }
+  ],
+  "source": "freeroam_module",
+  "keys": ["burnout", "burnoutComp"],
+  "extension": "overhaul_events_host",
+  "activity": "burnout"
+}

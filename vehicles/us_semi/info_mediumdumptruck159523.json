@@ -1,0 +1,15 @@
+{
+  "Body Style": "Dump Truck",
+  "Config Type": "Loaner",
+  "Configuration": "Medium Dump Truck",
+  "Description": "A heavy-duty dump truck with high-capacity dynamic dry-bulk storage.",
+  "Name": "T-Series Medium Dump Truck",
+  "loanerName": "T-Series Medium Dump Truck",
+  "capacity": [
+    {"amount": 12000, "type": "dryBulk"}
+  ],
+  "defaultPaintName1": "White",
+  "defaultPaintName2": "Black",
+  "defaultPaintName3": "White",
+  "isAuxiliary": false
+}

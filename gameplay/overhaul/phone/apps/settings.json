@@ -1,0 +1,61 @@
+{
+  "id": "settings",
+  "name": "Settings",
+  "icon": "cogs",
+  "iconTile": "settings.png",
+  "route": "/overhaul/phone-settings",
+  "color": "#475569",
+  "iconColor": "#ffffff",
+  "category": "Tools",
+  "defaultPage": 0,
+  "defaultPosition": 1,
+  "defaultDock": 0,
+  "systemApp": true,
+  "hideFromStore": true,
+  "uiRoutes": [
+    {
+      "name": "phone-settings",
+      "path": "phone-settings",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneSettings.vue",
+      "uiOrder": 94,
+      "luaOrder": 61,
+      "backTarget": "phone-main"
+    },
+    {
+      "name": "phone-notification-settings",
+      "path": "phone-notification-settings",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneNotificationsHub.vue",
+      "uiOrder": 95,
+      "luaOrder": 51,
+      "backTarget": "phone-settings",
+      "title": "Notifications"
+    },
+    {
+      "name": "phone-notification-app-settings",
+      "path": "phone-notification-app-settings",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneNotificationAppSettings.vue",
+      "uiOrder": 96,
+      "luaOrder": 48,
+      "backTarget": "phone-notification-settings",
+      "title": "App notifications"
+    },
+    {
+      "name": "phone-notification-lock-screen",
+      "path": "phone-notification-lock-screen",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneNotificationLockScreenSettings.vue",
+      "uiOrder": 97,
+      "luaOrder": 50,
+      "backTarget": "phone-notification-settings",
+      "title": "Lock screen"
+    },
+    {
+      "name": "phone-notification-dnd",
+      "path": "phone-notification-dnd",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneNotificationDndSettings.vue",
+      "uiOrder": 98,
+      "luaOrder": 49,
+      "backTarget": "phone-notification-settings",
+      "title": "Do not disturb"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_events_fre_vehiclePool",
+  "order": 33,
+  "module": "overhaul/events/fre/vehiclePool",
+  "scopes": [
+    {
+      "id": "children",
+      "order": 33,
+      "parent": "overhaul_events_fre_host"
+    }
+  ]
+}

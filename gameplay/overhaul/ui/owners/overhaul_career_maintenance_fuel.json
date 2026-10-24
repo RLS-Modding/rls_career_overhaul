@@ -1,0 +1,18 @@
+{
+  "id": "overhaul_career_maintenance_fuel",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 400,
+    "aliases": [
+      "career_modules_fuel"
+    ]
+  },
+  "screens": [
+    {
+      "id": "refueling",
+      "target": "overhaul.refueling"
+    }
+  ]
+}

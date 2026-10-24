@@ -1,0 +1,41 @@
+{
+  "id": "overhaul_ui_bigMap",
+  "order": 102,
+  "module": "overhaul/ui/bigMap",
+  "scopes": [
+    {
+      "id": "services",
+      "order": 6
+    }
+  ],
+  "bigMap": {
+    "types": [
+      {
+        "id": "other",
+        "icon": "info"
+      }
+    ],
+    "groups": [
+      {
+        "id": "type_other",
+        "label": "Other",
+        "icon": "info",
+        "hideFromMap": true,
+        "placements": {
+          "freeroam": [
+            {
+              "section": "freeroamPois",
+              "order": 10
+            }
+          ],
+          "career": [
+            {
+              "section": "freeroamPois",
+              "order": 15
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

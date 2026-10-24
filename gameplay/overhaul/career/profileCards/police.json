@@ -1,0 +1,6 @@
+{
+  "id": "police",
+  "order": 10,
+  "module": "overhaul/career/police/policePreference/profileCard",
+  "stage": "attributes"
+}

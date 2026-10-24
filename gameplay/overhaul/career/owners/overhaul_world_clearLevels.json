@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_world_clearLevels",
+  "order": 118,
+  "module": "overhaul/world/clearLevels",
+  "scopes": [
+    {
+      "id": "settings",
+      "order": 3
+    }
+  ]
+}

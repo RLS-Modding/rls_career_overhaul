@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "parkingCompareSites": [
+    "city.sites.json",
+    "facilities/delivery/mixed.sites.json"
+  ],
+  "debugSpawn": {
+    "sceneObject": "spawns_servicestation"
+  },
+  "safeSpawn": {
+    "sceneObject": "spawns_servicestation"
+  }
+}

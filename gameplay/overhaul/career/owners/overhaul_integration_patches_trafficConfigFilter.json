@@ -1,0 +1,15 @@
+{
+  "id": "overhaul_integration_patches_trafficConfigFilter",
+  "order": 51,
+  "module": "overhaul/integration/patches/trafficConfigFilter",
+  "scopes": [
+    {
+      "id": "bootManual",
+      "order": 17
+    },
+    {
+      "id": "late",
+      "order": 6
+    }
+  ]
+}

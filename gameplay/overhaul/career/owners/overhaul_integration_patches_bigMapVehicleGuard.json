@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_integration_patches_bigMapVehicleGuard",
+  "order": 43,
+  "module": "overhaul/integration/patches/bigMapVehicleGuard",
+  "scopes": [
+    {
+      "id": "guards",
+      "order": 2
+    }
+  ]
+}

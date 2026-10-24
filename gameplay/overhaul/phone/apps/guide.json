@@ -1,0 +1,28 @@
+{
+  "id": "guide",
+  "name": "Wiki",
+  "icon": "info",
+  "iconTile": "guide.png",
+  "route": "/overhaul/phone-guide",
+  "color": "#6366f1",
+  "iconColor": "#ffffff",
+  "category": "Tools",
+  "storeTagline": "Career wiki and reference",
+  "storeDescription": "Browse wiki topics, track tutorial progress, and learn how career systems work.",
+  "defaultPage": 0,
+  "defaultPosition": 0,
+  "defaultHome": {
+    "slot": 0,
+    "required": true
+  },
+  "uiRoutes": [
+    {
+      "name": "phone-guide",
+      "path": "phone-guide",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneGuide.vue",
+      "uiOrder": 91,
+      "luaOrder": 35,
+      "backTarget": "phone-main"
+    }
+  ]
+}

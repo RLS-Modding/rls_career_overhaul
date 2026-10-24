@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":13000,  
+    "Configuration": "2.0 (M) ( Joe's Junk Career )",
+    "Description": "Base model ETK800 loaded with issues.",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 156,
+    "Torque": 158,
+    "Value": 2000,
+    "Weight": 1429,
+    "Years": {
+      "max": 2018,
+      "min": 2013
+    }  
+}
+
+

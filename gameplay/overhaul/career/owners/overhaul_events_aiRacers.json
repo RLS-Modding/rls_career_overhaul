@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_events_aiRacers",
+  "order": 18,
+  "module": "overhaul/events/aiRacers",
+  "scopes": [
+    {
+      "id": "children",
+      "order": 18,
+      "parent": "overhaul_events_host"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+"lansdale_skin_rlsusps": {
+    "information":{
+        "authors":"RamRod",
+        "name":"USBS",
+        "value":1337
+    },
+    "slotType" : "paint_design",
+    "globalSkin" : "rlsusbs"
+}
+}

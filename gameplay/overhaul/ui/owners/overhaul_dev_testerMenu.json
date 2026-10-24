@@ -1,0 +1,21 @@
+{
+  "id": "overhaul_dev_testerMenu",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "other",
+    "namespaceOrder": 110,
+    "aliases": []
+  },
+  "routes": [
+    {
+      "name": "card-tester",
+      "order": 3,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "play"
+        }
+      }
+    }
+  ]
+}

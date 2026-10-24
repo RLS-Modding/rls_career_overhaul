@@ -1,0 +1,15 @@
+{
+  "id": "overhaul_avatar_walkEnterVehicle",
+  "order": 2,
+  "module": "overhaul/avatar/walkEnterVehicle",
+  "scopes": [
+    {
+      "id": "bootManual",
+      "order": 26
+    },
+    {
+      "id": "late",
+      "order": 2
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+<link rel="stylesheet" type="text/css" href="/ui/modModules/overhaulFreeroamRaceHud/dakarFinish.css" />
+
+<div class="dkf-overlay" ng-if="visible">
+  <div class="dkf-backdrop" ng-click="dismiss()"></div>
+  <div class="dkf-card" overhaul-popup="dismiss()" bng-blur="true" ng-style="cardStyle()" ng-mousedown="startDrag($event)">
+    <div class="dkf-accent"></div>
+    <div class="dkf-head">
+      <div class="dkf-status">Event Complete</div>
+      <div class="dkf-title">Dakar</div>
+    </div>
+    <div class="dkf-placement">{{ payload.placement || 'Finished' }}</div>
+    <div class="dkf-body">
+      {{ payload.classLabel || 'Dakar' }} run complete across {{ (payload.totalDistanceKm || 0) | number:1 }} km.
+    </div>
+    <div class="dkf-rows">
+      <div class="dkf-row">
+        <span>Race Time</span>
+        <strong>{{ seconds(payload.elapsedSeconds) }}</strong>
+      </div>
+      <div class="dkf-row">
+        <span>Repair Penalty</span>
+        <strong>+{{ seconds(payload.repairPenaltySeconds) }}</strong>
+      </div>
+      <div class="dkf-row">
+        <span>Adjusted Time</span>
+        <strong>{{ seconds(payload.adjustedSeconds) }}</strong>
+      </div>
+      <div class="dkf-row">
+        <span>Base Reward</span>
+        <strong>{{ money(payload.baseReward) }}</strong>
+      </div>
+      <div class="dkf-row">
+        <span>Placement Bonus</span>
+        <strong>{{ money(payload.bonus) }}</strong>
+      </div>
+      <div class="dkf-row dkf-total">
+        <span>Total</span>
+        <strong>{{ money(payload.totalReward) }}</strong>
+      </div>
+    </div>
+    <div class="dkf-actions">
+      <button type="button" class="dkf-btn" bng-scoped-nav-autofocus ng-click="dismiss()">Continue</button>
+    </div>
+  </div>
+</div>

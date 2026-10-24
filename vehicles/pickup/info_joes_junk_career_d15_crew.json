@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":13000,  
+    "Configuration": "D15 Crew ( Joe's Junk Career )",
+    "Description": "Rear seats have been relocated in the bed for maximum fun.",
+    "Drivetrain": "4WD",
+    "Fuel Type": "Gasoline",
+    "Power": 231,
+    "Torque": 234,
+    "Value": 2250,
+    "Weight": 2264,
+    "Years": {
+      "max": 2003,
+      "min": 1998
+    }  
+}
+
+

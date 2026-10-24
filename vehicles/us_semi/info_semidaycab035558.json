@@ -1,0 +1,12 @@
+{
+  "Body Style": "Semi Truck",
+  "Config Type": "Loaner",
+  "Configuration": "Semi Day Cab",
+  "Description": "A short-wheelbase day-cab tractor for commercial fifth-wheel trailers.",
+  "Name": "T-Series Semi Day Cab",
+  "loanerName": "T-Series Semi Day Cab",
+  "defaultPaintName1": "White",
+  "defaultPaintName2": "Black",
+  "defaultPaintName3": "White",
+  "isAuxiliary": false
+}

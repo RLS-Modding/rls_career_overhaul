@@ -1,0 +1,114 @@
+{
+  "name": "ui.career.logistics.vehicleDelivery.name",
+  "description": "ui.career.logistics.vehicleDelivery.description",
+  "order": 2200,
+  "isSkill": true,
+  "icon": "keys1",
+  "startLocked": false,
+  "parentBranch": "labourer",
+  "levels": [
+    {
+      // Level 1
+      "requiredValue": 0,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Cheap Vehicles",
+        "description": "Deliver low-value factory-trim vehicles in the 1,000-15,000 range.",
+      },
+      "unlockFlags": [
+        "junkerVeh"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "carCrash",
+          "heading": "Cheap Tier",
+          "description": "Vehicle value range 1,000-15,000 with a target payout of 500 for a 3-mile run."
+        },
+      ],
+    },
+    {
+      // Level 2
+      "requiredValue": 50,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Budget Vehicles",
+        "description": "Deliver factory-trim vehicles in the 15,000-40,000 range.",
+      },
+      "unlockFlags": [
+        "smallVeh"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "car",
+          "heading": "Budget Tier",
+          "description": "Vehicle value range 15,000-40,000 with a target payout of 1,000 for a 3-mile run."
+        },
+      ],
+    },
+    {
+      // Level 3
+      "requiredValue": 250,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Medium + Heavy Vehicles",
+        "description": "Unlock medium-value factory cars and heavy-duty factory vehicles.",
+      },
+      "unlockFlags": [
+        "largeVeh",
+        "fleetVeh"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "deliveryTruck",
+          "heading": "Heavy Tier",
+          "description": "Heavy vehicles like T-Series/us_semi, citybus, and md_series with a target 5,000 for 3 miles."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "boxPickUp03",
+          "heading": "Medium Tier",
+          "description": "Factory-trim cars in the 40,000-100,000 range with a target payout of 2,000 for 3 miles."
+        },
+      ],
+    },
+    {
+      // Level 4
+      "requiredValue": 400,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "High End + Exotic",
+        "description": "Unlock high-end and exotic tiers with no config-type restriction.",
+      },
+      "unlockFlags": [
+        "exoticVeh"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "turbineL",
+          "heading": "High End / Exotic Tiers",
+          "description": "High End: 100,000-200,000 (target 3,500). Exotic: 200,000+ (target 4,000)."
+        }
+      ],
+    },
+    {
+      // Level 5
+      "requiredValue": 600,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Master Driver",
+        "description": "No additional vehicle tiers unlocked at this level.",
+      },
+      "unlockFlags": [],
+      "unlocks": [],
+    }
+  ],
+}

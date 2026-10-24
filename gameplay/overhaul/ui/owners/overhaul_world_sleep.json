@@ -1,0 +1,24 @@
+{
+  "id": "overhaul_world_sleep",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 300,
+    "aliases": [
+      "career_modules_sleep"
+    ]
+  },
+  "routes": [
+    {
+      "name": "sleep-menu",
+      "order": 74,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "play",
+          "title": "Sleep"
+        }
+      }
+    }
+  ]
+}

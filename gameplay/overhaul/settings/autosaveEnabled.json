@@ -1,0 +1,16 @@
+{
+  "id": "autosaveEnabled",
+  "key": "autosaveEnabled",
+  "order": 800,
+  "type": "boolean",
+  "default": true,
+  "section": "autosave",
+  "validateSingle": true,
+  "validateLoaded": false,
+  "ui": {
+    "label": "ui.overhaulManager.settings.autosaveEnabled.label",
+    "description": "ui.overhaulManager.settings.autosaveEnabled.description",
+    "section": "autosave",
+    "icon": "saveAs1"
+  }
+}

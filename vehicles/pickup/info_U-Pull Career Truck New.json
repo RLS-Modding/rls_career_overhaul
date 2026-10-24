@@ -1,0 +1,108 @@
+{
+  "0-100 km/h":8.9,
+  "0-100 mph":29,
+  "0-60 mph":8.3,
+  "100-0 km/h":41.6,
+  "60-0 mph":127.3,
+  "60-100 mph":20.7,
+  "Body Style":"Pickup",
+  "BoundingBox":[
+    [
+      -0.6,
+      -1.42,
+      -0.2999
+    ],
+    [
+      1.7,
+      4.095,
+      1.42
+    ]
+  ],
+  "Braking G":0.946,
+  "Config Type":"Loaner",
+  "Configuration":"U-Pull Career Truck New",
+  "Drivetrain":"RWD",
+  "Fuel Type":"Gasoline",
+  "Induction Type":"NA",
+  "Name":"Newer U-Pull D-Series With Cargo Boxes",
+  "Off-Road Score":35,
+  "Population":1000,
+  "Power":230,
+  "PowerPeakRPM":"4050 - 4900",
+  "Propulsion":"ICE",
+  "Source":"Custom",
+  "Top Speed":49.148647601593,
+  "Torque":420,
+  "TorquePeakRPM":"2950 - 3800",
+  "Transmission":"Automatic",
+  "Value":35000,
+  "Weight":2220,
+  "Weight/Power":9.6521739130435,
+  "aggregates":{
+    "Body Style":{
+      "Pickup":true
+    },
+    "Brand":{
+      "Gavril":true
+    },
+    "Country":{
+      "United States":true
+    },
+    "Derby Class":{
+      "Medium Truck":true
+    },
+    "Drivetrain":{
+      "RWD":true
+    },
+    "Fuel Type":{
+      "Gasoline":true
+    },
+    "Induction Type":{
+      "NA":true
+    },
+    "Propulsion":{
+      "ICE":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Transmission":{
+      "Automatic":true
+    },
+    "Type":{
+      "Truck":true
+    },
+    "Weight":{
+      "max":2220,
+      "min":2220
+    },
+    "Weight/Power":{
+      "max":9.6521739130435,
+      "min":9.6521739130435
+    }
+  },
+  "defaultPaint":{
+    "baseColor":[
+      0.16,
+      0.28,
+      0.56,
+      1
+    ],
+    "class":"factory",
+    "clearcoat":0,
+    "clearcoatRoughness":0,
+    "id":"sea_blue",
+    "metallic":0,
+    "name":"Sea Blue",
+    "roughness":0.07
+  },
+  "defaultPaintName1":"Sea Blue",
+  "defaultPaintName2":"Sea Blue",
+  "defaultPaintName3":"Sea Blue",
+  "infoFilename":"/vehicles/pickup/info_U-Pull Career Truck New.json",
+  "is_default_config":false,
+  "paints":{},
+  "pcFilename":"/vehicles/pickup/U-Pull Career Truck New.pc",
+  "preview":"/vehicles/pickup/U-Pull Career Truck New.jpg"
+}

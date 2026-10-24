@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_jobs_beamEats",
+  "order": 65,
+  "module": "overhaul/jobs/beamEats",
+  "scopes": [
+    {
+      "id": "bootManual",
+      "order": 12
+    }
+  ]
+}

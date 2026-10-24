@@ -1,0 +1,10 @@
+{
+  "derivedEventDefaults": {
+    "label": "Drag Strip",
+    "type": ["drag"],
+    "bestTimeS": 12,
+    "rewardMoney": 75,
+    "dragTreeType": ".500",
+    "displaySpeed": true
+  }
+}

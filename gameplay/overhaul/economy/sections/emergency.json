@@ -1,0 +1,9 @@
+{
+  "id": "emergency",
+  "order": 10,
+  "label": "Emergency",
+  "children": [
+    {"id": "police", "label": "Police", "skillKey": "careerSkills-emergency", "economyKeys": ["police", "criminal"]},
+    {"id": "paramedic", "label": "Paramedic", "skillKey": "careerSkills-emergency", "economyKeys": ["ambulance"]}
+  ]
+}

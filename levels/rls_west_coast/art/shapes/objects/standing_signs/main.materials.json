@@ -1,0 +1,45 @@
+{
+  "rlsstandingsign1": {
+    "name": "rlsstandingsign1",
+    "mapTo": "rlsstandingsign1",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorMap": "/levels/rls_west_coast/art/shapes/objects/rls_hwy_signs/basesignV2_b.color.png",
+        "metallicFactor": 0.119000003,
+        "roughnessFactor": 0.43599999,
+        "roughnessMap": "/levels/rls_west_coast/art/shapes/rls_signs/sign2d_r.data.png"
+      },
+      {
+        "metallicFactor": null,
+        "roughnessFactor": null
+      },
+      {
+        "metallicFactor": null,
+        "roughnessFactor": null
+      },
+      {
+        "metallicFactor": null,
+        "roughnessFactor": null
+      }
+    ],
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "rlsstandingsign2": {
+    "name": "rlsstandingsign2",
+    "mapTo": "rlsstandingsign2",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorMap": "/levels/rls_west_coast/art/shapes/objects/rls_hwy_signs/rls_sign2_b.color.png",
+        "roughnessMap": "/levels/rls_west_coast/art/shapes/rls_signs/sign2d_r.data.png"
+      },
+      {},
+      {},
+      {}
+    ],
+    "translucentBlendOp": "None",
+    "version": 1.5
+  }
+}

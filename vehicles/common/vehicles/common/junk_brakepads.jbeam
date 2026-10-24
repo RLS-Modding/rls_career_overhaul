@@ -1,0 +1,36 @@
+{
+//BASIC BRAKE PADS
+"brakepad_junk_F": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Junk Front Brake Pads",
+        "value":5,
+    },
+    "slotType" : "brakepad_F",
+    "pressureWheels": [
+        ["name","hubGroup","group","node1:","node2:","nodeS","nodeArm:","wheelDir"],
+        {"padMaterial":"basic", "padGlazingSusceptibility":2.5},
+    ],
+    "glowMap":{
+        "disc_brake_FR": {"simpleFunction":{"brakeGlow_FR":1}, "off":"disc_brake", "on":"disc_brake_glow", "materialEmissiveScaling":{"on_max":1.75}},
+        "disc_brake_FL": {"simpleFunction":{"brakeGlow_FL":1}, "off":"disc_brake", "on":"disc_brake_glow", "materialEmissiveScaling":{"on_max":1.75}},
+        "disc_brake_F" : {"simpleFunction":{"brakeGlow_F":1},  "off":"disc_brake", "on":"disc_brake_glow", "materialEmissiveScaling":{"on_max":1.75}},
+    },
+},
+"brakepad_junk_R": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Junk Rear Brake Pads",
+        "value":5,
+    },
+    "slotType" : "brakepad_R",
+    "pressureWheels": [
+        ["name","hubGroup","group","node1:","node2:","nodeS","nodeArm:","wheelDir"],
+        {"padMaterial":"basic", "padGlazingSusceptibility":2.5},
+    ],
+    "glowMap":{
+        "disc_brake_RR": {"simpleFunction":{"brakeGlow_RR":1}, "off":"disc_brake", "on":"disc_brake_glow", "materialEmissiveScaling":{"on_max":1.75}},
+        "disc_brake_RL": {"simpleFunction":{"brakeGlow_RL":1}, "off":"disc_brake", "on":"disc_brake_glow", "materialEmissiveScaling":{"on_max":1.75}},
+    },
+},
+}

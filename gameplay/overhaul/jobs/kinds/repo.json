@@ -1,0 +1,30 @@
+{
+  "id": "repo",
+  "order": 30,
+  "activity": "employmentShift.repo",
+  "economyKey": "repo",
+  "policy": {
+    "repossession": true,
+    "openEnded": true
+  },
+  "equipment": [],
+  "vehicleRoles": [],
+  "cargoKinds": [],
+  "payModel": {
+    "heldWages": true
+  },
+  "handlers": {
+    "surgeLeaf": {
+      "module": "overhaul/career/work/employment/kinds/repo",
+      "fn": "surgeLeaf"
+    },
+    "rejectSpawn": {
+      "module": "overhaul/career/work/employment/kinds/assignmentLoad",
+      "fn": "rejectSpawn"
+    },
+    "presentationReady": {
+      "module": "overhaul/career/work/employment/kinds/assignmentLoad",
+      "fn": "presentationReady"
+    }
+  }
+}

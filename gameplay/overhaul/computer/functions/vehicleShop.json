@@ -1,0 +1,5 @@
+{
+  "id": "vehicleShop",
+  "icon": "carCoins",
+  "routeTarget": "overhaul.computer.vehicleShopping"
+}

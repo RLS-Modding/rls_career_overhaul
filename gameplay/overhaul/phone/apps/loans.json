@@ -1,0 +1,102 @@
+{
+  "id": "loans",
+  "name": "Loans",
+  "icon": "beamCurrency",
+  "iconTile": "loans.png",
+  "route": "/overhaul/phone-loans",
+  "color": "#5a8dee",
+  "iconColor": "#ffffff",
+  "category": "Finance",
+  "storeTagline": "Borrow and repay",
+  "storeDescription": "View active loans, make payments, and track what you owe without visiting a branch.",
+  "defaultPage": 0,
+  "defaultPosition": 0,
+  "notifications": [
+    {
+      "key": "loans.paymentMissed",
+      "label": "Payment Missed",
+      "default": true,
+      "description": "Failed scheduled payment",
+      "order": 0
+    },
+    {
+      "key": "loans.paymentMade",
+      "label": "Payment Made",
+      "default": true,
+      "description": "Successful autopay",
+      "order": 1
+    },
+    {
+      "key": "loans.paidOff",
+      "label": "Loan Paid Off",
+      "default": true,
+      "description": "Loan fully repaid",
+      "order": 2
+    },
+    {
+      "key": "loans.approved",
+      "label": "Loan Activity",
+      "default": true,
+      "description": "New loan, debt conversion",
+      "order": 3
+    },
+    {
+      "key": "loans.prepayment",
+      "label": "Prepayment",
+      "default": true,
+      "description": "Extra payment applied",
+      "order": 4
+    }
+  ],
+  "notificationSources": [
+    "loans"
+  ],
+  "uiRoutes": [
+    {
+      "name": "phone-loans",
+      "path": "phone-loans",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneLoans.vue",
+      "uiOrder": 73,
+      "luaOrder": 37,
+      "backTarget": "phone-main"
+    },
+    {
+      "name": "phone-credit",
+      "path": "phone-credit",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneCredit.vue",
+      "uiOrder": 74,
+      "luaOrder": 29,
+      "backTarget": "phone-loans",
+      "title": "Credit"
+    },
+    {
+      "name": "phone-loan-details",
+      "path": "phone-loan/:loanId",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneLoanDetails.vue",
+      "uiOrder": 75,
+      "luaOrder": 36,
+      "backTarget": "phone-loans",
+      "props": true,
+      "title": "Prepay Loan"
+    },
+    {
+      "name": "phone-offer-details",
+      "path": "phone-loan-offer/:orgId",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneOfferDetails.vue",
+      "uiOrder": 76,
+      "luaOrder": 54,
+      "backTarget": "phone-loans",
+      "props": true,
+      "title": "New Loan"
+    },
+    {
+      "name": "phone-loan-settings",
+      "path": "phone-loan-settings",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneLoanSettings.vue",
+      "uiOrder": 77,
+      "luaOrder": 38,
+      "backTarget": "phone-loans",
+      "title": "Loan Settings"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":12500,  
+    "Configuration": "Used & Abused - Wagon ( Joe's Junk Career )",
+    "Description": "Beater Sunburst wagon with damaged body panels and misc junk parts.",
+    "Drivetrain": "FWD",
+    "Fuel Type": "Gasoline",
+    "Power": 144,
+    "Torque": 146,
+    "Value": 5200,
+    "Weight": 1262,
+    "Years": {
+      "max": 2014,
+      "min": 2009
+    }  
+}
+
+

@@ -1,0 +1,14 @@
+{
+  "id": "dynoSessionHudLayout",
+  "key": "dynoSessionHudLayout",
+  "order": 1100,
+  "type": "table",
+  "default": {
+    "x": 18,
+    "y": 18,
+    "width": 420
+  },
+  "section": "hud",
+  "validateSingle": false,
+  "validateLoaded": false
+}

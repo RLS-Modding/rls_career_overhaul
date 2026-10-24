@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":12500,  
+    "Configuration": "Used & Abused ( Joe's Junk Career )",
+    "Description": "Beater Bastion with damaged body panels and misc junk parts.",
+    "Drivetrain": "AWD",
+    "Fuel Type": "Gasoline",
+    "Power": 474,
+    "Torque": 480,
+    "Value": 15500,
+    "Weight": 2155,
+    "Years": {
+      "max": 2022,
+      "min": 2016
+    }  
+}
+
+

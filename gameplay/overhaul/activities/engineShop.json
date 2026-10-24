@@ -1,0 +1,6 @@
+{
+  "id": "engineShop",
+  "order": 330,
+  "extension": "overhaul_career_business_engineShop",
+  "definition": "overhaul/career/business/engineShop/activity"
+}

@@ -1,0 +1,6 @@
+{
+  "id": "derby",
+  "order": 110,
+  "extension": "overhaul_events_derby_derby",
+  "definition": "overhaul/events/derby/derby/derbyActivity"
+}

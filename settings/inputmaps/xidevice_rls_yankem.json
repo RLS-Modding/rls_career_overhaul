@@ -1,0 +1,30 @@
+{
+  "name": "XInput Device",
+  "imagePack": "xbox",
+  "bindings": [
+    {
+      "control": "modifier1 modifier2 btn_y",
+      "action": "rlsYankemToggle"
+    },
+    {
+      "control": "modifier1 modifier2 rpov",
+      "action": "rlsYankemNext"
+    },
+    {
+      "control": "modifier1 modifier2 lpov",
+      "action": "rlsYankemPrevious"
+    },
+    {
+      "control": "modifier1 modifier2 btn_a",
+      "action": "rlsYankemConfirm"
+    },
+    {
+      "control": "modifier1 modifier2 btn_x",
+      "action": "rlsYankemReelIn"
+    },
+    {
+      "control": "modifier1 modifier2 btn_b",
+      "action": "rlsYankemReelOut"
+    }
+  ]
+}

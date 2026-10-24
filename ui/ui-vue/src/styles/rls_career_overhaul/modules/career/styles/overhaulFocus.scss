@@ -1,0 +1,64 @@
+@use "sass:list";
+
+// Stock's focus-visible CLASS is the CEF/controller contract. Keep the frame
+// inside controls so clipped lists and phone screens cannot cut it off.
+@mixin overhaul-focus($transitions: ()) {
+  outline: 2px solid var(--phone-focus-color, rgba(255, 138, 61, .9)) !important;
+  outline-offset: -2px !important;
+  // A thin dark band inside the ring keeps it apart from orange fills.
+  box-shadow: inset 0 0 0 3px rgba(0, 0, 0, .35) !important;
+  transition: list.join($transitions, (outline-color 120ms ease, box-shadow 120ms ease), comma) !important;
+  @media (prefers-reduced-motion: reduce) { transition: none !important; }
+  &::before { display: none !important; }
+}
+
+:where(.overhaul-controller-ui, .rls-house, .phone-shell, .phone-lock-root) {
+  :where(button, a[href], [role="button"], [role="tab"], [bng-nav-item], [data-phone-control]) {
+    position: relative;
+    &.focus-visible:not([bng-scoped-nav]):not([type="range"]) { @include overhaul-focus; }
+  }
+  // A slider's box is only its thin track; ring the thumb the player moves.
+  input[type="range"].focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+    &::before { display: none !important; }
+    &::-webkit-slider-thumb {
+      box-shadow: 0 0 0 2px #0b0b12, 0 0 0 4px var(--phone-focus-color, rgba(255, 138, 61, .9)) !important;
+    }
+  }
+}
+
+// Profile screens and teleported field dialogs also need the shared field
+// frame, without changing the surrounding buttons' focus styles.
+:where(.overhaul-controller-ui, .rls-house, .phone-shell, .phone-lock-root, .profiles-container, .overhaul-popup, [data-focus-host]) {
+  :where(input, textarea, select) {
+    position: relative;
+    &.focus-visible:not([bng-scoped-nav]):not([type="range"]) { @include overhaul-focus; }
+  }
+  // The wrapper owns the visible box, including stock BngInput's icon/prefix
+  // and its controller scope. Editing the inner input keeps that same frame.
+  [data-focus-field]:has(:is(input, textarea, select).focus-visible:not([type="range"])),
+  .bng-input:has(input.focus-visible),
+  .bng-input.focus-visible,
+  .bng-select.focus-visible { @include overhaul-focus; }
+  // Stock children paint backgrounds over an inset outline on their root.
+  // Keep its frame above them without intercepting typing or clear buttons.
+  .bng-input:is(.focus-visible, :has(input.focus-visible))::after,
+  .bng-select.focus-visible::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    border-radius: inherit;
+    outline: inherit;
+    outline-offset: inherit;
+    box-shadow: inherit;
+    transition: inherit;
+  }
+  :is([data-focus-field], .bng-input) :is(input, textarea, select).focus-visible:not([type="range"]):not([bng-scoped-nav]) {
+    outline: none !important;
+    box-shadow: none !important;
+    &::before { display: none !important; }
+  }
+}

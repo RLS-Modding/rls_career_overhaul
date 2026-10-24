@@ -1,0 +1,8 @@
+{
+  "id": "vehicleOBD",
+  "order": 70,
+  "callbacks": [
+    {"id": "recordRecentObservations", "extension": "overhaul_vehicles_obdScanner", "fn": "recordRecentObservations", "guard": "function"},
+    {"id": "obdScannerGate", "extension": "overhaul_vehicles_obdScanner", "fn": "answerObdScannerGate", "guard": "lazy"}
+  ]
+}

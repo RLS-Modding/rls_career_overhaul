@@ -1,0 +1,53 @@
+{
+  "0-100 km/h":43.1,
+  "0-60 mph":39.8,
+  "Body Style":"Box Truck",
+  "Config Type":"Loaner",
+  "Configuration":"U-Pull Career Box",
+  "Name":"U-Pull MD-Series Box Truck",
+  "Off-Road Score":26,
+  "Population":1000,
+  "Source":"Custom",
+  "Top Speed":28.516262181768,
+  "Value":125000,
+  "aggregates":{
+    "Brand":{
+      "Gavril":true
+    },
+    "Country":{
+      "United States":true
+    },
+    "Derby Class":{
+      "Medium Truck":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Type":{
+      "Truck":true
+    }
+  },
+  "defaultPaint":{
+    "baseColor":[
+      0.83,
+      0.83,
+      0.83,
+      1.2
+    ],
+    "class":"factory",
+    "clearcoat":0,
+    "clearcoatRoughness":0,
+    "id":"white",
+    "metallic":0,
+    "name":"White",
+    "roughness":0.07
+  },
+  "defaultPaintName1":"White",
+  "defaultPaintName2":"White",
+  "defaultPaintName3":"White",
+  "is_default_config":false,
+  "paints":{},
+  "pcFilename":"/vehicles/md_series/U-Pull Career Box.pc",
+  "preview":"/vehicles/md_series/U-Pull Career Box.jpg"
+}

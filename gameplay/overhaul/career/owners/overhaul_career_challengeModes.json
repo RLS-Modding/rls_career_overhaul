@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_career_challengeModes",
+  "order": 5,
+  "module": "overhaul/career/challengeModes",
+  "scopes": [
+    {
+      "id": "bootManual",
+      "order": 20
+    }
+  ]
+}

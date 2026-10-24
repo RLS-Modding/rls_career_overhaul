@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_events_raceSession",
+  "order": 37,
+  "module": "overhaul/events/raceSession",
+  "scopes": [
+    {
+      "id": "children",
+      "order": 37,
+      "parent": "overhaul_events_host"
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "dryvan.skin.rlsupull_dryvan": {
+    "name": "dryvan.skin.rlsupull_dryvan",
+    "mapTo": "dryvan.skin.rlsupull_dryvan",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "vehicles/dryvan/dryvan_ao.data.png",
+        "baseColorMap": "vehicles/dryvan/dryvan_b.color.png",
+        "diffuseMapUseUV": null,
+        "metallicFactor": 1,
+        "metallicMap": "vehicles/dryvan/dryvan_m.data.png",
+        "normalMap": "vehicles/dryvan/dryvan_nm.normal.png",
+        "roughnessFactor": null,
+        "roughnessMap": "vehicles/dryvan/dryvan_r.data.png"
+      },
+      {
+        "ambientOcclusionMap": "/vehicles/dryvan/dryvan_ao.data.png",
+        "baseColorMap": "vehicles/dryvan/rlsupull_dryvan/dryvan_skin_rlsupull_dryvan.color.png",
+        "diffuseMapUseUV": 1,
+        "metallicFactor": 0.800000012,
+        "normalMap": "vehicles/dryvan/dryvan_nm.normal.png",
+        "opacityMap": "vehicles/dryvan/dryvan_c.data.png",
+        "roughnessFactor": 0.600000024
+      },
+      {
+        "diffuseMapUseUV": null,
+        "metallicFactor": null,
+        "roughnessFactor": null
+      },
+      {
+        "diffuseMapUseUV": null,
+        "metallicFactor": null,
+        "roughnessFactor": null
+      }
+    ],
+    "activeLayers": 2,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "version": 1.5
+  },
+    "dryvan_28ft.skin.rlsupull_dryvan": {
+    "name": "dryvan_28ft.skin.rlsupull_dryvan",
+    "mapTo": "dryvan_28ft.skin.rlsupull_dryvan",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "vehicles/dryvan/dryvan_ao.data.png",
+        "baseColorMap": "vehicles/dryvan/dryvan_b.color.png",
+        "colorPaletteMapUseUV": null,
+        "diffuseMapUseUV": null,
+        "metallicFactor": 1,
+        "metallicMap": "vehicles/dryvan/dryvan_m.data.png",
+        "normalMap": "vehicles/dryvan/dryvan_nm.normal.png",
+        "roughnessFactor": null,
+        "roughnessMap": "vehicles/dryvan/dryvan_r.data.png"
+      },
+      {
+        "ambientOcclusionMap": "/vehicles/dryvan/dryvan_ao.data.png",
+        "baseColorMap": "vehicles/dryvan/rlsupull_dryvan/dryvan_skin_rlsupull_dryvan_28ft.color.png",
+        "colorPaletteMapUseUV": 1,
+        "diffuseMapUseUV": 1,
+        "metallicFactor": 0.800000012,
+        "normalMap": "vehicles/dryvan/dryvan_nm.normal.png",
+        "opacityMap": "vehicles/dryvan/dryvan_c.data.png",
+        "roughnessFactor": 0.600000024
+      },
+      {
+        "colorPaletteMapUseUV": null,
+        "diffuseMapUseUV": null,
+        "metallicFactor": null,
+        "roughnessFactor": null
+      },
+      {
+        "colorPaletteMapUseUV": null,
+        "diffuseMapUseUV": null,
+        "metallicFactor": null,
+        "roughnessFactor": null
+      }
+    ],
+    "activeLayers": 2,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "version": 1.5
+  }
+}

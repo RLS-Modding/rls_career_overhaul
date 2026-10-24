@@ -1,0 +1,218 @@
+{
+  "deliveryProviders": [
+    {
+      "id": "apex_fuel",
+      "name": "levels.west_coast_usa.gasStationPoints.apex.title",
+      "description": "Receives various fuels.",
+      "preview": "facilities/fuel_apex.jpg",
+      "manualAccessPoints": [
+        {
+          "psName": "apex_fuel"
+        }
+      ],
+      "sitesFile": "fuelStations.sites.json",
+      "logisticTypesReceived": [
+        "gasoline",
+        "diesel"
+      ],
+      "logisticGenerators": [
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "gasoline"
+          ],
+          "materialType": "gasoline",
+          "capacity": 15000,
+          "target": 5000,
+          "variance": 2500,
+          "interval": 60,
+          "rate": 160
+        },
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "diesel"
+          ],
+          "materialType": "diesel",
+          "capacity": 15000,
+          "target": 5000,
+          "variance": 2500,
+          "interval": 60,
+          "rate": 160
+        }
+      ]
+    },
+    {
+      "id": "nodeoline_fuel",
+      "name": "levels.west_coast_usa.gasStationPoints.nodeoline.title",
+      "description": "Receives various fuels.",
+      "preview": "facilities/fuel_nodeoline.jpg",
+      "manualAccessPoints": [
+        {
+          "psName": "nodeoline_fuel"
+        }
+      ],
+      "sitesFile": "fuelStations.sites.json",
+      "showIncomingCargo": true,
+      "logisticTypesReceived": [
+        "gasoline",
+        "diesel"
+      ],
+      "logisticGenerators": [
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "gasoline"
+          ],
+          "materialType": "gasoline",
+          "capacity": 15000,
+          "target": 5000,
+          "variance": 2500,
+          "interval": 60,
+          "rate": 160
+        },
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "diesel"
+          ],
+          "materialType": "diesel",
+          "capacity": 15000,
+          "target": 5000,
+          "variance": 2500,
+          "interval": 60,
+          "rate": 160
+        }
+      ]
+    },
+    {
+      "id": "trilobite_city_fuel",
+      "name": "levels.west_coast_usa.gasStationPoints.trilobite_city.title",
+      "description": "Receives various fuels.",
+      "preview": "facilities/fuel_trilobite_city.jpg",
+      "manualAccessPoints": [
+        {
+          "psName": "trilobite_city_fuel"
+        }
+      ],
+      "sitesFile": "fuelStations.sites.json",
+      "showIncomingCargo": true,
+      "logisticTypesReceived": [
+        "gasoline",
+        "diesel"
+      ],
+      "logisticGenerators": [
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "gasoline"
+          ],
+          "materialType": "gasoline",
+          "capacity": 15000,
+          "target": 5000,
+          "variance": 2500,
+          "interval": 60,
+          "rate": 160
+        },
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "diesel"
+          ],
+          "materialType": "diesel",
+          "capacity": 15000,
+          "target": 5000,
+          "variance": 2500,
+          "interval": 60,
+          "rate": 160
+        }
+      ]
+    },
+    {
+      "id": "trilobite_garage_fuel",
+      "name": "levels.west_coast_usa.gasStationPoints.trilobite_garage.title",
+      "description": "Receives various fuels.",
+      "preview": "facilities/fuel_trilobite_garage.jpg",
+      "manualAccessPoints": [
+        {
+          "psName": "trilobite_garage_fuel"
+        }
+      ],
+      "sitesFile": "fuelStations.sites.json",
+      "showIncomingCargo": true,
+      "logisticTypesReceived": [
+        "gasoline",
+        "diesel"
+      ],
+      "logisticGenerators": [
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "gasoline"
+          ],
+          "materialType": "gasoline",
+          "capacity": 15000,
+          "target": 5000,
+          "variance": 2500,
+          "interval": 60,
+          "rate": 160
+        },
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "diesel"
+          ],
+          "materialType": "diesel",
+          "capacity": 15000,
+          "target": 5000,
+          "variance": 2500,
+          "interval": 60,
+          "rate": 160
+        }
+      ]
+    },
+    {
+      "id": "tyranos_island_fuel",
+      "name": "levels.west_coast_usa.gasStationPoints.tyranos_island.title",
+      "description": "Receives various fuels.",
+      "preview": "facilities/fuel_tyranos_island.jpg",
+      "manualAccessPoints": [
+        {
+          "psName": "tyranos_island_fuel"
+        }
+      ],
+      "sitesFile": "fuelStations.sites.json",
+      "showIncomingCargo": true,
+      "logisticTypesReceived": [
+        "gasoline",
+        "diesel"
+      ],
+      "logisticGenerators": [
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "gasoline"
+          ],
+          "materialType": "gasoline",
+          "capacity": 15000,
+          "target": 5000,
+          "variance": 2500,
+          "interval": 60,
+          "rate": 160
+        },
+        {
+          "type": "materialReceiver",
+          "logisticTypes": [
+            "diesel"
+          ],
+          "materialType": "diesel",
+          "capacity": 15000,
+          "target": 5000,
+          "variance": 2500,
+          "interval": 60,
+          "rate": 160
+        }
+      ]
+    }
+  ]
+}

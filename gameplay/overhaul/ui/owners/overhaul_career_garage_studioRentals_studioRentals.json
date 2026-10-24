@@ -1,0 +1,10 @@
+{
+  "id": "overhaul_career_garage_studioRentals_studioRentals",
+  "order": 100,
+  "exports": {
+    "namespace": false,
+    "aliases": [
+      "career_modules_rlsRentals"
+    ]
+  }
+}

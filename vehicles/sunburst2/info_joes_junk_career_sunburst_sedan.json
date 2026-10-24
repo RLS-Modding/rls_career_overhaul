@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":14500,  
+    "Configuration": "Crazy Ex-Girlfriend ( Joe's Junk Career )",
+    "Description": "Someone got frustrated on this car... Thanks hormones!",
+    "Drivetrain": "AWd",
+    "Fuel Type": "Gasoline",
+    "Power": 159,
+    "Torque": 161,
+    "Value": 11500,
+    "Weight": 1264,
+    "Years": {
+      "max": 2014,
+      "min": 2009
+    }  
+}
+
+

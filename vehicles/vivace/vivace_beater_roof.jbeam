@@ -1,0 +1,23 @@
+{
+"vivace_beater_roof": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Damaged Plain Roof (Body-Colored)",
+        "value":45,
+    },
+    "slotType" : "vivace_roof",
+        "slots2":[
+            ["name",            "allowTypes",        "denyTypes", "default", "description"],
+            ["vivace_lightbar", ["vivace_lightbar"], [],          "",        "Light Bar"],
+        ],
+    "sounds": {
+        "$+cabinFilterCoef": 0.16
+    }
+    "flexbodies": [
+         ["mesh", "[group]:", "nonFlexMaterials"],
+         ["vivace_beater_roof", ["vivace_body"]],
+         ["vivace_beater_pillarpanel", ["vivace_body"]],
+         ["vivace_beater_tailgate_spoiler", ["vivace_tailgate"]],
+    ],
+},
+}

@@ -1,0 +1,36 @@
+{
+  "id": "overhaul_phone_apps_minimap",
+  "order": 100,
+  "exports": {
+    "namespace": false,
+    "aliases": []
+  },
+  "acquisitions": [
+    {
+      "id": "phone.minimap",
+      "order": 40,
+      "modes": {
+        "overhaul": true,
+        "freeroam": true
+      },
+      "extensions": [
+        "overhaul_phone_apps_minimap"
+      ],
+      "release": [
+        "overhaul_phone_apps_minimap"
+      ],
+      "namespace": false
+    }
+  ],
+  "routes": [
+    {
+      "name": "phone-minimap",
+      "order": 47,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "phone-main"
+        }
+      }
+    }
+  ]
+}

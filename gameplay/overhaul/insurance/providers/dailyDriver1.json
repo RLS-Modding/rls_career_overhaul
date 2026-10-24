@@ -1,0 +1,105 @@
+{
+  "id": 1,
+  "name": "insurance.policies.dailyDriver1.name",
+  "slogan": "insurance.policies.dailyDriver1.slogan",
+  "class": "dailyDriver",
+  "image": "everydayinsure",
+  "color": "#ff0084",
+  "paperworkFees": 50,
+  "resetInsuranceScore": {
+    "price": {
+      "vouchers": {
+        "amount": 2,
+        "canBeNegative": false
+      }
+    },
+    "conditions": {
+      "minScore": 1.15
+    }
+  },
+  "gestures": {
+    "freeRepair": {
+      "distance": 50000
+    }
+  },
+  "perks": {
+    "fuelDiscount": {
+      "value": 0.25,
+      "isSignaturePerk": true
+    }
+  },
+  "coverageOptions": {
+    "paintRepair": {
+      "baseValueId": 1,
+      "choices": [
+        {
+          "value": true,
+          "premiumInfluence": 500
+        },
+        {
+          "value": false,
+          "premiumInfluence": 0
+        }
+      ]
+    },
+    "repairTime": {
+      "baseValueId": 2,
+      "choices": [
+        {
+          "value": 0,
+          "premiumInfluence": 1500
+        },
+        {
+          "value": 60,
+          "premiumInfluence": 850
+        },
+        {
+          "value": 180,
+          "premiumInfluence": 350
+        },
+        {
+          "value": 300,
+          "premiumInfluence": 50
+        }
+      ]
+    },
+    "roadsideAssistance": {
+      "baseValueId": 1,
+      "choices": [
+        {
+          "value": 0,
+          "premiumInfluence": 0
+        },
+        {
+          "value": 2,
+          "premiumInfluence": 300
+        },
+        {
+          "value": 4,
+          "premiumInfluence": 520
+        },
+        {
+          "value": 7,
+          "premiumInfluence": 860
+        }
+      ]
+    },
+    "deductible": {
+      "baseValueId": 2,
+      "choices": [
+        {
+          "value": 250,
+          "premiumInfluence": 2.2
+        },
+        {
+          "value": 500,
+          "premiumInfluence": 1.5
+        },
+        {
+          "value": 1000,
+          "premiumInfluence": 1
+        }
+      ]
+    }
+  }
+}

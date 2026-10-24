@@ -1,0 +1,105 @@
+{
+  "0-100 km/h":18.4,
+  "0-60 mph":17.3,
+  "100-0 km/h":102.6,
+  "60-0 mph":314.5,
+  "Body Style":"dnu",
+  "BoundingBox":[
+    [
+      -0.9714,
+      -5.31,
+      -0.7626
+    ],
+    [
+      1.8224,
+      3.634,
+      2.6784
+    ]
+  ],
+  "Braking G":0.383,
+  "Config Type":"Loaner",
+  "Configuration":"Spearleaf Sleeper",
+  "Drivetrain":"6x4",
+  "Fuel Type":"Diesel",
+  "Induction Type":"Turbo",
+  "Name":"T-Series Spearleaf Sleeper",
+  "Off-Road Score":24,
+  "Population":5000,
+  "Power":404,
+  "PowerPeakRPM":2050,
+  "Propulsion":"ICE",
+  "Source":"Custom",
+  "Top Speed":33.498174426869,
+  "Torque":1495,
+  "TorquePeakRPM":"1300 - 1850",
+  "Transmission":"Automatic",
+  "Value":160000,
+  "Weight":8990,
+  "Weight/Power":22.252475247525,
+  "aggregates":{
+    "0-100 km/h":{
+      "max":18.4,
+      "min":18.4
+    },
+    "0-60 mph":{
+      "max":17.3,
+      "min":17.3
+    },
+    "Brand":{
+      "Gavril":true
+    },
+    "Country":{
+      "United States":true
+    },
+    "Derby Class":{
+      "Heavy Truck":true
+    },
+    "Drivetrain":{
+      "6x4":true
+    },
+    "Fuel Type":{
+      "Diesel":true
+    },
+    "Induction Type":{
+      "Turbo":true
+    },
+    "Off-Road Score":{
+      "max":25,
+      "min":25
+    },
+    "Propulsion":{
+      "ICE":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Top Speed":{
+      "max":33.438984187146,
+      "min":33.438984187146
+    },
+    "Transmission":{
+      "Automatic":true
+    },
+    "Type":{
+      "Truck":true
+    },
+    "Weight":{
+      "max":8990,
+      "min":8990
+    },
+    "Weight/Power":{
+      "max":22.252475247525,
+      "min":22.252475247525
+    },
+    "Years":{
+      "max":1986,
+      "min":1971
+    }
+  },
+  "infoFilename":"/vehicles/us_semi/info_tc82_base_spearleaf_sleeper.json",
+  "is_default_config":false,
+  "paints":{},
+  "pcFilename":"/vehicles/us_semi/tc82_base_spearleaf_sleeper.pc",
+  "preview":"/vehicles/us_semi/tc82_base_spearleaf_sleeper.jpg"
+}

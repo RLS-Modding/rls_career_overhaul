@@ -1,0 +1,12 @@
+{
+  "dynos": [
+    {
+      "id": "dinoCafeDyno",
+      "name": "Dino Cafe Dyno",
+      "triggerName": "dynoSessionTrigger",
+      "sitesFile": "dynoSession.sites.json",
+      "parkingSpotName": "dynoSessionParking",
+      "businessBundleId": "wcusaDinoCafe"
+    }
+  ]
+}

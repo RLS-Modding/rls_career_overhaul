@@ -1,0 +1,215 @@
+<link rel="stylesheet" type="text/css" href="/ui/modModules/overhaulDynoSessionHud/overhaulDynoSessionHud.css" />
+
+<div class="dsh-root" style="visibility: hidden"
+     ng-style="{visibility: visible ? 'visible' : 'hidden', left: hudLayout.x + 'px', top: hudLayout.y + 'px'}"
+     ng-class="{ 'dsh-pulling': isPulling(), 'dsh-complete': isComplete() }">
+  <div class="dsh-panel" ng-if="visible" overhaul-popup="closeControls()" overhaul-popup-when="!state.waitingForVehicle &amp;&amp; (state.phase === 'offer' || state.phase === 'starting' || (controlsOpen &amp;&amp; !isPulling()))" ng-style="{width: panelWidth() + 'px'}">
+    <div class="dsh-header">
+      <div>
+        <div class="dsh-title">Dyno Session</div>
+        <div class="dsh-subtitle">{{ state.vehicleName || 'Current Vehicle' }}</div>
+      </div>
+      <div class="dsh-stage" ng-class="qualityClass()">{{ isPulling() ? formatStage(state.pullStage) : formatPhase() }}</div>
+    </div>
+
+    <div class="dsh-status">{{ statusText() }}</div>
+
+    <div class="dsh-offer" ng-if="state.phase === 'offer' || state.phase === 'starting'">
+      <div class="dsh-copy">
+        <span ng-if="state.ownerBenefit"><strong>Free — Owner benefit</strong>. Unlimited pulls.</span><span ng-if="!state.ownerBenefit">Run a three-pull dyno session for <strong>${{ state.fee || 0 }}</strong>.</span> The car will be placed on the dyno, and tire wear and thermals will be disabled for the session.
+      </div>
+      <div class="dsh-hub-selector">
+        <div class="dsh-hub-title">Dyno Hub</div>
+        <label class="dsh-hub-option" ng-repeat="hub in state.hubOptions track by hub.id" ng-class="{ 'dsh-hub-selected': selectedHubId === hub.id }">
+          <input type="radio" name="dsh-hub" ng-checked="selectedHubId === hub.id" ng-click="selectHub(hub.id)" ng-disabled="state.phase === 'starting'" />
+          <span>
+            <strong>{{ hub.label }}</strong>
+            <small>{{ hub.description }}</small>
+          </span>
+        </label>
+      </div>
+      <div class="dsh-ready" ng-if="state.repairRequired && state.repairQuote">
+        <div class="dsh-warning">Repair First to Start — private repair only. Tire wear and flats are ignored and preserved.</div>
+        <div class="dsh-row">
+          <span>Private Repair</span>
+          <strong>${{ state.repairQuote.repairCost || 0 }}</strong>
+        </div>
+        <div class="dsh-row">
+          <span>Dyno Session</span>
+          <strong>${{ state.repairQuote.dynoFee || state.fee || 0 }}</strong>
+        </div>
+        <div class="dsh-row">
+          <span>Combined Total</span>
+          <strong>${{ state.repairQuote.totalCost || 0 }}</strong>
+        </div>
+      </div>
+      <div class="dsh-warning" ng-if="state.support && state.support.reason">{{ state.support.reason }}</div>
+      <div class="dsh-warning" ng-if="state.error">{{ state.error }}</div>
+    </div>
+
+    <div class="dsh-ready" ng-if="state.phase === 'ready'">
+      <div class="dsh-row">
+        <span>Session State</span>
+        <strong>Ready</strong>
+      </div>
+      <div class="dsh-row">
+        <span>Dyno Hub</span>
+        <strong>{{ selectedHubLabel() }}</strong>
+      </div>
+      <div class="dsh-row">
+        <span>Instructions</span>
+        <strong>Start the engine, select a high forward gear, then arm the pull.</strong>
+      </div>
+      <div class="dsh-row">
+        <span>Pulls Remaining</span>
+        <strong>{{ state.unlimitedPulls ? "Unlimited pulls" : state.pullsRemaining }}</strong>
+      </div>
+    </div>
+
+    <div class="dsh-live" ng-if="state.phase === 'pulling'">
+      <div class="dsh-grid">
+        <div class="dsh-metric">
+          <span>RPM</span>
+          <strong>{{ formatRpm(state.liveSample.rpm) }}</strong>
+        </div>
+        <div class="dsh-metric">
+          <span>WHP</span>
+          <strong>{{ formatPower(state.liveSample.wheelPower) }}</strong>
+        </div>
+        <div class="dsh-metric">
+          <span>Dyno TQ</span>
+          <strong>{{ formatTorque(state.liveSample.wheelTorque) }}</strong>
+        </div>
+        <div class="dsh-metric">
+          <span>Gear</span>
+          <strong>{{ formatGear(state.liveSample) }}</strong>
+        </div>
+        <div class="dsh-metric">
+          <span>Throttle</span>
+          <strong>{{ formatPercent(state.liveSample.throttle) }}</strong>
+        </div>
+        <div class="dsh-metric">
+          <span>Brake</span>
+          <strong>{{ formatPercent(state.liveSample.brake) }}</strong>
+        </div>
+      </div>
+      <div class="dsh-counts">
+        <span>Pull {{ state.pullsUsed || 0 }} / {{ state.unlimitedPulls ? "Unlimited pulls" : state.pullLimit }}</span>
+        <span>Clean {{ state.acceptedSampleCount || 0 }}</span>
+        <span>Rejected {{ state.rejectedSampleCount || 0 }}</span>
+      </div>
+    </div>
+
+    <div class="dsh-results" ng-if="showResults()">
+      <div class="dsh-result-grid">
+        <div class="dsh-result-card">
+          <span>Peak Power</span>
+          <strong>{{ resultPower() }}</strong>
+          <small>{{ resultPowerRpm() }}</small>
+        </div>
+        <div class="dsh-result-card">
+          <span>Peak Dyno TQ</span>
+          <strong>{{ resultTorque() }}</strong>
+          <small>{{ resultTorqueRpm() }}</small>
+        </div>
+        <div class="dsh-result-card">
+          <span>Pull Quality</span>
+          <strong>{{ resultQuality() }}</strong>
+          <small>{{ displayResult().acceptedSampleCount || 0 }} accepted / {{ displayResult().rejectedSampleCount || 0 }} rejected</small>
+        </div>
+      </div>
+      <div class="dsh-curve-wrap" ng-if="powerCurvePoints()">
+        <div class="dsh-curve-legend">
+          <span class="dsh-legend-power">Current Power ({{ powerUnitLabel() }})</span>
+          <span class="dsh-legend-torque">Current TQ ({{ torqueUnitLabel() }})</span>
+          <span class="dsh-legend-compare-power" ng-if="comparisonPull()">Compared Power</span>
+          <span class="dsh-legend-compare-torque" ng-if="comparisonPull()">Compared TQ</span>
+        </div>
+        <svg class="dsh-curve" viewBox="0 0 720 320" preserveAspectRatio="xMidYMid meet" ng-mousemove="onGraphMouseMove($event)" ng-mouseleave="onGraphMouseLeave()">
+          <g class="dsh-grid-lines">
+            <line ng-repeat="line in graphYLabels() track by 'y' + line.value" ng-attr-x1="{{ line.x1 }}" ng-attr-y1="{{ line.y }}" ng-attr-x2="{{ line.x2 }}" ng-attr-y2="{{ line.y }}"></line>
+            <line ng-repeat="line in graphXLabels() track by 'x' + line.value" ng-attr-x1="{{ line.x }}" ng-attr-y1="{{ line.y1 }}" ng-attr-x2="{{ line.x }}" ng-attr-y2="{{ line.y2 }}"></line>
+          </g>
+          <rect class="dsh-plot-border" ng-attr-x="{{ graphPlot().x }}" ng-attr-y="{{ graphPlot().y }}" ng-attr-width="{{ graphPlot().w }}" ng-attr-height="{{ graphPlot().h }}"></rect>
+          <polyline class="dsh-power-line" ng-attr-points="{{ powerCurvePoints() }}"></polyline>
+          <polyline class="dsh-torque-line" ng-attr-points="{{ torqueCurvePoints() }}"></polyline>
+          <polyline class="dsh-compare-power-line" ng-if="comparisonPull()" ng-attr-points="{{ comparisonPowerCurvePoints() }}"></polyline>
+          <polyline class="dsh-compare-torque-line" ng-if="comparisonPull()" ng-attr-points="{{ comparisonTorqueCurvePoints() }}"></polyline>
+          <g class="dsh-axis-labels">
+            <text class="dsh-axis-y-label" ng-repeat="line in graphYLabels() track by 'yl' + line.value" x="74" ng-attr-y="{{ line.y }}">{{ line.value }}</text>
+            <text class="dsh-axis-x-label" ng-repeat="line in graphXLabels() track by 'xl' + line.value" ng-attr-x="{{ line.x }}" y="292">{{ line.label }}</text>
+            <text x="384" y="314" class="dsh-axis-title">RPM</text>
+          </g>
+          <g class="dsh-graph-hover" ng-if="graphHover">
+            <line class="dsh-hover-line" ng-attr-x1="{{ graphHover.x }}" ng-attr-y1="{{ graphHover.y1 }}" ng-attr-x2="{{ graphHover.x }}" ng-attr-y2="{{ graphHover.y2 }}"></line>
+            <circle class="dsh-hover-power" ng-attr-cx="{{ graphHover.x }}" ng-attr-cy="{{ graphHover.powerY }}" r="5"></circle>
+            <circle class="dsh-hover-torque" ng-attr-cx="{{ graphHover.x }}" ng-attr-cy="{{ graphHover.torqueY }}" r="5"></circle>
+            <rect class="dsh-hover-box" ng-attr-x="{{ graphHover.tooltipX }}" ng-attr-y="{{ graphHover.tooltipY }}" width="184" height="80" rx="6"></rect>
+            <text class="dsh-hover-rpm" ng-attr-x="{{ graphHover.tooltipTextX }}" ng-attr-y="{{ graphHover.tooltipRpmY }}">{{ graphHover.rpm }}</text>
+            <text class="dsh-hover-power-text" ng-attr-x="{{ graphHover.tooltipTextX }}" ng-attr-y="{{ graphHover.tooltipPowerY }}">{{ graphHover.power }}</text>
+            <text class="dsh-hover-torque-text" ng-attr-x="{{ graphHover.tooltipTextX }}" ng-attr-y="{{ graphHover.tooltipTorqueY }}">{{ graphHover.torque }}</text>
+          </g>
+        </svg>
+      </div>
+      <div class="dsh-history" ng-if="state.savedPulls.length">
+        <div class="dsh-history-heading">
+          <div>
+            <strong>Saved Pull History</strong>
+            <small>Select a pull to overlay on the current result.</small>
+          </div>
+          <button type="button" class="dsh-btn dsh-btn-secondary" data-dsh-action="compare" data-pull-id="" ng-if="selectedComparisonId !== null">Clear</button>
+        </div>
+        <div class="dsh-history-list">
+          <div class="dsh-history-row" ng-repeat="pull in state.savedPulls track by pull.id" ng-class="{ 'dsh-history-selected': selectedComparisonId == pull.id }">
+            <button type="button" class="dsh-history-compare" data-dsh-action="compare" data-pull-id="{{ pull.id }}">
+              <span class="dsh-history-radio">{{ selectedComparisonId == pull.id ? '●' : '○' }}</span>
+              <span>
+                <strong>{{ formatSavedPullDate(pull.savedAt) }}</strong>
+                <small>{{ formatSavedPullSummary(pull) }}</small>
+              </span>
+            </button>
+            <button type="button" class="dsh-history-delete" data-dsh-action="delete-pull" data-pull-id="{{ pull.id }}">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dsh-flags" ng-if="flagList.length">
+      <span ng-repeat="flag in flagList track by flag">{{ flag }}</span>
+    </div>
+
+    <div class="dsh-actions" ng-if="!isPulling()">
+      <button type="button" class="dsh-btn dsh-btn-primary" data-dsh-action="start" ng-if="(state.phase === 'offer' || state.phase === 'starting') && !state.repairRequired" ng-disabled="!canStartSession()">{{ state.ownerBenefit ? "Start Session — Free — Owner benefit" : "Start Session — $" + (state.fee || 0) }}</button>
+      <button type="button" class="dsh-btn dsh-btn-primary" data-dsh-action="repair-start" ng-if="(state.phase === 'offer' || state.phase === 'starting') && state.repairRequired" ng-disabled="!state.canRepairAndStart">Private Repair &amp; Start — ${{ state.repairQuote.totalCost || 0 }}</button>
+      <button type="button" class="dsh-btn dsh-btn-primary" data-dsh-action="arm" ng-if="state.phase === 'ready'" ng-disabled="!canArmPull()">Arm Pull</button>
+      <button type="button" class="dsh-btn dsh-btn-secondary" data-dsh-action="howto" ng-if="state.phase === 'ready' || state.phase === 'complete'">How It Works</button>
+      <button type="button" class="dsh-btn dsh-btn-secondary" data-dsh-action="maintenance" ng-if="state.phase === 'ready' || state.phase === 'complete'" ng-disabled="!state.canOpenMaintenance">Maintenance</button>
+      <button type="button" class="dsh-btn dsh-btn-secondary" data-dsh-action="tuning" ng-if="state.phase === 'ready' || state.phase === 'complete'" ng-disabled="!state.canOpenTuning">Engine Tuning</button>
+      <button type="button" class="dsh-btn dsh-btn-save" data-dsh-action="save" ng-if="state.phase === 'complete'" ng-disabled="state.currentResultSaved">{{ state.currentResultSaved ? 'Pull Saved' : 'Save Pull' }}</button>
+      <button type="button" class="dsh-btn dsh-btn-primary" data-dsh-action="arm" ng-if="state.phase === 'complete'" ng-disabled="!state.canRetry" ng-click="armPull()">{{ state.unlimitedPulls ? 'Do Another Pull — Unlimited pulls' : state.canRetry ? 'Do Another Pull (' + state.pullsRemaining + ' remaining)' : '3 Pulls Used' }}</button>
+      <button type="button" class="dsh-btn dsh-btn-secondary" bng-scoped-nav-autofocus data-dsh-action="leave" ng-if="state.phase === 'complete'" ng-click="leaveSession()">Done</button>
+      <button type="button" class="dsh-btn dsh-btn-secondary" bng-scoped-nav-autofocus data-dsh-action="leave" ng-if="state.phase !== 'complete'" ng-disabled="state.phase === 'leaving'" ng-click="leaveSession()">{{ state.phase === 'restoreFailed' ? 'Try Again' : state.phase === 'ready' ? 'Leave Session' : 'Cancel' }}</button>
+    </div>
+  </div>
+
+  <div class="dsh-howto-backdrop" ng-if="showHowTo">
+    <div class="dsh-howto" overhaul-popup="closeHowTo()" role="dialog" aria-modal="true" aria-labelledby="dsh-howto-title">
+      <div id="dsh-howto-title" class="dsh-howto-title">How to Run a Dyno Pull</div>
+      <ol>
+        <li>Start the engine.</li>
+        <li>Select a high forward gear suited to the vehicle—typically 3rd or 4th—and keep it in that gear.</li>
+        <li>Press <strong>Arm Pull</strong>. Hold the selected gear steady for a moment.</li>
+        <li>Apply at least <strong>90% throttle</strong>. Recording starts automatically.</li>
+        <li>Hold the same gear and throttle through the pull. Lift below <strong>75% throttle</strong> to finish.</li>
+      </ol>
+      <p>Avoid shifting or braking while recording; either will be reported in the pull warnings.</p>
+      <label class="dsh-howto-preference">
+        <input type="checkbox" ng-model="howToPreference.dontShowAgain" />
+        <span>Don't show this automatically again</span>
+      </label>
+      <div class="dsh-howto-actions">
+        <button type="button" class="dsh-btn dsh-btn-primary" bng-scoped-nav-autofocus data-dsh-action="howto-close">Got It</button>
+      </div>
+    </div>
+  </div>
+</div>

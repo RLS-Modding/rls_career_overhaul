@@ -1,0 +1,35 @@
+// Forklift mast actions — intentionally NOT named tiltUp/tiltDown/lift/lower.
+// Those names are claimed by common upfit/trailer actions (electrics.upfit_tilt),
+// which silently hijack forklift bindings after recent BeamNG updates.
+// Dedicated tilt writes mast_tilt_input; forkLiftMastInput resolves that into tilt_input
+// (preferring it over idle upfit_tilt=0).
+{
+"mastLift":{
+  "order":1,
+  "title":"Lift Forks",
+  "desc":"Raises the forks",
+  "onDown":"electrics.values.lift_input = 1",
+  "onUp":"electrics.values.lift_input = 0"
+},
+"mastLower":{
+  "order":2,
+  "title":"Lower Forks",
+  "desc":"Lowers the forks",
+  "onDown":"electrics.values.lift_input = -1",
+  "onUp":"electrics.values.lift_input = 0"
+},
+"mastTiltBack":{
+  "order":3,
+  "title":"Tilt Mast Back",
+  "desc":"Tilts the mast back",
+  "onDown":"electrics.values.mast_tilt_input = 1",
+  "onUp":"electrics.values.mast_tilt_input = 0"
+},
+"mastTiltForward":{
+  "order":4,
+  "title":"Tilt Mast Forward",
+  "desc":"Tilts the mast forward",
+  "onDown":"electrics.values.mast_tilt_input = -1",
+  "onUp":"electrics.values.mast_tilt_input = 0"
+}
+}

@@ -1,0 +1,404 @@
+/* RLS celebration card, house look (matches the career screens: near-black panel, one orange, gold money).
+   Sized in em off a resolution-scaled font so it keeps its share of the screen from 720p to 4K. */
+#celebration-popup-container {
+  --cel-panel: rgba(21, 21, 23, 0.92);
+  --cel-tile: rgba(255, 255, 255, 0.06);
+  --cel-line: rgba(255, 255, 255, 0.1);
+  --cel-muted: rgba(255, 255, 255, 0.72);
+  --cel-faint: rgba(255, 255, 255, 0.55);
+  --cel-accent: var(--bng-orange-b400, #ff6600);
+  --cel-money: #fde68a;
+  --cel-bad: #fca5a5;
+
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2000;
+  font-family: Overpass, var(--fnt-defs), sans-serif;
+  font-size: clamp(0.7rem, calc(1.48vh * var(--ui-scale, 1)), 2.4rem);
+}
+
+#celebration-popup-container .celebration-popup-host {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  pointer-events: none;
+}
+
+#celebration-popup-container .celebration-popup-wrapper {
+  width: 30em;
+  max-width: calc(100vw - 2em);
+  margin-top: 1.4em;
+  color: #fff;
+  pointer-events: none;
+  animation: cel-enter 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 300ms ease, transform 300ms ease;
+}
+
+#celebration-popup-container .celebration-popup-wrapper.closing {
+  opacity: 0;
+  transform: translateY(-0.6em);
+}
+
+@keyframes cel-enter {
+  from { opacity: 0; transform: translateY(-0.6em) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+
+#celebration-popup-container .celebration-card {
+  border-radius: 0.6em;
+  background: var(--cel-panel);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 0.9em 2.5em rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+#celebration-popup-container .card-cnt {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- head: orange badge with the glyph, caption over the big line */
+#celebration-popup-container .cel-head {
+  display: flex;
+  align-items: center;
+  gap: 0.9em;
+  padding: 1em 1.1em 0.9em;
+}
+
+#celebration-popup-container .cel-badge {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 3em;
+  height: 3em;
+  border-radius: 50%;
+  background: var(--cel-accent);
+}
+
+#celebration-popup-container .cel-glyph {
+  display: block;
+  width: 1.7em;
+  height: 1.7em;
+  background-color: #fff;
+  -webkit-mask: center / contain no-repeat;
+  mask: center / contain no-repeat;
+}
+
+#celebration-popup-container .cel-glyph.glyph-check {
+  -webkit-mask-image: url("/ui/ui-vue/src/assets/fonts/bngIcons/svg/checkmark.svg");
+  mask-image: url("/ui/ui-vue/src/assets/fonts/bngIcons/svg/checkmark.svg");
+}
+
+#celebration-popup-container .cel-glyph.glyph-flag {
+  -webkit-mask-image: url("/ui/ui-vue/src/assets/fonts/bngIcons/svg/raceFlag.svg");
+  mask-image: url("/ui/ui-vue/src/assets/fonts/bngIcons/svg/raceFlag.svg");
+}
+
+#celebration-popup-container .cel-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: grid;
+  gap: 0.15em;
+}
+
+#celebration-popup-container .cel-caption {
+  color: var(--cel-faint);
+  font-size: 0.78em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#celebration-popup-container .cel-level {
+  font-size: 2.1em;
+  font-weight: 800;
+  line-height: 1.05;
+  animation: cel-pop 350ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes cel-pop {
+  from { opacity: 0.2; transform: scale(0.85); transform-origin: left center; }
+  to { opacity: 1; transform: none; }
+}
+
+#celebration-popup-container .cel-name {
+  font-size: 1.45em;
+  font-weight: 800;
+  line-height: 1.12;
+  overflow-wrap: anywhere;
+}
+
+#celebration-popup-container .cel-position {
+  flex: 0 0 auto;
+  align-self: center;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#celebration-popup-container .cel-position .pos {
+  font-size: 1.8em;
+  font-weight: 800;
+}
+
+#celebration-popup-container .cel-position .field {
+  color: var(--cel-faint);
+  font-size: 0.95em;
+  font-weight: 700;
+}
+
+/* ---- body */
+#celebration-popup-container .cel-body {
+  display: grid;
+  gap: 0.75em;
+  padding: 0.85em 1.1em 1.05em;
+  border-top: 1px solid var(--cel-line);
+}
+
+#celebration-popup-container .cel-section {
+  color: var(--cel-faint);
+  font-size: 0.74em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#celebration-popup-container .cel-unlocks {
+  display: grid;
+  gap: 0.45em;
+}
+
+#celebration-popup-container .cel-unlock {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75em;
+  padding: 0.6em 0.75em;
+  border-radius: 0.45em;
+  background: var(--cel-tile);
+}
+
+#celebration-popup-container .cel-unlock + .cel-unlock {
+  margin-top: 0.45em;
+}
+
+#celebration-popup-container .cel-unlock-icon {
+  flex: 0 0 auto;
+  width: 1.5em;
+  height: 1.5em;
+  margin-top: 0.05em;
+  background-color: #fff;
+  -webkit-mask: center / contain no-repeat;
+  mask: center / contain no-repeat;
+}
+
+#celebration-popup-container .cel-unlock-icon.plain {
+  -webkit-mask-image: url("/ui/ui-vue/src/assets/fonts/bngIcons/svg/checkmark.svg");
+  mask-image: url("/ui/ui-vue/src/assets/fonts/bngIcons/svg/checkmark.svg");
+  background-color: var(--cel-faint);
+}
+
+#celebration-popup-container .cel-unlock-text {
+  min-width: 0;
+  display: grid;
+  gap: 0.15em;
+}
+
+#celebration-popup-container .cel-unlock-heading {
+  font-size: 1em;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+#celebration-popup-container .cel-unlock-desc {
+  color: var(--cel-muted);
+  font-size: 0.85em;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+/* contract facts as short chips */
+#celebration-popup-container .cel-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35em;
+}
+
+#celebration-popup-container .cel-chip {
+  padding: 0.4em 0.6em 0.22em;
+  border-radius: 0.3em;
+  background: var(--cel-tile);
+  color: var(--cel-muted);
+  font-size: 0.8em;
+  font-weight: 700;
+  line-height: 1;
+}
+
+#celebration-popup-container .cel-note {
+  color: var(--cel-muted);
+  font-size: 0.9em;
+  font-weight: 600;
+}
+
+/* race stats: label over value */
+#celebration-popup-container .cel-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(6em, 1fr));
+  gap: 0.45em;
+}
+
+#celebration-popup-container .cel-stat {
+  padding: 0.5em 0.7em 0.45em;
+  border-radius: 0.45em;
+  background: var(--cel-tile);
+}
+
+#celebration-popup-container .cel-stat .k {
+  color: var(--cel-faint);
+  font-size: 0.7em;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+#celebration-popup-container .cel-stat .v {
+  margin-top: 0.15em;
+  font-size: 1.05em;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+#celebration-popup-container .cel-laps {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11em, 1fr));
+  column-gap: 1em;
+}
+
+#celebration-popup-container .cel-lap {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  padding: 0.3em 0.4em;
+  border-radius: 0.3em;
+  font-variant-numeric: tabular-nums;
+}
+
+#celebration-popup-container .cel-lap .idx {
+  width: 1.6em;
+  text-align: right;
+  color: var(--cel-faint);
+  font-weight: 700;
+}
+
+#celebration-popup-container .cel-lap .time {
+  flex: 1 1 auto;
+  font-weight: 700;
+  color: var(--cel-muted);
+}
+
+#celebration-popup-container .cel-lap.best {
+  background: var(--cel-tile);
+}
+
+#celebration-popup-container .cel-lap.best .time {
+  color: #fff;
+}
+
+#celebration-popup-container .cel-lap.invalid .time {
+  color: var(--cel-faint);
+  text-decoration: line-through;
+}
+
+#celebration-popup-container .cel-lap .tag {
+  padding: 0.35em 0.5em 0.2em;
+  border-radius: 0.3em;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 0.7em;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+#celebration-popup-container .cel-lap .tag.bad {
+  color: var(--cel-bad);
+}
+
+#celebration-popup-container .cel-warning {
+  padding: 0.55em 0.75em;
+  border-radius: 0.45em;
+  background: rgba(253, 230, 138, 0.08);
+  color: var(--cel-money);
+  font-size: 0.85em;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+/* rewards: money gold with the coin glyph, XP plain */
+#celebration-popup-container .cel-rewards {
+  display: flex;
+  align-items: baseline;
+  gap: 1.2em;
+}
+
+#celebration-popup-container .cel-money,
+#celebration-popup-container .cel-xp {
+  font-size: 1.25em;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+#celebration-popup-container .cel-money {
+  color: var(--cel-money);
+}
+
+#celebration-popup-container .cel-money .cur {
+  display: inline-block;
+  width: 0.85em;
+  height: 0.85em;
+  margin-right: 0.15em;
+  background-color: currentColor;
+  -webkit-mask: url("/ui/ui-vue/src/assets/fonts/bngIcons/svg/beamCurrency.svg") center / contain no-repeat;
+  mask: url("/ui/ui-vue/src/assets/fonts/bngIcons/svg/beamCurrency.svg") center / contain no-repeat;
+}
+
+#celebration-popup-container .cel-xp .unit {
+  color: var(--cel-faint);
+  font-size: 0.75em;
+  font-weight: 700;
+}
+
+#celebration-popup-container .cel-rewards.muted {
+  opacity: 0.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #celebration-popup-container .celebration-popup-wrapper,
+  #celebration-popup-container .cel-level {
+    animation: none;
+  }
+}
+
+/* Keep every skill and unlock accessible without growing past the viewport. */
+#celebration-popup-container .cel-level-summary {
+  max-height: 72vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  pointer-events: auto;
+}
+
+#celebration-popup-container .cel-level-summary .card-cnt + .card-cnt {
+  border-top: 1px solid var(--cel-line);
+}
+
+#celebration-popup-container .cel-range-arrow {
+  color: var(--cel-accent);
+  font-size: 0.75em;
+}
+
+#celebration-popup-container .cel-unlock-count {
+  margin-left: 0.3em;
+  color: var(--cel-accent);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

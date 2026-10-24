@@ -1,0 +1,5 @@
+{
+  "id": "vehicleInventory",
+  "icon": "keys1",
+  "routeTarget": "overhaul.computer.vehicleInventory"
+}

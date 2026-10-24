@@ -1,0 +1,150 @@
+.mnh-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 8503;
+  pointer-events: none;
+}
+
+.mnh-card {
+  position: absolute;
+  pointer-events: auto;
+  box-sizing: border-box;
+  max-width: calc(100vw - 40px);
+  border: 1px solid rgba(216, 170, 72, 0.32);
+  border-radius: 8px;
+  background: rgba(13, 15, 18, 0.92);
+  color: #e9edf2;
+  padding: 16px;
+  box-shadow: 0 14px 44px rgba(0, 0, 0, 0.46);
+  cursor: grab;
+}
+
+.mnh-card:active {
+  cursor: grabbing;
+}
+
+.mnh-card-passive {
+  pointer-events: auto;
+  cursor: default;
+  opacity: 0.92;
+}
+
+.mnh-card-passive:active {
+  cursor: default;
+}
+
+.mnh-accent {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #d8aa48 0%, #86a35a 55%, #d8aa48 100%);
+}
+
+.mnh-head {
+  margin-bottom: 12px;
+}
+
+.mnh-pre {
+  color: rgba(233, 237, 242, 0.62);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.mnh-title {
+  margin-top: 2px;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.mnh-body p {
+  margin: 0 0 14px;
+  color: rgba(233, 237, 242, 0.82);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.mnh-route {
+  margin-bottom: 12px;
+  color: #f0c875;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.mnh-notice {
+  margin-bottom: 10px;
+  color: #b9d487;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.mnh-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.mnh-grid div {
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 9px 10px;
+}
+
+.mnh-grid .mnh-wide {
+  grid-column: 1 / -1;
+}
+
+.mnh-grid span {
+  display: block;
+  color: rgba(233, 237, 242, 0.58);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.mnh-grid strong {
+  display: block;
+  margin-top: 2px;
+  color: #f2d38a;
+  font-size: 16px;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+.mnh-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.mnh-btn {
+  min-height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 9px 14px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.mnh-btn-primary {
+  background: #b9822f;
+}
+
+.mnh-btn-secondary {
+  background: rgba(55, 66, 75, 0.95);
+}
+
+.mnh-btn-danger {
+  background: #944339;
+}

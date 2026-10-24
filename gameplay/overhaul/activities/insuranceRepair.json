@@ -1,0 +1,6 @@
+{
+  "id": "insuranceRepair",
+  "order": 380,
+  "extension": "overhaul_career_repair_insurance",
+  "definition": "overhaul/career/repair/insurance/activity"
+}

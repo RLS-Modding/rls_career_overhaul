@@ -1,0 +1,109 @@
+{
+  "id": "alderStrip",
+  "canBeReseted": true,
+  "canBeTeleported": true,
+  "context": "freeroam",
+  "dragType": "headsUpRace",
+  "stripId": "/levels/west_coast_usa/overhaul/dragstrips/alderStrip_main.strip.json",
+  "timers": [
+    {
+      "id": "reactionTime",
+      "label": "Reaction Time",
+      "shortLabel": "R/T",
+      "type": "distanceTimer",
+      "distance": 0.178,
+      "important": false
+    },
+    {
+      "id": "time_60",
+      "label": "60 ft",
+      "shortLabel": "60'",
+      "type": "distanceTimer",
+      "distance": 18.288,
+      "important": false
+    },
+    {
+      "id": "time_330",
+      "label": "330 ft",
+      "shortLabel": "330'",
+      "type": "distanceTimer",
+      "distance": 100.584,
+      "important": false
+    },
+    {
+      "id": "time_1_8",
+      "label": "1/8 mile",
+      "shortLabel": "1/8",
+      "type": "distanceTimer",
+      "distance": 201.168,
+      "important": false
+    },
+    {
+      "id": "time_1000",
+      "label": "1000 ft",
+      "shortLabel": "1000'",
+      "type": "distanceTimer",
+      "distance": 304.8,
+      "important": false
+    },
+    {
+      "id": "time_1_4",
+      "label": "1/4 mile",
+      "shortLabel": "1/4",
+      "type": "distanceTimer",
+      "distance": 402.336,
+      "important": true
+    },
+    {
+      "id": "velAt_1_8",
+      "label": "Speed at 1/8 mile",
+      "type": "velocity",
+      "distance": 201.168,
+      "important": false
+    },
+    {
+      "id": "velAt_1_4",
+      "label": "Speed at 1/4 mile",
+      "type": "velocity",
+      "distance": 402.336,
+      "important": false
+    }
+  ],
+  "phases": [
+    {
+      "dependency": true,
+      "name": "stage",
+      "startedOffset": 0
+    },
+    {
+      "dependency": true,
+      "name": "countdown",
+      "startedOffset": 0
+    },
+    {
+      "dependency": false,
+      "name": "race",
+      "startedOffset": 0
+    },
+    {
+      "dependency": false,
+      "name": "stop",
+      "startedOffset": 0
+    }
+  ],
+  "prefabs": {
+    "christmasTree": {
+      "isUsed": true,
+      "treeType": ".500"
+    },
+    "displaySign": {
+      "isUsed": true
+    },
+    "paths": {
+      "isUsed": false
+    },
+    "decorations": {
+      "isUsed": false
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_events_fre_host",
+  "order": 25,
+  "module": "overhaul/events/fre/host",
+  "scopes": [
+    {
+      "id": "freeroamEvents",
+      "order": 1
+    }
+  ]
+}

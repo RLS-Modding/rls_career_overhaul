@@ -1,0 +1,168 @@
+{
+"miramar_junk_fueltank": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Junk Fuel Tank",
+        "value":25,
+    },
+    "slotType" : "miramar_fueltank",
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["miramar_fueltank", ["miramar_body","miramar_shocktop_R"]],
+    ],
+    "variables": [
+        ["name", "type", "unit", "category", "default", "min", "max", "title", "description"],
+        ["$fuel", "range", "L", "Chassis", 15, 0, 30, "Fuel Volume", "Initial fuel volume", {"stepDis":0.5}],
+    ],
+    "energyStorage": [
+        ["type", "name"],
+        ["fuelTank", "mainTank"],
+    ],
+    "mainTank": {
+        "energyType":"gasoline",
+        "fuelCapacity": 40,
+        "startingFuelCapacity": "$fuel",
+        "fuel": {"[engineGroup]:":["fuel"]},
+        "breakTriggerBeam": "fuelTank",
+    },
+    "nodes": [
+         ["id", "posX", "posY", "posZ"],
+         //fuel tank particles
+         {"nodeMaterial":"|NM_PLASTIC"},
+         {"frictionCoef":1},
+         {"collision":true},
+         {"selfCollision":true},
+
+         //re-add trunk floor
+         {"nodeWeight":3.0},
+         {"group":"miramar_body"},
+         ["r6",    0.00, 1.85, 0.57],
+         {"group":""},
+
+         {"group":""},
+         {"nodeWeight":0.48},
+         {"engineGroup":["fuel"]},
+         {"chemEnergy":50,"burnRate":1.2,"flashPoint":220,"vaporPoint":97,"specHeat":0.03,"selfIgnitionCoef":0.4,"smokePoint":220,"containerBeam":"fuelTank"},
+         ["ft1", 0, 1.8, 0.5],
+         ["ft1l", 0.41, 1.8, 0.5],
+         ["ft1r", -0.41, 1.8, 0.5],
+         ["ft2", 0, 2, 0.5],
+         ["ft2l", 0.41, 2.0, 0.5],
+         ["ft2r", -0.41, 2.0, 0.5],
+         {"selfIgnitionCoef":false,"selfCollision":false},
+         ["ft3", 0, 1.6, 0.5],
+         ["ft3l", 0.41, 1.6, 0.5],
+         ["ft3r", -0.41, 1.6, 0.5],
+         {"chemEnergy":false,"burnRate":false,"flashPoint":false,"vaporPoint":false,"specHeat":false,"selfIgnitionCoef":false,"smokePoint":false,"containerBeam":false},
+         {"engineGroup":""},
+    ],
+    "beams": [
+          ["id1:", "id2:"],
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+
+          //fuel tank shell main shape
+          {"beamSpring":3501000,"beamDamp":75},
+          {"beamDeform":6000,"beamStrength":"FLT_MAX"},
+          {"deformLimitExpansion":1.1},
+          ["r6", "r6ll"],
+          ["r6", "r5"],
+          ["r6", "r6rr"],
+          ["r6", "r7"],
+          ["r3rr", "r3ll"],
+          //cross
+          {"beamDeform":3000},
+          {"deformLimitExpansion":""},
+          ["r6", "r5ll"],
+          ["r6", "r5rr"],
+          ["r6", "r7ll"],
+          ["r6", "r7rr"],
+          ["r2ll", "r3rr"],
+          ["r3ll", "r2rr"],
+          ["r3ll", "r4rr"],
+          ["r3rr", "r4ll"],
+          //corner
+          ["r6", "r3ll"],
+          ["r6", "r3rr"],
+          ["r6", "r4"],
+
+          {"beamSpring":25000,"beamDamp":200},
+          {"beamDeform":5000,"beamStrength":20000},
+          {"disableMeshBreaking":true,"disableTriangleBreaking":true},
+          //connect fuel particles to tank
+          {"breakGroup":""},
+          {"breakGroupType":1},
+          {"deformLimitExpansion":""},
+          ["ft1","r6ll"],
+          ["ft1","r6rr"],
+          ["ft1","r6", {"beamSpring":5000,"beamDamp":50}],
+          ["ft1","r5"],
+
+          ["ft3","r5ll"],
+          ["ft3","r5rr"],
+          ["ft3","r6"],
+          ["ft3","r5", {"beamSpring":5000,"beamDamp":50}],
+
+          {"breakGroup":"fueltank"},
+
+          ["ft1r","r6rr", {"beamSpring":5000,"beamDamp":50}],
+          ["ft1r","r5"],
+          ["ft1r","r5rr"],
+
+          ["ft1l","r6ll", {"beamSpring":5000,"beamDamp":50}],
+          ["ft1l","r5"],
+          ["ft1l","r5ll"],
+
+          ["ft2r","r6rr"],
+          ["ft2r","r3rr"],
+          ["ft2r","r6"],
+
+          ["ft2l","r6ll"],
+          ["ft2l","r3ll"],
+          ["ft2l","r6"],
+
+          ["ft3r","r6rr"],
+          ["ft3r","r5"],
+          ["ft3r","r5rr", {"beamSpring":5000,"beamDamp":50}],
+
+          ["ft3l","r6ll"],
+          ["ft3l","r5"],
+          ["ft3l","r5ll", {"beamSpring":5000,"beamDamp":50}],
+
+          ["ft2","r6rr"],
+          ["ft2","r6ll"],
+          ["ft2","r3rr"],
+          ["ft2","r3ll"],
+          ["ft2","r6"],
+
+          {"breakGroupType":0},
+          {"beamSpring":75,"beamDamp":1},
+          {"beamDeform":"FLT_MAX","beamStrength":30},
+          {"optional":true},
+          ["r5ll","r7", {"name":"fuelTank","containerBeam": "fuelTank"}],
+          ["r5rr","r7"],
+
+          ["r7rr","r5"],
+          ["r7ll","r5"],
+          {"optional":false},
+          {"deformLimitExpansion":1.1},
+          {"disableMeshBreaking":false,"disableTriangleBreaking":false},
+          {"breakGroup":""},
+    ],
+    "triangles": [
+            ["id1:","id2:","id3:"],
+            {"group":"miramar_bottom"},
+            {"dragCoef":16.8},
+            ["r2ll", "r2rr", "r3ll"],
+            ["r2rr", "r3rr", "r3ll"],
+            ["r3ll", "r3rr", "r4"],
+            ["r4ll", "r3ll", "r4"],
+            ["r3rr", "r4rr", "r4"],
+            ["r5", "r6ll", "r6rr"],
+            ["r6rr", "r6ll", "r7"],
+            ["r6ll", "r7ll", "r7"],
+            ["r6rr", "r7", "r7rr"],
+            {"breakGroup":""},
+            {"group":""},
+    ],
+},
+}

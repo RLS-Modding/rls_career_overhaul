@@ -1,0 +1,8 @@
+{
+  "id": "garageInventory",
+  "order": 240,
+  "callbacks": [
+    {"id": "inventoryPartConditions", "extension": "overhaul_career_garage_inventory", "fn": "updatePartConditions", "guard": "none"},
+    {"id": "inventoryCertifications", "extension": "overhaul_career_garage_inventory", "fn": "setCertifications", "guard": "none"}
+  ]
+}

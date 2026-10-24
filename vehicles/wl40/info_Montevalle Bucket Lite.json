@@ -1,0 +1,108 @@
+{
+  "Body Style":"Wheel Loader",
+  "BoundingBox":[
+    [
+      -1.52,
+      -8.483,
+      -1.14
+    ],
+    [
+      2.66,
+      3.901,
+      3.156
+    ]
+  ],
+  "Config Type":"Loaner",
+  "Configuration":"Montevalle Bucket Lite",
+  "Drivetrain":"4WD",
+  "Fuel Type":"Diesel",
+  "Induction Type":"Turbo",
+  "Name":"WL-40 Montevalle Bucket Lite",
+  "Off-Road Score":16,
+  "Population":500,
+  "Power":459,
+  "PowerPeakRPM":1900,
+  "Propulsion":"ICE",
+  "Source":"Custom",
+  "Top Speed":9.9014505841629,
+  "Torque":1945,
+  "TorquePeakRPM":1100,
+  "Transmission":"Automatic",
+  "Value":300000,
+  "Weight":49880,
+  "Weight/Power":108.67102396514,
+  "aggregates":{
+    "Body Style":{
+      "Wheel Loader":true
+    },
+    "Brand":{
+      "Hirochi":true
+    },
+    "Country":{
+      "Japan":true
+    },
+    "Derby Class":{
+      "Wheel Loader":true
+    },
+    "Drivetrain":{
+      "4WD":true
+    },
+    "Fuel Type":{
+      "Diesel":true
+    },
+    "Induction Type":{
+      "Turbo":true
+    },
+    "InsuranceClass":{
+      "commercial":true
+    },
+    "Propulsion":{
+      "ICE":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Transmission":{
+      "Automatic":true
+    },
+    "Type":{
+      "Heavy Machinery":true
+    },
+    "Weight":{
+      "max":49880,
+      "min":49880
+    },
+    "Weight/Power":{
+      "max":108.67102396514,
+      "min":108.67102396514
+    },
+    "Years":{
+      "max":2007,
+      "min":2000
+    }
+  },
+  "defaultPaint":{
+    "baseColor":[
+      0.8,
+      0.6,
+      0.07,
+      2
+    ],
+    "class":"custom",
+    "clearcoat":1,
+    "clearcoatRoughness":0.75,
+    "id":"heavy_machinery_yellow",
+    "metallic":0,
+    "name":"Yellow",
+    "roughness":1
+  },
+  "defaultPaintName1":"heavy_machinery_yellow",
+  "defaultPaintName2":"heavy_machinery_yellow",
+  "defaultPaintName3":"heavy_machinery_yellow",
+  "infoFilename":"/vehicles/wl40/info_Montevalle Bucket Lite.json",
+  "is_default_config":false,
+  "paints":{},
+  "pcFilename":"/vehicles/wl40/Montevalle Bucket Lite.pc",
+  "preview":"/vehicles/wl40/Montevalle Bucket Lite.jpg"
+}

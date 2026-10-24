@@ -1,0 +1,5 @@
+{
+  "id": "overhaul_career_garage_vehicleDeletionService",
+  "order": 1350,
+  "module": "overhaul/career/garage/vehicleDeletionService"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "overhaul_jobs_beamEats",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "aliases": []
+  },
+  "acquisitions": [
+    {
+      "id": "activity.beamEats",
+      "order": 110,
+      "modes": {
+        "overhaul": true,
+        "freeroam": true
+      },
+      "extensions": [
+        "overhaul_jobs_beamEats"
+      ],
+      "release": [],
+      "namespace": true
+    }
+  ]
+}

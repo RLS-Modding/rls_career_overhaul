@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":8500,  
+    "Configuration": "Still Broken Buster ( Joe's Junk Career )",
+    "Description": "Who taught that was a good idea?",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Diesel",
+    "Power": 168,
+    "Torque": 170,
+    "Value": 2250,
+    "Weight": 2617,
+    "Years": {
+      "max": 2003,
+      "min": 1998
+    }  
+}
+
+

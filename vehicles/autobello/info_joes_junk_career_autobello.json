@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":8500,  
+    "Configuration": "Piccolina ( Joe's Junk Career )",
+    "Description": "Seems to be in great shape... For a junker !",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 59,
+    "Torque": 59,
+    "Value": 1350,
+    "Weight": 717,
+    "Years": {
+      "max": 1968,
+      "min": 1964
+    }  
+}
+
+

@@ -1,0 +1,590 @@
+{
+"schoolbus_junk_windows_R_c": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Broken Right Windows",
+        "value":0,
+    },
+    "slotType" : "schoolbus_windows_R_c",
+    "sounds": {
+        "$+cabinFilterCoef": 0.00,
+    },
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+
+        ["schoolbus_window_R0_frame", ["schoolbus_windows"]],
+        ["schoolbus_window_R1_frame", ["schoolbus_windows"]],
+        ["schoolbus_window_R2_frame", ["schoolbus_windows"]],
+        ["schoolbus_window_R4_frame", ["schoolbus_windows"]],
+        ["schoolbus_window_R5_frame", ["schoolbus_windows"]],
+        ["schoolbus_window_R6_frame", ["schoolbus_windows"]],
+        ["schoolbus_window_R8_frame", ["schoolbus_windows"]],
+        ["schoolbus_window_R9_frame", ["schoolbus_windows"]],
+
+        {"deformGroup":"window_R1", "deformMaterialBase":"md_series_schoolbus_window", "deformMaterialDamaged":"md_series_schoolbus_window_dmg"},
+        ["schoolbus_window_R0", ["schoolbus_windows"],[],{"deformSound":"event:>Destruction>Vehicle>Glass>glassbreaksound4", "deformVolume":0.0}],
+        {"deformGroup":"window_R2", "deformMaterialBase":"md_series_schoolbus_window", "deformMaterialDamaged":"md_series_schoolbus_window_dmg"},
+        ["schoolbus_window_R1", ["schoolbus_windows"],[],{"deformSound":"event:>Destruction>Vehicle>Glass>glassbreaksound5", "deformVolume":0.0}],
+        {"deformGroup":"window_R3", "deformMaterialBase":"md_series_schoolbus_window", "deformMaterialDamaged":"md_series_schoolbus_window_dmg"},
+        ["schoolbus_window_R2", ["schoolbus_windows"],[],{"deformSound":"event:>Destruction>Vehicle>Glass>glassbreaksound6", "deformVolume":0.0}],
+        {"deformGroup":"window_R5", "deformMaterialBase":"md_series_schoolbus_window", "deformMaterialDamaged":"md_series_schoolbus_window_dmg"},
+        ["schoolbus_window_R4", ["schoolbus_windows"],[],{"deformSound":"event:>Destruction>Vehicle>Glass>glassbreaksound7", "deformVolume":0.0}],
+        {"deformGroup":"window_R6", "deformMaterialBase":"md_series_schoolbus_window", "deformMaterialDamaged":"md_series_schoolbus_window_dmg"},
+        ["schoolbus_window_R5", ["schoolbus_windows"],[],{"deformSound":"event:>Destruction>Vehicle>Glass>glassbreaksound3", "deformVolume":0.0}],
+        {"deformGroup":"window_R7", "deformMaterialBase":"md_series_schoolbus_window", "deformMaterialDamaged":"md_series_schoolbus_window_dmg"},
+        ["schoolbus_window_R6", ["schoolbus_windows"],[],{"deformSound":"event:>Destruction>Vehicle>Glass>glassbreaksound8", "deformVolume":0.0}],
+        {"deformGroup":"window_R9", "deformMaterialBase":"md_series_schoolbus_window", "deformMaterialDamaged":"md_series_schoolbus_window_dmg"},
+        ["schoolbus_window_R8", ["schoolbus_windows"],[],{"deformSound":"event:>Destruction>Vehicle>Glass>glassbreaksound1", "deformVolume":0.0}],
+        {"deformGroup":"window_R0", "deformMaterialBase":"md_series_schoolbus_window", "deformMaterialDamaged":"md_series_schoolbus_window_dmg"},
+        ["schoolbus_window_R9", ["schoolbus_windows"],[],{"deformSound":"event:>Destruction>Vehicle>Glass>glassbreaksound2", "deformVolume":0.0}],
+
+        {"deformGroup":"", "deformMaterialBase":"", "deformMaterialDamaged":""},
+    ],
+    "nodes": [
+        ["id",     "posX", "posY", "posZ"],
+        {"selfCollision":true},
+        {"collision":true},
+        {"frictionCoef":0.5},
+        {"nodeMaterial":"|NM_METAL"},
+        //add weight
+        {"nodeWeight":7.0},
+
+        {"group":["schoolbus_body", "schoolbus_windows"]},
+        ["b14rr", -1.175,  0.197,  1.758,  {"nodeWeight":6.0}],
+        ["b24rr", -1.175,  1.140,  1.93],
+        ["b34rr", -1.175,  1.902,  1.93],
+        ["b44rr", -1.175,  2.664,  1.93],
+        ["b54rr", -1.175,  3.426,  1.93,   {"nodeWeight":6.0}],
+        ["b64rr", -1.175,  4.188,  1.93,   {"nodeWeight":6.0}],
+        ["b74rr", -1.175,  4.950,  1.93],
+        ["b84rr", -1.175,  5.712,  1.93,   {"nodeWeight":6.0}],
+        ["b94rr", -1.175,  6.474,  1.93,   {"nodeWeight":6.0}],
+        ["b04rr", -1.175,  7.236,  1.93],
+        ["r04rr", -1.192,  7.995,  1.78,   {"nodeWeight":6.0}],
+
+        {"group":"schoolbus_body"},
+        {"nodeWeight":7.0},
+        ["b15rrr",-1.192,  0.378,  2.502,  {"nodeWeight":5.5}],
+        ["b25rrr",-1.192,  1.140,  2.502],
+        ["b35rrr",-1.192,  1.902,  2.502],
+        ["b45rrr",-1.192,  2.664,  2.502],
+        ["b55rrr",-1.192,  3.426,  2.502,  {"nodeWeight":5.5}],
+        ["b65rrr",-1.192,  4.188,  2.502,  {"nodeWeight":5.5}],
+        ["b75rrr",-1.192,  4.950,  2.502],
+        ["b85rrr",-1.192,  5.712,  2.502,  {"nodeWeight":5.5}],
+        ["b95rrr",-1.192,  6.474,  2.502,  {"nodeWeight":5.5}],
+        ["b05rrr",-1.192,  7.236,  2.502],
+        ["r05rrr",-1.192,  7.795,  2.502,  {"nodeWeight":5.5}],
+        {"group":""},
+    ],
+    "beams": [
+        ["id1:",   "id2:"],
+        //--SIDE GLASS--
+        {"beamType":"|NORMAL", "beamPrecompression":1, "beamLongBound":1.0, "beamShortBound":1.0},
+
+        //weak brittle beams, no structural support
+        {"beamSpring":301000,"beamDamp":10},
+        {"beamDeform":11000,"beamStrength":10},
+        {"disableMeshBreaking":true,"disableTriangleBreaking":true},
+
+        ["b14rr",  "b25rrr", {"breakGroup":"window_R1", "deformGroup":"window_R1", "deformationTriggerRatio":0.03}],
+        ["b24rr",  "b35rrr", {"breakGroup":"window_R2", "deformGroup":"window_R2", "deformationTriggerRatio":0.03}],
+        ["b34rr",  "b45rrr", {"breakGroup":"window_R3", "deformGroup":"window_R3", "deformationTriggerRatio":0.03}],
+
+        ["b54rr",  "b65rrr", {"breakGroup":"window_R5", "deformGroup":"window_R5", "deformationTriggerRatio":0.03}],
+        ["b64rr",  "b75rrr", {"breakGroup":"window_R6", "deformGroup":"window_R6", "deformationTriggerRatio":0.03}],
+        ["b74rr",  "b85rrr", {"breakGroup":"window_R7", "deformGroup":"window_R7", "deformationTriggerRatio":0.03}],
+
+        ["b94rr",  "b05rrr", {"breakGroup":"window_R9", "deformGroup":"window_R9", "deformationTriggerRatio":0.03}],
+        ["b04rr",  "r05rrr", {"breakGroup":"window_R0", "deformGroup":"window_R0", "deformationTriggerRatio":0.03}],
+
+        ["b15rrr", "b24rr",  {"breakGroup":"window_R1", "deformGroup":"window_R1", "deformationTriggerRatio":0.03}],
+        ["b25rrr", "b34rr",  {"breakGroup":"window_R2", "deformGroup":"window_R2", "deformationTriggerRatio":0.03}],
+        ["b35rrr", "b44rr",  {"breakGroup":"window_R3", "deformGroup":"window_R3", "deformationTriggerRatio":0.03}],
+
+        ["b55rrr", "b64rr",  {"breakGroup":"window_R5", "deformGroup":"window_R5", "deformationTriggerRatio":0.03}],
+        ["b65rrr", "b74rr",  {"breakGroup":"window_R6", "deformGroup":"window_R6", "deformationTriggerRatio":0.03}],
+        ["b75rrr", "b84rr",  {"breakGroup":"window_R7", "deformGroup":"window_R7", "deformationTriggerRatio":0.03}],
+
+        ["b95rrr", "b04rr",  {"breakGroup":"window_R9", "deformGroup":"window_R9", "deformationTriggerRatio":0.03}],
+        ["b05rrr", "r04rr",  {"breakGroup":"window_R0", "deformGroup":"window_R0", "deformationTriggerRatio":0.03}],
+
+        {"deformLimitExpansion":1.2},
+		{"beamDeform":3422.25,"beamStrength":10},
+        {"disableMeshBreaking":false,"disableTriangleBreaking":false},
+        {"beamType":"|NORMAL", "beamPrecompression":1, "beamLongBound":1.0, "beamShortBound":1.0},
+    ],
+    "triangles": [
+        ["id1:",   "id2:",   "id3:"],
+        //right wall
+        {"groundModel":"metal"},
+        {"dragCoef":12},
+        {"group":"schoolbus_wall_R"},
+
+        ["b14rr",  "p5r",    "b24rr"],
+        ["b24rr",  "p5r",    "b15rrr"],
+        ["b15rrr", "b25rrr", "b24rr"],
+        ["b24rr",  "b25rrr", "b34rr"],
+        ["b25rrr", "b35rrr", "b34rr"],
+        ["b34rr",  "b35rrr", "b44rr"],
+        ["b35rrr", "b45rrr", "b44rr"],
+
+        ["b54rr",  "b55rrr", "b64rr"],
+        ["b55rrr", "b65rrr", "b64rr"],
+        ["b64rr",  "b65rrr", "b74rr"],
+        ["b65rrr", "b75rrr", "b74rr"],
+        ["b74rr",  "b75rrr", "b84rr"],
+        ["b75rrr", "b85rrr", "b84rr"],
+
+        ["b94rr",  "b95rrr", "b04rr"],
+        ["b95rrr", "b05rrr", "b04rr"],
+        ["b04rr",  "b05rrr", "r04rr"],
+        ["b05rrr", "r05rrr", "r04rr"],
+        ["r04rr",  "r05rrr", "p6r"],
+
+        {"group":""},
+    ],
+},
+"schoolbus_junk_windows_L_c": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Broken Left Windows",
+        "value":0,
+    },
+    "slotType" : "schoolbus_windows_L_c",
+    "sounds": {
+        "$+cabinFilterCoef": 0.00,
+    },
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+
+        ["schoolbus_window_L0_frame", ["schoolbus_windows"]],
+        ["schoolbus_window_L1_frame", ["schoolbus_windows"]],
+        ["schoolbus_window_L2_frame", ["schoolbus_windows"]],
+        ["schoolbus_window_L4_frame", ["schoolbus_windows"]],
+        ["schoolbus_window_L5_frame", ["schoolbus_windows"]],
+        ["schoolbus_window_L6_frame", ["schoolbus_windows"]],
+        ["schoolbus_window_L8_frame", ["schoolbus_windows"]],
+        ["schoolbus_window_L9_frame", ["schoolbus_windows"]],
+
+        {"deformGroup":"window_L1", "deformMaterialBase":"md_series_schoolbus_window", "deformMaterialDamaged":"md_series_schoolbus_window_dmg"},
+        ["schoolbus_window_L0", ["schoolbus_windows"],[],{"deformSound":"event:>Destruction>Vehicle>Glass>glassbreaksound4", "deformVolume":0.0}],
+        {"deformGroup":"window_L2", "deformMaterialBase":"md_series_schoolbus_window", "deformMaterialDamaged":"md_series_schoolbus_window_dmg"},
+        ["schoolbus_window_L1", ["schoolbus_windows"],[],{"deformSound":"event:>Destruction>Vehicle>Glass>glassbreaksound5", "deformVolume":0.0}],
+        {"deformGroup":"window_L3", "deformMaterialBase":"md_series_schoolbus_window", "deformMaterialDamaged":"md_series_schoolbus_window_dmg"},
+        ["schoolbus_window_L2", ["schoolbus_windows"],[],{"deformSound":"event:>Destruction>Vehicle>Glass>glassbreaksound6", "deformVolume":0.0}],
+        {"deformGroup":"window_L5", "deformMaterialBase":"md_series_schoolbus_window", "deformMaterialDamaged":"md_series_schoolbus_window_dmg"},
+        ["schoolbus_window_L4", ["schoolbus_windows"],[],{"deformSound":"event:>Destruction>Vehicle>Glass>glassbreaksound7", "deformVolume":0.0}],
+        {"deformGroup":"window_L6", "deformMaterialBase":"md_series_schoolbus_window", "deformMaterialDamaged":"md_series_schoolbus_window_dmg"},
+        ["schoolbus_window_L5", ["schoolbus_windows"],[],{"deformSound":"event:>Destruction>Vehicle>Glass>glassbreaksound3", "deformVolume":0.0}],
+        {"deformGroup":"window_L7", "deformMaterialBase":"md_series_schoolbus_window", "deformMaterialDamaged":"md_series_schoolbus_window_dmg"},
+        ["schoolbus_window_L6", ["schoolbus_windows"],[],{"deformSound":"event:>Destruction>Vehicle>Glass>glassbreaksound8", "deformVolume":0.0}],
+        {"deformGroup":"window_L9", "deformMaterialBase":"md_series_schoolbus_window", "deformMaterialDamaged":"md_series_schoolbus_window_dmg"},
+        ["schoolbus_window_L8", ["schoolbus_windows"],[],{"deformSound":"event:>Destruction>Vehicle>Glass>glassbreaksound1", "deformVolume":0.0}],
+        {"deformGroup":"window_L0", "deformMaterialBase":"md_series_schoolbus_window", "deformMaterialDamaged":"md_series_schoolbus_window_dmg"},
+        ["schoolbus_window_L9", ["schoolbus_windows"],[],{"deformSound":"event:>Destruction>Vehicle>Glass>glassbreaksound2", "deformVolume":0.0}],
+
+        {"deformGroup":"", "deformMaterialBase":"", "deformMaterialDamaged":""},
+    ],
+    "nodes": [
+        ["id",     "posX", "posY", "posZ"],
+        {"selfCollision":true},
+        {"collision":true},
+        {"frictionCoef":0.5},
+        {"nodeMaterial":"|NM_METAL"},
+        //add weight
+        {"nodeWeight":7.0},
+
+        {"group":["schoolbus_body", "schoolbus_windows"]},
+        ["b14ll",  1.192,  0.317,  1.758,  {"group":["driver_window_collide", "schoolbus_body", "md_series_dash_alt", "schoolbus_windows"], "nodeWeight":6.0}],
+        ["b24ll",  1.175,  1.140,  1.93],
+        ["b34ll",  1.175,  1.902,  1.93],
+        ["b44ll",  1.175,  2.664,  1.93],
+        ["b54ll",  1.175,  3.426,  1.93,   {"nodeWeight":6.0}],
+        ["b64ll",  1.175,  4.188,  1.93,   {"nodeWeight":6.0}],
+        ["b74ll",  1.175,  4.950,  1.93],
+        ["b84ll",  1.175,  5.712,  1.93,   {"nodeWeight":6.0}],
+        ["b94ll",  1.175,  6.474,  1.93,   {"nodeWeight":6.0}],
+        ["b04ll",  1.175,  7.236,  1.93],
+        ["r04ll",  1.192,  7.995,  1.78,   {"nodeWeight":6.0}],
+
+        {"group":"schoolbus_body"},
+        {"nodeWeight":7.0},
+        ["b15lll", 1.192,  0.378,  2.502,  {"group":["driver_window_collide", "schoolbus_body"], "nodeWeight":8.5}],
+        ["b25lll", 1.192,  1.140,  2.502],
+        ["b35lll", 1.192,  1.902,  2.502],
+        ["b45lll", 1.192,  2.664,  2.502],
+        ["b55lll", 1.192,  3.426,  2.502,  {"nodeWeight":5.5}],
+        ["b65lll", 1.192,  4.188,  2.502,  {"nodeWeight":5.5}],
+        ["b75lll", 1.192,  4.950,  2.502],
+        ["b85lll", 1.192,  5.712,  2.502,  {"nodeWeight":5.5}],
+        ["b95lll", 1.192,  6.474,  2.502,  {"nodeWeight":5.5}],
+        ["b05lll", 1.192,  7.236,  2.502],
+        ["r05lll", 1.192,  7.795,  2.502,  {"nodeWeight":5.5}],
+        {"group":""},
+    ],
+    "beams": [
+        ["id1:",   "id2:"],
+        //--SIDE GLASS--
+        {"beamType":"|NORMAL", "beamPrecompression":1, "beamLongBound":1.0, "beamShortBound":1.0},
+
+        //weak brittle beams, no structural support
+        {"beamSpring":301000,"beamDamp":10},
+        {"beamDeform":11000,"beamStrength":10},
+        {"disableMeshBreaking":true,"disableTriangleBreaking":true},
+
+        ["b14ll",  "b25lll", {"breakGroup":"window_L1", "deformGroup":"window_L1", "deformationTriggerRatio":0.03}],
+        ["b24ll",  "b35lll", {"breakGroup":"window_L2", "deformGroup":"window_L2", "deformationTriggerRatio":0.03}],
+        ["b34ll",  "b45lll", {"breakGroup":"window_L3", "deformGroup":"window_L3", "deformationTriggerRatio":0.03}],
+
+        ["b54ll",  "b65lll", {"breakGroup":"window_L5", "deformGroup":"window_L5", "deformationTriggerRatio":0.03}],
+        ["b64ll",  "b75lll", {"breakGroup":"window_L6", "deformGroup":"window_L6", "deformationTriggerRatio":0.03}],
+        ["b74ll",  "b85lll", {"breakGroup":"window_L7", "deformGroup":"window_L7", "deformationTriggerRatio":0.03}],
+
+        ["b94ll",  "b05lll", {"breakGroup":"window_L9", "deformGroup":"window_L9", "deformationTriggerRatio":0.03}],
+        ["b04ll",  "r05lll", {"breakGroup":"window_L0", "deformGroup":"window_L0", "deformationTriggerRatio":0.03}],
+
+        ["b15lll", "b24ll",  {"breakGroup":"window_L1", "deformGroup":"window_L1", "deformationTriggerRatio":0.03}],
+        ["b25lll", "b34ll",  {"breakGroup":"window_L2", "deformGroup":"window_L2", "deformationTriggerRatio":0.03}],
+        ["b35lll", "b44ll",  {"breakGroup":"window_L3", "deformGroup":"window_L3", "deformationTriggerRatio":0.03}],
+
+        ["b55lll", "b64ll",  {"breakGroup":"window_L5", "deformGroup":"window_L5", "deformationTriggerRatio":0.03}],
+        ["b65lll", "b74ll",  {"breakGroup":"window_L6", "deformGroup":"window_L6", "deformationTriggerRatio":0.03}],
+        ["b75lll", "b84ll",  {"breakGroup":"window_L7", "deformGroup":"window_L7", "deformationTriggerRatio":0.03}],
+
+        ["b95lll", "b04ll",  {"breakGroup":"window_L9", "deformGroup":"window_L9", "deformationTriggerRatio":0.03}],
+        ["b05lll", "r04ll",  {"breakGroup":"window_L0", "deformGroup":"window_L0", "deformationTriggerRatio":0.03}],
+
+        {"deformLimitExpansion":1.2},
+		{"beamDeform":3422.25,"beamStrength":10},
+        {"disableMeshBreaking":false,"disableTriangleBreaking":false},
+        {"beamType":"|NORMAL", "beamPrecompression":1, "beamLongBound":1.0, "beamShortBound":1.0},
+    ],
+    "triangles": [
+        ["id1:",   "id2:",   "id3:"],
+        //left wall
+        {"groundModel":"metal"},
+        {"dragCoef":12},
+        {"group":"schoolbus_wall_L"},
+
+        ["p5l",    "b14ll",  "b24ll"],
+        ["p5l",    "b24ll",  "b15lll"],
+        ["b25lll", "b15lll", "b24ll"],
+        ["b25lll", "b24ll",  "b34ll"],
+        ["b35lll", "b25lll", "b34ll"],
+        ["b35lll", "b34ll",  "b44ll"],
+        ["b45lll", "b35lll", "b44ll"],
+
+        ["b55lll", "b54ll",  "b64ll"],
+        ["b65lll", "b55lll", "b64ll"],
+        ["b65lll", "b64ll",  "b74ll"],
+        ["b75lll", "b65lll", "b74ll"],
+        ["b75lll", "b74ll",  "b84ll"],
+        ["b85lll", "b75lll", "b84ll"],
+
+        ["b95lll", "b94ll",  "b04ll"],
+        ["b05lll", "b95lll", "b04ll"],
+        ["b05lll", "b04ll",  "r04ll"],
+        ["r05lll", "b05lll", "r04ll"],
+        ["r05lll", "r04ll",  "p6l"],
+
+        {"group":""},
+    ],
+},
+
+"schoolbus_junk_exitwindow_RR": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Broken Rear Right Emergency Window",
+        "value":0,
+    },
+    "slotType" : "schoolbus_exitwindow_RR",
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["schoolbus_window_emergency_frame_R2", ["schoolbus_exitwindow_RR"]],
+        {"deformGroup":"exitwindow_RR_break", "deformMaterialBase":"md_series_schoolbus_window", "deformMaterialDamaged":"md_series_schoolbus_window_dmg"},
+        ["schoolbus_window_emergency_glass_R2", ["schoolbus_exitwindow_RR"],[],{"deformSound":"event:>Destruction>Vehicle>Glass>glassbreaksound7", "deformVolume":0.0}],
+        {"deformGroup":"", "deformMaterialBase":"", "deformMaterialDamaged":""},
+    ],
+    "props": [
+        ["func",                                 "mesh",                                 "idRef:","idX:","idY:",  "baseRotation",         "rotation",  "translation", "min", "max", "offset", "multiplier"],
+        ["emergencyWindowRRCoupler_notAttached", "schoolbus_window_emergency_handle_R2", "ew21r","ew22r","ew23r", {"x":0, "y":0, "z":90}, {"x":-90, "y":0, "z":0}, {"x":0, "y":0, "z":0}, 0, 1, 0, 1],
+    ],
+    "sounds": {
+        "$+cabinFilterCoef": 0.00,
+    },
+    "controller": [
+        ["fileName"],
+        ["advancedCouplerControl", {"name":"emergencyWindowRRCoupler"}],
+    ],
+    "emergencyWindowRRCoupler":{
+        "couplerNodes":[
+            ["cid1",    "cid2",     "autoCouplingStrength",    "autoCouplingRadius",   "autoCouplingLockRadius",   "autoCouplingSpeed", "couplingStartRadius",  "breakGroup"]
+            ["ew25r",  "ri9r",     80000,                     0.03,                   0.015,                      0.2,                 0.1,                   "exitwindow_RR_hinge", {"forceCid1":"ew25r", "forceCid2":"ew22r"}]
+        ],
+        "groupType": "manualClose",
+        "attachSoundVolume":1,
+        "detachSoundVolume":1,
+        "soundNode:":["ew21r"]
+        "attachSoundEvent": "event:>Vehicle>Latches>Special>emwindow_close",
+        "detachSoundEvent": "event:>Vehicle>Latches>Special>emwindow_open",
+        "breakSoundEvent":""
+        "openForceMagnitude": 40,
+        "openForceDuration": 0.1,
+        "closeForceMagnitude": 70,
+        "closeForceDuration": 0.1
+    },
+    "triggers2":[
+        ["id", "idRef:", "idX:", "idY:", "type", "size", "baseRotation", "rotation", "translation", "baseTranslation"],
+        ["exit_window_RR", "ew21r","ew22r","ew23r", "box", {"x":0.155, "y":0.025, "z":0.105}, {"x":0, "y":0, "z":0}, {"x":0, "y":0, "z":0}, {"x":0, "y":0, "z":0}, {"x":0.28, "y":0.00, "z":-0.05}],
+    ],
+    "actionsEnabled": [
+        ["id"],
+        ["exit_window_RR"],
+    ],
+    "triggerEventLinks2":[
+        ["triggerId:triggers2", "triggerInput", "inputAction"],
+        ["exit_window_RR", "action0", "exit_window_RR"],
+    ],
+    "nodes": [
+        ["id",    "posX", "posY", "posZ"],
+        {"selfCollision":true},
+        {"collision":true},
+        {"frictionCoef":0.5},
+        {"nodeMaterial":"|NM_METAL"},
+        //emergency window
+        {"nodeWeight":1.0},
+        {"group":"schoolbus_exitwindow_RR"},
+        ["ew21r",-1.189,  5.762,  1.798],
+        ["ew22r",-1.189,  6.432,  1.798],
+        ["ew23r",-1.189,  5.762,  2.445],
+        ["ew24r",-1.189,  6.432,  2.445],
+
+        //rigigifier/latch
+        {"selfCollision":false},
+        {"collision":false},
+        {"group":""},
+        ["ew25r",-0.521,  6.474,  1.78],
+    ],
+    "beams": [
+        ["id1:",  "id2:"],
+        //--EMERGENCY WINDOW--
+        {"beamType":"|NORMAL", "beamPrecompression":1, "beamLongBound":1.0, "beamShortBound":1.0},
+        {"beamSpring":901000,"beamDamp":70},
+        {"beamDeform":42000,"beamStrength":"FLT_MAX"},
+        {"deformLimitExpansion":1.2},
+        {"deformGroup":"exitwindow_RR_break", "deformationTriggerRatio":0.02},
+
+        //main shape
+        ["ew21r", "ew22r"],
+        ["ew21r", "ew23r"],
+        ["ew22r", "ew24r"],
+        ["ew23r", "ew24r"]
+
+        //cross
+        {"deformLimitExpansion":""},
+        {"beamDeform":14000,"beamStrength":"FLT_MAX"},
+        ["ew22r", "ew23r"],
+        ["ew21r", "ew24r"],
+
+        //rigidifier
+        {"beamSpring":451000,"beamDamp":70},
+        {"beamDeform":5600,"beamStrength":"FLT_MAX"},
+        ["ew21r", "ew25r"],
+        ["ew22r", "ew25r"],
+        ["ew23r", "ew25r"],
+        ["ew24r", "ew25r"],
+
+        //hinge
+        {"beamSpring":500,"beamDamp":70},
+        {"beamDeform":10500,"beamStrength":500},
+        {"breakGroup":"exitwindow_RR_hinge"},
+        {"deformGroup":"", "deformationTriggerRatio":""},
+        ["ew23r", "b85rrr"],
+        ["ew23r", "b95rrr"],
+        ["ew23r", "b84rr"],
+        ["ew23r", "b85r"],
+        ["ew24r", "b85rrr"],
+        ["ew24r", "b95rrr"],
+        ["ew24r", "b94rr"],
+        ["ew24r", "b95r"],
+
+        //damper
+        {"beamSpring":0,"beamDamp":10},
+        ["ew21r", "ri9r"],
+        ["ew22r", "ri9r"],
+
+        //limiters
+        {"beamPrecompression":1.01, "beamType":"|SUPPORT","beamLongBound":2.0, "beamShortBound":1.0},
+        {"breakGroup":""},
+        {"deformLimitExpansion":1.2},
+        {"beamSpring":901000,"beamDamp":70},
+        {"beamDeform":15000,"beamStrength":"FLT_MAX"},
+        {"breakGroup":"window_RR_supportBeams"},
+        ["ew21r", "ri9r"],
+        ["ew22r", "ri9r"],
+        {"beamPrecompression":0.5, "beamType":"|SUPPORT","beamLongBound":4.0, "beamShortBound":1.0},
+        ["ew21r", "b85r"],
+        ["ew22r", "b95r"],
+        {"breakGroup":""},
+        {"beamType":"|NORMAL", "beamPrecompression":1, "beamLongBound":1.0, "beamShortBound":1.0},
+    ],
+    "triangles": [
+        ["id1:",  "id2:",  "id3:"],
+        {"dragCoef":10},
+        {"groundModel":"metal"},
+        {"grounp":"schoolbus_exitwindow_RR"},
+        ["ew22r", "ew21r", "ew23r"],
+        ["ew22r", "ew23r", "ew24r"],
+        {"grounp":""},
+    ],
+},
+"schoolbus_junk_exitwindow_RL": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Broken Rear Left Emergency Window",
+        "value":0,
+    },
+    "slotType" : "schoolbus_exitwindow_RL",
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["schoolbus_window_emergency_frame_L2", ["schoolbus_exitwindow_RL"]],
+        {"deformGroup":"exitwindow_RL_break", "deformMaterialBase":"md_series_schoolbus_window", "deformMaterialDamaged":"md_series_schoolbus_window_dmg"},
+        ["schoolbus_window_emergency_glass_L2", ["schoolbus_exitwindow_RL"],[],{"deformSound":"event:>Destruction>Vehicle>Glass>glassbreaksound7", "deformVolume":0.0}],
+        {"deformGroup":"", "deformMaterialBase":"", "deformMaterialDamaged":""},
+    ],
+    "props": [
+        ["func",                                 "mesh",                                 "idRef:","idX:","idY:",  "baseRotation",         "rotation",  "translation", "min", "max", "offset", "multiplier"],
+        ["emergencyWindowRLCoupler_notAttached", "schoolbus_window_emergency_handle_L2", "ew21l","ew22l","ew23l", {"x":0, "y":0, "z":90}, {"x":-90, "y":0, "z":0}, {"x":0, "y":0, "z":0}, 0, 1, 0, 1],
+    ],
+    "sounds": {
+        "$+cabinFilterCoef": 0.00,
+    },
+    "controller": [
+        ["fileName"],
+        ["advancedCouplerControl", {"name":"emergencyWindowRLCoupler"}],
+    ],
+    "emergencyWindowRLCoupler":{
+        "couplerNodes":[
+            ["cid1",    "cid2",     "autoCouplingStrength",    "autoCouplingRadius",   "autoCouplingLockRadius",   "autoCouplingSpeed", "couplingStartRadius",  "breakGroup"]
+            ["ew25l",  "ri9l",     80000,                     0.03,                   0.015,                      0.2,                 0.1,                   "exitwindow_RL_hinge", {"forceCid1":"ew25l", "forceCid2":"ew22l"}]
+        ],
+        "groupType": "manualClose",
+        "attachSoundVolume":1,
+        "detachSoundVolume":1,
+        "soundNode:":["ew21l"]
+        "attachSoundEvent": "event:>Vehicle>Latches>Special>emwindow_close",
+        "detachSoundEvent": "event:>Vehicle>Latches>Special>emwindow_open",
+        "breakSoundEvent":""
+        "openForceMagnitude": 40,
+        "openForceDuration": 0.1,
+        "closeForceMagnitude": 70,
+        "closeForceDuration": 0.1
+    },
+    "triggers2":[
+        ["id", "idRef:", "idX:", "idY:", "type", "size", "baseRotation", "rotation", "translation", "baseTranslation"],
+        ["exit_window_RL", "ew21l","ew22l","ew23l", "box", {"x":0.155, "y":0.025, "z":0.105}, {"x":0, "y":0, "z":0}, {"x":0, "y":0, "z":0}, {"x":0, "y":0, "z":0}, {"x":0.28, "y":0.00, "z":0.03}],
+    ],
+    "actionsEnabled": [
+        ["id"],
+        ["exit_window_RL"],
+    ],
+    "triggerEventLinks2":[
+        ["triggerId:triggers2", "triggerInput", "inputAction"],
+        ["exit_window_RL", "action0", "exit_window_RL"],
+    ],
+    "nodes": [
+        ["id",    "posX", "posY", "posZ"],
+        {"selfCollision":true},
+        {"collision":true},
+        {"frictionCoef":0.5},
+        {"nodeMaterial":"|NM_METAL"},
+        //emergency window
+        {"nodeWeight":1.0},
+        {"group":"schoolbus_exitwindow_RL"},
+        ["ew21l", 1.189,  5.762,  1.798],
+        ["ew22l", 1.189,  6.432,  1.798],
+        ["ew23l", 1.189,  5.762,  2.445],
+        ["ew24l", 1.189,  6.432,  2.445],
+
+        //rigigifier/latch
+        {"selfCollision":false},
+        {"collision":false},
+        {"group":""},
+        ["ew25l", 0.521,  6.474,  1.78],
+    ],
+    "beams": [
+        ["id1:",  "id2:"],
+        //--EMERGENCY WINDOW--
+        {"beamType":"|NORMAL", "beamPrecompression":1, "beamLongBound":1.0, "beamShortBound":1.0},
+        {"beamSpring":901000,"beamDamp":70},
+        {"beamDeform":42000,"beamStrength":"FLT_MAX"},
+        {"deformLimitExpansion":1.2},
+        {"deformGroup":"exitwindow_RL_break", "deformationTriggerRatio":0.02},
+
+        //main shape
+        ["ew21l", "ew22l"],
+        ["ew21l", "ew23l"],
+        ["ew22l", "ew24l"],
+        ["ew23l", "ew24l"]
+
+        //cross
+        {"deformLimitExpansion":""},
+        {"beamDeform":14000,"beamStrength":"FLT_MAX"},
+        ["ew22l", "ew23l"],
+        ["ew21l", "ew24l"],
+
+        //rigidifier
+        {"beamSpring":451000,"beamDamp":70},
+        {"beamDeform":5600,"beamStrength":"FLT_MAX"},
+        ["ew21l", "ew25l"],
+        ["ew22l", "ew25l"],
+        ["ew23l", "ew25l"],
+        ["ew24l", "ew25l"],
+
+        //hinge
+        {"beamSpring":500,"beamDamp":70},
+        {"beamDeform":10500,"beamStrength":500},
+        {"breakGroup":"exitwindow_RL_hinge"},
+        {"deformGroup":"", "deformationTriggerRatio":""},
+        ["ew23l", "b85lll"],
+        ["ew23l", "b95lll"],
+        ["ew23l", "b84ll"],
+        ["ew23l", "b85l"],
+        ["ew24l", "b85lll"],
+        ["ew24l", "b95lll"],
+        ["ew24l", "b94ll"],
+        ["ew24l", "b95l"],
+
+        //damper
+        {"beamSpring":0,"beamDamp":10},
+        ["ew21l", "ri9l"],
+        ["ew22l", "ri9l"],
+
+        //limiters
+        {"beamPrecompression":1.01, "beamType":"|SUPPORT","beamLongBound":2.0, "beamShortBound":1.0},
+        {"breakGroup":""},
+        {"deformLimitExpansion":1.2},
+        {"beamSpring":901000,"beamDamp":70},
+        {"beamDeform":15000,"beamStrength":"FLT_MAX"},
+        {"breakGroup":"window_RL_supportBeams"},
+        ["ew21l", "ri9l"],
+        ["ew22l", "ri9l"],
+        {"beamPrecompression":0.5, "beamType":"|SUPPORT","beamLongBound":4.0, "beamShortBound":1.0},
+        ["ew21l", "b85l"],
+        ["ew22l", "b95l"],
+        {"breakGroup":""},
+        {"beamType":"|NORMAL", "beamPrecompression":1, "beamLongBound":1.0, "beamShortBound":1.0},
+    ],
+    "triangles": [
+        ["id1:",  "id2:",  "id3:"],
+        {"dragCoef":10},
+        {"groundModel":"metal"},
+        {"grounp":"schoolbus_exitwindow_RL"},
+        ["ew21l", "ew22l", "ew23l"],
+        ["ew23l", "ew22l", "ew24l"],
+        {"grounp":""},
+    ],
+},
+
+}

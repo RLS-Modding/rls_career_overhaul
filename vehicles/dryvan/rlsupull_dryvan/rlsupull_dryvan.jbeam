@@ -1,0 +1,11 @@
+{
+"dryvan_skin_rlsupull": {
+    "information":{
+        "authors":"RamRod",
+        "name":"U-Pull",
+        "value":1337,
+    },
+    "slotType" : "paint_design",
+    "globalSkin" : "rlsupull_dryvan",
+},
+}

@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_career_economyAdjuster",
+  "order": 6,
+  "module": "overhaul/career/economyAdjuster",
+  "scopes": [
+    {
+      "id": "bootManual",
+      "order": 21
+    }
+  ]
+}

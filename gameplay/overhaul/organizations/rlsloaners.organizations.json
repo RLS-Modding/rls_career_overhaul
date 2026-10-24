@@ -1,0 +1,28 @@
+{
+  "sealbrikPlant": {
+    "name": "Sealbrik",
+    "description": "Sealbrik's concrete and bulk-material production facility.",
+    "icon": "dumpTruck",
+    "loanableVehicles": [],
+    "reputationLevels": [
+      {"loanerCut": {"value": 0.5, "icon": "boxPickUp03"}},
+      {"loanerCut": {"value": 0.4, "icon": "boxPickUp03"}},
+      {"loanerCut": {"value": 0.35, "icon": "boxPickUp03"}},
+      {"loanerCut": {"value": 0.3, "icon": "boxPickUp03"}},
+      {"loanerCut": {"value": 0.25, "icon": "boxPickUp03"}}
+    ]
+  },
+  "sketchyLogistics": {
+    "name": "Sketchy Logistics",
+    "description": "A discreet freight and secure-cargo operation outside Belasco.",
+    "icon": "truck",
+    "loanableVehicles": [],
+    "reputationLevels": [
+      {"loanerCut": {"value": 0.5, "icon": "boxPickUp03"}},
+      {"loanerCut": {"value": 0.4, "icon": "boxPickUp03"}},
+      {"loanerCut": {"value": 0.35, "icon": "boxPickUp03"}},
+      {"loanerCut": {"value": 0.3, "icon": "boxPickUp03"}},
+      {"loanerCut": {"value": 0.25, "icon": "boxPickUp03"}}
+    ]
+  }
+}

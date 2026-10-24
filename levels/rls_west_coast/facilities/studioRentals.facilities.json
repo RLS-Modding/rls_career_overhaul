@@ -1,0 +1,27 @@
+{
+  "studioRentals": [
+    {
+      "id": "lensFlareStudios",
+      "name": "Lens Flare Studios",
+      "offerTrigger": "preStageRental",
+      "legacyRentalRestore": true,
+      "stages": [
+        {
+          "id": "1",
+          "label": "2",
+          "triggerName": "movieRental1"
+        },
+        {
+          "id": "2",
+          "label": "1",
+          "triggerName": "movieRental2"
+        },
+        {
+          "id": "3",
+          "label": "3",
+          "triggerName": "movieRental3"
+        }
+      ]
+    }
+  ]
+}

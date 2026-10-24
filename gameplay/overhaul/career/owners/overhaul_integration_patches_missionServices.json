@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_integration_patches_missionServices",
+  "order": 48,
+  "module": "overhaul/integration/patches/missionServices",
+  "scopes": [
+    {
+      "id": "services",
+      "order": 27
+    }
+  ]
+}

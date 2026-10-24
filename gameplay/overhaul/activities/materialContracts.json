@@ -1,0 +1,6 @@
+{
+  "id": "materialContracts",
+  "order": 300,
+  "extension": "overhaul_career_logistics_materialContractManager",
+  "definition": "overhaul/career/logistics/materialContractManager/activity"
+}

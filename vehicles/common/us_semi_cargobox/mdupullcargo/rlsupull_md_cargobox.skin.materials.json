@@ -1,0 +1,43 @@
+  {
+  "us_semi_cargobox.skin_md_series_cargobox.mdupullcargo": {
+    "name": "us_semi_cargobox.skin_md_series_cargobox.mdupullcargo",
+    "mapTo": "us_semi_cargobox.skin_md_series_cargobox.mdupullcargo",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "vehicles/common/us_semi_cargobox/cargobox_ao.data.png",
+        "baseColorMap": "vehicles/common/us_semi_cargobox/cargobox_b.color.png",
+        "diffuseMapUseUV": null,
+        "metallicFactor": 1,
+        "metallicMap": "vehicles/common/us_semi_cargobox/cargobox_m.data.png",
+        "normalMap": "vehicles/common/us_semi_cargobox/cargobox_nm.normal.png",
+        "roughnessFactor": null,
+        "roughnessMap": "vehicles/common/us_semi_cargobox/cargobox_r.data.png"
+      },
+      {
+        "ambientOcclusionMap": "/vehicles/common/us_semi_cargobox/cargobox_ao.data.png",
+        "baseColorMap": "/vehicles/common/us_semi_cargobox/mdupullcargo/mdupullcargo_b.color.png",
+        "diffuseMapUseUV": 1,
+        "metallicFactor": 0.800000012,
+        "normalMap": "vehicles/common/us_semi_cargobox/cargobox_nm.normal.png",
+        "opacityMap": "/vehicles/common/us_semi_cargobox/cargobox_c.data.png",
+        "roughnessFactor": 0.600000024
+      },
+      {
+        "diffuseMapUseUV": null,
+        "metallicFactor": null,
+        "roughnessFactor": null
+      },
+      {
+        "diffuseMapUseUV": null,
+        "metallicFactor": null,
+        "roughnessFactor": null
+      }
+    ],
+    "activeLayers": 2,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "version": 1.5
+  }
+}

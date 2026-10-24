@@ -1,0 +1,15 @@
+{
+  "Body Style": "Tanker Truck",
+  "Config Type": "Loaner",
+  "Configuration": "Rigid Tanker Truck",
+  "Description": "A rigid commercial tanker with dynamic fluid cargo storage.",
+  "Name": "T-Series Rigid Tanker Truck",
+  "loanerName": "T-Series Rigid Tanker Truck",
+  "capacity": [
+    {"amount": 17700, "type": "fluid"}
+  ],
+  "defaultPaintName1": "White",
+  "defaultPaintName2": "Black",
+  "defaultPaintName3": "White",
+  "isAuxiliary": false
+}

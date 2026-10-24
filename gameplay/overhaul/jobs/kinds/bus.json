@@ -1,0 +1,54 @@
+{
+  "id": "bus",
+  "order": 80,
+  "activity": "employmentShift.bus",
+  "economyKey": "bus",
+  "roleplayPoi": {"type": "busWork", "icon": "poi_pickup_round", "cardIcon": "bus"},
+  "policy": {
+    "roleplay": true,
+    "openEnded": true,
+    "passengerService": true
+  },
+  "equipment": [],
+  "vehicleRoles": [],
+  "cargoKinds": [],
+  "payModel": {
+    "heldWages": true
+  },
+  "handlers": {
+    "beginAssignment": {
+      "module": "overhaul/career/work/employment/kinds/assignmentRoleplay",
+      "fn": "beginAssignment"
+    },
+    "shiftState": {
+      "module": "overhaul/career/work/employment/kinds/assignmentRoleplay",
+      "fn": "shiftState"
+    },
+    "allowsPersonalVehicle": {
+      "module": "overhaul/jobs/bus/employmentKind",
+      "fn": "allowsPersonalVehicle"
+    },
+    "finalAssignment": {
+      "module": "overhaul/jobs/bus/employmentKind",
+      "fn": "finalAssignment"
+    },
+    "requestEndShift": {
+      "module": "overhaul/jobs/bus/employmentKind",
+      "fn": "requestEndShift"
+    },
+    "guidance": {
+      "module": "overhaul/jobs/bus/employmentKind",
+      "fn": "guidance"
+    },
+    "presentation": {
+      "module": "overhaul/jobs/bus/employmentKind",
+      "fn": "presentation"
+    },
+    "cancelAssignment": {
+      "module": "overhaul/jobs/bus/employmentKind",
+      "fn": "cancelAssignment"
+    }
+  },
+  "skillLabel": "Passenger Skill",
+  "workLabel": "bus routes"
+}

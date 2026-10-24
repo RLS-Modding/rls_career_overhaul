@@ -1,0 +1,24 @@
+{
+  "id": "gallery",
+  "name": "Gallery",
+  "icon": "photo",
+  "iconTile": "gallery.png",
+  "route": "/overhaul/phone-gallery",
+  "color": "#2d2d44",
+  "iconColor": "#ffffff",
+  "category": "Media",
+  "storeTagline": "Your photo roll",
+  "storeDescription": "Browse screenshots and photos saved during your career.",
+  "defaultPage": 0,
+  "defaultPosition": 15,
+  "uiRoutes": [
+    {
+      "name": "phone-gallery",
+      "path": "phone-gallery",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneGallery.vue",
+      "uiOrder": 106,
+      "luaOrder": 34,
+      "backTarget": "phone-main"
+    }
+  ]
+}

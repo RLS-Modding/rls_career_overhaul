@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":15000,  
+    "Configuration": "2.0 AWS (M) ( Joe's Junk Career )",
+    "Description": "Was a nice car until someone ran off the road with it and ripped off the entire right side of the car. Key word here is: was.",
+    "Drivetrain": "FWD",
+    "Fuel Type": "Gasoline",
+    "Power": 120,
+    "Torque": 121,
+    "Value": 2500,
+    "Weight": 1226,
+    "Years": {
+      "max": 1991,
+      "min": 1988
+    }  
+}
+
+

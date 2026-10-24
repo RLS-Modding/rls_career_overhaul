@@ -1,0 +1,6 @@
+{
+  "id": "overhaul_phone_apps_logistics",
+  "order": 86,
+  "module": "overhaul/phone/apps/logistics",
+  "scopes": []
+}

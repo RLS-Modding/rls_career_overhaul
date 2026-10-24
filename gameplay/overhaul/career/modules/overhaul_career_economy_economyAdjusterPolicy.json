@@ -1,0 +1,5 @@
+{
+  "id": "overhaul_career_economy_economyAdjusterPolicy",
+  "order": 370,
+  "module": "overhaul/career/economy/economyAdjusterPolicy"
+}

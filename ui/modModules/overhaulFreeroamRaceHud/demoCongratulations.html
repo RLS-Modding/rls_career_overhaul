@@ -1,0 +1,79 @@
+<link rel="stylesheet" type="text/css" href="/ui/modModules/overhaulFreeroamRaceHud/demoCongratulations.css" />
+
+<div class="dmc-overlay" ng-if="dmcVisible">
+  <div class="dmc-backdrop" ng-click="dismiss()"></div>
+  <div class="dmc-card" overhaul-popup="dismiss()" bng-blur="true" ng-class="{ 'dmc-loss': payload.playerEliminated, 'dmc-win': !payload.playerEliminated }">
+    <div class="dmc-accent"></div>
+    <div class="dmc-head">
+      <div class="dmc-status" ng-if="!payload.playerEliminated">Event Complete</div>
+      <div class="dmc-status" ng-if="payload.playerEliminated">Event Failed</div>
+      <div class="dmc-title">Demolition Derby</div>
+    </div>
+    <div class="dmc-placement" ng-if="payload.playerPlacementStr">{{ payload.playerPlacementStr }} Place</div>
+    <div class="dmc-body" ng-if="!payload.playerEliminated">
+      <span ng-if="payload.finishReason !== 'time_limit'">All opponents have been eliminated.</span>
+      <span ng-if="payload.finishReason === 'time_limit'">Time expired. Survivors were ranked by derby score.</span>
+    </div>
+    <div class="dmc-body" ng-if="payload.playerEliminated && payload.eliminationReason === 'stationary'">
+      You were eliminated for being stationary.
+    </div>
+    <div class="dmc-body" ng-if="payload.playerEliminated && payload.eliminationReason === 'destroyed'">
+      You were eliminated because your vehicle reached 100% damage.
+    </div>
+    <div class="dmc-body" ng-if="payload.playerEliminated && payload.eliminationReason === 'exited_vehicle'">
+      You were eliminated for exiting your vehicle during the event.
+    </div>
+    <div class="dmc-body" ng-if="payload.playerEliminated && payload.eliminationReason === 'no_contact'">
+      You were eliminated for going too long without contact.
+    </div>
+    <div class="dmc-body" ng-if="payload.playerEliminated && payload.eliminationReason !== 'stationary' && payload.eliminationReason !== 'destroyed' && payload.eliminationReason !== 'exited_vehicle' && payload.eliminationReason !== 'no_contact'">
+      You were eliminated out of bounds.
+    </div>
+
+    <div class="dmc-rewards" ng-class="{ 'dmc-rewards-zero': payload.rewardMoney <= 0 && payload.rewardXp <= 0 }">
+      <div class="dmc-reward-row">
+        <span class="dmc-reward-label">Entry</span>
+        <span class="dmc-reward-value">{{ payload.modeLabel || 'Derby' }}</span>
+      </div>
+      <div class="dmc-reward-row">
+        <span class="dmc-reward-label">Entry fee</span>
+        <span class="dmc-reward-value">${{ (payload.entryFee || 0) | number:0 }}</span>
+      </div>
+      <div class="dmc-reward-row">
+        <span class="dmc-reward-label">Money</span>
+        <span class="dmc-reward-value">${{ (payload.rewardMoney || 0) | number:0 }}</span>
+      </div>
+      <div class="dmc-reward-row" ng-if="payload.repairCut > 0">
+        <span class="dmc-reward-label">Repair cut</span>
+        <span class="dmc-reward-value">-${{ (payload.repairCut || 0) | number:0 }}</span>
+      </div>
+      <div class="dmc-reward-row">
+        <span class="dmc-reward-label">Net</span>
+        <span class="dmc-reward-value">${{ (payload.rewardNetMoney || 0) | number:0 }}</span>
+      </div>
+      <div class="dmc-reward-row">
+        <span class="dmc-reward-label">Demo XP</span>
+        <span class="dmc-reward-value">{{ (payload.rewardXp || 0) | number:0 }}</span>
+      </div>
+      <div class="dmc-reward-row">
+        <span class="dmc-reward-label">Damage</span>
+        <span class="dmc-reward-value">{{ (payload.playerDamagePct || 0) | number:1 }}%</span>
+      </div>
+      <div class="dmc-reward-row" ng-if="payload.finishReason === 'time_limit' && payload.playerScore">
+        <span class="dmc-reward-label">Derby score</span>
+        <span class="dmc-reward-value">{{ (payload.playerScore.derbyScore || 0) | number:1 }}</span>
+      </div>
+      <div class="dmc-reward-row" ng-if="payload.finishReason === 'time_limit' && payload.playerScore">
+        <span class="dmc-reward-label">Damage dealt</span>
+        <span class="dmc-reward-value">{{ (payload.playerScore.damageDealt || 0) | number:0 }}</span>
+      </div>
+    </div>
+    <div class="dmc-reward-note" ng-if="payload.rewardNoRewardDetail">
+      {{ payload.rewardNoRewardDetail }}
+    </div>
+
+    <div class="dmc-actions">
+      <button type="button" class="dmc-btn" bng-scoped-nav-autofocus ng-click="dismiss()">Continue</button>
+    </div>
+  </div>
+</div>

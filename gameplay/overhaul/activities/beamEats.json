@@ -1,0 +1,6 @@
+{
+  "id": "beamEats",
+  "order": 20,
+  "extension": "overhaul_jobs_beamEats",
+  "definition": "overhaul/jobs/beamEats/activity"
+}

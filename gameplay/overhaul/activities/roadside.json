@@ -1,0 +1,6 @@
+{
+  "id": "roadside",
+  "order": 370,
+  "extension": "overhaul_career_repair_roadsideRepair",
+  "definition": "overhaul/career/repair/roadsideRepair/activity"
+}

@@ -1,0 +1,13 @@
+{
+  "name": "Skills",
+  "description": "Master long-term progression tracks and earn milestone rewards.",
+  "order": 1150,
+  "icon": "badgeRoundStar",
+  "color": "var(--bng-cool-gray-700-rgb)",
+  "accentColor": "var(--bng-add-green-550-rgb)",
+  "levels": [
+    {
+      "requiredValue": 0
+    }
+  ]
+}

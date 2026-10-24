@@ -1,0 +1,34 @@
+{
+  "id": "overhaul_phone_phone",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "aliases": []
+  },
+  "acquisitions": [
+    {
+      "id": "phone.phone",
+      "order": 10,
+      "modes": {
+        "overhaul": true,
+        "freeroam": true
+      },
+      "extensions": [
+        "overhaul_phone_phone"
+      ],
+      "release": [],
+      "namespace": true
+    }
+  ],
+  "routes": [
+    {
+      "name": "phone-main",
+      "order": 41,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "play"
+        }
+      }
+    }
+  ]
+}

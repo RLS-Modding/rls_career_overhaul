@@ -1,0 +1,944 @@
+/*
+ * Map, in reading order (every selector is under .frh-module-root):
+ * - Tokens: custom properties on .frh-module-root
+ * - Critical warning overlay: .frh-panel-critical*
+ * - Shell: .frh-overlay-root, .frh-stack, .frh-panel, .frh-banner*
+ * - Staging before a race: .frh-staging*, .frh-stg-*
+ * - Header, resize handle, close button, live value: .frh-header*, .frh-live-primary, .frh-title, .frh-route
+ * - Summary rows: .frh-summary, .frh-row*, .frh-k, .frh-v, .frh-mono, .frh-invalid
+ * - Live standings and podium rows: .frh-standings*, .frh-st-*, frhStNudgeUp and frhStNudgeDown keyframes
+ * - Sector splits: .frh-sectors-*, .frh-sector-*, .frh-delta*, .frh-idx
+ * - Completion card: .frh-completion*, .frh-bonus-*
+ * - Demo Derby participants: .frh-demo-*
+ * - Demo elimination toasts: .frh-toast*, toast slide-in and slide-out keyframes
+ */
+/* Freeroam race HUD uses the house-style tokens.
+   Only used by overhaulFreeroamRaceHud.html. Every selector is scoped to .frh-module-root. */
+
+.frh-module-root {
+  --frh-ground: rgba(21, 21, 23, 0.78);
+  --frh-edge: 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --frh-panel: rgba(255, 255, 255, 0.06);
+  --frh-panel-2: rgba(255, 255, 255, 0.1);
+  --frh-line: rgba(255, 255, 255, 0.1);
+  --frh-line-soft: rgba(255, 255, 255, 0.06);
+  --frh-muted: rgba(255, 255, 255, 0.72);
+  --frh-faint: rgba(255, 255, 255, 0.55);
+  --frh-money: #fde68a;
+  --frh-accent: var(--bng-orange-b400, #ff6600);
+  --frh-accent-soft: #ffb27a;
+  --frh-accent-ink: rgba(255, 102, 0, 0.16);
+  --frh-ok: #4ade80;
+  --frh-ok-ink: #86efac;
+  --frh-warn: #fbbf24;
+  --frh-bad: #fca5a5;
+  font-family: "Overpass", var(--fnt-defs, sans-serif);
+  color: #fff;
+}
+
+/* ── Critical warning overlay ───────────────────────────── */
+
+.frh-module-root .frh-panel-critical {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: inherit;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.frh-module-root .frh-panel-critical-dim {
+  position: absolute;
+  inset: 0;
+  background: rgba(21, 21, 23, 0.88);
+  border-radius: inherit;
+}
+
+.frh-module-root .frh-panel-critical-msg {
+  position: relative;
+  z-index: 1;
+  max-width: 100%;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  color: var(--frh-bad);
+  text-align: center;
+  text-transform: none;
+}
+
+/* ── Shell ──────────────────────────────────────────────── */
+
+.frh-module-root .frh-overlay-root {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 8500;
+  pointer-events: none;
+}
+
+.frh-module-root .frh-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: calc(100vw - 24px);
+}
+
+.frh-module-root .frh-panel {
+  position: relative;
+  pointer-events: auto;
+  min-width: 240px;
+  max-width: 560px;
+  width: 340px;
+  background: var(--frh-ground);
+  opacity: 1; /* game .transparency would fade text to 0.9 */
+  border: 0;
+  box-shadow: var(--frh-edge);
+  border-radius: 9px;
+  color: #fff;
+  line-height: 1.35;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.frh-module-root .frh-banner {
+  margin: 8px 8px 0;
+  padding: 8px 12px 6px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+  border-radius: 6px;
+  background: var(--frh-panel);
+  box-shadow: inset 0 0 0 1px var(--frh-line);
+  color: #fff;
+}
+
+.frh-module-root .frh-banner.info {
+  color: #fff;
+}
+
+.frh-module-root .frh-banner.good {
+  color: var(--frh-ok-ink);
+  background: rgba(74, 222, 128, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(74, 222, 128, 0.3);
+}
+
+.frh-module-root .frh-banner.warn {
+  color: var(--frh-accent-soft);
+  background: rgba(255, 102, 0, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(255, 102, 0, 0.32);
+}
+
+.frh-module-root .frh-banner.countdown {
+  padding: 9px 12px 5px;
+  font-size: 24px;
+  font-weight: 800;
+  text-align: center;
+  letter-spacing: 0.04em;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Staging (pre-race targets) ─────────────────────────── */
+
+.frh-module-root .frh-staging {
+  padding: 4px 0 6px;
+  max-height: min(52vh, 360px);
+  overflow-y: auto;
+}
+
+.frh-module-root .frh-staging-alert {
+  margin: 8px 12px 10px;
+  padding: 8px 10px 6px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--frh-bad);
+  background: rgba(252, 165, 165, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(252, 165, 165, 0.28);
+  border-radius: 6px;
+}
+
+.frh-module-root .frh-stg-section + .frh-stg-section {
+  margin-top: 2px;
+}
+
+.frh-module-root .frh-stg-divider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--frh-faint);
+}
+
+.frh-module-root .frh-stg-divider::before,
+.frh-module-root .frh-stg-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--frh-line);
+}
+
+.frh-module-root .frh-stg-entry {
+  padding: 7px 14px 8px;
+  border-top: 1px solid var(--frh-line-soft);
+}
+
+.frh-module-root .frh-stg-section:first-child .frh-stg-entry:first-child {
+  border-top: none;
+}
+
+.frh-module-root .frh-stg-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 2px;
+}
+
+.frh-module-root .frh-stg-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--frh-faint);
+}
+
+.frh-module-root .frh-stg-reward {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--frh-money);
+  font-variant-numeric: tabular-nums;
+}
+
+.frh-module-root .frh-stg-body {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.frh-module-root .frh-stg-target {
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+.frh-module-root .frh-stg-pb {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--frh-faint);
+  font-variant-numeric: tabular-nums;
+  text-transform: lowercase;
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+
+.frh-module-root .frh-resize-handle {
+  position: absolute;
+  top: 0;
+  right: -4px;
+  width: 8px;
+  height: 100%;
+  cursor: ew-resize;
+  pointer-events: auto;
+  z-index: 10;
+  border-radius: 4px;
+}
+
+.frh-module-root .frh-resize-handle:hover,
+.frh-module-root .frh-resize-handle:active {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.frh-module-root .frh-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 11px 12px 8px;
+  border-bottom: 1px solid var(--frh-line);
+  cursor: grab;
+}
+
+.frh-module-root .frh-header:active {
+  cursor: grabbing;
+}
+
+.frh-module-root .frh-header-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.frh-module-root .frh-close {
+  order: 1;
+  flex-shrink: 0;
+  padding: 5px 10px 3px;
+  border: 0;
+  border-radius: 5px;
+  background: var(--frh-panel-2);
+  box-shadow: inset 0 0 0 1px var(--frh-line);
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.frh-module-root .frh-close:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.frh-module-root .frh-close.focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(255, 102, 0, 0.7);
+}
+
+.frh-module-root .frh-header-live {
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--frh-muted);
+  white-space: nowrap;
+  padding-top: 2px;
+}
+
+/* Primary live value (lap timer / live score) — the one orange number. */
+.frh-module-root .frh-live-primary {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--frh-accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.frh-module-root .frh-title {
+  font-weight: 800;
+  font-size: 18px;
+  line-height: 1.2;
+  color: #fff;
+}
+
+.frh-module-root .frh-route {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--frh-muted);
+  margin-top: 3px;
+}
+
+/* ── Summary rows ───────────────────────────────────────── */
+
+.frh-module-root .frh-summary {
+  padding: 8px 12px;
+  font-size: 14px;
+  border-bottom: 1px solid var(--frh-line);
+}
+
+.frh-module-root .frh-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  padding: 3px 0;
+}
+
+.frh-module-root .frh-row-goal-pb {
+  align-items: baseline;
+}
+
+.frh-module-root .frh-goal-pb-side {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.frh-module-root .frh-goal-pb-left {
+  justify-content: flex-start;
+}
+
+.frh-module-root .frh-goal-pb-right {
+  margin-left: auto;
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.frh-module-root .frh-k {
+  font-weight: 600;
+  color: var(--frh-muted);
+}
+
+.frh-module-root .frh-v {
+  font-weight: 700;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.frh-module-root .frh-mono {
+  font-variant-numeric: tabular-nums;
+}
+
+.frh-module-root .frh-invalid {
+  margin-top: 6px;
+  color: var(--frh-bad);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* ── Live standings ─────────────────────────────────────── */
+
+.frh-module-root .frh-standings {
+  padding: 8px 6px 6px;
+  border-bottom: 1px solid var(--frh-line);
+  overflow: visible;
+}
+
+.frh-module-root .frh-standings-head,
+.frh-module-root .frh-standings-row {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) 52px 64px;
+  gap: 6px;
+  align-items: center;
+  padding-left: 6px;
+  padding-right: 6px;
+  font-size: 14px;
+}
+
+.frh-module-root .frh-standings-head {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--frh-muted);
+  padding-bottom: 5px;
+  margin-bottom: 3px;
+  border-bottom: 1px solid var(--frh-line-soft);
+}
+
+.frh-module-root .frh-standings-row {
+  padding-top: 4px;
+  padding-bottom: 2px;
+  border-radius: 5px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.frh-module-root .frh-standings-row .frh-st-p {
+  font-weight: 800;
+  color: var(--frh-faint);
+}
+
+.frh-module-root .frh-standings-row .frh-st-gap,
+.frh-module-root .frh-standings-row .frh-st-lap {
+  color: var(--frh-muted);
+}
+
+.frh-module-root .frh-standings-row.frh-st-podium-1 .frh-st-p {
+  color: var(--frh-money);
+}
+
+.frh-module-root .frh-standings-row.frh-st-podium-2 .frh-st-p {
+  color: #e5e7eb;
+}
+
+.frh-module-root .frh-standings-row.frh-st-podium-3 .frh-st-p {
+  color: #e0b088;
+}
+
+.frh-module-root .frh-standings-row.player {
+  font-weight: 700;
+  color: #fff;
+  background: var(--frh-accent-ink);
+}
+
+.frh-module-root .frh-standings-row.player .frh-st-name {
+  color: var(--frh-accent-soft);
+}
+
+.frh-module-root .frh-standings-row.player .frh-st-gap,
+.frh-module-root .frh-standings-row.player .frh-st-lap {
+  color: #fff;
+}
+
+.frh-module-root .frh-standings-row.frh-st-nudge-up {
+  animation: frhStNudgeUp 0.48s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.frh-module-root .frh-standings-row.frh-st-nudge-down {
+  animation: frhStNudgeDown 0.48s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes frhStNudgeUp {
+  0% {
+    transform: translateY(11px);
+    opacity: 0.72;
+  }
+  55% {
+    transform: translateY(-2px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes frhStNudgeDown {
+  0% {
+    transform: translateY(-11px);
+    opacity: 0.72;
+  }
+  55% {
+    transform: translateY(2px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.frh-module-root .frh-st-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.frh-module-root .frh-st-gap,
+.frh-module-root .frh-st-lap {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.frh-module-root .frh-st-p {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Sector splits ──────────────────────────────────────── */
+
+.frh-module-root .frh-sectors-head,
+.frh-module-root .frh-sector-row {
+  display: grid;
+  grid-template-columns: 56px 1fr 1fr 72px;
+  gap: 6px;
+  align-items: center;
+}
+
+.frh-module-root .frh-sectors-head {
+  padding: 9px 12px 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--frh-muted);
+  border-bottom: 1px solid var(--frh-line-soft);
+}
+
+.frh-module-root .frh-sectors-scroll {
+  max-height: 220px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
+}
+
+.frh-module-root .frh-sectors-scroll::-webkit-scrollbar,
+.frh-module-root .frh-staging::-webkit-scrollbar,
+.frh-module-root .frh-demo-participants::-webkit-scrollbar {
+  width: 6px;
+}
+
+.frh-module-root .frh-sectors-scroll::-webkit-scrollbar-track,
+.frh-module-root .frh-staging::-webkit-scrollbar-track,
+.frh-module-root .frh-demo-participants::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.frh-module-root .frh-sectors-scroll::-webkit-scrollbar-thumb,
+.frh-module-root .frh-staging::-webkit-scrollbar-thumb,
+.frh-module-root .frh-demo-participants::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+
+.frh-module-root .frh-sectors-scroll::-webkit-scrollbar-thumb:hover,
+.frh-module-root .frh-staging::-webkit-scrollbar-thumb:hover,
+.frh-module-root .frh-demo-participants::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.38);
+  background-clip: padding-box;
+}
+
+.frh-module-root .frh-sector-row {
+  font-size: 14px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--frh-line-soft);
+  padding: 6px 12px 5px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.frh-module-root .frh-sector-row.latest {
+  background: var(--frh-panel-2);
+  color: #fff;
+}
+
+.frh-module-root .frh-idx {
+  color: var(--frh-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.frh-module-root .frh-delta {
+  font-weight: 700;
+}
+
+.frh-module-root .frh-delta-fast {
+  color: var(--frh-ok-ink);
+}
+
+.frh-module-root .frh-delta-slow {
+  color: var(--frh-bad);
+}
+
+.frh-module-root .frh-sector-empty {
+  padding: 16px 12px;
+  color: var(--frh-faint);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ── Completion card ────────────────────────────────────── */
+
+.frh-module-root .frh-completion {
+  padding: 11px 12px 12px;
+  border-bottom: 1px solid var(--frh-line-soft);
+}
+
+.frh-module-root .frh-completion-headline {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: var(--frh-ok-ink);
+  margin-bottom: 3px;
+}
+
+.frh-module-root .frh-completion-headline.warn {
+  color: var(--frh-bad);
+}
+
+.frh-module-root .frh-completion-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--frh-muted);
+  margin-bottom: 10px;
+}
+
+.frh-module-root .frh-completion-body,
+.frh-module-root .frh-completion-prev,
+.frh-module-root .frh-completion-rewards {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.frh-module-root .frh-completion-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.frh-module-root .frh-completion-row .frh-k {
+  color: var(--frh-faint);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.frh-module-root .frh-completion-row .frh-v {
+  color: #fff;
+  text-align: right;
+}
+
+.frh-module-root .frh-completion-row.subtle .frh-v {
+  color: var(--frh-muted);
+  font-weight: 600;
+}
+
+.frh-module-root .frh-completion-row.reward .frh-v {
+  color: var(--frh-money);
+  font-weight: 800;
+}
+
+.frh-module-root .frh-completion-divider {
+  height: 1px;
+  background: var(--frh-line);
+  margin: 10px 0;
+}
+
+.frh-module-root .frh-completion-bonuses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.frh-module-root .frh-completion-bonus {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px 3px;
+  border-radius: 5px;
+  background: var(--frh-panel-2);
+  font-size: 12px;
+}
+
+.frh-module-root .frh-bonus-label {
+  font-weight: 600;
+  color: var(--frh-muted);
+}
+
+.frh-module-root .frh-bonus-val {
+  color: var(--frh-ok-ink);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Demo Derby participant list ─────────────────────────── */
+
+.frh-module-root .frh-demo-alive-count {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--frh-ok-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.frh-module-root .frh-demo-timer {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--frh-accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.frh-module-root .frh-demo-participants {
+  padding: 6px 6px 8px;
+  max-height: min(50vh, 400px);
+  overflow-y: auto;
+}
+
+.frh-module-root .frh-demo-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 6px 4px;
+  font-size: 13px;
+  border-radius: 5px;
+  border-bottom: 1px solid var(--frh-line-soft);
+  transition: opacity 0.3s ease;
+}
+
+.frh-module-root .frh-demo-row.frh-demo-elim {
+  opacity: 0.45;
+}
+
+.frh-module-root .frh-demo-row.frh-demo-player {
+  background: var(--frh-accent-ink);
+  border-bottom-color: transparent;
+}
+
+.frh-module-root .frh-demo-row.frh-demo-player .frh-demo-name {
+  color: var(--frh-accent-soft);
+  font-weight: 700;
+}
+
+.frh-module-root .frh-demo-dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--frh-faint);
+}
+
+.frh-module-root .frh-demo-dot.alive {
+  background: var(--frh-ok);
+}
+
+.frh-module-root .frh-demo-dot.eliminated {
+  background: var(--frh-bad);
+}
+
+.frh-module-root .frh-demo-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.frh-module-root .frh-demo-elim .frh-demo-name {
+  color: var(--frh-faint);
+  text-decoration: line-through;
+}
+
+.frh-module-root .frh-demo-dmg-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.frh-module-root .frh-demo-dmg-bar {
+  width: 60px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--frh-panel-2);
+  overflow: hidden;
+}
+
+/* Width is data-bound and updates often: no transition. */
+.frh-module-root .frh-demo-dmg-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #4ade80 0%, #fbbf24 50%, #f87171 100%);
+}
+
+.frh-module-root .frh-demo-dmg-text {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--frh-muted);
+  min-width: 30px;
+  text-align: right;
+}
+
+.frh-module-root .frh-demo-status-text {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--frh-bad);
+  flex-shrink: 0;
+}
+
+.frh-module-root .frh-demo-place {
+  font-weight: 800;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Demo elimination toasts ─────────────────────────────── */
+
+.frh-module-root .frh-toast-container {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 8600;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: none;
+  max-width: 420px;
+  width: max-content;
+}
+
+.frh-module-root .frh-toast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px 7px;
+  background: rgba(21, 21, 23, 0.9);
+  border-radius: 8px;
+  box-shadow: var(--frh-edge), 0 6px 18px rgba(0, 0, 0, 0.4);
+  animation: frh-toast-slide-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.frh-module-root .frh-toast.frh-toast-fading {
+  animation: frh-toast-slide-out 0.5s cubic-bezier(0.55, 0, 1, 0.45) both;
+}
+
+@keyframes frh-toast-slide-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes frh-toast-slide-out {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+}
+
+.frh-module-root .frh-toast-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(252, 165, 165, 0.16);
+  color: var(--frh-bad);
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.frh-module-root .frh-toast-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.frh-module-root .frh-toast-status {
+  flex-shrink: 0;
+  font-size: 11.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--frh-bad);
+}
+
+.frh-module-root .frh-toast-place {
+  flex-shrink: 0;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--frh-muted);
+  padding: 3px 6px 1px;
+  border-radius: 4px;
+  background: var(--frh-panel-2);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}

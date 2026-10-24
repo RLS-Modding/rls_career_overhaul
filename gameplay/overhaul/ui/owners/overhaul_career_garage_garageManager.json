@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_career_garage_garageManager",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 180,
+    "aliases": [
+      "career_modules_garageManager"
+    ]
+  }
+}

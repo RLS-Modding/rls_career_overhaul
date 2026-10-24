@@ -1,0 +1,6 @@
+{
+  "id": "facilityWork",
+  "order": 120,
+  "extension": "overhaul_jobs_facilityWork",
+  "definition": "overhaul/jobs/facilityWork/activity"
+}

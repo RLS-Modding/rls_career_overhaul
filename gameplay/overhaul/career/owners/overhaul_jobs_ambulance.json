@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_jobs_ambulance",
+  "order": 64,
+  "module": "overhaul/jobs/ambulance",
+  "scopes": [
+    {
+      "id": "bootManual",
+      "order": 10
+    }
+  ]
+}

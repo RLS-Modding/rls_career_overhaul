@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":3500,  
+    "Configuration": "Used & Abused - Sedan ( Joe's Junk Career )",
+    "Description": "Beater Burnside Sedan with damaged body panels and misc junk parts.",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 105,
+    "Torque": 106,
+    "Value": 10500,
+    "Weight": 1747,
+    "Years": {
+      "max": 1954,
+      "min": 1953
+    }  
+}
+
+

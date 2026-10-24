@@ -1,0 +1,29 @@
+{
+  "id": "overhaul_career_market_vehicleShopping",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 570,
+    "aliases": [
+      "career_modules_vehicleShopping"
+    ]
+  },
+  "backHandlers": [
+    {
+      "id": "overhaulVehicleShoppingExitHandler",
+      "method": "requestExit",
+      "alias": "vehicleShoppingExitHandler"
+    },
+    {
+      "id": "overhaulVehicleShoppingVehicleListExitHandler",
+      "method": "requestVehicleListExit",
+      "alias": "vehicleShoppingVehicleListExitHandler"
+    },
+    {
+      "id": "overhaulVehiclePurchaseExitHandler",
+      "method": "requestPurchaseExit",
+      "alias": "vehiclePurchaseExitHandler"
+    }
+  ]
+}

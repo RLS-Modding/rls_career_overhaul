@@ -1,0 +1,23 @@
+{
+  "id": "overhaul_career_work_equipmentRental",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 290,
+    "aliases": [
+      "career_modules_equipmentRental"
+    ]
+  },
+  "routes": [
+    {
+      "name": "equipment-rental",
+      "order": 72,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "play"
+        }
+      }
+    }
+  ]
+}

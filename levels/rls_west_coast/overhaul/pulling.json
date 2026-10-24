@@ -1,0 +1,66 @@
+{
+  "eventId": "tractorPull",
+  "label": "West Coast Tractor Pull",
+  "sitesFile": "pulling.sites.json",
+  "stagingSpot": "pullStaging",
+  "spawnSpot": "sledSpawn",
+  "finishSpot": "sledFinish",
+  "fullPullDistanceMeters": 91.44,
+  "stagingRadiusMeters": 6,
+  "stagingExitRadiusMeters": 9,
+  "stagingStopSpeedMps": 0.5,
+  "stagingStopSeconds": 1,
+  "sledSpawnHeightMeters": 1.25,
+  "sledLoadDelaySeconds": 2,
+  "startMovementFeet": 1,
+  "finishToleranceMeters": 0.05,
+  "progressIncrementFeet": 0.1,
+  "noProgressFinishSeconds": 1,
+  "maximumPullSeconds": 120,
+  "hitches": [
+    {
+      "id": "tow_hook",
+      "label": "Tow Hitch",
+      "part": "YB_PPS_chain"
+    },
+    {
+      "id": "pintle_hitch",
+      "label": "Pintle Hitch",
+      "part": "YB_PPS_chain_pintle"
+    }
+  ],
+  "sleds": [
+    {
+      "id": "8000",
+      "label": "8,000 lb",
+      "model": "YB_pro_pull_sled",
+      "config": "/vehicles/YB_pro_pull_sled/8000.pc",
+      "baseReward": 500,
+      "parTimeSeconds": 18
+    },
+    {
+      "id": "14000",
+      "label": "14,000 lb",
+      "model": "YB_pro_pull_sled",
+      "config": "/vehicles/YB_pro_pull_sled/14000.pc",
+      "baseReward": 1000,
+      "parTimeSeconds": 22
+    },
+    {
+      "id": "20000",
+      "label": "20,000 lb",
+      "model": "YB_pro_pull_sled",
+      "config": "/vehicles/YB_pro_pull_sled/20000.pc",
+      "baseReward": 2000,
+      "parTimeSeconds": 26
+    },
+    {
+      "id": "30000",
+      "label": "30,000 lb",
+      "model": "YB_pro_pull_sled",
+      "config": "/vehicles/YB_pro_pull_sled/30000.pc",
+      "baseReward": 4000,
+      "parTimeSeconds": 30
+    }
+  ]
+}

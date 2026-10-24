@@ -1,0 +1,919 @@
+{
+  "name": "Recovery",
+  "description": "Recover, tow, and get the job done. Keep recovered vehicles at level 10.",
+  "order": 80,
+  "isSkill": true,
+  "attributeKey": "careerSkills-recovery",
+  "icon": "keys1",
+  "levels": [
+    {
+      "requiredValue": 0,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 1",
+        "description": "Reach Recovery level 1."
+      },
+      "unlockFlags": [
+        "repoJunkerVeh"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "keys1",
+          "heading": "Base Activities Available",
+          "description": "Repo work is available. Off-Road Recovery unlocks at level 5. Keep recovered vehicles at level 10."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "car",
+          "heading": "Low Value Repo",
+          "description": "Joe's Junk configs and Factory cars $1k–25k."
+        }
+      ]
+    },
+    {
+      "requiredValue": 200,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 2",
+        "description": "Reach Recovery level 2."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Repo Reward Increase",
+          "description": "Increases money earned from Repo. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 500,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 3",
+        "description": "Reach Recovery level 3."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 900,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 4",
+        "description": "Reach Recovery level 4."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Repo Reward Increase",
+          "description": "Increases money earned from Repo. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 1400,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 5",
+        "description": "Reach Recovery level 5."
+      },
+      "unlockFlags": [
+        "repoSmallVeh"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "keys1",
+          "heading": "Off-Road Recovery Unlocked",
+          "description": "Off-Road Recovery work is now available. Factory cars $1k–50k."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "car",
+          "heading": "Budget Repo",
+          "description": "Factory cars $25k–50k."
+        }
+      ]
+    },
+    {
+      "requiredValue": 1900,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 6",
+        "description": "Reach Recovery level 6."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Repo Reward Increase",
+          "description": "Increases money earned from Repo. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 2600,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 7",
+        "description": "Reach Recovery level 7."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Off-Road Recovery Reward Increase",
+          "description": "Increases money earned from Off-Road Recovery. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 3400,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 8",
+        "description": "Reach Recovery level 8."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Repo Reward Increase",
+          "description": "Increases money earned from Repo. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 4300,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 9",
+        "description": "Reach Recovery level 9."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Off-Road Recovery Reward Increase",
+          "description": "Increases money earned from Off-Road Recovery. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 5300,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 10",
+        "description": "Reach Recovery level 10."
+      },
+      "unlockFlags": [
+        "repoFleetVeh"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Repo Reward Increase",
+          "description": "Increases money earned from Repo. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "car",
+          "heading": "Standard Repo",
+          "description": "Factory cars $40k–100k."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "tow",
+          "heading": "Technical Recovery",
+          "description": "Factory cars $40k–100k and Trailers."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "car",
+          "heading": "Keep Recovered Vehicles",
+          "description": "Some Off-Road Recovery jobs award the vehicle."
+        }
+      ]
+    },
+    {
+      "requiredValue": 6500,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 11",
+        "description": "Reach Recovery level 11."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Off-Road Recovery Reward Increase",
+          "description": "Increases money earned from Off-Road Recovery. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 7900,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 12",
+        "description": "Reach Recovery level 12."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Repo Reward Increase",
+          "description": "Increases money earned from Repo. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 9400,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 13",
+        "description": "Reach Recovery level 13."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Off-Road Recovery Reward Increase",
+          "description": "Increases money earned from Off-Road Recovery. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 11000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 14",
+        "description": "Reach Recovery level 14."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Repo Reward Increase",
+          "description": "Increases money earned from Repo. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 13000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 15",
+        "description": "Reach Recovery level 15."
+      },
+      "unlockFlags": [
+        "repoHighEndVeh"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Off-Road Recovery Reward Increase",
+          "description": "Increases money earned from Off-Road Recovery. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "car",
+          "heading": "Luxury Targets",
+          "description": "Repo and Recovery: Factory cars $100k–200k."
+        }
+      ]
+    },
+    {
+      "requiredValue": 15000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 16",
+        "description": "Reach Recovery level 16."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Repo Reward Increase",
+          "description": "Increases money earned from Repo. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 17500,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 17",
+        "description": "Reach Recovery level 17."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Off-Road Recovery Reward Increase",
+          "description": "Increases money earned from Off-Road Recovery. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 20000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 18",
+        "description": "Reach Recovery level 18."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Repo Reward Increase",
+          "description": "Increases money earned from Repo. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 23000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 19",
+        "description": "Reach Recovery level 19."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Off-Road Recovery Reward Increase",
+          "description": "Increases money earned from Off-Road Recovery. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 26000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 20",
+        "description": "Reach Recovery level 20."
+      },
+      "unlockFlags": [
+        "repoExoticVeh"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Repo Reward Increase",
+          "description": "Increases money earned from Repo. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "car",
+          "heading": "Exotic Targets",
+          "description": "Repo and Recovery: Factory cars $200k+."
+        }
+      ]
+    },
+    {
+      "requiredValue": 29000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 21",
+        "description": "Reach Recovery level 21."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Off-Road Recovery Reward Increase",
+          "description": "Increases money earned from Off-Road Recovery. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 33000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 22",
+        "description": "Reach Recovery level 22."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Repo Reward Increase",
+          "description": "Increases money earned from Repo. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 37000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 23",
+        "description": "Reach Recovery level 23."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Off-Road Recovery Reward Increase",
+          "description": "Increases money earned from Off-Road Recovery. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 41000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 24",
+        "description": "Reach Recovery level 24."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Repo Reward Increase",
+          "description": "Increases money earned from Repo. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 46000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 25",
+        "description": "Reach Recovery level 25."
+      },
+      "unlockFlags": [
+        "repoHeavyVeh"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Off-Road Recovery Reward Increase",
+          "description": "Increases money earned from Off-Road Recovery. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "deliveryTruck",
+          "heading": "Heavy Targets",
+          "description": "Repo and Recovery: Factory T-Series, citybus, MD Series, and midtruck."
+        }
+      ]
+    },
+    {
+      "requiredValue": 51000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 26",
+        "description": "Reach Recovery level 26."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Repo Reward Increase",
+          "description": "Increases money earned from Repo. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 56000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 27",
+        "description": "Reach Recovery level 27."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Off-Road Recovery Reward Increase",
+          "description": "Increases money earned from Off-Road Recovery. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 62000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 28",
+        "description": "Reach Recovery level 28."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Repo Reward Increase",
+          "description": "Increases money earned from Repo. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 68000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 29",
+        "description": "Reach Recovery level 29."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Off-Road Recovery Reward Increase",
+          "description": "Increases money earned from Off-Road Recovery. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 74000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 30",
+        "description": "Reach Recovery level 30."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Repo Reward Increase",
+          "description": "Increases money earned from Repo. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 81000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 31",
+        "description": "Reach Recovery level 31."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Off-Road Recovery Reward Increase",
+          "description": "Increases money earned from Off-Road Recovery. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 88000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 32",
+        "description": "Reach Recovery level 32."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Repo Reward Increase",
+          "description": "Increases money earned from Repo. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 96000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 33",
+        "description": "Reach Recovery level 33."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Off-Road Recovery Reward Increase",
+          "description": "Increases money earned from Off-Road Recovery. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 104000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 34",
+        "description": "Reach Recovery level 34."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Repo Reward Increase",
+          "description": "Increases money earned from Repo. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 113000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 35",
+        "description": "Reach Recovery level 35."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Off-Road Recovery Reward Increase",
+          "description": "Increases money earned from Off-Road Recovery. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 122000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 36",
+        "description": "Reach Recovery level 36."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Repo Reward Increase",
+          "description": "Increases money earned from Repo. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 131000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 37",
+        "description": "Reach Recovery level 37."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Off-Road Recovery Reward Increase",
+          "description": "Increases money earned from Off-Road Recovery. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 141000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 38",
+        "description": "Reach Recovery level 38."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Repo Reward Increase",
+          "description": "Increases money earned from Repo. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 151000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 39",
+        "description": "Reach Recovery level 39."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Off-Road Recovery Reward Increase",
+          "description": "Increases money earned from Off-Road Recovery. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 162000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 40",
+        "description": "Reach Recovery level 40."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Repo Reward Increase",
+          "description": "Increases money earned from Repo. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 174000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 41",
+        "description": "Reach Recovery level 41."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Off-Road Recovery Reward Increase",
+          "description": "Increases money earned from Off-Road Recovery. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 186000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 42",
+        "description": "Reach Recovery level 42."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Repo Reward Increase",
+          "description": "Increases money earned from Repo. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 198000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 43",
+        "description": "Reach Recovery level 43."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Off-Road Recovery Reward Increase",
+          "description": "Increases money earned from Off-Road Recovery. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 211000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 44",
+        "description": "Reach Recovery level 44."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Repo Reward Increase",
+          "description": "Increases money earned from Repo. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 225000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 45",
+        "description": "Reach Recovery level 45."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Off-Road Recovery Reward Increase",
+          "description": "Increases money earned from Off-Road Recovery. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 239000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 46",
+        "description": "Reach Recovery level 46."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Repo Reward Increase",
+          "description": "Increases money earned from Repo. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 254000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 47",
+        "description": "Reach Recovery level 47."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Off-Road Recovery Reward Increase",
+          "description": "Increases money earned from Off-Road Recovery. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 269000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 48",
+        "description": "Reach Recovery level 48."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Repo Reward Increase",
+          "description": "Increases money earned from Repo. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 285000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 49",
+        "description": "Reach Recovery level 49."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Off-Road Recovery Reward Increase",
+          "description": "Increases money earned from Off-Road Recovery. Recovery reaches up to +400% Repo and +200% Off-Road Recovery."
+        }
+      ]
+    },
+    {
+      "requiredValue": 301000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 50",
+        "description": "Reach Recovery level 50."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "badgeRoundStar",
+          "heading": "Recovery Mastery",
+          "description": "Repo has reached +400% and Off-Road Recovery has reached +200% maximum money payout."
+        }
+      ]
+    }
+  ]
+}

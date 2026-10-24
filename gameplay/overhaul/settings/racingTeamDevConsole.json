@@ -1,0 +1,21 @@
+{
+  "id": "racingTeamDevConsole",
+  "key": "racingTeamDevConsole",
+  "order": 400,
+  "type": "boolean",
+  "default": false,
+  "section": "developer",
+  "validateSingle": false,
+  "validateLoaded": false,
+  "onChange": {
+    "extension": "overhaul_career_business_racingTeam_racingTeam",
+    "call": "refreshDevConsoleTab"
+  },
+  "ui": {
+    "label": "ui.overhaulManager.settings.racingTeamDevConsole.label",
+    "description": "ui.overhaulManager.settings.racingTeamDevConsole.description",
+    "section": "developer",
+    "devOnly": true,
+    "icon": "raceFlag"
+  }
+}

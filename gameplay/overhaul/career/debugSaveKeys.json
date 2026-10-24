@@ -1,0 +1,17 @@
+{
+  "overhaul_dev_debug_attributesDebug": "overhaul_career_modules_debug_attributesDebug",
+  "overhaul_dev_debug_cargoContainerDebug": "overhaul_career_modules_debug_cargoContainerDebug",
+  "overhaul_dev_debug_cargoFluidDebug": "overhaul_career_modules_debug_cargoFluidDebug",
+  "overhaul_dev_debug_dealershipFilterDebug": "overhaul_career_modules_debug_dealershipFilterDebug",
+  "overhaul_dev_debug_deliveryRoutes": "overhaul_career_modules_debug_deliveryRoutes",
+  "overhaul_dev_debug_insuranceDebug": "overhaul_career_modules_debug_insuranceDebug",
+  "overhaul_dev_debug_marketplaceDebug": "overhaul_career_modules_debug_marketplaceDebug",
+  "overhaul_dev_debug_organizationsDebug": "overhaul_career_modules_debug_organizationsDebug",
+  "overhaul_dev_debug_parcelDebug": "overhaul_career_modules_debug_parcelDebug",
+  "overhaul_dev_debug_precisionParkingDebug": "overhaul_career_modules_debug_precisionParkingDebug",
+  "overhaul_dev_debug_psDuplicationChecker": "overhaul_career_modules_debug_psDuplicationChecker",
+  "overhaul_dev_debug_vehicleDebug": "overhaul_career_modules_debug_vehicleDebug",
+  "overhaul_dev_debug_vehicleShoppingDebug": "overhaul_career_modules_debug_vehicleShoppingDebug",
+  "overhaul_dev_debug_vehicleSpawn": "overhaul_career_modules_debug_vehicleSpawn",
+  "overhaul_dev_debug_vehOfferDebug": "overhaul_career_modules_debug_vehOfferDebug"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "overhaul_career_economy_globalEconomy",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "aliases": [
+      "career_modules_globalEconomy"
+    ]
+  },
+  "acquisitions": [
+    {
+      "id": "career.marketWatch",
+      "order": 140,
+      "modes": {
+        "overhaul": true
+      },
+      "extensions": [
+        "overhaul_career_economy_globalEconomy"
+      ],
+      "release": [],
+      "namespace": true
+    }
+  ]
+}

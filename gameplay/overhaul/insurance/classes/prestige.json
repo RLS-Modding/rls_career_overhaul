@@ -1,0 +1,15 @@
+{
+  "id" : "prestige",
+  "name" : "insurance.classes.prestige.name",
+  "description" : "insurance.classes.prestige.description",
+  "icon" : "steeringWheelSporty",
+  "coverageRate" : 0.02,
+  "applicableConditions" : {
+    "priority" : 0,
+    "conditions" : {
+      "applicableValue" : {
+      "min" : 100001
+      }
+    }
+  }
+}

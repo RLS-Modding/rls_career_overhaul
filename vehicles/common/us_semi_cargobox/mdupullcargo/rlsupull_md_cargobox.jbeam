@@ -1,0 +1,11 @@
+{
+"md_series_cargobox_skin_mdupullcargo": {
+    "information":{
+        "authors":"Ramrod",
+        "name":"U-Pull",
+        "value":1000
+    },
+    "slotType" : "skin_md_series_cargobox",
+    "globalSkin" : "mdupullcargo"
+  },
+}

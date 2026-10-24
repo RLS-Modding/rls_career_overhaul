@@ -1,0 +1,105 @@
+{
+  "id": 3,
+  "name": "insurance.policies.dailyDriver3.name",
+  "slogan": "insurance.policies.dailyDriver3.slogan",
+  "class": "dailyDriver",
+  "color": "#ffca3f",
+  "image": "roadease",
+  "paperworkFees": 50,
+  "resetInsuranceScore": {
+    "price": {
+      "vouchers": {
+        "amount": 2,
+        "canBeNegative": false
+      }
+    },
+    "conditions": {
+      "minScore": 1.15
+    }
+  },
+  "gestures": {
+    "freeRepair": {
+      "distance": 100000
+    }
+  },
+  "perks": {
+    "accidentForgivenessAtRenewal": {
+      "value": 1,
+      "isSignaturePerk": true
+    }
+  },
+  "coverageOptions": {
+    "paintRepair": {
+      "baseValueId": 2,
+      "choices": [
+        {
+          "value": true,
+          "premiumInfluence": 500
+        },
+        {
+          "value": false,
+          "premiumInfluence": 0
+        }
+      ]
+    },
+    "repairTime": {
+      "baseValueId": 2,
+      "choices": [
+        {
+          "value": 60,
+          "premiumInfluence": 500
+        },
+        {
+          "value": 120,
+          "premiumInfluence": 350
+        },
+        {
+          "value": 300,
+          "premiumInfluence": 150
+        },
+        {
+          "value": 600,
+          "premiumInfluence": 50
+        }
+      ]
+    },
+    "roadsideAssistance": {
+      "baseValueId": 3,
+      "choices": [
+        {
+          "value": 0,
+          "premiumInfluence": 0
+        },
+        {
+          "value": 1,
+          "premiumInfluence": 260
+        },
+        {
+          "value": 2,
+          "premiumInfluence": 520
+        },
+        {
+          "value": 5,
+          "premiumInfluence": 1060
+        }
+      ]
+    },
+    "deductible": {
+      "baseValueId": 2,
+      "choices": [
+        {
+          "value": 1000,
+          "premiumInfluence": 0.9
+        },
+        {
+          "value": 1500,
+          "premiumInfluence": 0.8
+        },
+        {
+          "value": 2000,
+          "premiumInfluence": 0.6
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,127 @@
+{
+  "hbp_sakura_wide_bark": {
+    "name": "hbp_sakura_wide_bark",
+    "mapTo": "hbp_sakura_wide_bark",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/assets/materials/tree/oak/t_oak_bark/t_oak_bark_ao.data.png",
+        "baseColorFactor": [
+          0.34,
+          0.17,
+          0.18,
+          1
+        ],
+        "baseColorMap": "/assets/materials/tree/oak/t_oak_bark/t_oak_bark_b.color.png",
+        "normalMap": "/assets/materials/tree/oak/t_oak_bark/t_oak_bark_nm.normal.png",
+        "roughnessMap": "/assets/materials/tree/oak/t_oak_bark/t_oak_bark_r.data.png"
+      },
+      {
+        "baseColorFactor": null
+      },
+      {
+        "baseColorFactor": null
+      },
+      {
+        "baseColorFactor": null
+      }
+    ],
+    "annotation": "NATURE",
+    "groundType": "WOOD",
+    "materialTag0": "vegetation",
+    "materialTag1": "beamng",
+    "materialTag2": "Natural",
+    "version": 1.5
+  },
+  "hbp_sakura_wide_branch": {
+    "name": "hbp_sakura_wide_branch",
+    "mapTo": "hbp_sakura_wide_branch",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/assets/materials/tree/oak/Oak_branch_01/t_oak_branch_ao.data.png",
+        "baseColorMap": "/assets/materials/tree/oak/Oak_branch_01/t_oak_branch_b.color.png",
+        "normalMap": "/assets/materials/tree/oak/Oak_branch_01/t_oak_branch_nm.normal.png",
+        "opacityMap": "/assets/materials/tree/oak/Oak_branch_01/t_oak_branch_o.data.png",
+        "roughnessMap": "/assets/materials/tree/oak/Oak_branch_01/t_oak_branch_r.data.png",
+        "baseColorFactor": [
+          0.34,
+          0.17,
+          0.18,
+          1
+        ]
+      },
+      {},
+      {},
+      {}
+    ],
+    "alphaRef": 90,
+    "alphaTest": true,
+    "doubleSided": true,
+    "invertBackFaceNormals": true,
+    "subSurface": true,
+    "subSurfaceIntensity": 0.00999999978,
+    "translucentZWrite": true,
+    "version": 1.5
+  },
+  "hbp_sakura_wide_pink": {
+    "name": "hbp_sakura_wide_pink",
+    "mapTo": "hbp_sakura_wide_pink",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/assets/materials/tree/oak/oak_leaves/t_oak_leaves_wcusa_ao.data.png",
+        "baseColorFactor": [
+          0.82,
+          0.47,
+          0.61,
+          1
+        ],
+        "normalMap": "/assets/materials/tree/oak/oak_leaves/t_oak_leaves_wcusa_nm.normal.png",
+        "opacityMap": "/assets/materials/tree/oak/oak_leaves/t_oak_leaves_wcusa_o.data.png",
+        "pixelSpecular": true,
+        "roughnessMap": "/assets/materials/tree/oak/oak_leaves/t_oak_leaves_wcusa_r.data.png",
+        "specular": [
+          0.992156982,
+          0.992156982,
+          0.992156982,
+          1
+        ]
+      },
+      {
+        "baseColorFactor": null,
+        "pixelSpecular": null,
+        "specular": null
+      },
+      {
+        "baseColorFactor": null,
+        "pixelSpecular": null,
+        "specular": null
+      },
+      {
+        "baseColorFactor": null,
+        "pixelSpecular": null,
+        "specular": null
+      }
+    ],
+    "alphaRef": 90,
+    "alphaTest": true,
+    "annotation": "NATURE",
+    "doubleSided": true,
+    "invertBackFaceNormals": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vegetation",
+    "materialTag2": "Natural",
+    "materialTag3": "vegetation",
+    "subSurface": true,
+    "subSurfaceIntensity": 0.18,
+    "translucentZWrite": true,
+    "version": 1.5,
+    "subSurfaceColor": [
+      0.82,
+      0.47,
+      0.61,
+      1
+    ]
+  }
+}

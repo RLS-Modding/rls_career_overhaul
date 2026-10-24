@@ -1,0 +1,86 @@
+{
+"ForkLift_differential_R": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"3.23 Differential",
+        "value":100
+    },
+    "slotType" : "ForkLift_differential_R",
+    "slots": [
+        ["type", "default", "description"],
+        ["pigeon_driveshaft_R","pigeon_driveshaft_R", "Rear Driveshaft"]
+    ],
+    "powertrain" : [
+        ["type", "name", "inputName", "inputIndex"],
+        ["differential", "differential_F", "driveshaft", 1, {"diffType":"open", "gearRatio": 4.857, "friction":5, "uiName":"Rear Differential","defaultVirtualInertia":0.25}]
+        //["differential", "differential_F", "driveshaft", 1, {"diffType":"locked", "gearRatio": 3.23, "lockTorque":5000, "friction":5, "uiName":"Rear Differential","defaultVirtualInertia":0.25}]
+    ],
+	"nodes": [
+         ["id", "posX", "posY", "posZ"],
+         //fuel tank particles
+         {"frictionCoef":1},
+         {"collision":true},
+         {"selfCollision":false},
+         {"group":""},
+         {"nodeWeight":30},
+         {"engineGroup":["fuel"]},
+         {"nodeMaterial":"|NM_PLASTIC"},
+         {"chemEnergy":50,"burnRate":0.3,"flashPoint":220,"vaporPoint":90,"specHeat":0.03,"selfIgnitionCoef":0.06,"smokePoint":220,"containerBeam":"fuelTank"},
+		 
+         ["diff", 0.0, -0.8, 0.1],
+         {"engineGroup":""},
+         {"group":""},
+         {"chemEnergy":false,"burnRate":false,"flashPoint":false,"vaporPoint":false,"specHeat":false,"selfIgnitionCoef":false,"smokePoint":false,"containerBeam":false}
+    ],
+    "beams": [
+          ["id1:", "id2:"],
+          //fuel tank beams
+          {"beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+          {"disableMeshBreaking":true,"disableTriangleBreaking":true},
+          //connect fuel particles to tank
+          {"beamSpring":10001000,"beamDamp":120},
+          {"beamDeform":"FLT_MAX","beamStrength":"FLT_MAX"},
+          {"breakGroupType":1},
+          {"optional":false},
+          {"deformLimitExpansion":1.1},
+          {"breakGroup":""},
+		  
+		  ["diff","b0r"],
+		  ["diff","b0"],
+		  ["diff","b0l"],
+		  ["diff","b0tr"],
+		  ["diff","b0t"],
+		  ["diff","b0tl"],
+		  ["diff","b1r"],
+		  ["diff","b1"],
+		  ["diff","b1l"],
+          {"disableMeshBreaking":false,"disableTriangleBreaking":false}
+    ]
+},
+"pigeon_driveshaft_R": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Driveshaft",
+        "value":100
+    },
+    "slotType" : "pigeon_driveshaft_R",
+    "powertrain" : [
+        ["type", "name", "inputName", "inputIndex"],
+        //rear driveshaft
+        ["torsionReactor", "torsionReactorR", "gearbox", 1, {}],
+        ["shaft", "driveshaft", "torsionReactorR", 1, {"breakTriggerBeam":"driveshaft", "uiName":"Rear Driveshaft", "electricsName":"driveshaft", "friction":1}]
+    ],
+    "torsionReactorR": {
+        "torqueReactionNodes:":["e1l","e2l","e4r"]
+    },
+    "beams": [
+          ["id1:", "id2:"],
+          //driveshaft
+          {"beamPrecompression":1.0, "beamType":"|BOUNDED", "beamLongBound":0.04, "beamShortBound":0.04},
+          {"beamSpring":0,"beamDamp":0,"beamDeform":2000,"beamStrength":3000},
+          {"beamLimitSpring":5001000,"beamLimitDamp":100},
+          ["ax3","tra1",{"name":"driveshaft","optional":true,"breakGroup":"driveshaft","deformGroup":"driveshaft"}],
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0}
+    ]
+}
+}

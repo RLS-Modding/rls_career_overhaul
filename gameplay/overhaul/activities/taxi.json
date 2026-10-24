@@ -1,0 +1,6 @@
+{
+  "id": "taxi",
+  "order": 10,
+  "extension": "overhaul_jobs_taxi_taxi",
+  "definition": "overhaul/jobs/taxi/activity"
+}

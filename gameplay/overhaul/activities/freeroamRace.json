@@ -1,0 +1,6 @@
+{
+  "id": "freeroamRace",
+  "order": 70,
+  "extension": "overhaul_events_host",
+  "definition": "overhaul/events/host/hostActivity"
+}

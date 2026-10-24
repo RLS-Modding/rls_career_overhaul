@@ -1,0 +1,6 @@
+{
+  "id": "overhaul_jobs_quarry_contracts",
+  "order": 74,
+  "module": "overhaul/jobs/quarry/contracts",
+  "scopes": []
+}

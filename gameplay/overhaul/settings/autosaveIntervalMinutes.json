@@ -1,0 +1,24 @@
+{
+  "id": "autosaveIntervalMinutes",
+  "key": "autosaveIntervalMinutes",
+  "order": 900,
+  "type": "number",
+  "default": 5,
+  "section": "autosave",
+  "validateSingle": true,
+  "validateLoaded": true,
+  "options": [
+    5,
+    10,
+    15,
+    30,
+    60
+  ],
+  "ui": {
+    "label": "ui.overhaulManager.settings.autosaveIntervalMinutes.label",
+    "description": "ui.overhaulManager.settings.autosaveIntervalMinutes.description",
+    "section": "autosave",
+    "unit": "ui.overhaulManager.settings.autosaveIntervalMinutes.unit",
+    "icon": "timer"
+  }
+}

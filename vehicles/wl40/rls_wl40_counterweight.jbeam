@@ -1,0 +1,20 @@
+{
+// RLS heavy underbody counterweight using the 0.40 counterweight components.
+"rls_wl40_counterweight_R": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Underbody Counterweight (12814kg)", //2x 6407kg cast iron
+        "value":9000,
+    },
+    "slotType" : "wl40_counterweight_R",
+    "components": {
+        "hasUnderbodyCounterweight": true,
+        "underbodyCounterweightWeight": 12814,
+    },
+    "flexbodies":[
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["wl40_counterweight", ["wl40_bumper_R"]],
+        {"deformGroup":""}
+    ],
+},
+}

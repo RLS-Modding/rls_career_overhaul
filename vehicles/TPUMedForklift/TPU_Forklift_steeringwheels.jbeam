@@ -1,0 +1,15 @@
+{
+"WHE_ForkliftSteerWheel": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Steering Wheel",
+        "value":310
+    },
+    "slotType" : "WHE_ForkliftSteerWheel",
+    "props": [
+        ["func",     "mesh",      "idRef:", "idX:", "idY:", "baseRotation",            "rotation",            "translation",         "min", "max", "offset", "multiplier"],
+        //steering wheel
+        ["steering", "MFL_SteerWheel", "r1","r1r","r3",       {"x":57.23, "y":0, "z":180}, {"x":0, "y":0, "z":1}, {"x":0, "y":0, "z":0}, -1000, 1000, 0, 1, {"baseTranslation":{"x":0,"y":0.3,"z":0.035}}]
+    ]
+}
+}

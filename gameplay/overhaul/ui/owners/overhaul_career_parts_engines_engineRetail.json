@@ -1,0 +1,24 @@
+{
+  "id": "overhaul_career_parts_engines_engineRetail",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 170,
+    "aliases": [
+      "career_modules_engineRetail"
+    ]
+  },
+  "routes": [
+    {
+      "name": "overhaul.engineRetail",
+      "order": 5,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "play",
+          "title": "Engine Shop"
+        }
+      }
+    }
+  ]
+}

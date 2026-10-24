@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_jobs_cardGames_cardGames",
+  "order": 68,
+  "module": "overhaul/jobs/cardGames/cardGames",
+  "scopes": [
+    {
+      "id": "bootManual",
+      "order": 7
+    }
+  ]
+}

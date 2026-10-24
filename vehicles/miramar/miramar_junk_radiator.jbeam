@@ -1,0 +1,73 @@
+{
+"miramar_junk_radiator": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Junk Radiator",
+        "value":50,
+    },
+    "slotType" : "miramar_radiator",
+    "flexbodies": [
+         ["mesh", "[group]:", "nonFlexMaterials"],
+         ["miramar_radiator", ["miramar_radsupport"]],
+    ],
+    "mainEngine":{
+        "radiatorArea":0.2,
+        "radiatorEffectiveness":3000,
+        "coolantVolume":4.2,
+        "radiatorFanType":"mechanical",
+        "radiatorFanTemperature":110,
+        "radiatorFanMaxAirSpeed":10,
+        "thermostatTemperature":95,
+
+        //damage deformGroups
+        "deformGroups_radiator":["radiator_damage", "radhose_damage"]
+        },
+    "nodes": [
+         ["id", "posX", "posY", "posZ"],
+         {"frictionCoef":0.5},
+         {"nodeMaterial":"|NM_METAL"},
+         {"collision":true},
+         {"selfCollision":true},
+         {"engineGroup":"radiator"},
+         {"group":"miramar_radiator"},
+         {"nodeWeight":2.5},
+         {"chemEnergy":200,"burnRate":0.4,"flashPoint":250,"specHeat":0.8,"smokePoint":150,"selfIgnitionCoef":false},
+         ["rad1", 0.00, -1.67, 0.8],
+         {"chemEnergy":false,"burnRate":false,"flashPoint":false,"specHeat":false,"smokePoint":false,"selfIgnitionCoef":false},
+         ["rad2", 0.00, -1.67, 0.6],
+         {"engineGroup":""},
+    ],
+    "beams": [
+          ["id1:", "id2:"],
+          {"beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+          {"beamSpring":809309,"beamDamp":163.8},
+          {"beamDeform":11407.5,"beamStrength":"FLT_MAX"},
+          {"deformGroup":"radiator_damage","deformationTriggerRatio":0.05},
+          {"deformLimitExpansion":1.2},
+          //radiator
+          ["rad2", "rad1"],
+          ["rad1", "rd1"],
+          ["rad1", "f13"],
+          ["rad1", "rd1r"],
+          ["rad1", "rd1l"],
+          ["rad1", "f13ll"],
+          ["rad1", "f13rr"],
+          ["rad2", "rd1"],
+          ["rad2", "f13"],
+          ["rad2", "rd1r"],
+          ["rad2", "rd1l"],
+          ["rad2", "f13ll"],
+          ["rad2", "f13rr"],
+          {"optional":false},
+          {"deformGroup":""},
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+    ],
+    "triangles": [
+            ["id1:","id2:","id3:"],
+            {"dragCoef":4.41},
+            {"group":"burnside_radsupport"},
+            ["rd1r", "rd1", "rad1"],
+            ["rd1", "rd1l", "rad1"],
+    ],
+},
+}

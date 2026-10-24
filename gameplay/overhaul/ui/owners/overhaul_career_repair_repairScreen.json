@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_career_repair_repairScreen",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 430,
+    "aliases": [
+      "career_modules_insurance_repairScreen"
+    ]
+  }
+}

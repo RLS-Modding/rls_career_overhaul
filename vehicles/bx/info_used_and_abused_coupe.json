@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":14500,  
+    "Configuration": "Used & Abused - Coupe ( Joe's Junk Career )",
+    "Description": "Beater BX Coupe with damaged body panels and misc junk parts.",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 310,
+    "Torque": 314,
+    "Value": 12500,
+    "Weight": 1281,
+    "Years": {
+      "max": 1994,
+      "min": 1990
+    }  
+}
+
+

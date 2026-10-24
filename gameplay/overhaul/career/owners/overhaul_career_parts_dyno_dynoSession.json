@@ -1,0 +1,10 @@
+{
+  "id": "overhaul_career_parts_dyno_dynoSession",
+  "order": 130,
+  "module": "overhaul/career/parts/dyno/dynoSession",
+  "scopes": [],
+  "demandLoad": true,
+  "saveFiles": ["career/rls_career/dynoPullHistory.json"],
+  "capability": "businessSession",
+  "triggerFacilityTypes": ["dyno"]
+}

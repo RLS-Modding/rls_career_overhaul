@@ -1,0 +1,17 @@
+{
+  "id": "forcePhoneTutorial",
+  "key": "forcePhoneTutorial",
+  "order": 300,
+  "type": "boolean",
+  "default": false,
+  "section": "developer",
+  "validateSingle": false,
+  "validateLoaded": false,
+  "ui": {
+    "label": "ui.overhaulManager.settings.forcePhoneTutorial.label",
+    "description": "ui.overhaulManager.settings.forcePhoneTutorial.description",
+    "section": "developer",
+    "devOnly": true,
+    "icon": "smartphone1"
+  }
+}

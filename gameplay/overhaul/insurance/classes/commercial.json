@@ -1,0 +1,14 @@
+{
+  "id" : "commercial",
+  "name" : "insurance.classes.commercial.name",
+  "description" : "insurance.classes.commercial.description",
+  "icon" : "boxTruck",
+  "coverageRate" : 0.015,
+  "applicableConditions" : {
+    "priority" : 1,
+    "conditions" : {
+      "bodyStyles" : ["Bus", "Van", "Semi Truck", "Fifth Wheel Truck", "Box Truck", "Logging Truck", "Flatbed", "Dump Truck", "Tanker Truck", "Mixer Truck", "Chassis Cab"],
+      "commercialClass" : [4, 5, 6, 7, 8]
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+"md_series_main.skin.rlsupull": {
+    "information":{
+        "authors":"RamRod",
+        "name":"U-Pull",
+        "value":1337
+    },
+    "slotType" : "paint_design",
+    "globalSkin" : "rlsupull"
+  },
+}

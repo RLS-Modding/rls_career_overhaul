@@ -1,0 +1,1460 @@
+{
+    "version": 3,
+    "disciplines": [
+        {
+            "id": "crawling",
+            "label": "Crawling",
+            "parentSkillId": "offroad",
+            "skillKey": "careerSkills-offroad",
+            "placeholderOnly": false,
+            "contracts": {
+                "tierUnlockLevels": {
+                    "easy": 5,
+                    "medium": 20,
+                    "hard": 35
+                },
+                "targetMultiplierByTier": {
+                    "easy": {
+                        "min": 0.9,
+                        "max": 1
+                    },
+                    "medium": {
+                        "min": 0.8,
+                        "max": 0.9
+                    },
+                    "hard": {
+                        "min": 0.7,
+                        "max": 0.8
+                    }
+                },
+                "xpByTier": {
+                    "easy": {
+                        "xpAtTarget": 375,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "medium": {
+                        "xpAtTarget": 750,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "hard": {
+                        "xpAtTarget": 1750,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    }
+                },
+                "vehicleBlacklist": []
+            },
+            "sponsors": {
+                "tierUnlockLevels": {
+                    "easy": 10,
+                    "medium": 25,
+                    "hard": 40
+                },
+                "targetMultiplierByTier": {
+                    "easy": {
+                        "min": 1.08,
+                        "max": 1.25
+                    },
+                    "medium": {
+                        "min": 1,
+                        "max": 1.12
+                    },
+                    "hard": {
+                        "min": 0.94,
+                        "max": 1.04
+                    }
+                }
+            },
+            "eventXp": {
+                "tierUnlockLevels": {
+                    "easy": 1,
+                    "medium": 20,
+                    "hard": 35
+                },
+                "xpByTier": {
+                    "easy": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "medium": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "hard": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    }
+                }
+            }
+        },
+        {
+            "id": "roadracing",
+            "label": "Road Racing",
+            "parentSkillId": "circuitRacing",
+            "skillKey": "careerSkills-circuitRacing",
+            "sanctionedRacingUnlockLevel": 15,
+            "placeholderOnly": false,
+            "contracts": {
+                "tierUnlockLevels": {
+                    "easy": 5,
+                    "medium": 20,
+                    "hard": 35
+                },
+                "targetMultiplierByTier": {
+                    "easy": {
+                        "min": 0.9,
+                        "max": 1
+                    },
+                    "medium": {
+                        "min": 0.8,
+                        "max": 0.9
+                    },
+                    "hard": {
+                        "min": 0.7,
+                        "max": 0.8
+                    }
+                },
+                "xpByTier": {
+                    "easy": {
+                        "xpAtTarget": 375,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "medium": {
+                        "xpAtTarget": 750,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "hard": {
+                        "xpAtTarget": 1750,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    }
+                },
+                "contractVehicleConfigTypeWhitelist": [
+                    "Race"
+                ],
+                "vehicleBlacklist": []
+            },
+            "sponsors": {
+                "tierUnlockLevels": {
+                    "easy": 10,
+                    "medium": 25,
+                    "hard": 40
+                },
+                "targetMultiplierByTier": {
+                    "easy": {
+                        "min": 1.08,
+                        "max": 1.25
+                    },
+                    "medium": {
+                        "min": 1,
+                        "max": 1.12
+                    },
+                    "hard": {
+                        "min": 0.94,
+                        "max": 1.04
+                    }
+                }
+            },
+            "eventXp": {
+                "tierUnlockLevels": {
+                    "easy": 1,
+                    "medium": 20,
+                    "hard": 35
+                },
+                "xpByTier": {
+                    "easy": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "medium": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "hard": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    }
+                }
+            }
+        },
+        {
+            "id": "drift",
+            "label": "Drift",
+            "parentSkillId": "mayhem",
+            "skillKey": "careerSkills-mayhem",
+            "placeholderOnly": false,
+            "contracts": {
+                "tierUnlockLevels": {
+                    "easy": 5,
+                    "medium": 20,
+                    "hard": 35
+                },
+                "targetMultiplierByTier": {
+                    "easy": {
+                        "min": 0.9,
+                        "max": 1
+                    },
+                    "medium": {
+                        "min": 0.8,
+                        "max": 0.9
+                    },
+                    "hard": {
+                        "min": 0.7,
+                        "max": 0.8
+                    }
+                },
+                "xpByTier": {
+                    "easy": {
+                        "xpAtTarget": 375,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "medium": {
+                        "xpAtTarget": 750,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "hard": {
+                        "xpAtTarget": 1750,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    }
+                },
+                "vehicleBlacklist": []
+            },
+            "sponsors": {
+                "tierUnlockLevels": {
+                    "easy": 10,
+                    "medium": 25,
+                    "hard": 40
+                },
+                "targetMultiplierByTier": {
+                    "easy": {
+                        "min": 1.08,
+                        "max": 1.25
+                    },
+                    "medium": {
+                        "min": 1,
+                        "max": 1.12
+                    },
+                    "hard": {
+                        "min": 0.94,
+                        "max": 1.04
+                    }
+                }
+            },
+            "eventXp": {
+                "tierUnlockLevels": {
+                    "easy": 1,
+                    "medium": 20,
+                    "hard": 35
+                },
+                "xpByTier": {
+                    "easy": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "medium": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "hard": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    }
+                }
+            }
+        },
+        {
+            "id": "burnout",
+            "label": "Burnout",
+            "parentSkillId": "mayhem",
+            "skillKey": "careerSkills-mayhem",
+            "placeholderOnly": false,
+            "contracts": {
+                "tierUnlockLevels": {
+                    "easy": 5,
+                    "medium": 20,
+                    "hard": 35
+                },
+                "targetMultiplierByTier": {
+                    "easy": {
+                        "min": 0.9,
+                        "max": 1
+                    },
+                    "medium": {
+                        "min": 0.8,
+                        "max": 0.9
+                    },
+                    "hard": {
+                        "min": 0.7,
+                        "max": 0.8
+                    }
+                },
+                "xpByTier": {
+                    "easy": {
+                        "xpAtTarget": 375,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "medium": {
+                        "xpAtTarget": 750,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "hard": {
+                        "xpAtTarget": 1750,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    }
+                },
+                "vehicleBlacklist": []
+            },
+            "sponsors": {
+                "tierUnlockLevels": {
+                    "easy": 10,
+                    "medium": 25,
+                    "hard": 40
+                },
+                "targetMultiplierByTier": {
+                    "easy": {
+                        "min": 1.08,
+                        "max": 1.25
+                    },
+                    "medium": {
+                        "min": 1,
+                        "max": 1.12
+                    },
+                    "hard": {
+                        "min": 0.94,
+                        "max": 1.04
+                    }
+                }
+            },
+            "eventXp": {
+                "tierUnlockLevels": {
+                    "easy": 1,
+                    "medium": 20,
+                    "hard": 35
+                },
+                "xpByTier": {
+                    "easy": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "medium": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "hard": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    }
+                }
+            }
+        },
+        {
+            "id": "drag",
+            "label": "Drag",
+            "parentSkillId": "speed",
+            "skillKey": "careerSkills-speed",
+            "placeholderOnly": false,
+            "contracts": {
+                "tierUnlockLevels": {
+                    "easy": 5,
+                    "medium": 20,
+                    "hard": 35
+                },
+                "targetMultiplierByTier": {
+                    "easy": {
+                        "min": 0.9,
+                        "max": 1
+                    },
+                    "medium": {
+                        "min": 0.8,
+                        "max": 0.9
+                    },
+                    "hard": {
+                        "min": 0.7,
+                        "max": 0.8
+                    }
+                },
+                "xpByTier": {
+                    "easy": {
+                        "xpAtTarget": 375,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "medium": {
+                        "xpAtTarget": 750,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "hard": {
+                        "xpAtTarget": 1750,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    }
+                },
+                "vehicleBlacklist": []
+            },
+            "sponsors": {
+                "tierUnlockLevels": {
+                    "easy": 10,
+                    "medium": 25,
+                    "hard": 40
+                },
+                "targetMultiplierByTier": {
+                    "easy": {
+                        "min": 1.08,
+                        "max": 1.25
+                    },
+                    "medium": {
+                        "min": 1,
+                        "max": 1.12
+                    },
+                    "hard": {
+                        "min": 0.94,
+                        "max": 1.04
+                    }
+                }
+            },
+            "eventXp": {
+                "tierUnlockLevels": {
+                    "easy": 1,
+                    "medium": 20,
+                    "hard": 35
+                },
+                "xpByTier": {
+                    "easy": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "medium": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "hard": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    }
+                }
+            }
+        },
+        {
+            "id": "trail",
+            "label": "Trail",
+            "parentSkillId": "offroad",
+            "skillKey": "careerSkills-offroad",
+            "placeholderOnly": true,
+            "legacyOnly": true,
+            "contracts": {
+                "tierUnlockLevels": {
+                    "easy": 5,
+                    "medium": 20,
+                    "hard": 35
+                },
+                "targetMultiplierByTier": {
+                    "easy": {
+                        "min": 0.9,
+                        "max": 1
+                    },
+                    "medium": {
+                        "min": 0.8,
+                        "max": 0.9
+                    },
+                    "hard": {
+                        "min": 0.7,
+                        "max": 0.8
+                    }
+                },
+                "xpByTier": {
+                    "easy": {
+                        "xpAtTarget": 375,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "medium": {
+                        "xpAtTarget": 750,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "hard": {
+                        "xpAtTarget": 1750,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    }
+                },
+                "vehicleBlacklist": []
+            },
+            "sponsors": {
+                "tierUnlockLevels": {
+                    "easy": 10,
+                    "medium": 25,
+                    "hard": 40
+                },
+                "targetMultiplierByTier": {
+                    "easy": {
+                        "min": 1.08,
+                        "max": 1.25
+                    },
+                    "medium": {
+                        "min": 1,
+                        "max": 1.12
+                    },
+                    "hard": {
+                        "min": 0.94,
+                        "max": 1.04
+                    }
+                }
+            },
+            "eventXp": {
+                "tierUnlockLevels": {
+                    "easy": 1,
+                    "medium": 20,
+                    "hard": 35
+                },
+                "xpByTier": {
+                    "easy": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "medium": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "hard": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    }
+                }
+            }
+        },
+        {
+            "id": "oval",
+            "label": "Oval",
+            "parentSkillId": "circuitRacing",
+            "skillKey": "careerSkills-circuitRacing",
+            "placeholderOnly": false,
+            "contracts": {
+                "tierUnlockLevels": {
+                    "easy": 5,
+                    "medium": 20,
+                    "hard": 35
+                },
+                "targetMultiplierByTier": {
+                    "easy": {
+                        "min": 0.9,
+                        "max": 1
+                    },
+                    "medium": {
+                        "min": 0.8,
+                        "max": 0.9
+                    },
+                    "hard": {
+                        "min": 0.7,
+                        "max": 0.8
+                    }
+                },
+                "xpByTier": {
+                    "easy": {
+                        "xpAtTarget": 375,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "medium": {
+                        "xpAtTarget": 750,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "hard": {
+                        "xpAtTarget": 1750,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    }
+                },
+                "vehicleBlacklist": []
+            },
+            "sponsors": {
+                "tierUnlockLevels": {
+                    "easy": 10,
+                    "medium": 25,
+                    "hard": 40
+                },
+                "targetMultiplierByTier": {
+                    "easy": {
+                        "min": 1.08,
+                        "max": 1.25
+                    },
+                    "medium": {
+                        "min": 1,
+                        "max": 1.12
+                    },
+                    "hard": {
+                        "min": 0.94,
+                        "max": 1.04
+                    }
+                }
+            },
+            "eventXp": {
+                "tierUnlockLevels": {
+                    "easy": 1,
+                    "medium": 20,
+                    "hard": 35
+                },
+                "xpByTier": {
+                    "easy": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "medium": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "hard": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    }
+                }
+            }
+        },
+        {
+            "id": "offroad",
+            "label": "Off-Road",
+            "parentSkillId": "offroad",
+            "skillKey": "careerSkills-offroad",
+            "placeholderOnly": false,
+            "contracts": {
+                "tierUnlockLevels": {
+                    "easy": 5,
+                    "medium": 20,
+                    "hard": 35
+                },
+                "targetMultiplierByTier": {
+                    "easy": {
+                        "min": 0.9,
+                        "max": 1
+                    },
+                    "medium": {
+                        "min": 0.8,
+                        "max": 0.9
+                    },
+                    "hard": {
+                        "min": 0.7,
+                        "max": 0.8
+                    }
+                },
+                "xpByTier": {
+                    "easy": {
+                        "xpAtTarget": 375,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "medium": {
+                        "xpAtTarget": 750,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "hard": {
+                        "xpAtTarget": 1750,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    }
+                },
+                "vehicleBlacklist": []
+            },
+            "sponsors": {
+                "tierUnlockLevels": {
+                    "easy": 10,
+                    "medium": 25,
+                    "hard": 40
+                },
+                "targetMultiplierByTier": {
+                    "easy": {
+                        "min": 1.08,
+                        "max": 1.25
+                    },
+                    "medium": {
+                        "min": 1,
+                        "max": 1.12
+                    },
+                    "hard": {
+                        "min": 0.94,
+                        "max": 1.04
+                    }
+                }
+            },
+            "eventXp": {
+                "tierUnlockLevels": {
+                    "easy": 1,
+                    "medium": 20,
+                    "hard": 35
+                },
+                "xpByTier": {
+                    "easy": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "medium": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "hard": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    }
+                }
+            }
+        },
+        {
+            "id": "rally",
+            "label": "Rally",
+            "parentSkillId": "offroad",
+            "skillKey": "careerSkills-offroad",
+            "placeholderOnly": false,
+            "contracts": {
+                "tierUnlockLevels": {
+                    "easy": 5,
+                    "medium": 20,
+                    "hard": 35
+                },
+                "targetMultiplierByTier": {
+                    "easy": {
+                        "min": 0.9,
+                        "max": 1
+                    },
+                    "medium": {
+                        "min": 0.8,
+                        "max": 0.9
+                    },
+                    "hard": {
+                        "min": 0.7,
+                        "max": 0.8
+                    }
+                },
+                "xpByTier": {
+                    "easy": {
+                        "xpAtTarget": 375,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "medium": {
+                        "xpAtTarget": 750,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "hard": {
+                        "xpAtTarget": 1750,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    }
+                },
+                "vehicleBlacklist": []
+            },
+            "sponsors": {
+                "tierUnlockLevels": {
+                    "easy": 10,
+                    "medium": 25,
+                    "hard": 40
+                },
+                "targetMultiplierByTier": {
+                    "easy": {
+                        "min": 1.08,
+                        "max": 1.25
+                    },
+                    "medium": {
+                        "min": 1,
+                        "max": 1.12
+                    },
+                    "hard": {
+                        "min": 0.94,
+                        "max": 1.04
+                    }
+                }
+            },
+            "eventXp": {
+                "tierUnlockLevels": {
+                    "easy": 1,
+                    "medium": 20,
+                    "hard": 35
+                },
+                "xpByTier": {
+                    "easy": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "medium": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "hard": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    }
+                }
+            }
+        },
+        {
+            "id": "landspeed",
+            "label": "Top Speed",
+            "parentSkillId": "speed",
+            "skillKey": "careerSkills-speed",
+            "placeholderOnly": false,
+            "contracts": {
+                "tierUnlockLevels": {
+                    "easy": 5,
+                    "medium": 20,
+                    "hard": 35
+                },
+                "targetMultiplierByTier": {
+                    "easy": {
+                        "min": 0.9,
+                        "max": 1
+                    },
+                    "medium": {
+                        "min": 0.8,
+                        "max": 0.9
+                    },
+                    "hard": {
+                        "min": 0.7,
+                        "max": 0.8
+                    }
+                },
+                "xpByTier": {
+                    "easy": {
+                        "xpAtTarget": 375,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "medium": {
+                        "xpAtTarget": 750,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "hard": {
+                        "xpAtTarget": 1750,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    }
+                },
+                "vehicleBlacklist": []
+            },
+            "sponsors": {
+                "tierUnlockLevels": {
+                    "easy": 10,
+                    "medium": 25,
+                    "hard": 40
+                },
+                "targetMultiplierByTier": {
+                    "easy": {
+                        "min": 1.08,
+                        "max": 1.25
+                    },
+                    "medium": {
+                        "min": 1,
+                        "max": 1.12
+                    },
+                    "hard": {
+                        "min": 0.94,
+                        "max": 1.04
+                    }
+                }
+            },
+            "eventXp": {
+                "tierUnlockLevels": {
+                    "easy": 1,
+                    "medium": 20,
+                    "hard": 35
+                },
+                "xpByTier": {
+                    "easy": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "medium": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "hard": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    }
+                }
+            }
+        },
+        {
+            "id": "pulling",
+            "label": "Tractor Pulling",
+            "parentSkillId": "speed",
+            "skillKey": "careerSkills-speed",
+            "placeholderOnly": false,
+            "contracts": {
+                "tierUnlockLevels": {
+                    "easy": 5,
+                    "medium": 20,
+                    "hard": 35
+                },
+                "pullPbDistanceMultipliersByTier": {
+                    "easy": {"min": 0.9, "max": 1},
+                    "medium": {"min": 1, "max": 1.1},
+                    "hard": {"min": 1.1, "max": 1.25}
+                },
+                "pullFallbackRatioByTier": {
+                    "easy": 0.6,
+                    "medium": 0.8,
+                    "hard": 0.95
+                },
+                "xpByTier": {
+                    "easy": {"xpAtTarget": 375, "tenPercentBetterMultiplier": 1.25, "belowTargetFloorMultiplier": 0.25, "maxMultiplier": 3},
+                    "medium": {"xpAtTarget": 750, "tenPercentBetterMultiplier": 1.25, "belowTargetFloorMultiplier": 0.25, "maxMultiplier": 3},
+                    "hard": {"xpAtTarget": 1750, "tenPercentBetterMultiplier": 1.25, "belowTargetFloorMultiplier": 0.25, "maxMultiplier": 3}
+                },
+                "vehicleBlacklist": []
+            },
+            "sponsors": {
+                "tierUnlockLevels": {"easy": 10, "medium": 25, "hard": 40},
+                "pullFallbackRatioByTier": {"easy": 0.7, "medium": 0.85, "hard": 0.95}
+            },
+            "eventXp": {
+                "tierUnlockLevels": {"easy": 1, "medium": 20, "hard": 35},
+                "xpByTier": {
+                    "easy": {"xpAtTarget": 100, "tenPercentBetterMultiplier": 1.25, "belowTargetFloorMultiplier": 0.25, "maxMultiplier": 3},
+                    "medium": {"xpAtTarget": 100, "tenPercentBetterMultiplier": 1.25, "belowTargetFloorMultiplier": 0.25, "maxMultiplier": 3},
+                    "hard": {"xpAtTarget": 100, "tenPercentBetterMultiplier": 1.25, "belowTargetFloorMultiplier": 0.25, "maxMultiplier": 3}
+                }
+            }
+        },
+        {
+            "id": "mudding",
+            "label": "Mudding",
+            "parentSkillId": "offroad",
+            "skillKey": "careerSkills-offroad",
+            "placeholderOnly": false,
+            "contracts": {
+                "tierUnlockLevels": {
+                    "easy": 5,
+                    "medium": 20,
+                    "hard": 35
+                },
+                "targetMultiplierByTier": {
+                    "easy": {
+                        "min": 0.9,
+                        "max": 1
+                    },
+                    "medium": {
+                        "min": 0.8,
+                        "max": 0.9
+                    },
+                    "hard": {
+                        "min": 0.7,
+                        "max": 0.8
+                    }
+                },
+                "xpByTier": {
+                    "easy": {
+                        "xpAtTarget": 375,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "medium": {
+                        "xpAtTarget": 750,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "hard": {
+                        "xpAtTarget": 1750,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    }
+                },
+                "vehicleBlacklist": []
+            },
+            "sponsors": {
+                "tierUnlockLevels": {
+                    "easy": 10,
+                    "medium": 25,
+                    "hard": 40
+                },
+                "targetMultiplierByTier": {
+                    "easy": {
+                        "min": 1.08,
+                        "max": 1.25
+                    },
+                    "medium": {
+                        "min": 1,
+                        "max": 1.12
+                    },
+                    "hard": {
+                        "min": 0.94,
+                        "max": 1.04
+                    }
+                }
+            },
+            "eventXp": {
+                "tierUnlockLevels": {
+                    "easy": 1,
+                    "medium": 20,
+                    "hard": 35
+                },
+                "xpByTier": {
+                    "easy": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "medium": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "hard": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    }
+                }
+            }
+        },
+        {
+            "id": "demo",
+            "label": "Demolition Derby",
+            "parentSkillId": "mayhem",
+            "skillKey": "careerSkills-mayhem",
+            "placeholderOnly": false,
+            "contracts": {
+                "tierUnlockLevels": {
+                    "easy": 5,
+                    "medium": 20,
+                    "hard": 35
+                },
+                "targetMultiplierByTier": {
+                    "easy": {
+                        "min": 0.9,
+                        "max": 1
+                    },
+                    "medium": {
+                        "min": 0.8,
+                        "max": 0.9
+                    },
+                    "hard": {
+                        "min": 0.7,
+                        "max": 0.8
+                    }
+                },
+                "xpByTier": {
+                    "easy": {
+                        "xpAtTarget": 375,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "medium": {
+                        "xpAtTarget": 750,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "hard": {
+                        "xpAtTarget": 1750,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    }
+                },
+                "vehicleBlacklist": []
+            },
+            "sponsors": {
+                "tierUnlockLevels": {
+                    "easy": 10,
+                    "medium": 25,
+                    "hard": 40
+                },
+                "targetMultiplierByTier": {
+                    "easy": {
+                        "min": 1.08,
+                        "max": 1.25
+                    },
+                    "medium": {
+                        "min": 1,
+                        "max": 1.12
+                    },
+                    "hard": {
+                        "min": 0.94,
+                        "max": 1.04
+                    }
+                }
+            },
+            "eventXp": {
+                "tierUnlockLevels": {
+                    "easy": 1,
+                    "medium": 20,
+                    "hard": 35
+                },
+                "xpByTier": {
+                    "easy": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "medium": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    },
+                    "hard": {
+                        "xpAtTarget": 100,
+                        "tenPercentBetterMultiplier": 1.25,
+                        "belowTargetFloorMultiplier": 0.25,
+                        "maxMultiplier": 3
+                    }
+                }
+            },
+            "rewardTuning": {
+                "aiCountScaling": {
+                    "minMultiplier": 0.72,
+                    "maxMultiplier": 1.18,
+                    "exponent": 0.9
+                },
+                "durationBands": [
+                    {
+                        "maxSeconds": 90,
+                        "moneyMultiplier": 0.82,
+                        "xpMultiplier": 0.82,
+                        "label": "Quick finish"
+                    },
+                    {
+                        "maxSeconds": 210,
+                        "moneyMultiplier": 1,
+                        "xpMultiplier": 1,
+                        "label": "Standard finish"
+                    },
+                    {
+                        "maxSeconds": 360,
+                        "moneyMultiplier": 1.08,
+                        "xpMultiplier": 1.1,
+                        "label": "Extended battle"
+                    },
+                    {
+                        "maxSeconds": 999999,
+                        "moneyMultiplier": 0.95,
+                        "xpMultiplier": 0.95,
+                        "label": "Prolonged battle"
+                    }
+                ],
+                "antiFarm": {
+                    "historyWindowSeconds": 1800,
+                    "fullRewardRuns": 2,
+                    "diminishingStep": 0.8,
+                    "minMultiplier": 0.45,
+                    "cooldownSeconds": 180,
+                    "cooldownMultiplier": 0.7
+                }
+            }
+        }
+    ],
+    "parentSkills": [
+        {"id": "offroad", "label": "Off-Road", "skillKey": "careerSkills-offroad", "laneIds": ["offroad", "rally", "crawling", "mudding"]},
+        {"id": "speed", "label": "Speed", "skillKey": "careerSkills-speed", "laneIds": ["drag", "landspeed", "pulling"]},
+        {"id": "mayhem", "label": "Mayhem", "skillKey": "careerSkills-mayhem", "laneIds": ["drift", "burnout", "demo"]},
+        {"id": "circuitRacing", "label": "Circuit Racing", "skillKey": "careerSkills-circuitRacing", "laneIds": ["roadracing", "oval"]}
+    ],
+    "licenses": {
+        "pointAwards": {"5": 1, "10": 1, "15": 1, "20": 1, "25": 2, "30": 2, "35": 1, "40": 2, "45": 1},
+        "hardMinimumLevel": 30,
+        "sponsorDelayLevels": 2
+    },
+    "typeAliasMap": {
+        "crawl": "crawling",
+        "crawling": "crawling",
+        "apexracing": "roadracing",
+        "roadracing": "roadracing",
+        "road_racing": "roadracing",
+        "drift": "drift",
+        "burnout": "burnout",
+        "burnoutComp": "burnout",
+        "drag": "drag",
+        "trail": "trail",
+        "oval": "oval",
+        "offroad": "offroad",
+        "off-road": "offroad",
+        "rally": "rally",
+        "landspeed": "landspeed",
+        "land_speed": "landspeed",
+        "pulling": "pulling",
+        "tractor_pull": "pulling",
+        "tractor_pulling": "pulling",
+        "mud": "mudding",
+        "extrememud": "mudding",
+        "mudding": "mudding",
+        "demo": "demo",
+        "demolition": "demo",
+        "demolitionderby": "demo"
+    },
+    "rewardScaling": {
+        "maxLevel": 50,
+        "normalLaneMaxBonus": 2,
+        "level50TopOff": 0.08,
+        "sponsorBonusCap": 10
+    },
+    "contracts": {
+        "offerBaseCount": 3,
+        "offerBumpCount": 2,
+        "offerIncreaseLevels": [
+            12,
+            27,
+            42
+        ],
+        "slotUnlockLevels": {
+            "baseLevel": 5,
+            "baseSlots": 2,
+            "extraLevels": [
+                20,
+                35,
+                50
+            ]
+        },
+        "offerExpiryMinutes": 5,
+        "offerRefreshMinutes": 2,
+        "contractVehiclePickWeights": {
+            "experiencedOwned": 0.5,
+            "otherOwned": 0.3,
+            "notOwned": 0.2
+        },
+        "contractVehicleRewardMultipliers": {
+            "experiencedOwned": 1,
+            "otherOwned": 1,
+            "notOwned": 1.25
+        },
+        "expiryMinutesByTier": {
+            "easy": 240,
+            "medium": 120,
+            "hard": 60
+        },
+        "basePayoutMultiplierByTier": {
+            "easy": 10,
+            "medium": 15,
+            "hard": 25
+        },
+        "payoutVariance": {
+            "min": 0.9,
+            "max": 1.1
+        },
+        "extraLapEventBonusPerUnit": 0.33,
+        "xpPercentOfMoney": 0.5,
+        "timeWindowMinutesByTier": {
+            "easy": {
+                "min": 3,
+                "max": 9
+            },
+            "medium": {
+                "min": 3,
+                "max": 9
+            },
+            "hard": {
+                "min": 3,
+                "max": 9
+            }
+        },
+        "nonLoopEventTimeMultiplier": 1.66,
+        "contractPbTimeMultipliersByTier": {
+            "easy": {
+                "min": 1.025,
+                "max": 1.1
+            },
+            "medium": {
+                "min": 0.975,
+                "max": 1.025
+            },
+            "hard": {
+                "min": 0.925,
+                "max": 0.975
+            }
+        },
+        "disciplinesUsingEventCountOverride": [
+            "crawling"
+        ],
+        "eventCountOverrideByTier": {
+            "easy": {
+                "eventsMin": 2,
+                "eventsMax": 3
+            },
+            "medium": {
+                "eventsMin": 3,
+                "eventsMax": 5
+            },
+            "hard": {
+                "eventsMin": 4,
+                "eventsMax": 6
+            }
+        }
+    },
+    "sponsors": {
+        "offerBaseCount": 3,
+        "offerBumpCount": 2,
+        "offerIncreaseLevels": [
+            16,
+            31,
+            46
+        ],
+        "slotUnlockLevels": {
+            "baseLevel": 7,
+            "baseSlots": 2,
+            "extraLevels": [
+                30,
+                40,
+                50
+            ]
+        },
+        "offerExpiryMinutes": 5,
+        "offerRefreshMinutes": 2,
+        "upkeepMinutesByTier": {
+            "easy": 60,
+            "medium": 45,
+            "hard": 30,
+            "master": 30
+        },
+        "probationMinutesByTier": {"easy": 30, "medium": 30, "hard": 30, "master": 15},
+        "graceMinutes": 5,
+        "droppedSlotCooldownMinutes": 15,
+        "bonusRangeByTier": {
+            "easy": {
+                "min": 0.01,
+                "max": 0.05
+            },
+            "medium": {
+                "min": 0.05,
+                "max": 0.1
+            },
+            "hard": {
+                "min": 0.15,
+                "max": 0.3
+            },
+            "master": {
+                "min": 0.2,
+                "max": 0.5
+            }
+        },
+        "bonusTypeWeights": {
+            "money": 0.75,
+            "disciplineXP": 0.2,
+            "both": 0.05
+        }
+    },
+    "contractVehicleModels": [
+        "moonhawk",
+        "barstow",
+        "pessima",
+        "etk800",
+        "vivace",
+        "sunburst",
+        "md_series",
+        "roamer",
+        "hopper",
+        "crawler",
+        "racetruck",
+        "sbr",
+        "scintilla"
+    ]
+}

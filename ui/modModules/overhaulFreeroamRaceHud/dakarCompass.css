@@ -1,0 +1,157 @@
+.dkc-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 8501;
+  pointer-events: none;
+}
+
+.dkc-card {
+  position: absolute;
+  pointer-events: auto;
+  box-sizing: border-box;
+  max-width: calc(100vw - 32px);
+  border: 1px solid rgba(224, 107, 50, 0.28);
+  border-radius: 14px;
+  background: rgba(12, 14, 18, 0.88);
+  color: #e8edf5;
+  padding: 13px 14px 12px;
+  text-align: center;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  cursor: grab;
+}
+
+.dkc-card:active {
+  cursor: grabbing;
+}
+
+.dkc-accent {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 0;
+  height: 2px;
+  border-radius: 0 0 6px 6px;
+  background: linear-gradient(90deg, #c24e22 0%, #e0703a 50%, #c24e22 100%);
+}
+
+.dkc-head {
+  margin-bottom: 9px;
+}
+
+.dkc-pre {
+  margin-bottom: 2px;
+  color: rgba(219, 226, 237, 0.62);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dkc-current {
+  color: #fff;
+  font-size: 34px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.dkc-rose {
+  position: relative;
+  width: 116px;
+  height: 116px;
+  margin: 0 auto 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at center, rgba(224, 107, 50, 0.16) 0 5px, transparent 6px),
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015));
+}
+
+.dkc-tick {
+  position: absolute;
+  color: rgba(219, 226, 237, 0.7);
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.dkc-n {
+  top: 7px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #f4c49c;
+}
+
+.dkc-e {
+  right: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.dkc-s {
+  bottom: 7px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.dkc-w {
+  left: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.dkc-needle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 4px;
+  height: 46px;
+  margin-left: -2px;
+  margin-top: -46px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #f4c49c 0%, #e0703a 100%);
+  transform-origin: 50% 100%;
+  transition: transform 50ms linear;
+  box-shadow: 0 0 12px rgba(224, 107, 50, 0.55);
+}
+
+.dkc-clue,
+.dkc-route {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dkc-clue {
+  margin-bottom: 5px;
+  padding: 8px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.dkc-clue span,
+.dkc-route span {
+  color: rgba(219, 226, 237, 0.62);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dkc-clue strong {
+  color: #f4c49c;
+  font-size: 16px;
+}
+
+.dkc-route {
+  margin-bottom: 5px;
+}
+
+.dkc-name {
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

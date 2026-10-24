@@ -1,0 +1,30 @@
+{
+  "vars":{
+    "$box_B_loadVolume":30000
+  },
+  "parts":{
+    "bogie_airbag":"bogie_airbag",
+    "bogie_brake_1":"bogie_brake_1",
+    "bogie_brake_2":"bogie_brake_2",
+    "bogie_leaf":"bogie_leaf",
+    "bogie_mudflap":"bogie_mudflap",
+    "bogie_tire_1":"bogie_tire_1",
+    "bogie_tire_2":"bogie_tire_2",
+    "bogie_wheel_1":"bogie_wheel_1",
+    "bogie_wheel_2":"bogie_wheel_2",
+    "bogie_wheeldata_1":"bogie_wheeldata_1",
+    "bogie_wheeldata_2":"bogie_wheeldata_2",
+    "frameless_dump":"rls_frameless_dump_cargo_load",
+    "frameless_dump_ABS":"",
+    "frameless_dump_arms":"frameless_dump_arms",
+    "frameless_dump_axle":"frameless_dump_double_axle",
+    "frameless_dump_door":"frameless_dump_door",
+    "frameless_dump_feet":"frameless_dump_feet",
+    "frameless_dump_hydros":"frameless_dump_hydros",
+    "frameless_dump_kingpin":"frameless_dump_kingpin",
+    "frameless_dump_licenseplate":"frameless_dump_licenseplate",
+    "frameless_dump_mod":"",
+    "hydraulics_source":"frameless_dump_hydros_source_fifthwheel"
+  },
+  "format":2
+}

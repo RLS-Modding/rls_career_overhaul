@@ -1,0 +1,21 @@
+{
+"sunburst2_beater_quarterpanels_wagon": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Damaged Quarter Panels",
+        "value":65,
+    },
+    "slotType" : "sunburst2_quarterpanels_wagon",
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["sunburst2_beater_quarterpanels_wagon", ["sunburst2_body"]],
+    ],
+    "slots2": [
+        ["name",                    "allowTypes",                "denyTypes", "default", "description"],
+        ["sunburst2_fenderflare_RR", ["sunburst2_fenderflare_RR"], [],          "",        "Rear Right Fender Flare"],
+        ["sunburst2_fenderflare_RL", ["sunburst2_fenderflare_RL"], [],          "",        "Rear Left Fender Flare"],
+        ["sunburst2_mudflap_RR",     ["sunburst2_mudflap_RR"],     [],          "",        "Rear Right Mudflap", {"nodeMove":{"x":0.03,"y":0.0,"z":0.00}}],
+        ["sunburst2_mudflap_RL",     ["sunburst2_mudflap_RL"],     [],          "",        "Rear Left Mudflap",  {"nodeMove":{"x":-0.03,"y":0.0,"z":0.00}}],
+    ],
+},
+}

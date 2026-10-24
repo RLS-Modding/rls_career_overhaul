@@ -1,0 +1,104 @@
+{
+  "_comment": "vehiclePool rows ordered by filename tier (pw200→pw500). peakPw is kept for reference only; aiRacers.lua matches using catalog hp/kg first, then legacy peakHp, then filename tier (N/1000).",
+  "aiRaceConfigSubdir": "rls_race_ai",
+  "vehiclePool": {
+    "stock": [
+      { "model": "bastion", "config": "rls_Race_BastionRWD_pw200", "peakPw": 0.1 },
+      { "model": "bx", "config": "rls_Race_200BXCoupeRWD_pw200", "peakPw": 0.1 },
+      { "model": "bx", "config": "rls_Race_200BXHatchRWD_pw200", "peakPw": 0.1 },
+      { "model": "covet", "config": "rls_Race_CovetFWD_200pw", "peakPw": 0.1 },
+      { "model": "etk800", "config": "rls_Race_ETKSedanRWD_pw200", "peakPw": 0.1 },
+      { "model": "etk800", "config": "rls_Race_ETKwagonRWD_pw200", "peakPw": 0.1 },
+      { "model": "etkc", "config": "rls_Race_ETKkRWD_200pw", "peakPw": 0.1 },
+      { "model": "etki", "config": "rls_Race_ETKiRWD_pw200", "peakPw": 0.1 },
+      { "model": "midsize", "config": "rls_Race_PessimaFWD_pw200", "peakPw": 0.1 },
+      { "model": "pessima", "config": "rls_Race_PessimaOldAWD_pw200", "peakPw": 0.1 },
+      { "model": "sbr", "config": "rls_Race_HirochiSBRRWD_pw200", "peakPw": 0.1 },
+      { "model": "sunburst2", "config": "rls_race_hirochiSedanAwd_pw200", "peakPw": 0.1 },
+      { "model": "sunburst2", "config": "rls_race_hirochiWagonAWD_pw200", "peakPw": 0.1 },
+      { "model": "vivace", "config": "rls_Race_VivaceHatchFWD_pw200", "peakPw": 0.1 }
+    ],
+    "modified": [
+      { "model": "barstow", "config": "rls_RaceMuscle_Barstow_pw250", "peakPw": 0.13 },
+      { "model": "bluebuck", "config": "rls_RaceMuscle_Bluebuck4door_pw250", "peakPw": 0.13 },
+      { "model": "bluebuck", "config": "rls_RaceMuscle_Bluebuck_pw250", "peakPw": 0.13 },
+      { "model": "burnside", "config": "rls_RaceMuscle_Burnside4door_pw250", "peakPw": 0.13 },
+      { "model": "burnside", "config": "rls_RaceMuscle_Burnside_pw250", "peakPw": 0.13 },
+      { "model": "moonhawk", "config": "rls_RaceMuscle_Moonhawk_pw250", "peakPw": 0.13 },
+      { "model": "wendover", "config": "rls_RaceMuscle_wendover_pw250", "peakPw": 0.13 },
+      { "model": "bolide", "config": "rls_Race_BolideRWD_pw300", "peakPw": 0.15 },
+      { "model": "bx", "config": "rls_Race_200BXCoupeRWD_pw300", "peakPw": 0.15 },
+      { "model": "bx", "config": "rls_Race_200BXHatchRWD_pw300", "peakPw": 0.15 },
+      { "model": "etk800", "config": "rls_Race_ETKSedanRWD_pw300", "peakPw": 0.15 },
+      { "model": "etk800", "config": "rls_Race_ETKwagonRWD_pw300", "peakPw": 0.15 },
+      { "model": "etkc", "config": "rls_Race_ETKkRWD_300pw", "peakPw": 0.15 },
+      { "model": "etki", "config": "rls_Race_ETKiAWD_pw300", "peakPw": 0.15 },
+      { "model": "pessima", "config": "rls_Race_PessimaOldAWD_pw300", "peakPw": 0.15 },
+      { "model": "sbr", "config": "rls_Race_HirochiSBRRWD_pw300", "peakPw": 0.15 },
+      { "model": "sunburst2", "config": "rls_race_hirochiSedanAwd_pw300", "peakPw": 0.15 },
+      { "model": "sunburst2", "config": "rls_race_hirochiWagonAWD_pw300", "peakPw": 0.15 },
+      { "model": "vivace", "config": "rls_Race_VivaceHatchFWD_pw300", "peakPw": 0.15 }
+    ],
+    "super": [
+      { "model": "barstow", "config": "rls_RaceMuscle_Barstow_pw350", "peakPw": 0.18 },
+      { "model": "bluebuck", "config": "rls_RaceMuscle_Bluebuck4door_pw350", "peakPw": 0.18 },
+      { "model": "bluebuck", "config": "rls_RaceMuscle_Bluebuck_pw350", "peakPw": 0.18 },
+      { "model": "burnside", "config": "rls_RaceMuscle_Burnside4door_pw350", "peakPw": 0.18 },
+      { "model": "burnside", "config": "rls_RaceMuscle_Burnside_pw350", "peakPw": 0.18 },
+      { "model": "moonhawk", "config": "rls_RaceMuscle_Moonhawk_pw350", "peakPw": 0.18 },
+      { "model": "wendover", "config": "rls_RaceMuscle_wendover_pw350", "peakPw": 0.18 }
+    ],
+    "open": [
+      { "model": "bolide", "config": "rls_Race_BolideRWD_pw500", "peakPw": 0.22 },
+      { "model": "pessima", "config": "rls_Race_PessimaOldAWD_pw500", "peakPw": 0.22 },
+      { "model": "sbr", "config": "rls_Race_HirochiSBRAWD_pw500", "peakPw": 0.22 },
+      { "model": "scintilla", "config": "rls_Race_ScintillaAWD_pw500", "peakPw": 0.22 },
+      { "model": "scintilla", "config": "rls_Race_ScintillaRWD_pw500", "peakPw": 0.22 }
+    ]
+  },
+  "byRace": {
+    "track": {
+      "enabled": true,
+      "spawnSameVehicleAsPlayer": false,
+      "maxSpawnCount": 4,
+      "driveInLane": "off",
+      "useNavgraphPathfinding": false,
+      "navTargetReachDistance": 20,
+      "startEngineOnSpawn": true,
+      "filterPoolByPowerWeightMeetOrExceed": true,
+      "aiPowerExceedCapPct": 0.25,
+      "sanctioned": {
+        "routeType": "main",
+        "stageNumber": 4,
+        "pickWeight": 1,
+        "offerRefreshMinutes": 1,
+        "startDeadlineMinutes": 60
+      },
+      "routes": {
+        "alt": {
+          "pathRoad": "shortTrack",
+          "enabled": true,
+          "spawnSameVehicleAsPlayer": false,
+          "maxSpawnCount": 4,
+          "driveInLane": "off",
+          "useNavgraphPathfinding": false,
+          "navTargetReachDistance": 20,
+          "startEngineOnSpawn": true,
+          "filterPoolByPowerWeightMeetOrExceed": true,
+          "aiPowerExceedCapPct": 0.25,
+          "sanctioned": {
+            "routeType": "alt",
+            "stageNumber": 4,
+            "pickWeight": 1,
+            "offerRefreshMinutes": 1,
+            "startDeadlineMinutes": 60
+          }
+        }
+      }
+    }
+  },
+  "routeBuckets": {
+    "track": "main",
+    "short": "alt"
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "eca_plastic_rough": {
+    "name": "eca_plastic_rough",
+    "mapTo": "eca_plastic_rough",
+    "class": "Material",
+    "persistentId": "5eef9e6c-4434-4a7c-800d-0a61cbbc19ae",
+    "Stages": [
+      {
+        "colorMap": "levels/hirochi_raceway/art/shapes/buildings/eca_plastic_rough_d.dds",
+        "normalMap": "levels/hirochi_raceway/art/shapes/buildings/eca_plastic_rough_n.dds",
+        "specularMap": "levels/hirochi_raceway/art/shapes/buildings/eca_plastic_rough_s.dds",
+        "specularPower": 1,
+        "useAnisotropic": true,
+        "vertColor": true
+      },
+      {},
+      {},
+      {}
+    ],
+    "materialTag0": "beamng",
+    "materialTag1": "building",
+    "materialTag2": "hirochi_raceway",
+    "annotation": "BUILDINGS",
+    "translucentBlendOp": "None"
+  },
+  "hr_clutter_c": {
+    "name": "hr_clutter_c",
+    "mapTo": "hr_clutter_c",
+    "class": "Material",
+    "persistentId": "0ee3fe2d-bbdf-4ade-a538-61ff4c8664cc",
+    "Stages": [
+      {
+        "colorMap": "assets/materials/baked_props/clutters_c/clutters_c_d.dds",
+        "normalMap": "assets/materials/baked_props/clutters_c/clutters_c_n.dds",
+        "reflectivityMap": "assets/materials/baked_props/clutters_c/clutters_c_r.dds",
+        "specularMap": "assets/materials/baked_props/clutters_c/clutters_c_s.dds",
+        "specularPower": 2,
+        "useAnisotropic": true,
+        "vertColor": true
+      },
+      {},
+      {},
+      {}
+    ],
+    "annotation": "BUILDINGS",
+    "cubemap": "global_cubemap_metalblurred",
+    "materialTag0": "beamng",
+    "materialTag1": "building",
+    "materialTag2": "hirochi_raceway",
+    "specularStrength0": "0.5",
+    "translucentBlendOp": "None"
+  },
+  "m_wood_oak_raw_02": {
+    "name": "m_wood_oak_raw_02",
+    "mapTo": "m_wood_oak_raw_02",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorMap": "/art/shapes/objects/m_wood_oak_raw_01/t_wood_oak_raw_01_b.color.png",
+        "diffuseMapUseUV": null,
+        "normalMap": "/art/shapes/objects/m_wood_oak_raw_01/t_wood_oak_raw_01_nm.normal.png",
+        "opacityMapUseUV": null,
+        "roughnessMap": "/art/shapes/objects/m_wood_oak_raw_01/t_wood_oak_raw_01_r.data.png",
+        "roughnessMapUseUV": null,
+        "vertColor": true
+      },
+      {
+        "baseColorMap": "/art/shapes/garage_and_dealership/garage/t_breakup_general_b.color.png",
+        "diffuseMapUseUV": 1,
+        "opacityMap": "/art/shapes/garage_and_dealership/garage/t_breakup_general_o.data.png",
+        "opacityMapUseUV": 1,
+        "roughnessMap": "/art/shapes/garage_and_dealership/garage/t_breakup_general_r.data.png",
+        "roughnessMapUseUV": 1
+      },
+      {
+        "diffuseMapUseUV": null,
+        "opacityMapUseUV": null,
+        "roughnessMapUseUV": null
+      },
+      {
+        "diffuseMapUseUV": null,
+        "opacityMapUseUV": null,
+        "roughnessMapUseUV": null
+      }
+    ],
+    "activeLayers": 2,
+    "annotation": "BUILDINGS",
+    "groundType": "WOOD",
+    "materialTag0": "wood",
+    "version": 1.5
+  }
+}

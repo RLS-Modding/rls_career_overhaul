@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_events_utils",
+  "order": 41,
+  "module": "overhaul/events/utils",
+  "scopes": [
+    {
+      "id": "bootManual",
+      "order": 17
+    }
+  ]
+}

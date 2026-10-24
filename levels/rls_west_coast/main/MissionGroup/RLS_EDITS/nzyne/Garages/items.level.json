@@ -1,0 +1,12 @@
+{"name":"JerrysBackyard","class":"SimGroup","__parent":"Garages"}
+{"name":"DumpsterDiver","class":"SimGroup","__parent":"Garages"}
+{"name":"DockGarage","class":"SimGroup","__parent":"Garages"}
+{"name":"ContainerShack","class":"SimGroup","__parent":"Garages"}
+{"name":"Townhouse","class":"SimGroup","__parent":"Garages"}
+{"name":"Townhouse2","class":"SimGroup","__parent":"Garages"}
+{"name":"Townhouse3","class":"SimGroup","__parent":"Garages"}
+{"name":"Townhouse4","class":"SimGroup","__parent":"Garages"}
+{"name":"SixHorizonEstate","class":"SimGroup","__parent":"Garages"}
+{"name":"TwentyTwoHorizonEstate","class":"SimGroup","__parent":"Garages"}
+{"name":"FourtyFourHorizon","class":"SimGroup","__parent":"Garages"}
+{"name":"Offroad Lot","class":"SimGroup","__parent":"Garages"}

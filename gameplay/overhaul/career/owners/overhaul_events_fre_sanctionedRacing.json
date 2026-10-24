@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_events_fre_sanctionedRacing",
+  "order": 29,
+  "module": "overhaul/events/fre/sanctionedRacing",
+  "scopes": [
+    {
+      "id": "children",
+      "order": 29,
+      "parent": "overhaul_events_fre_host"
+    }
+  ]
+}

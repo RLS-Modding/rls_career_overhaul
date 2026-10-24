@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_events_tractorPull",
+  "order": 40,
+  "module": "overhaul/events/tractorPull",
+  "scopes": [
+    {
+      "id": "children",
+      "order": 40,
+      "parent": "overhaul_events_host"
+    }
+  ]
+}

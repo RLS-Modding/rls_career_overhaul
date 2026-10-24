@@ -1,0 +1,36 @@
+{
+  "default": {
+    "services": ["repair", "maintenance", "tuning"],
+    "laborMultiplier": 1.25
+  },
+  "spots": {
+    "downtown_repairSpot": {
+      "name": "Downtown",
+      "services": ["repair", "maintenance", "tuning"]
+    },
+    "quarryside_repairSpot": {
+      "name": "Quarryside",
+      "services": ["repair", "maintenance"]
+    },
+    "dragstrip_repairSpot": {
+      "name": "Dragstrip",
+      "services": ["repair", "maintenance"]
+    },
+    "industrial_repairSpot": {
+      "name": "Industrial",
+      "services": ["repair", "maintenance", "tuning"]
+    },
+    "island_repairSpot": {
+      "name": "Island",
+      "services": ["repair", "maintenance"]
+    },
+    "coastal_repairSpot": {
+      "name": "Coastal",
+      "services": ["repair", "maintenance"]
+    },
+    "pitRoad_repairSpot": {
+      "name": "Pit Road",
+      "services": ["repair", "maintenance", "tuning"]
+    }
+  }
+}

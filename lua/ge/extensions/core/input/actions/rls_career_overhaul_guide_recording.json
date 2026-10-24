@@ -1,0 +1,11 @@
+{
+  "guide_recording_action": {
+    "cat": "rlsCareerOverhaul",
+    "order": 999,
+    "ctx": "tlua",
+    "onDown": "if extensions.overhaul_career_guide_guide then extensions.overhaul_career_guide_guide.onRecordingActionDown() end",
+    "title": "Guide Recording",
+    "desc": "Record a shortcut during the career guide binding step",
+    "overhaulGroup": "Guide"
+  }
+}

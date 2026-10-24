@@ -1,0 +1,26 @@
+{
+  "Configuration":"Spearleaf Long Trailer",
+  "Name":"Tanker Trailer career_spearleaf_empty_long",
+  "Population":5000,
+  "Source":"Custom",
+  "Value":70000,
+  "aggregates":{
+    "InsuranceClass":{
+      "commercial":true
+    },
+    "Region":{
+      "northAmerica":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Type":{
+      "Trailer":true
+    }
+  },
+  "is_default_config":false,
+  "paints":{},
+  "pcFilename":"/vehicles/tanker/career_spearleaf_empty_long.pc",
+  "preview":"/vehicles/tanker/career_spearleaf_empty_long.jpg"
+}

@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_ui_backHandlers",
+  "order": 101,
+  "module": "overhaul/ui/backHandlers",
+  "scopes": [
+    {
+      "id": "services",
+      "order": 8
+    }
+  ]
+}

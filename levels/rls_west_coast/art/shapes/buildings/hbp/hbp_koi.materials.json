@@ -1,0 +1,21 @@
+{
+  "hbp_koi_skin": {
+    "name": "hbp_koi_skin",
+    "mapTo": "hbp_koi_skin",
+    "class": "Material",
+    "version": 1.5,
+    "Stages": [
+      {
+        "roughnessFactor": 0.36,
+        "metallicFactor": 0
+      },
+      {},
+      {},
+      {}
+    ],
+    "doubleSided": true,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "Nature"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "Body Style": "Box Truck",
+  "Config Type": "Loaner",
+  "Configuration": "Medium Box Truck",
+  "Description": "A medium-duty box truck with high-capacity parcel storage.",
+  "Name": "MD-Series Medium Box Truck",
+  "loanerName": "MD-Series Medium Box Truck",
+  "capacity": [
+    {"amount": 1536, "type": "parcel"}
+  ],
+  "defaultPaintName1": "White",
+  "defaultPaintName2": "Black",
+  "defaultPaintName3": "White",
+  "isAuxiliary": false
+}

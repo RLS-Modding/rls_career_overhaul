@@ -1,0 +1,9 @@
+{
+  "id": "overhaul_career_garage_zoneVehicles",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 365
+  }
+}

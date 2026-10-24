@@ -1,0 +1,7 @@
+{
+  "id": "businessComputer",
+  "order": 40,
+  "callbacks": [
+    {"id": "onVehicleWheelDataUpdate", "extension": "overhaul_career_business_computer", "fn": "onVehicleWheelDataUpdate", "guard": "module"}
+  ]
+}

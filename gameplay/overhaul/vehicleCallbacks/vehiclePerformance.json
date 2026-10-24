@@ -1,0 +1,7 @@
+{
+  "id": "vehiclePerformance",
+  "order": 260,
+  "callbacks": [
+    {"id": "dragTestDamage", "extension": "overhaul_career_parts_vehiclePerformance", "fn": "onVehicleDamaged", "guard": "none"}
+  ]
+}

@@ -1,0 +1,11 @@
+{
+"pickup_skin_rlspickupupull": {
+    "information":{
+        "authors":"RamRod",
+        "name":"U-Pull",
+        "value":1337
+    },
+    "slotType" : "paint_design",
+    "globalSkin" : "rlspickupupull"
+  },
+}

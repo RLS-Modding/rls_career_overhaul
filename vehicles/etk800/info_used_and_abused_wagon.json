@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":13500,  
+    "Configuration": "Used & Abused - Wagon ( Joe's Junk Career )",
+    "Description": "Beater ETK800 Wagon with damaged body panels and misc junk parts.",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 263,
+    "Torque": 266,
+    "Value": 18700,
+    "Weight": 1583,
+    "Years": {
+      "max": 2018,
+      "min": 2013
+    }  
+}
+
+

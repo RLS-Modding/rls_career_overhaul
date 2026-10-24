@@ -1,0 +1,76 @@
+ {
+  "lansdale_main.skin.rlsusbs": {
+    "name": "lansdale_main.skin.rlsusbs",
+    "mapTo": "lansdale_main.skin.rlsusbs",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/vehicles/lansdale/lansdale_main_ao.data.png",
+        "baseColorFactor": null,
+        "baseColorMap": "/vehicles/lansdale/lansdale_main_b.color.png",
+        "clearCoatFactor": null,
+        "clearCoatMapUseUV": null,
+        "clearCoatRoughnessFactor": null,
+        "colorPaletteMapUseUV": null,
+        "diffuseMapUseUV": null,
+        "metallicFactor": 1,
+        "metallicMap": "/vehicles/lansdale/lansdale_main_m.data.png",
+        "normalMap": "/vehicles/lansdale/lansdale_main_nm.normal.png",
+        "opacityFactor": 0,
+        "pixelSpecular": true,
+        "roughnessMap": "/vehicles/lansdale/lansdale_main_r.data.png",
+        "roughnessMapUseUV": null
+      },
+      {
+        "ambientOcclusionMap": "/vehicles/lansdale/lansdale_main_ao.data.png",
+        "baseColorFactor": [
+          1,
+          1,
+          1,
+          0
+        ],
+        "baseColorMap": "/vehicles/lansdale/rlsusps/lansdale_main_skin_rlsusps_b.color.png",
+        "clearCoatFactor": 1,
+        "clearCoatRoughnessFactor": 0.0500000007,
+        "colorPaletteMapUseUV": 1,
+        "diffuseMapUseUV": 1,
+        "metallicFactor": null,
+        "metallicMap": "/vehicles/lansdale/lansdale_main_m.data.png",
+        "metallicMapUseUV": 0,
+        "normalMap": "/vehicles/lansdale/lansdale_main_nm.normal.png",
+        "opacityFactor": null,
+        "opacityMap": "/vehicles/lansdale/lansdale_main_c.data.png",
+        "pixelSpecular": null
+      },
+      {
+        "baseColorFactor": null,
+        "clearCoatFactor": null,
+        "clearCoatMapUseUV": null,
+        "clearCoatRoughnessFactor": null,
+        "colorPaletteMapUseUV": null,
+        "diffuseMapUseUV": null,
+        "metallicFactor": null,
+        "opacityFactor": null,
+        "pixelSpecular": null,
+        "roughnessMapUseUV": null
+      },
+      {
+        "baseColorFactor": null,
+        "clearCoatFactor": null,
+        "clearCoatMapUseUV": null,
+        "clearCoatRoughnessFactor": null,
+        "colorPaletteMapUseUV": null,
+        "diffuseMapUseUV": null,
+        "metallicFactor": null,
+        "opacityFactor": null,
+        "pixelSpecular": null,
+        "roughnessMapUseUV": null
+      }
+    ],
+    "activeLayers": 2,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "version": 1.5
+  }
+}

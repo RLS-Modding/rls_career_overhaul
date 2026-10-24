@@ -1,0 +1,19 @@
+{
+  "id": "derby",
+  "order": 100,
+  "excludedEarningTags": [
+    "demo"
+  ],
+  "challengeDisplay": [
+    {
+      "order": 90,
+      "name": "Demolition Derby",
+      "category": "Racing",
+      "key": "demo"
+    }
+  ],
+  "source": "freeroam_module",
+  "keys": ["demo"],
+  "extension": "overhaul_events_derby_derby",
+  "activity": "derby"
+}

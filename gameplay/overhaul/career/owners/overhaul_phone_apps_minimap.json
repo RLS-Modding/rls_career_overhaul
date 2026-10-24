@@ -1,0 +1,6 @@
+{
+  "id": "overhaul_phone_apps_minimap",
+  "order": 87,
+  "module": "overhaul/phone/apps/minimap",
+  "scopes": []
+}

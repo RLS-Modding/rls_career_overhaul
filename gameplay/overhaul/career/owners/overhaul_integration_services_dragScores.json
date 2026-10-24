@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_integration_services_dragScores",
+  "order": 53,
+  "module": "overhaul/integration/services/dragScores",
+  "scopes": [
+    {
+      "id": "services",
+      "order": 15
+    }
+  ]
+}

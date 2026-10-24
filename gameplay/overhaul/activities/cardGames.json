@@ -1,0 +1,6 @@
+{
+  "id": "cardGames",
+  "order": 50,
+  "extension": "overhaul_jobs_cardGames_cardGames",
+  "definition": "overhaul/jobs/cardGames/activity"
+}

@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "accidentCargo": {
+    "shapes": ["art/shapes/objects/s_box_wood_01.dae"]
+  }
+}

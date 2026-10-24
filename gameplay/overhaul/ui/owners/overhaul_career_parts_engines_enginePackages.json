@@ -1,0 +1,24 @@
+{
+  "id": "overhaul_career_parts_engines_enginePackages",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 150,
+    "aliases": [
+      "career_modules_enginePackages"
+    ]
+  },
+  "routes": [
+    {
+      "name": "overhaul.computer.enginePackages",
+      "order": 4,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "overhaul.computer",
+          "title": "Engine Packages"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+"lansdale_beater_quarterpanels_early": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Damaged Early Quarter Panels",
+        "value":100,
+    },
+    "slotType" : "lansdale_quarterpanels",
+    "slots": [
+        ["type", "default", "description"],
+        ["lansdale_trim_early","lansdale_trim_early_A", "Body Trim"],
+        ["lansdale_sideskirt_R_early","", "Right Side Skirt"],
+        ["lansdale_sideskirt_L_early","", "Left Side Skirt"],
+        ["lansdale_taillight_R_early","lansdale_taillight_R_early", "Right Taillight"],
+        ["lansdale_taillight_L_early","lansdale_taillight_L_early", "Left Taillight"],
+        ["lansdale_fenderflare_RR","", "Rear Right Fender Flare"],
+        ["lansdale_fenderflare_RL","", "Rear Left Fender Flare"],
+        ["lansdale_bumper_R_early","lansdale_bumper_R_early_A", "Rear Bumper"],
+        ["lansdale_bumperbar_R","lansdale_bumperbar_R", "Rear Bumper Support"],
+        ["lansdale_taillightguard_R","", "Right Taillight Guard"],
+        ["lansdale_taillightguard_L","", "Left Taillight Guard"],
+    ],
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["lansdale_beater_pre_quarter_panels", ["lansdale_body", "lansdale_roof"]],
+    ],
+},
+"lansdale_beater_quarterpanels_late": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Damaged Late Quarter Panels",
+        "value":150,
+    },
+    "slotType" : "lansdale_quarterpanels",
+    "slots": [
+        ["type", "default", "description"],
+        ["lansdale_trim_late","lansdale_trim_late_A", "Body Trim"],
+        ["lansdale_sideskirt_R_late","lansdale_sideskirt_R_late", "Right Side Skirt"],
+        ["lansdale_sideskirt_L_late","lansdale_sideskirt_L_late", "Left Side Skirt"],
+        ["lansdale_taillight_R_late","lansdale_taillight_R_late", "Right Taillight"],
+        ["lansdale_taillight_L_late","lansdale_taillight_L_late", "Left Taillight"],
+        ["lansdale_bumper_R_late","lansdale_bumper_R_early_A", "Rear Bumper"],
+        ["lansdale_bumperbar_R","lansdale_bumperbar_R", "Rear Bumper Support"],
+        ["lansdale_taillightguard_R","", "Right Taillight Guard"],
+        ["lansdale_taillightguard_L","", "Left Taillight Guard"],
+    ],
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["lansdale_beater_facelift_quarter_panel", ["lansdale_body", "lansdale_roof"]],
+    ],
+},
+}

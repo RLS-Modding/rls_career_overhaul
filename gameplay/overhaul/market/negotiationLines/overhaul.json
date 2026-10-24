@@ -1,0 +1,380 @@
+{
+  "version": 1,
+  "skipLineKeys": [
+    "ui.career.negotiation.privateSellerQuotes.04",
+    "ui.career.negotiation.privateSellerQuotes.28",
+    "ui.career.negotiation.personality.delusional.quotes.low.9",
+    "ui.career.negotiation.personality.jeffersonmotors.quotes.high.1",
+    "ui.career.negotiation.personality.jeffersonmotors.quotes.high.3",
+    "ui.career.negotiation.personality.jeffersonmotors.quotes.high.4",
+    "ui.career.negotiation.personality.jeffersonmotors.quotes.high.5",
+    "ui.career.negotiation.personality.jeffersonmotors.quotes.high.9",
+    "ui.career.negotiation.personality.jeffersonmotors.quotes.low.0",
+    "ui.career.negotiation.personality.jeffersonmotors.quotes.low.3",
+    "ui.career.negotiation.personality.jeffersonmotors.quotes.low.4",
+    "ui.career.negotiation.personality.jeffersonmotors.quotes.low.6",
+    "ui.career.negotiation.personality.jeffersonmotors.quotes.low.9",
+    "ui.career.negotiation.personality.jeffersonmotors.quotes.mid.0",
+    "ui.career.negotiation.personality.jeffersonmotors.quotes.mid.2",
+    "ui.career.negotiation.personality.jeffersonmotors.quotes.mid.8",
+    "ui.career.negotiation.personality.jeffersonmotors.quotes.mid.9",
+    "ui.career.negotiation.personality.jeffersonmotors.quotes.mid.14",
+    "ui.career.negotiation.personality.truckShop.quotes.mid.4"
+  ],
+  "voices": {
+    "seller": {
+      "side": "buying",
+      "lines": {
+        "opening": ["Thanks for reaching out.", "Happy to talk about it.", "It's still available."],
+        "openingNoPrice": ["Make me an offer.", "What did you have in mind?", "Go ahead, throw me a number."],
+        "askingPrice": ["I'm asking {price}.", "Asking {price}.", "I'd like {price} for it."],
+        "counter": ["How about {price}?", "I could do {price}.", "Meet me at {price}.", "{price} and we have a deal.", "Best I can do is {price}."],
+        "hold": ["I'm staying at {price}.", "Still {price}. I'm not moving.", "{price} is where I'm at."],
+        "finalOffer": ["{price}. That's my final offer.", "Final offer: {price}. Take it or leave it.", "{price}, and that's as low as I go."],
+        "accepted": ["Deal. {price} it is.", "Alright, {price}. You've got a deal.", "{price} works. Deal."],
+        "acceptedHappy": ["Pleasure doing business.", "Glad we worked it out."],
+        "insulted": ["That's not a serious offer. We're done.", "ui.career.negotiation.fallback.insultRealOffer"],
+        "walkedAway": ["I think we're too far apart. I'll pass.", "I'm done here. No deal.", "Let's leave it there. Good luck."]
+      }
+    },
+    "buyer": {
+      "side": "selling",
+      "lines": {
+        "opening": ["Saw your listing. Is it still available?", "I'm interested in your car.", "Hi, I'd like to make an offer."],
+        "openingNoPrice": ["What do you want for it?", "What's your price?"],
+        "askingPrice": ["I can pay {price}.", "I'd offer {price}.", "{price} is what I had in mind."],
+        "counter": ["How about {price}?", "I can go to {price}.", "I could stretch to {price}.", "Meet me at {price}?", "Best I can do is {price}."],
+        "hold": ["I'm staying at {price}.", "Still {price}. That's my number.", "I can't go past {price}."],
+        "finalOffer": ["{price} is my limit. Take it or leave it.", "Final offer: {price}."],
+        "accepted": ["Deal. {price} it is.", "{price} works for me. Deal.", "Alright, {price}. Let's do it."],
+        "acceptedHappy": ["Great, thanks!", "Happy with that."],
+        "insulted": ["That's way more than it's worth. I'm out."],
+        "walkedAway": ["We're too far apart. I'll keep looking.", "I'm going to pass. Good luck with the sale.", "That's more than I want to spend. No deal."]
+      }
+    },
+
+    "dealership": {
+      "extends": "seller",
+      "side": "buying",
+      "usePersonalityLines": true,
+      "match": {"sources": ["dealership"]},
+      "lines": {
+        "opening": [
+          "We're here to work with you on this vehicle.",
+          "Let me see what I can do for you.",
+          "I think we can find a price that works for both of us.",
+          "We want to make this work for you.",
+          "Let's see if we can reach an agreement.",
+          "Good choice. Let's talk price."
+        ],
+        "openingNoPrice": ["Make us an offer and I'll take it to my manager."],
+        "askingPrice": ["We have it listed at {price}.", "Sticker price is {price}.", "We're asking {price}."],
+        "counter": ["Let me check with my manager... we can do {price}.", "I can get you to {price}.", "We could do {price}.", "How does {price} sound?", "Best I can do today is {price}."],
+        "hold": ["We can't go lower than {price}.", "{price} is already a good price.", "We're holding at {price}."],
+        "finalOffer": ["{price} is the lowest my manager will sign.", "Final number: {price}.", "{price}. That's as low as we go."],
+        "accepted": ["Deal at {price}. Let's get the paperwork started.", "{price} works. I'll draw up the paperwork.", "You've got it at {price}."],
+        "acceptedHappy": ["Pleasure doing business with you!", "You won't regret this one."],
+        "insulted": ["We can't do that. Come back with a real offer.", "That's well under what we paid for it."],
+        "walkedAway": ["We can't make those numbers work. Sorry.", "I don't think we can get there today.", "We'll have to pass. The sticker price still stands."]
+      }
+    },
+    "belascoAuto": {
+      "extends": "dealership",
+      "match": {"sellerIds": ["belascoAuto"]},
+      "lines": {
+        "counter": ["Let me run some numbers... {price}.", "I can get you to {price}.", "I talked to my manager. {price}."],
+        "accepted": ["{price}. Let's get you on the road.", "Deal at {price}. You'll love it."]
+      }
+    },
+    "jeffersonMotors": {
+      "extends": "dealership",
+      "match": {"sellerIds": ["jeffersonmotors"]},
+      "lines": {
+        "counter": ["Jefferson doesn't move much, but I can do {price}.", "{price}. That's already a stretch for us.", "I can come down to {price}. No further games."],
+        "hold": ["We don't play games. {price}.", "{price}. That's a fair price and you know it."],
+        "finalOffer": ["{price}. That's where Jefferson stops.", "{price}. That's my last number."],
+        "accepted": ["{price}. Fair deal all around.", "We're square at {price}."],
+        "walkedAway": ["That's not how Jefferson operates. Good day.", "We're done here. The sticker price stands."]
+      }
+    },
+    "richsMotorCompany": {
+      "extends": "dealership",
+      "match": {"sellerIds": ["richsmotorcompany"]},
+      "lines": {
+        "askingPrice": ["This one is offered at {price}.", "The price is {price}."],
+        "counter": ["For you, {price}.", "We could consider {price}.", "I can offer {price}, as a courtesy."],
+        "hold": ["{price}. Quality has its price.", "We remain at {price}."],
+        "finalOffer": ["{price}. That is our final figure.", "{price}, and not a cent less."],
+        "accepted": ["{price} it is. A fine choice.", "Agreed at {price}. Enjoy it."],
+        "walkedAway": ["I'm afraid we can't accommodate that. Good day.", "We'll have to decline. Perhaps another time."]
+      }
+    },
+    "quarrysideAutoSales": {
+      "extends": "dealership",
+      "match": {"sellerIds": ["quarrysideAutoSales"]},
+      "lines": {
+        "askingPrice": ["I've got it at {price}.", "{price} and it's yours."],
+        "counter": ["You're killing me. {price}.", "Alright, alright. {price}.", "{price}, and that's me being nice."],
+        "hold": ["{price}. I gotta make something on it.", "Still {price}, pal."],
+        "finalOffer": ["{price}, and I'm losing money here.", "{price}. That's it, I swear."],
+        "accepted": ["{price}, done! Pleasure doing business!", "Sold at {price}! Come back anytime."],
+        "walkedAway": ["Can't do it, pal. Not at that price.", "No can do. Swing by if you change your mind."]
+      }
+    },
+    "commercialTrucks": {
+      "extends": "dealership",
+      "match": {"sellerIds": ["truckShop"], "usedVehicleProfiles": ["heavyTruck"]},
+      "lines": {
+        "opening": ["Commercial unit, ready for work.", "Spec'd for real work.", "Fleet buyers know what these are worth."],
+        "askingPrice": ["Price on this unit is {price}.", "We're at {price} on this one."],
+        "counter": ["We can do {price}.", "{price}. That's fair for this spec.", "{price}, and that's thin for us."],
+        "hold": ["{price}. The numbers are the numbers.", "Still {price}. That's the market."],
+        "finalOffer": ["{price}. That's our floor.", "{price}. Can't go under that."],
+        "accepted": ["{price}. We'll get it ready for work.", "Deal at {price}. Good unit."],
+        "walkedAway": ["That doesn't work for us. We sell to fleets every day.", "We'll pass. Time is money for both of us."]
+      }
+    },
+
+    "factoryStore": {
+      "extends": "dealership",
+      "match": {"salesChannels": ["factory"]},
+      "lines": {
+        "opening": ["Thanks for ordering direct. Let's go over the price.", "Brand new, straight from the factory.", "This one ships fresh from the factory."],
+        "openingNoPrice": ["Factory pricing is tight, but make an offer."],
+        "askingPrice": ["List price is {price}.", "Factory price is {price}."],
+        "counter": ["Factory pricing is tight, but I can do {price}.", "I can apply a small discount: {price}.", "I can get approval for {price}."],
+        "hold": ["That's factory pricing. {price}.", "We can't move off {price} on a new build."],
+        "finalOffer": ["{price} is the lowest the factory allows.", "{price}. That's the best price on a new one."],
+        "accepted": ["{price}. Your order is confirmed.", "Deal at {price}. We'll get it shipped."],
+        "insulted": ["That's below what it costs to build.", "We can't sell a new one for that."],
+        "walkedAway": ["We can't go below factory pricing. The list price still stands.", "That's too far under list. The offer stays at list price."]
+      }
+    },
+    "certifiedRemanufactured": {
+      "extends": "dealership",
+      "match": {"salesChannels": ["remanufactured"]},
+      "lines": {
+        "opening": ["Low-mileage donor, rebuilt and certified.", "Every one of these gets a full rebuild.", "Certified, rebuilt, ready to work."],
+        "askingPrice": ["Certified price is {price}.", "We have it at {price}."],
+        "counter": ["With the certification included, I can do {price}.", "I can do {price} on this unit."],
+        "hold": ["{price}. The rebuild alone isn't cheap.", "Still {price}. That's certified pricing."],
+        "finalOffer": ["{price} is the floor on certified units.", "{price}. That's as low as certified stock goes."],
+        "accepted": ["{price}. It'll be waiting at the freight terminal.", "Deal at {price}. It ships certified."],
+        "walkedAway": ["We can't go that low on certified stock.", "That doesn't cover the rebuild. The list price stands."]
+      }
+    },
+    "raceShop": {
+      "extends": "dealership",
+      "match": {"usedVehicleProfiles": ["competition"]},
+      "lines": {
+        "opening": ["Track-ready and set up to run.", "This one's built to go fast.", "Lots of parts on this one. Not cheap to build."],
+        "askingPrice": ["I've got it at {price}.", "{price}, race parts included."],
+        "counter": ["I can do {price} for it.", "{price}, and that's with all the race parts.", "Alright, {price}."],
+        "hold": ["{price}. The parts alone are worth that.", "Still {price}. It's a proper race car."],
+        "finalOffer": ["{price}. That's my bottom line.", "{price}. Can't go under that on a race build."],
+        "accepted": ["{price}. Go win something with it.", "Deal at {price}. Enjoy the track."],
+        "walkedAway": ["Race cars don't come cheap. Can't do it.", "That won't even cover the parts. No deal."]
+      }
+    },
+    "projectFrames": {
+      "extends": "dealership",
+      "match": {"usedVehicleProfiles": ["frame"]},
+      "lines": {
+        "opening": ["Good base for a build.", "Bare frame, endless options.", "Perfect start for a project."],
+        "askingPrice": ["{price} for the roller.", "I've got it at {price}."],
+        "counter": ["{price} and it's your project.", "I can do {price}.", "How about {price}?"],
+        "hold": ["{price}. Good bases are hard to find.", "Still {price}."],
+        "finalOffer": ["{price}. That's the lowest for a clean base.", "{price}, final."],
+        "accepted": ["{price}. Have fun with the build.", "Deal at {price}. Send pictures when it's done."],
+        "walkedAway": ["Can't let it go that cheap. Someone else will build it.", "No deal. Good bases sell fast."]
+      }
+    },
+    "budgetLot": {
+      "extends": "dealership",
+      "match": {"usedVehicleProfiles": ["budget"]},
+      "lines": {
+        "opening": ["Already priced low, but let's talk.", "Cheap and cheerful. It runs.", "Good, cheap wheels."],
+        "askingPrice": ["It's {price}.", "Asking {price}."],
+        "counter": ["I can do {price}, but that's about it.", "{price}. Margins are thin here.", "Alright, {price}."],
+        "hold": ["{price}. It's already a bargain.", "Still {price}."],
+        "finalOffer": ["{price}. That's rock bottom.", "{price}. Can't go lower, honest."],
+        "accepted": ["{price}. Enjoy it!", "Done at {price}."],
+        "walkedAway": ["Can't go that low. It's already a bargain.", "That's under what we paid. No deal."]
+      }
+    },
+    "fleetSales": {
+      "extends": "dealership",
+      "match": {"usedVehicleProfiles": ["policeFleet", "serviceFleet"]},
+      "lines": {
+        "opening": ["Ex-fleet unit, maintained on schedule.", "Straight out of fleet service.", "Retired from service. Paperwork's in order."],
+        "openingNoPrice": ["Submit an offer and I'll see what I can approve."],
+        "askingPrice": ["Fleet price is {price}.", "This unit is listed at {price}."],
+        "counter": ["I can get approval for {price}.", "{price} is what I can sign off on.", "I can do {price} on this unit."],
+        "hold": ["Fleet pricing is set. {price}.", "I can't approve under {price}."],
+        "finalOffer": ["{price}. That's the lowest I can approve.", "{price}. That's final on fleet stock."],
+        "accepted": ["{price}. I'll process the transfer.", "Approved at {price}."],
+        "insulted": ["That's below the fleet reserve. I can't take it.", "I can't put that number in front of my supervisor."],
+        "walkedAway": ["I can't approve that number. List price stands.", "That's too low for fleet stock. Sorry."]
+      }
+    },
+    "trailerDealer": {
+      "extends": "dealership",
+      "match": {"usedVehicleProfiles": ["trailer"]},
+      "lines": {
+        "opening": ["Solid trailer, ready to hitch up.", "Bearings and lights checked on this one.", "Good trailer for the money."],
+        "askingPrice": ["Asking {price} for the trailer.", "{price} for this one."],
+        "counter": ["{price} and you can hitch it up today.", "I can do {price}.", "How about {price}?"],
+        "hold": ["{price}. Good trailers hold their value.", "Still {price}."],
+        "finalOffer": ["{price}. That's my lowest.", "{price}, final."],
+        "accepted": ["{price}. I'll help you hook it up.", "Deal at {price}."],
+        "walkedAway": ["Can't do it for that. Trailers sell fast here.", "No deal at that price."]
+      }
+    },
+    "importDealer": {
+      "extends": "dealership",
+      "match": {"usedVehicleProfiles": ["import"]},
+      "lines": {
+        "opening": ["Imported, so you won't see many of these.", "Hard to find around here.", "Brought in from overseas."],
+        "askingPrice": ["I've got it at {price}.", "{price}, import costs included."],
+        "counter": ["Shipping wasn't cheap, but I can do {price}.", "{price}, and that's with the import costs.", "I can come down to {price}."],
+        "hold": ["{price}. Import costs add up.", "Still {price}."],
+        "finalOffer": ["{price}. I can't go under what it cost to bring in.", "{price}, final."],
+        "accepted": ["{price}. Enjoy something nobody else has.", "Deal at {price}."],
+        "walkedAway": ["I can't sell it under what it cost to import.", "No deal. These are hard to replace."]
+      }
+    },
+    "loanerLot": {
+      "extends": "dealership",
+      "match": {"usedVehicleProfiles": ["loaner"]},
+      "lines": {
+        "opening": ["Ex-loaner. High miles, but serviced regularly.", "It's had a few drivers, but it's been looked after.", "Former loaner, priced for the miles."],
+        "askingPrice": ["We have it at {price}.", "{price}, priced for the miles."],
+        "counter": ["Miles are high, so I can do {price}.", "{price}. That's fair for the miles.", "I can come down to {price}."],
+        "hold": ["{price}. It's already priced for the miles.", "Still {price}."],
+        "finalOffer": ["{price}. That's the lowest on this one.", "{price}, final."],
+        "accepted": ["{price}. It's all yours now.", "Deal at {price}."],
+        "walkedAway": ["Can't go that low, even with the miles.", "No deal at that price."]
+      }
+    },
+    "salvageYard": {
+      "extends": "dealership",
+      "match": {"usedVehicleProfiles": ["salvage"]},
+      "lines": {
+        "opening": ["Sold as is. What you see is what you get.", "It runs. Mostly.", "Don't ask me about the history.", "No warranty, no refunds, no problem."],
+        "openingNoPrice": ["Make an offer. Cash talks."],
+        "askingPrice": ["Asking {price}.", "{price}, as is."],
+        "counter": ["{price}. Cash, and it's yours.", "{price}, and you tow it out yourself."],
+        "hold": ["{price}. It's junk, but it's priced like junk.", "Still {price}."],
+        "finalOffer": ["{price}. Take it or it goes to the crusher.", "{price}. Last chance."],
+        "accepted": ["{price}. No refunds.", "Done. {price}. Good luck with it."],
+        "insulted": ["Even scrap is worth more than that.", "The crusher would pay me more than that."],
+        "walkedAway": ["Then go find better junk somewhere else.", "No deal. It's worth more as parts."]
+      }
+    },
+    "joesJunk": {
+      "extends": "salvageYard",
+      "match": {"sellerIds": ["joesJunkDealership"]},
+      "lines": {
+        "askingPrice": ["Joe wants {price} for it.", "{price}, as is."],
+        "counter": ["{price}. Cash, and it's yours.", "Fine, {price}. Don't tell Joe.", "{price}, and you tow it out yourself."]
+      }
+    },
+    "limitedEdition": {
+      "extends": "dealership",
+      "match": {"usedVehicleProfiles": ["limitedMileage"]},
+      "lines": {
+        "opening": ["These don't come up often.", "Limited run. Once it's gone, it's gone.", "You won't find another one like it."],
+        "askingPrice": ["It's {price}.", "We have it at {price}."],
+        "counter": ["These are rare, but I can do {price}.", "I can do {price}.", "{price}, and that's generous for a rare one."],
+        "hold": ["{price}. Rare stuff holds its price.", "Still {price}."],
+        "finalOffer": ["{price}. That's final on this one.", "{price}. Can't go lower on a rare one."],
+        "accepted": ["{price}. Enjoy it.", "Deal at {price}."],
+        "walkedAway": ["I can't let a rare one go for that.", "No deal. Someone else will want it."]
+      }
+    },
+
+    "privateSeller": {
+      "extends": "seller",
+      "side": "buying",
+      "usePersonalityLines": false,
+      "match": {"sources": ["private"]},
+      "lines": {
+        "opening": ["ui.career.negotiation.privateSellerQuotes.01", "ui.career.negotiation.privateSellerQuotes.02", "ui.career.negotiation.privateSellerQuotes.03", "ui.career.negotiation.privateSellerQuotes.05", "ui.career.negotiation.privateSellerQuotes.06", "ui.career.negotiation.privateSellerQuotes.07", "ui.career.negotiation.privateSellerQuotes.08", "ui.career.negotiation.privateSellerQuotes.09", "ui.career.negotiation.privateSellerQuotes.10", "ui.career.negotiation.privateSellerQuotes.11", "ui.career.negotiation.privateSellerQuotes.12", "ui.career.negotiation.privateSellerQuotes.13", "ui.career.negotiation.privateSellerQuotes.14", "ui.career.negotiation.privateSellerQuotes.15", "ui.career.negotiation.privateSellerQuotes.16", "ui.career.negotiation.privateSellerQuotes.17", "ui.career.negotiation.privateSellerQuotes.18", "ui.career.negotiation.privateSellerQuotes.19", "ui.career.negotiation.privateSellerQuotes.20", "ui.career.negotiation.privateSellerQuotes.21", "ui.career.negotiation.privateSellerQuotes.22", "ui.career.negotiation.privateSellerQuotes.23", "ui.career.negotiation.privateSellerQuotes.24", "ui.career.negotiation.privateSellerQuotes.25", "ui.career.negotiation.privateSellerQuotes.26", "ui.career.negotiation.privateSellerQuotes.27", "ui.career.negotiation.privateSellerQuotes.29", "ui.career.negotiation.privateSellerQuotes.30", "ui.career.negotiation.privateSellerQuotes.31", "ui.career.negotiation.privateSellerQuotes.32", "ui.career.negotiation.privateSellerQuotes.33", "ui.career.negotiation.privateSellerQuotes.34", "ui.career.negotiation.privateSellerQuotes.35", "ui.career.negotiation.privateSellerQuotes.36", "ui.career.negotiation.privateSellerQuotes.37", "ui.career.negotiation.privateSellerQuotes.38", "ui.career.negotiation.privateSellerQuotes.39", "ui.career.negotiation.privateSellerQuotes.40", "ui.career.negotiation.privateSellerQuotes.41", "ui.career.negotiation.privateSellerQuotes.42", "ui.career.negotiation.privateSellerQuotes.43", "ui.career.negotiation.privateSellerQuotes.44", "ui.career.negotiation.privateSellerQuotes.45", "ui.career.negotiation.privateSellerQuotes.46", "ui.career.negotiation.privateSellerQuotes.47", "ui.career.negotiation.privateSellerQuotes.48", "ui.career.negotiation.privateSellerQuotes.49", "ui.career.negotiation.privateSellerQuotes.50"],
+        "askingPrice": ["I'm asking {price}.", "Looking for {price}.", "I'd like to get {price} for it."],
+        "counter": ["I could do {price}.", "How about {price}?", "Meet me at {price}?", "{price} and it's yours.", "I can come down to {price}."],
+        "hold": ["I'm sticking with {price}.", "Still {price}. I know what it's worth.", "{price} is where I'm at."],
+        "finalOffer": ["{price}, and that's it.", "Lowest I'll go is {price}."],
+        "accepted": ["{price} works. It's yours.", "Deal at {price}.", "Alright, {price}. Deal."],
+        "walkedAway": ["I'll wait for a better offer, thanks.", "Not that low. I'll hang on to it.", "We're too far apart. Good luck."]
+      }
+    },
+    "carMeetSeller": {
+      "extends": "seller",
+      "side": "buying",
+      "usePersonalityLines": false,
+      "match": {"sources": ["carMeet"]},
+      "lines": {
+        "opening": ["Glad you like it.", "Thanks for stopping by.", "Everyone asks about this one."],
+        "openingNoPrice": ["Glad you like it. Make me an offer.", "Wasn't planning to sell, but I'll hear an offer.", "Everyone asks about this one. What's your number?", "Thanks for stopping by. What are you thinking?"],
+        "askingPrice": ["I'd want {price} for it.", "{price} and it's yours."],
+        "counter": ["For this build? I'd want {price}.", "I could let it go for {price}.", "{price} and you can drive it home."],
+        "hold": ["Still {price}. I put a lot into it.", "{price}. That's what it's worth to me."],
+        "finalOffer": ["{price}. Any lower and I keep it.", "{price}, and that's it."],
+        "accepted": ["{price}, deal. Take good care of it.", "Done. {price} it is."],
+        "walkedAway": ["Nah, I'll keep it at that price.", "I think I'll hang on to it. Enjoy the meet."]
+      }
+    },
+
+    "privateBuyer": {
+      "extends": "buyer",
+      "side": "selling",
+      "usePersonalityLines": true,
+      "match": {"sources": ["marketplace"]},
+      "moods": {
+        "aggressive": {
+          "counter": ["{price}. Not a dollar more right now.", "I'll go {price}, cash.", "{price}. Think about it."]
+        },
+        "delusional": {
+          "counter": ["Fine. {price}, and I'm being generous.", "{price}. That's more than fair.", "{price}, take it while you can."]
+        },
+        "desperate": {
+          "counter": ["I can stretch to {price}. Please?", "{price}? I really need a car.", "Could you do {price}? I need it soon."]
+        },
+        "enthusiastic": {
+          "counter": ["I can do {price}! Please say yes!", "{price}? I really want this one!", "How about {price}? I love it!"]
+        }
+      },
+      "lines": {}
+    },
+    "carMeetBuyer": {
+      "extends": "buyer",
+      "side": "selling",
+      "usePersonalityLines": false,
+      "match": {"sources": ["carMeet"]},
+      "lines": {
+        "opening": ["Saw your car at the meet. Would you sell it?", "This one's been getting a lot of looks. Is it for sale?", "Love the build. Any chance you'd sell?"],
+        "askingPrice": ["I'd give you {price} for it.", "{price}, and I'll take it home tonight."],
+        "counter": ["I could do {price} for it.", "How about {price}?", "{price}? It's a nice build."],
+        "hold": ["{price} is my limit for this one.", "Still {price}."],
+        "finalOffer": ["{price}. That's everything I've got.", "Final offer: {price}."],
+        "accepted": ["Deal at {price}! Thanks.", "{price}, done. Love this car."],
+        "walkedAway": ["Too rich for me. Nice build though.", "I'll pass. Enjoy the meet."]
+      }
+    },
+    "dealerBuyer": {
+      "extends": "buyer",
+      "side": "selling",
+      "usePersonalityLines": false,
+      "match": {"sources": ["dealership"]},
+      "lines": {
+        "opening": ["ui.career.negotiation.dealershipBuyerQuotes.01", "ui.career.negotiation.dealershipBuyerQuotes.02", "ui.career.negotiation.dealershipBuyerQuotes.03", "ui.career.negotiation.dealershipBuyerQuotes.04", "ui.career.negotiation.dealershipBuyerQuotes.05", "ui.career.negotiation.dealershipBuyerQuotes.06", "ui.career.negotiation.dealershipBuyerQuotes.07", "ui.career.negotiation.dealershipBuyerQuotes.08", "ui.career.negotiation.dealershipBuyerQuotes.09", "ui.career.negotiation.dealershipBuyerQuotes.10", "ui.career.negotiation.dealershipBuyerQuotes.11", "ui.career.negotiation.dealershipBuyerQuotes.12", "ui.career.negotiation.dealershipBuyerQuotes.13", "ui.career.negotiation.dealershipBuyerQuotes.14", "ui.career.negotiation.dealershipBuyerQuotes.15", "ui.career.negotiation.dealershipBuyerQuotes.16", "ui.career.negotiation.dealershipBuyerQuotes.17", "ui.career.negotiation.dealershipBuyerQuotes.18", "ui.career.negotiation.dealershipBuyerQuotes.19", "ui.career.negotiation.dealershipBuyerQuotes.20", "ui.career.negotiation.dealershipBuyerQuotes.21", "ui.career.negotiation.dealershipBuyerQuotes.22", "ui.career.negotiation.dealershipBuyerQuotes.23", "ui.career.negotiation.dealershipBuyerQuotes.24", "ui.career.negotiation.dealershipBuyerQuotes.25"],
+        "askingPrice": ["We can offer {price}.", "Our offer is {price}."],
+        "counter": ["We can go to {price}.", "I can do {price} for it.", "Best we can do is {price}."],
+        "hold": ["{price} is our number.", "We're staying at {price}."],
+        "finalOffer": ["{price}. That's the most we can pay.", "Final offer: {price}."],
+        "accepted": ["Deal at {price}. We'll handle the paperwork.", "{price} works. We'll take it."],
+        "walkedAway": ["We can't make that work for our lot. Thanks anyway.", "That's more than we can pay. We'll pass."]
+      }
+    }
+  }
+}

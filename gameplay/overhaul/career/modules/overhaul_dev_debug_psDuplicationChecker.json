@@ -1,0 +1,5 @@
+{
+  "id": "overhaul_dev_debug_psDuplicationChecker",
+  "order": 810,
+  "module": "overhaul/dev/debug/psDuplicationChecker"
+}

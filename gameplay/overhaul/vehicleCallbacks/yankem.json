@@ -1,0 +1,7 @@
+{
+  "id": "yankem",
+  "order": 100,
+  "callbacks": [
+    {"id": "receiveVehicleProperties", "extension": "overhaul_jobs_yankem", "fn": "receiveVehicleProperties", "guard": "lazy"}
+  ]
+}

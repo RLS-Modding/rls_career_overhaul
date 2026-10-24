@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_world_fuel_fuelPrice",
+  "order": 121,
+  "module": "overhaul/world/fuel/fuelPrice",
+  "scopes": [
+    {
+      "id": "services",
+      "order": 4
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_career_business_racingTeam_rideAlong",
+  "order": 3,
+  "module": "overhaul/career/business/racingTeam/rideAlong",
+  "scopes": [
+    {
+      "id": "owned",
+      "order": 4
+    }
+  ]
+}

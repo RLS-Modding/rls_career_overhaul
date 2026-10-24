@@ -1,0 +1,46 @@
+{
+  "description":"Description of these Sites. Contains Locations, Zones, and Parking Spots.",
+  "dir":"/levels/west_coast_usa/",
+  "filename":"dynoSession.sites.json",
+  "locations":{},
+  "name":"dynoSession.sites.json",
+  "parkingSpots":[
+    {
+      "color":[
+        1,
+        1,
+        1
+      ],
+      "customFields":{
+        "names":{},
+        "tags":{},
+        "types":{},
+        "values":{}
+      },
+      "isMultiSpot":false,
+      "name":"dynoSessionParking",
+      "oldId":5223,
+      "pos":[
+        497.4670715332,
+        -722.62091064453,
+        201.08622741699
+      ],
+      "rot":[
+        0,
+        0,
+        -0.83120497898734,
+        0.55596558874927
+      ],
+      "scl":[
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount":1,
+      "spotDirection":"Left",
+      "spotOffset":0,
+      "spotRotation":0
+    }
+  ],
+  "zones":{}
+}

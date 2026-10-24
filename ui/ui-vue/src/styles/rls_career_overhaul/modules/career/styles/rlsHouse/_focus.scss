@@ -1,0 +1,62 @@
+/* ------------------------------------------------------------------------------------------------
+   Controller / keyboard focus
+   The game marks the focused element with the class .focus-visible (controller) and draws its own
+   frame as .focus-visible::before; the browser marks keyboard focus with :focus-visible. House
+   controls answer both with the house ring and hide the game frame (it was clipped by overflow,
+   collided with .seg.bar separators and doubled up with our ring).
+   ------------------------------------------------------------------------------------------------ */
+@mixin house-focus($ring: var(--focus)) {
+  &.focus-visible {
+    outline: none;
+    box-shadow: $ring;
+  }
+  &.focus-visible::before {
+    // the game's frame; .seg.bar separators use ::before too and simply hide while focused
+    display: none !important;
+  }
+}
+
+.btn,
+.icon-btn,
+.menu-btn,
+.field,
+.chips > button,
+.seg button,
+.search-clear {
+  @include house-focus;
+}
+// joined bars set box-shadow:none on their buttons; the ring must still win when focused
+.seg.bar button {
+  @include house-focus;
+}
+.seg.bar button.active.focus-visible {
+  box-shadow: var(--focus), 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+.row,
+button.line,
+.tile-card,
+.menu-item,
+.fold-summary {
+  @include house-focus(var(--focus-inset));
+}
+// an open menu's trigger stays quiet; the ring moves into the list
+.menu.open .menu-btn.focus-visible {
+  box-shadow: none;
+}
+// composite fields: ring the whole field when the input inside has controller focus
+.search:has(input.focus-visible),
+.stepper:has(.focus-visible) {
+  box-shadow: var(--focus);
+}
+.search input.focus-visible::before,
+.stepper .focus-visible::before {
+  display: none !important;
+}
+.check input.focus-visible,
+.switch input.focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+.switch input.focus-visible + .knob {
+  box-shadow: var(--focus);
+}

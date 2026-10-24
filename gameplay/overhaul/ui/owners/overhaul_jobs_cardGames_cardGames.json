@@ -1,0 +1,21 @@
+{
+  "id": "overhaul_jobs_cardGames_cardGames",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "other",
+    "namespaceOrder": 10,
+    "aliases": []
+  },
+  "routes": [
+    {
+      "name": "card-games",
+      "order": 2,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "play"
+        }
+      }
+    }
+  ]
+}

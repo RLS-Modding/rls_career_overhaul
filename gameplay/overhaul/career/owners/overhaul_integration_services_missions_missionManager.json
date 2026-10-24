@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_integration_services_missions_missionManager",
+  "order": 56,
+  "module": "overhaul/integration/services/missions/missionManager",
+  "scopes": [
+    {
+      "id": "services",
+      "order": 21
+    }
+  ]
+}

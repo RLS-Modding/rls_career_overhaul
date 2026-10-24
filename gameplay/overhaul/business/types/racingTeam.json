@@ -1,0 +1,107 @@
+{
+  "id": "racingTeam",
+  "order": 2,
+  "tabs": [
+    {
+      "id": "home",
+      "label": "Home",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/businessComputer/BusinessHomeView.vue",
+      "componentName": "BusinessHomeView",
+      "order": 1,
+      "componentOrder": 1
+    },
+    {
+      "id": "jobs",
+      "label": "Goals",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/businessComputer/BusinessJobsTab.vue",
+      "componentName": "BusinessJobsTab",
+      "order": 2,
+      "componentOrder": 2
+    },
+    {
+      "id": "vehicles",
+      "label": "Vehicles",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/businessComputer/BusinessVehiclesTab.vue",
+      "componentName": "BusinessVehiclesTab",
+      "order": 3,
+      "componentOrder": 13
+    },
+    {
+      "id": "inventory",
+      "label": "Inventory",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/businessComputer/BusinessInventoryTab.vue",
+      "componentName": "BusinessInventoryTab",
+      "order": 3.5,
+      "componentOrder": 4
+    },
+    {
+      "id": "race",
+      "label": "Race",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/businessComputer/types/racingTeam/BusinessRacingTab.vue",
+      "componentName": "BusinessRacingTab",
+      "order": 4,
+      "componentOrder": 12
+    },
+    {
+      "id": "drivers",
+      "label": "Drivers",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/businessComputer/types/racingTeam/BusinessDriversTab.vue",
+      "componentName": "BusinessDriversTab",
+      "order": 5,
+      "componentOrder": 10
+    },
+    {
+      "id": "finances",
+      "label": "Finances",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/businessComputer/BusinessFinancesTab.vue",
+      "componentName": "BusinessFinancesTab",
+      "order": 6,
+      "componentOrder": 11
+    },
+    {
+      "id": "skill-tree",
+      "label": "Skill Trees",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/businessComputer/BusinessSkillTreeTab.vue",
+      "componentName": "BusinessSkillTreeTab",
+      "order": 100,
+      "componentOrder": 8
+    },
+    {
+      "id": "dev-console",
+      "label": "Dev Console",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/businessComputer/types/racingTeam/BusinessRacingTeamDevConsoleTab.vue",
+      "componentName": "BusinessRacingTeamDevConsoleTab",
+      "order": 200,
+      "componentOrder": 14
+    }
+  ],
+  "module": "overhaul_career_business_racingTeam_racingTeam",
+  "capabilities": {
+    "dynoPowerReadWithoutSkill": true,
+    "bankAccount": true,
+    "skillTrees": true,
+    "inventory": true,
+    "xpSystem": true,
+    "techManagement": true,
+    "driverAssignments": true,
+    "raceOffers": true,
+    "fleetRepair": true,
+    "careerSimTime": true,
+    "fleetVehicles": true,
+    "goals": true,
+    "sponsorships": true,
+    "towDestination": true
+  },
+  "towLabel": "Tow to Racing Team",
+  "towPriority": 1,
+  "skillNodes": {
+    "dyno": {
+      "tree": "qol",
+      "node": "dyno"
+    },
+    "pitFuel": {
+      "tree": "team-operations",
+      "node": "pit-fuel"
+    }
+  }
+}

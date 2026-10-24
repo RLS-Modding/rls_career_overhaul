@@ -1,0 +1,37 @@
+{
+  "id": "overhaul_career_market_testDrive",
+  "order": 100,
+  "exports": {
+    "namespace": false,
+    "aliases": [
+      "career_modules_testDrive"
+    ]
+  },
+  "pauseActions": [
+    {
+      "id": "cancelTestDrive",
+      "order": 3,
+      "available": {
+        "owner": "overhaul_career_market_testDrive",
+        "method": "isActive"
+      },
+      "execute": {
+        "owner": "overhaul_career_market_testDrive",
+        "method": "stop"
+      },
+      "button": {
+        "id": "cancelTestDrive",
+        "icon": "abandon",
+        "showIndicator": true
+      },
+      "labelKey": "ui.career.vehiclePerformance.cancelTest"
+    }
+  ],
+  "additionalMenuButtons": [
+    {
+      "id": "cancelTestDrive",
+      "order": 3,
+      "provider": "overhaul/career/market/testDrive/menuButton"
+    }
+  ]
+}

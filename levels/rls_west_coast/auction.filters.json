@@ -1,0 +1,91 @@
+{
+  "description": "Filters used by usedCarAuction.lua for random lot generation",
+  "filter": {
+    "whiteList": {
+      "Type": [
+        "Car",
+        "Truck"
+      ]
+    },
+    "blackList": {
+      "model_key": [
+        "wydra"
+      ],
+      "Type": [
+        "Forklift"
+      ],
+      "Config Type": [
+        "Police",
+        "Frame"
+      ],
+      "Brand": [
+        "FPU"
+      ],
+      "Body Type": [
+        "JATO truck"
+      ]
+    }
+  },
+  "subFilters": [
+    {
+      "probability": 8,
+      "whiteList": {
+        "Type": [
+          "Car"
+        ],
+        "Config Type": [
+          "Factory"
+        ],
+        "Population": {
+          "min": 1,
+          "max": 2999
+        }
+      }
+    },
+    {
+      "probability": 4,
+      "whiteList": {
+        "Type": [
+          "Truck"
+        ],
+        "Config Type": [
+          "Factory"
+        ],
+        "Population": {
+          "min": 1,
+          "max": 2999
+        }
+      }
+    },
+    {
+      "probability": 3,
+      "whiteList": {
+        "Type": [
+          "Car"
+        ],
+        "Config Type": [
+          "Custom"
+        ],
+        "Population": {
+          "min": 1,
+          "max": 2999
+        }
+      }
+    },
+    {
+      "probability": 2,
+      "whiteList": {
+        "Type": [
+          "Truck"
+        ],
+        "Config Type": [
+          "Custom"
+        ],
+        "Population": {
+          "min": 1,
+          "max": 2999
+        }
+      }
+    }
+  ]
+}

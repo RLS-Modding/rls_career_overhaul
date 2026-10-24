@@ -1,0 +1,68 @@
+body {
+    margin: 0
+}
+@font-face {
+  font-family: "segment7";
+  src: url(DSEG14Classic-Bold.ttf);
+}
+#screen {
+    position: absolute;
+	background-color : #818075;
+    font-family: "segment7",sans-serif;
+	font-weight: bold;
+    /*width: 436px;
+    height: 400px;*/
+    width: 100%;
+    height: 100%;
+    bottom: 0;
+    color: black;
+    overflow: hidden;
+}
+#Speed {
+    position: absolute;
+    left: 50%;
+    top: 12%;
+    width: 30%;
+    height: 30%;
+}
+#RPMBlock {
+    position: absolute;
+    left: 50%;
+    top: -2%;
+    width: 30%;
+    height: 30%;
+}
+#SpeedSelector {
+    position: absolute;
+    text-align: left;
+    font-size: 16vh;
+    margin: 0;
+    left: 5%;
+    top: -7%;
+    width: 50%;
+    height: 35%;
+    overflow: hidden;
+}
+.small-text {
+    position: absolute;
+    text-align: right;
+    font-size: 6vh;
+    left: 5%;
+    margin: 0;
+}
+.small-value {
+    position: relative;
+    text-align: right;
+    font-size: 10vh;
+    margin: 0;
+    right: 48%;
+    top: 24%;
+}
+.small-unit {
+    position: absolute;
+    text-align: right;
+    font-size: 9vh;
+    margin: 0;
+    top: 30%;
+    left: 58%;
+}

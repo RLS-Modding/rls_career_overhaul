@@ -1,0 +1,29 @@
+{
+  "id": "overhaul_career_market_auction_auction",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 320,
+    "aliases": [
+      "career_modules_usedCarAuction"
+    ]
+  },
+  "routes": [
+    {
+      "name": "used-car-auction",
+      "order": 76,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "play",
+          "scopeTree": {
+            "used-car-auction": {
+              "preferAutoFocus": true
+            }
+          }
+        },
+        "uiNav": false
+      }
+    }
+  ]
+}

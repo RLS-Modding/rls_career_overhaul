@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":12500,  
+    "Configuration": "Used & Abused - Sedan ( Joe's Junk Career )",
+    "Description": "Beater Grand Marshall with damaged body panels and misc junk parts.",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 221,
+    "Torque": 224,
+    "Value": 10900,
+    "Weight": 1771,
+    "Years": {
+      "max": 1995,
+      "min": 1990
+    }  
+}
+
+

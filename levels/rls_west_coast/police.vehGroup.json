@@ -1,0 +1,30 @@
+{
+  "type": "custom",
+  "data": [
+    {
+      "config": "police_v8_awd_A",
+      "model": "bastion"
+    },
+    {
+      "config": "police_unmarked_v8_awd_A_Red",
+      "model": "bastion"
+    },
+    {
+      "config": "police_unmarked_v8_awd_A_Silver",
+      "model": "bastion"
+    },
+    {
+      "config": "police_unmarked_v8_awd_A_Blue",
+      "model": "bastion"
+    },
+    {
+      "config": "undercover_redtail",
+      "model": "bastion"
+    }
+  ],
+  "name": "West Coast USA - Police",
+  "tags": [
+    "west_coast_usa",
+    "police"
+  ]
+}

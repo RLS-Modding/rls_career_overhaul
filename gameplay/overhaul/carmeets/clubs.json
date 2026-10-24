@@ -1,0 +1,761 @@
+{
+  "clubs": [
+    {
+      "id": "car_bazaar_club",
+      "name": "Car Bazaar Club",
+      "type": "special",
+      "requiredRep": 70,
+      "joinFee": 2500,
+      "requirements": {}
+    },
+    {
+      "id": "elite_cars_club",
+      "name": "Elite Cars Club",
+      "type": "special",
+      "requiredRep": 90,
+      "joinFee": 10000,
+      "requirements": {
+        "minVehicleValue": 200000
+      }
+    },
+    {
+      "id": "autobello_group",
+      "name": "Autobello Group",
+      "type": "brand",
+      "requiredRep": 30,
+      "joinFee": 1500,
+      "requirements": {
+        "brands": [
+          "Autobello"
+        ]
+      }
+    },
+    {
+      "id": "bruckell_group",
+      "name": "Bruckell Group",
+      "type": "brand",
+      "requiredRep": 30,
+      "joinFee": 1500,
+      "requirements": {
+        "brands": [
+          "Bruckell"
+        ]
+      }
+    },
+    {
+      "id": "burnside_group",
+      "name": "Burnside Group",
+      "type": "brand",
+      "requiredRep": 30,
+      "joinFee": 1500,
+      "requirements": {
+        "brands": [
+          "Burnside"
+        ]
+      }
+    },
+    {
+      "id": "cherrier_group",
+      "name": "Cherrier Group",
+      "type": "brand",
+      "requiredRep": 30,
+      "joinFee": 1500,
+      "requirements": {
+        "brands": [
+          "Cherrier"
+        ]
+      }
+    },
+    {
+      "id": "civetta_group",
+      "name": "Civetta Group",
+      "type": "brand",
+      "requiredRep": 30,
+      "joinFee": 1500,
+      "requirements": {
+        "brands": [
+          "Civetta"
+        ]
+      }
+    },
+    {
+      "id": "etk_group",
+      "name": "ETK Group",
+      "type": "brand",
+      "requiredRep": 30,
+      "joinFee": 1500,
+      "requirements": {
+        "brands": [
+          "ETK"
+        ]
+      }
+    },
+    {
+      "id": "fpu_group",
+      "name": "FPU Group",
+      "type": "brand",
+      "requiredRep": 30,
+      "joinFee": 1500,
+      "requirements": {
+        "brands": [
+          "FPU"
+        ]
+      }
+    },
+    {
+      "id": "gavril_group",
+      "name": "Gavril Group",
+      "type": "brand",
+      "requiredRep": 30,
+      "joinFee": 1500,
+      "requirements": {
+        "brands": [
+          "Gavril"
+        ]
+      }
+    },
+    {
+      "id": "hirochi_group",
+      "name": "Hirochi Group",
+      "type": "brand",
+      "requiredRep": 30,
+      "joinFee": 1500,
+      "requirements": {
+        "brands": [
+          "Hirochi"
+        ]
+      }
+    },
+    {
+      "id": "ibishu_group",
+      "name": "Ibishu Group",
+      "type": "brand",
+      "requiredRep": 30,
+      "joinFee": 1500,
+      "requirements": {
+        "brands": [
+          "Ibishu"
+        ]
+      }
+    },
+    {
+      "id": "soliad_group",
+      "name": "Soliad Group",
+      "type": "brand",
+      "requiredRep": 30,
+      "joinFee": 1500,
+      "requirements": {
+        "brands": [
+          "Soliad"
+        ]
+      }
+    },
+    {
+      "id": "sp_group",
+      "name": "SP Group",
+      "type": "brand",
+      "requiredRep": 30,
+      "joinFee": 1500,
+      "requirements": {
+        "brands": [
+          "SP"
+        ]
+      }
+    },
+    {
+      "id": "wentward_group",
+      "name": "Wentward Group",
+      "type": "brand",
+      "requiredRep": 30,
+      "joinFee": 1500,
+      "requirements": {
+        "brands": [
+          "Wentward"
+        ]
+      }
+    },
+    {
+      "id": "autobello_piccolina_club",
+      "name": "Autobello Piccolina Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 2500,
+      "requirements": {
+        "models": [
+          "autobello"
+        ]
+      }
+    },
+    {
+      "id": "autobello_stambecco_club",
+      "name": "Autobello Stambecco Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 2500,
+      "requirements": {
+        "models": [
+          "midtruck"
+        ]
+      }
+    },
+    {
+      "id": "bruckell_bastion_club",
+      "name": "Bruckell Bastion Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 5000,
+      "requirements": {
+        "models": [
+          "bastion"
+        ]
+      }
+    },
+    {
+      "id": "bruckell_legran_club",
+      "name": "Bruckell LeGran Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 2500,
+      "requirements": {
+        "models": [
+          "legran"
+        ]
+      }
+    },
+    {
+      "id": "bruckell_moonhawk_club",
+      "name": "Bruckell Moonhawk Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 2500,
+      "requirements": {
+        "models": [
+          "moonhawk"
+        ]
+      }
+    },
+    {
+      "id": "bruckell_nine_club",
+      "name": "Bruckell Nine Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 5000,
+      "requirements": {
+        "models": [
+          "nine"
+        ]
+      }
+    },
+    {
+      "id": "bruckell_ravix_club",
+      "name": "Bruckell Ravix Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 5000,
+      "joinRequiresInstalledModel": "ravix",
+      "requirements": {
+        "models": [
+          "ravix"
+        ],
+        "displayName": "Ravix"
+      }
+    },
+    {
+      "id": "burnside_special_club",
+      "name": "Burnside Special Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 2500,
+      "requirements": {
+        "models": [
+          "burnside"
+        ]
+      }
+    },
+    {
+      "id": "cherrier_fcv_club",
+      "name": "Cherrier FCV Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 2500,
+      "requirements": {
+        "models": [
+          "vivace"
+        ]
+      }
+    },
+    {
+      "id": "cherrier_ardente_club",
+      "name": "Cherrier Ardente Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 2500,
+      "requirements": {
+        "model": "vivace",
+        "displayName": "Ardente",
+        "configPrefix": "ardente_",
+        "bodySlot": "vivace_body",
+        "bodyPart": "ardente_body"
+      }
+    },
+    {
+      "id": "civetta_bolide_club",
+      "name": "Civetta Bolide Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 5000,
+      "requirements": {
+        "models": [
+          "bolide"
+        ]
+      }
+    },
+    {
+      "id": "civetta_scintilla_club",
+      "name": "Civetta Scintilla Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 10000,
+      "requirements": {
+        "models": [
+          "scintilla"
+        ]
+      }
+    },
+    {
+      "id": "etk_800_series_club",
+      "name": "ETK 800-Series Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 2500,
+      "requirements": {
+        "models": [
+          "etk800"
+        ]
+      }
+    },
+    {
+      "id": "etk_i_series_club",
+      "name": "ETK I-Series Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 2500,
+      "requirements": {
+        "models": [
+          "etki"
+        ]
+      }
+    },
+    {
+      "id": "etk_k_series_club",
+      "name": "ETK K-Series Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 5000,
+      "requirements": {
+        "models": [
+          "etkc"
+        ]
+      }
+    },
+    {
+      "id": "fpu_wydra_club",
+      "name": "FPU Wydra Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 2500,
+      "requirements": {
+        "models": [
+          "atv"
+        ]
+      }
+    },
+    {
+      "id": "gavril_barstow_club",
+      "name": "Gavril Barstow Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 2500,
+      "requirements": {
+        "models": [
+          "barstow"
+        ]
+      }
+    },
+    {
+      "id": "gavril_bluebuck_club",
+      "name": "Gavril Bluebuck Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 2500,
+      "requirements": {
+        "models": [
+          "bluebuck"
+        ]
+      }
+    },
+    {
+      "id": "gavril_d_series_club",
+      "name": "Gavril D-Series Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 2500,
+      "requirements": {
+        "models": [
+          "pickup"
+        ]
+      }
+    },
+    {
+      "id": "gavril_grand_marshal_club",
+      "name": "Gavril Grand Marshal Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 2500,
+      "requirements": {
+        "models": [
+          "fullsize"
+        ]
+      }
+    },
+    {
+      "id": "gavril_h_series_club",
+      "name": "Gavril H-Series Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 2500,
+      "requirements": {
+        "models": [
+          "van"
+        ]
+      }
+    },
+    {
+      "id": "gavril_md_series_club",
+      "name": "Gavril MD-Series Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 2500,
+      "requirements": {
+        "models": [
+          "md_series"
+        ]
+      }
+    },
+    {
+      "id": "gavril_roamer_club",
+      "name": "Gavril Roamer Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 2500,
+      "requirements": {
+        "models": [
+          "roamer"
+        ]
+      }
+    },
+    {
+      "id": "gavril_t_series_club",
+      "name": "Gavril T-Series Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 5000,
+      "requirements": {
+        "models": [
+          "us_semi"
+        ]
+      }
+    },
+    {
+      "id": "hirochi_aurata_club",
+      "name": "Hirochi Aurata Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 2500,
+      "requirements": {
+        "models": [
+          "utv"
+        ]
+      }
+    },
+    {
+      "id": "hirochi_ht55_club",
+      "name": "Hirochi HT-55 Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 5000,
+      "requirements": {
+        "models": [
+          "dumptruck"
+        ]
+      }
+    },
+    {
+      "id": "hirochi_sbr4_club",
+      "name": "Hirochi SBR4 Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 5000,
+      "requirements": {
+        "models": [
+          "sbr"
+        ]
+      }
+    },
+    {
+      "id": "hirochi_sunburst_club",
+      "name": "Hirochi Sunburst Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 2500,
+      "requirements": {
+        "models": [
+          "sunburst2"
+        ]
+      }
+    },
+    {
+      "id": "hirochi_wl40_club",
+      "name": "Hirochi WL-40 Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 5000,
+      "requirements": {
+        "models": [
+          "wl40"
+        ]
+      }
+    },
+    {
+      "id": "ibishu_200bx_club",
+      "name": "Ibishu 200BX Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 2500,
+      "requirements": {
+        "models": [
+          "bx"
+        ]
+      }
+    },
+    {
+      "id": "ibishu_covet_club",
+      "name": "Ibishu Covet Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 2500,
+      "requirements": {
+        "models": [
+          "covet"
+        ]
+      }
+    },
+    {
+      "id": "ibishu_hopper_club",
+      "name": "Ibishu Hopper Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 2500,
+      "requirements": {
+        "models": [
+          "hopper"
+        ]
+      }
+    },
+    {
+      "id": "ibishu_miramar_club",
+      "name": "Ibishu Miramar Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 2500,
+      "requirements": {
+        "models": [
+          "miramar"
+        ]
+      }
+    },
+    {
+      "id": "ibishu_pessima_club",
+      "name": "Ibishu Pessima Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 2500,
+      "requirements": {
+        "models": [
+          "midsize"
+        ]
+      }
+    },
+    {
+      "id": "ibishu_pessima_classic_club",
+      "name": "Ibishu Pessima Classic Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 2500,
+      "requirements": {
+        "models": [
+          "pessima"
+        ]
+      }
+    },
+    {
+      "id": "ibishu_pigeon_club",
+      "name": "Ibishu Pigeon Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 2500,
+      "requirements": {
+        "models": [
+          "pigeon"
+        ]
+      }
+    },
+    {
+      "id": "ibishu_wigeon_club",
+      "name": "Ibishu Wigeon Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 2500,
+      "requirements": {
+        "models": [
+          "wigeon"
+        ]
+      }
+    },
+    {
+      "id": "soliad_lansdale_club",
+      "name": "Soliad Lansdale Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 2500,
+      "requirements": {
+        "models": [
+          "lansdale"
+        ]
+      }
+    },
+    {
+      "id": "soliad_wendover_club",
+      "name": "Soliad Wendover Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 2500,
+      "requirements": {
+        "models": [
+          "wendover"
+        ]
+      }
+    },
+    {
+      "id": "sp_dunekicker_club",
+      "name": "SP Dunekicker Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 5000,
+      "requirements": {
+        "models": [
+          "racetruck"
+        ]
+      }
+    },
+    {
+      "id": "sp_rockbasher_club",
+      "name": "SP Rockbasher Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 5000,
+      "requirements": {
+        "models": [
+          "rockbouncer"
+        ]
+      }
+    },
+    {
+      "id": "wentward_dt40l_club",
+      "name": "Wentward DT40L Club",
+      "type": "model",
+      "requiredRep": 30,
+      "joinFee": 5000,
+      "requirements": {
+        "models": [
+          "citybus"
+        ]
+      }
+    },
+    {
+      "id": "classic_muscle_crew",
+      "name": "Classic Muscle Crew",
+      "type": "style",
+      "requiredRep": 30,
+      "joinFee": 2500,
+      "requirements": {
+        "tags": [
+          "classic",
+          "muscle"
+        ]
+      },
+      "vehiclePoolRequirements": {
+        "anyOf": [
+          {
+            "allOf": [
+              {
+                "anyOf": [
+                  {
+                    "brands": [
+                      "Bruckell",
+                      "Gavril",
+                      "Burnside",
+                      "Soliad"
+                    ]
+                  },
+                  {
+                    "textContainsAny": [
+                      "american"
+                    ]
+                  }
+                ]
+              },
+              {
+                "anyOf": [
+                  {
+                    "bodyContainsAny": [
+                      "coupe",
+                      "sedan"
+                    ]
+                  },
+                  {
+                    "textContainsAny": [
+                      "coupe",
+                      "sedan"
+                    ]
+                  }
+                ]
+              },
+              {
+                "anyOf": [
+                  {
+                    "yearMax": 1975
+                  },
+                  {
+                    "textContainsAny": [
+                      "muscle",
+                      "classic",
+                      "street",
+                      "custom"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "tags": [
+              "classic",
+              "muscle"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

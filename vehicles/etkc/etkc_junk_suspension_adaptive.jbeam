@@ -1,0 +1,225 @@
+{
+"etkc_junk_strut_F_adaptive": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Blown ttSport+ Adaptive Front Struts",
+        "value":350,
+    },
+    "slotType" : "etkc_strut_F",
+
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["etkc_strut_F", ["etkc_strut_F"]],
+    ],
+    "controller": [
+        ["fileName"],
+        ["drivingDynamics/actuators/adaptiveDampers" {"name":"adaptiveFrontDamper", "dampBeamNames":["shock_FR", "shock_FL"]}]
+    ],
+    "adaptiveFrontDamper": {
+        "modes": [
+            ["name",    "beamDampCoef", "beamDampFastCoef", "beamDampReboundCoef", "beamDampReboundFastCoef","beamDampVelocitySplitCoef"]
+            ["soft",    0.65,           1,                  0.6,                   1,                        0.7]
+            ["regular", 1,              1,                  1,                     1,                        1]
+            ["hard",    1.35,           1,                  1.26,                  1,                        1.2]
+        ]
+    }
+    "beams": [
+          ["id1:", "id2:"],
+          //front springs
+          {"beamPrecompression":1, "beamType":"|NORMAL"},
+          {"beamDeform":15000,"beamStrength":150000},
+          {"beamSpring":30000,"beamDamp":0},
+          ["fh4r","fs1r", {"name":"spring_FR", "precompressionRange":0.08,"soundFile":"event:>Vehicle>Suspension>car_modn_med_01>spring_compress_01","colorFactor":0.5,"attackFactor":30,"volumeFactor":5.0,"decayFactor":60,"noiseFactor":0.01,"pitchFactor":0.4,"maxStress":5600}],
+          ["fh4l","fs1l", {"name":"spring_FL", "precompressionRange":0.08,"soundFile":"event:>Vehicle>Suspension>car_modn_med_01>spring_compress_01","colorFactor":0.5,"attackFactor":30,"volumeFactor":4.5,"decayFactor":60,"noiseFactor":0.01,"pitchFactor":0.4,"maxStress":5600}],
+          //dampers
+          {"beamPrecompression":1, "beamType":"|BOUNDED", "beamLongBound":1, "beamShortBound":1},
+          {"beamSpring":0,"beamDamp":6000},
+          {"beamLimitSpring":0,"beamLimitDamp":0},
+          ["fh1r","fs1r", {"name":"shock_FR", "beamDampFast":250,"beamDampRebound":250,"beamDampReboundFast":250,"beamDampVelocitySplit":0.20,"dampCutoffHz":500}],
+          ["fh1l","fs1l", {"name":"shock_FL", "beamDampFast":250,"beamDampRebound":250,"beamDampReboundFast":250,"beamDampVelocitySplit":0.20,"dampCutoffHz":500}],
+          //soft initial bumpstop
+          {"beamSpring":0,"beamDamp":0},
+          {"beamLimitSpring":61000,"beamLimitDamp":1000},
+          ["fh4r","fs1r", {"longBoundRange":1,"shortBoundRange":0.05,"boundZone":0.1,"beamLimitDampRebound":0,"dampCutoffHz":500}],
+          ["fh4l","fs1l", {"longBoundRange":1,"shortBoundRange":0.05,"boundZone":0.1,"beamLimitDampRebound":0,"dampCutoffHz":500}],
+          //hard bump stop
+          {"beamSpring":0,"beamDamp":0},
+          {"beamLimitSpring":251000,"beamLimitDamp":10000},
+          ["fh4r","fs1r", {"longBoundRange":0.04,"shortBoundRange":0.08,"boundZone":0.05,"beamLimitDampRebound":0,"dampCutoffHz":500}],
+          ["fh4l","fs1l", {"longBoundRange":0.04,"shortBoundRange":0.08,"boundZone":0.05,"beamLimitDampRebound":0,"dampCutoffHz":500}],
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+    ],
+},
+"etkc_junk_shock_R_adaptive": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Blown ttSport+ Adaptive Rear Shocks",
+        "value":250,
+    },
+    "slotType" : "etkc_shock_R",
+    "flexbodies": [
+         ["mesh", "[group]:", "nonFlexMaterials"],
+         ["etkc_shock_R", ["etkc_shock_R","etkc_lowerarm_R"]],
+    ],
+    "controller": [
+        ["fileName"],
+        ["drivingDynamics/actuators/adaptiveDampers" {"name":"adaptiveRearDamper", "dampBeamNames":["shock_RR", "shock_RL"]}]
+    ],
+    "adaptiveRearDamper": {
+        "modes": [
+            ["name",    "beamDampCoef", "beamDampFastCoef", "beamDampReboundCoef", "beamDampReboundFastCoef","beamDampVelocitySplitCoef"]
+            ["soft",    0.7,            1,                  0.65,                  1,                        0.7]
+            ["regular", 1,              1,                  1,                     1,                        1]
+            ["hard",    1.5,            1,                  1.4,                   1,                        1.2]
+        ]
+    }
+    "beams": [
+          ["id1:", "id2:"],
+          //rear shocks
+          {"beamPrecompression":1.0, "beamType":"|BOUNDED", "beamLongBound":1.0, "beamShortBound":1.0},
+          {"beamDeform":15000,"beamStrength":175000},
+          {"beamLimitSpring":0,"beamLimitDamp":0},
+          {"beamSpring":0,"beamDamp":4400},
+          ["rh1r","r1rr", {"name":"shock_RR","beamDampFast":150,"beamDampRebound":150,"beamDampReboundFast":150,"beamDampVelocitySplit":0.24,"dampCutoffHz":500}],
+          ["rh1l","r1ll", {"name":"shock_RL","beamDampFast":150,"beamDampRebound":150,"beamDampReboundFast":150,"beamDampVelocitySplit":0.24,"dampCutoffHz":500}],
+          //soft initial bumpstop
+          {"beamSpring":0,"beamDamp":0},
+          {"beamLimitSpring":61000,"beamLimitDamp":1000},
+          ["rh1r","r1rr", {"longBoundRange":1,"shortBoundRange":0.035,"boundZone":0.1,"beamLimitDampRebound":0,"dampCutoffHz":500}],
+          ["rh1l","r1ll", {"longBoundRange":1,"shortBoundRange":0.035,"boundZone":0.1,"beamLimitDampRebound":0,"dampCutoffHz":500}],
+          //hard bump stop
+          {"beamSpring":0,"beamDamp":0},
+          {"beamLimitSpring":251000,"beamLimitDamp":10000},
+          ["rh1r","r1rr", {"longBoundRange":0.06,"shortBoundRange":0.07,"boundZone":0.05,"beamLimitDampRebound":0,"dampCutoffHz":500}],
+          ["rh1l","r1ll", {"longBoundRange":0.06,"shortBoundRange":0.07,"boundZone":0.05,"beamLimitDampRebound":0,"dampCutoffHz":500}],
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+    ],
+},
+"etkc_junk_swaybar_F_adaptive": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Broken ttSport+ Adaptive Front Sway Bar",
+        "value":250,
+    },
+    "slotType" : "etkc_swaybar_F",
+    "controller": [
+        ["fileName"],
+        ["drivingDynamics/actuators/adaptiveTorsionBars" {"name":"adaptiveFrontSwayBar", "torsionBarNames":["torsionBarFront"]}]
+    ],
+    "adaptiveFrontSwayBar": {
+        "modes": [
+            ["name",    "springCoef", "dampCoef"]
+            ["regular", 1,            1]
+            ["hard",    1.156,        1] //28mm
+        ]
+    }
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["etkc_swaybar_F", ["etkc_body","etkc_subframe_F","etkc_swaybar_F"]],
+    ],
+    "nodes": [
+         ["id", "posX", "posY", "posZ"],
+         //anti-roll
+         {"nodeMaterial":"|NM_METAL"},
+         {"frictionCoef":0.5},
+         {"group":""},
+         {"selfCollision":false},
+         {"collision":true},
+         {"nodeWeight":2.5},
+         //front anti-roll
+         ["arbfr", -0.58, -1.25, 0.32],
+         ["arbfl",  0.58, -1.25, 0.32],
+         {"group":""},
+    ],
+    "torsionbars": [
+        ["id1:", "id2:", "id3:", "id4:"],
+        //24mm 2543
+        //25mm 2994
+        //26mm 3502
+        //27mm 4073
+        //28mm 4710
+        //29mm 5420
+        {"spring":4073, "damp":10, "deform":10000, "strength":9999999},
+        ["arbfr", "fx1r", "fx1l", "arbfl", {"name": "torsionBarFront"}],
+    ],
+    "beams": [
+          ["id1:", "id2:"],
+          //--ANTI-ROLL--
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1, "beamShortBound":1},
+          {"beamSpring":2501000,"beamDamp":100},
+          {"beamDeform":15000,"beamStrength":10},
+          //end links
+          ["arbfr","fh4r"],
+          ["arbfl","fh4l"],
+          //rigids
+          ["arbfr","fx1r"],
+          ["arbfl","fx1l"],
+          ["arbfr","fx1l"],
+          ["arbfl","fx1r"],
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+    ],
+},
+"etkc_junk_swaybar_R_adaptive": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Broken ttSport+ Adaptive Rear Sway Bar",
+        "value":150,
+    },
+    "slotType" : "etkc_swaybar_R",
+
+    "controller": [
+        ["fileName"],
+        ["drivingDynamics/actuators/adaptiveTorsionBars" {"name":"adaptiveRearSwayBar", "torsionBarNames":["torsionBarRear"]}]
+    ],
+    "adaptiveRearSwayBar": {
+        "modes": [
+            ["name",    "springCoef", "dampCoef"]
+            ["regular", 1,            1]
+            ["hard",    1.708,        1] //16mm
+        ]
+    }
+    "flexbodies": [
+         ["mesh", "[group]:", "nonFlexMaterials"],
+         ["etkc_swaybar_R", ["etkc_swaybar_R", "etkc_subframe_R", "etkc_body"]],
+    ],
+    "nodes": [
+         ["id", "posX", "posY", "posZ"],
+         //anti-roll
+         {"nodeMaterial":"|NM_METAL"},
+         {"frictionCoef":0.5},
+         {"group":""},
+         {"selfCollision":false},
+         {"collision":true},
+         {"nodeWeight":2.0},
+         //rear anti-roll
+         ["arbrr", -0.683, 1.35, 0.38],
+         ["arbrl",  0.683, 1.35, 0.38],
+         {"group":""},
+    ],
+    "torsionbars": [
+        ["id1:", "id2:", "id3:", "id4:"],
+        //14mm 506
+        //15mm 667
+        //16mm 864
+        //17mm 1101
+        {"spring":506, "damp":10, "deform":1000, "strength":9999999},
+        ["arbrr", "rx4r", "rx4l", "arbrl", {"name": "torsionBarRear"}],
+    ],
+    "beams": [
+          ["id1:", "id2:"],
+          //--ANTI-ROLL--
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1, "beamShortBound":1},
+          {"beamSpring":2501000,"beamDamp":100},
+          {"beamDeform":15000,"beamStrength":10},
+          //end links
+          ["arbrr","rh1r"],
+          ["arbrl","rh1l"],
+          //rigids
+          ["arbrr","rx4r"],
+          ["arbrl","rx4l"],
+          ["arbrr","rx4l"],
+          ["arbrl","rx4r"],
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+    ],
+},
+}

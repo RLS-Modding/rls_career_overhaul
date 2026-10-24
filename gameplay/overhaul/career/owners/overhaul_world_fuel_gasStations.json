@@ -1,0 +1,40 @@
+{
+  "id": "overhaul_world_fuel_gasStations",
+  "order": 122,
+  "module": "overhaul/world/fuel/gasStations",
+  "scopes": [
+    {
+      "id": "services",
+      "order": 5
+    }
+  ],
+  "bigMap": {
+    "types": [
+      {
+        "id": "gasStation",
+        "icon": "fuelPump"
+      }
+    ],
+    "groups": [
+      {
+        "id": "type_gasStation",
+        "label": "bigMap.group.type.gasStation",
+        "icon": "fuelPump",
+        "placements": {
+          "freeroam": [
+            {
+              "section": "freeroamPois",
+              "order": 2
+            }
+          ],
+          "career": [
+            {
+              "section": "freeroamPois",
+              "order": 4
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

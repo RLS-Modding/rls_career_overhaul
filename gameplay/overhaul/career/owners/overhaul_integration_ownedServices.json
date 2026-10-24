@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_integration_ownedServices",
+  "order": 42,
+  "module": "overhaul/integration/ownedServices",
+  "scopes": [
+    {
+      "id": "services",
+      "order": 23
+    }
+  ]
+}

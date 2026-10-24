@@ -1,0 +1,30 @@
+{
+"vars":{
+  "$rbcweight":800
+},
+"parts":{
+  "TPUPalletLoadType":"TPUCargoCrateXL"
+},
+"model":"TPUForkableLoads",
+"colors":[
+  [
+    1,
+    1,
+    1,
+    1
+  ],
+  [
+    1,
+    1,
+    1,
+    1
+  ],
+  [
+    1,
+    1,
+    1,
+    1
+  ]
+],
+"format":2
+}

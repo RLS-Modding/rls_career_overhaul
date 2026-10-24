@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":13000,  
+    "Configuration": "Used & Abused ( Joe's Junk Career )",
+    "Description": "Beater Vivace with damaged body panels and misc junk parts.",
+    "Drivetrain": "FWD",
+    "Fuel Type": "Gasoline",
+    "Power": 262,
+    "Torque": 265,
+    "Value": 28500,
+    "Weight": 1431,
+    "Years": {
+      "max": 2024,
+      "min": 2020
+    }  
+}
+
+

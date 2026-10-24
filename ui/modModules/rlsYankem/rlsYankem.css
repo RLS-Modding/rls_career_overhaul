@@ -1,0 +1,195 @@
+#rls-yankem-container {
+  position: fixed;
+  inset: 0;
+  z-index: 10020;
+  pointer-events: none;
+  font-family: "Overpass", "Noto Sans", sans-serif;
+}
+
+.rls-yankem-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  color: #f4f7fb;
+}
+
+.rls-yankem-panel {
+  position: absolute;
+  right: 24px;
+  bottom: 28px;
+  width: 286px;
+  box-sizing: border-box;
+  padding: 15px;
+  pointer-events: auto;
+  cursor: default;
+  border: 1px solid rgba(255, 139, 36, 0.72);
+  border-radius: 9px;
+  background: linear-gradient(155deg, rgba(18, 22, 29, 0.96), rgba(34, 27, 22, 0.94));
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.48), inset 0 1px rgba(255, 255, 255, 0.06);
+  user-select: none;
+}
+
+.rls-yankem-panel.is-dragging {
+  cursor: grabbing;
+}
+
+.rls-yankem-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 11px;
+  cursor: grab;
+}
+
+.rls-yankem-panel.is-dragging .rls-yankem-header { cursor: grabbing; }
+
+.rls-yankem-eyebrow {
+  color: #ff983e;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+}
+
+.rls-yankem-title {
+  margin-top: 2px;
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: 0.01em;
+}
+
+.rls-yankem-status-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #7d858f;
+  box-shadow: 0 0 0 4px rgba(125, 133, 143, 0.15);
+}
+
+.rls-yankem-status-dot.is-ready { background: #ff7c23; }
+.rls-yankem-status-dot.is-taut { box-shadow: 0 0 0 4px rgba(255, 80, 20, 0.18), 0 0 12px #ff541c; }
+.rls-yankem-status-dot.is-reeling { background: #39f278; box-shadow: 0 0 0 4px rgba(57, 242, 120, 0.16), 0 0 12px #39f278; }
+
+.rls-yankem-instruction {
+  min-height: 20px;
+  margin-bottom: 11px;
+  padding: 8px 10px;
+  border-left: 3px solid #ff872f;
+  background: rgba(255, 255, 255, 0.055);
+  color: #e7ebef;
+  font-size: 13px;
+}
+
+.rls-yankem-endpoints {
+  display: grid;
+  gap: 5px;
+  margin-bottom: 11px;
+  color: #cbd1d8;
+  font-size: 11px;
+}
+
+.rls-yankem-endpoints div {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rls-yankem-endpoints span {
+  display: inline-grid;
+  width: 19px;
+  height: 19px;
+  margin-right: 7px;
+  place-items: center;
+  border-radius: 4px;
+  background: rgba(255, 139, 47, 0.18);
+  color: #ffa354;
+  font-weight: 800;
+}
+
+.rls-yankem-readouts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.rls-yankem-readouts div {
+  padding: 8px 6px;
+  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.22);
+  text-align: center;
+}
+
+.rls-yankem-readouts small {
+  display: block;
+  margin-bottom: 3px;
+  color: #929ba5;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.rls-yankem-readouts strong {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.rls-yankem-reel-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.rls-yankem-panel button {
+  min-height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 5px;
+  color: #f7f8fa;
+  background: rgba(255, 255, 255, 0.08);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+
+.rls-yankem-panel button:hover:not(:disabled) {
+  border-color: rgba(255, 153, 65, 0.8);
+  background: rgba(255, 126, 28, 0.2);
+}
+
+.rls-yankem-panel button.is-active {
+  border-color: #3cf17b;
+  background: rgba(45, 220, 108, 0.24);
+  box-shadow: inset 0 0 12px rgba(45, 220, 108, 0.16);
+}
+
+.rls-yankem-panel button:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.rls-yankem-panel .rls-yankem-toggle {
+  width: 100%;
+  min-height: 31px;
+  border-color: rgba(255, 99, 68, 0.38);
+  color: #ffad9d;
+  background: rgba(153, 42, 24, 0.18);
+}
+
+.rls-yankem-panel footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  color: #7f8892;
+  font-size: 9px;
+  font-weight: 650;
+}
+
+@media (max-width: 720px) {
+  .rls-yankem-panel {
+    right: 12px;
+    bottom: 14px;
+    width: min(286px, calc(100vw - 24px));
+  }
+}

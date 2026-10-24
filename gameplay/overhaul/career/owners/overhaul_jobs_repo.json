@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_jobs_repo",
+  "order": 80,
+  "module": "overhaul/jobs/repo",
+  "scopes": [
+    {
+      "id": "bootManual",
+      "order": 3
+    }
+  ]
+}

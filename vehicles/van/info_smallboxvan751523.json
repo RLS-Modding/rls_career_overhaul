@@ -1,0 +1,15 @@
+{
+  "Body Style": "Box Van",
+  "Config Type": "Loaner",
+  "Configuration": "Small Box Van",
+  "Description": "A heavy-duty commercial van with a compact cargo box and parcel storage.",
+  "Name": "H-Series Small Box Van",
+  "loanerName": "H-Series Small Box Van",
+  "capacity": [
+    {"amount": 768, "type": "parcel"}
+  ],
+  "defaultPaintName1": "White",
+  "defaultPaintName2": "White",
+  "defaultPaintName3": "White",
+  "isAuxiliary": false
+}

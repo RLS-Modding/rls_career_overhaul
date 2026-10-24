@@ -1,0 +1,6 @@
+{
+  "id": "tuningShop",
+  "order": 310,
+  "extension": "overhaul_career_business_tuningShop_tuningShop",
+  "definition": "overhaul/career/business/tuningShop/activity"
+}

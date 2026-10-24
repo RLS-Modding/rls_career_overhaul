@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "defaultVenue": "certification",
+  "venues": [
+    {
+      "id": "certification",
+      "drag": {
+        "settingsFile": "dragstrips/alderStrip.dragSettings.json",
+        "lane": 1
+      },
+      "skidpad": {
+        "spawn": {
+          "pos": [
+            441.289856,
+            -88.9227982,
+            145.590195
+          ],
+          "rot": [
+            0.0065500791431156195,
+            0.0004117815478476438,
+            -0.06274268937696958,
+            -0.9980082121405615
+          ]
+        },
+        "waypoints": [
+          "skidpadWP1",
+          "skidpadWP2",
+          "skidpadWP3",
+          "skidpadWP4",
+          "skidpadWP1"
+        ],
+        "laps": 10
+      },
+      "cameras": {
+        "start": "camPaths/drag_pi_1.camPath.json",
+        "onEnter": {
+          "dragStageTrigger": "camPaths/drag_pi_2.camPath.json",
+          "drag60ftTrigger": "camPaths/drag_pi_3.camPath.json",
+          "dragTestTrigger2": "camPaths/drag_pi_4.camPath.json",
+          "dragTestTrigger3": "camPaths/drag_pi_5.camPath.json"
+        },
+        "endTrigger": "dragEndCamTrigger"
+      }
+    }
+  ]
+}

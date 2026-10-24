@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "defaultShowroom": true,
+  "spawnPoint": "spawn_default",
+  "cameraOcclusion": {
+    "ceilingZ": 108.1,
+    "eastBoundaryX": -10,
+    "westBoundaryX": 10,
+    "ceilingGroup": "hide_from_camera",
+    "eastGroup": "hide_from_camera_pillars_east",
+    "westGroup": "hide_from_camera_pillars_west"
+  },
+  "lightGroups": ["lights_group_west", "lights_group_middle", "lights_group_east"],
+  "testLevel": "gridmap_v2",
+  "exitWaypoint": "garageExit"
+}

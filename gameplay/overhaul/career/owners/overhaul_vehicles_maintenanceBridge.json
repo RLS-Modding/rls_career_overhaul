@@ -1,0 +1,15 @@
+{
+  "id": "overhaul_vehicles_maintenanceBridge",
+  "order": 114,
+  "module": "overhaul/vehicles/maintenanceBridge",
+  "scopes": [
+    {
+      "id": "bootManual",
+      "order": 25
+    },
+    {
+      "id": "late",
+      "order": 1
+    }
+  ]
+}

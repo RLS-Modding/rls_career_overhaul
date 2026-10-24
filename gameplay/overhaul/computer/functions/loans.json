@@ -1,0 +1,5 @@
+{
+  "id": "loans",
+  "icon": "beamCurrency",
+  "routeTarget": "loans-menu"
+}

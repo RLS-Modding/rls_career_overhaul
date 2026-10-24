@@ -1,0 +1,9 @@
+{
+  "id": "vehicleShopping",
+  "order": 270,
+  "callbacks": [
+    {"id": "shopVehicleSpawnFinished", "extension": "overhaul_career_market_vehicleShopping", "fn": "onVehicleSpawnFinished", "guard": "none"},
+    {"id": "rewardVehicleSpawnFinished", "extension": "overhaul_career_market_vehicleShopping", "fn": "onRewardVehicleSpawnFinished", "guard": "none"},
+    {"id": "fleetVehicleSpawnFinished", "extension": "overhaul_career_market_vehicleShopping", "fn": "onRacingTeamFleetVehicleSpawnFinished", "guard": "none"}
+  ]
+}

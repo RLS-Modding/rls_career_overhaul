@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "organizationId": "wcuParamedicWork",
+  "pickupSites": [
+    "city.sites.json"
+  ],
+  "destinations": [
+    {
+      "sitesFile": "facilities/delivery/roleplay.sites.json",
+      "parkingSpotName": "Hospital Entrance",
+      "facilityId": "wcuParamedicWork"
+    }
+  ]
+}

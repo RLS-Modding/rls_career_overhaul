@@ -1,0 +1,27 @@
+{
+  "Config Type":"Loaner",
+  "Configuration":"With Cargo",
+  "Name":"Box Utility Trailer With Cargo",
+  "Population":5000,
+  "Source":"Custom",
+  "Value":5000,
+  "Weight":520,
+  "aggregates":{
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Type":{
+      "Trailer":true
+    },
+    "Weight":{
+      "max":520,
+      "min":520
+    }
+  },
+  "infoFilename":"/vehicles/boxutility/info_trailer_career_cargo.json",
+  "is_default_config":false,
+  "paints":{},
+  "pcFilename":"/vehicles/boxutility/trailer_career_cargo.pc",
+  "preview":"/vehicles/boxutility/trailer_career_cargo.jpg"
+}

@@ -1,0 +1,11 @@
+{
+  "tabWidth": 2,
+  "useTabs": false,
+  "semi": true,
+  "singleQuote": false,
+  "quoteProps": "preserve",
+  "printWidth": 120,
+  "trailingComma": "all",
+  "htmlWhitespaceSensitivity": "strict",
+  "vueIndentScriptAndStyle": false
+}

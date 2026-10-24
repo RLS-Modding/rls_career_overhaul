@@ -1,0 +1,15 @@
+{
+  "id": "overhaul_vehicles_vehicleServices",
+  "order": 117,
+  "module": "overhaul/vehicles/vehicleServices",
+  "scopes": [
+    {
+      "id": "owned",
+      "order": 6
+    },
+    {
+      "id": "services",
+      "order": 25
+    }
+  ]
+}

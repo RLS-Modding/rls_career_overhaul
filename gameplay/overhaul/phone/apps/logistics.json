@@ -1,0 +1,40 @@
+{
+  "id": "logistics",
+  "name": "Job Broker",
+  "icon": "cogs",
+  "iconTile": "job-broker.svg",
+  "route": "/overhaul/phone-logistics",
+  "color": "#2b6cb0",
+  "iconColor": "#ffffff",
+  "category": "Jobs",
+  "storeTagline": "Find. Reserve. Haul.",
+  "storeDescription": "Find independent hauling work, reserve loads, plan your route and borrow equipment from the central depot.",
+  "defaultPage": 0,
+  "defaultPosition": 11,
+  "notifications": [
+    {
+      "key": "logistics.cargoAbandoned",
+      "label": "Cargo Abandoned",
+      "default": true,
+      "description": "Abandoned cargo, penalty",
+      "order": 0,
+      "pending": "drop"
+    }
+  ],
+  "unlock": {
+    "type": "careerActive"
+  },
+  "notificationSources": [
+    "logistics"
+  ],
+  "uiRoutes": [
+    {
+      "name": "phone-logistics",
+      "path": "phone-logistics",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneBroker.vue",
+      "uiOrder": 87,
+      "luaOrder": 39,
+      "backTarget": "phone-main"
+    }
+  ]
+}

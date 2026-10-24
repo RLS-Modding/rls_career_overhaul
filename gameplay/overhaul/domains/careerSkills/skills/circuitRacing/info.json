@@ -1,0 +1,902 @@
+{
+  "name": "Circuit Racing",
+  "description": "Compete on paved tracks and ovals.",
+  "order": 40,
+  "isSkill": true,
+  "attributeKey": "careerSkills-circuitRacing",
+  "icon": "flag",
+  "levels": [
+    {
+      "requiredValue": 0,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 1",
+        "description": "Reach Circuit Racing level 1."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "flag",
+          "heading": "Base Activities Available",
+          "description": "All base Circuit Racing activities are available. Reward-lane bonuses begin at level 2."
+        }
+      ]
+    },
+    {
+      "requiredValue": 200,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 2",
+        "description": "Reach Circuit Racing level 2."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Road Racing Bonus +8%",
+          "description": "Adds 8% money payout to the Road Racing reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 500,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 3",
+        "description": "Reach Circuit Racing level 3."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Oval Bonus +8%",
+          "description": "Adds 8% money payout to the Oval reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 900,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 4",
+        "description": "Reach Circuit Racing level 4."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Road Racing Bonus +8%",
+          "description": "Adds 8% money payout to the Road Racing reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 1400,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 5",
+        "description": "Reach Circuit Racing level 5."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Oval Bonus +8%",
+          "description": "Adds 8% money payout to the Oval reward lane."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "cardMembership",
+          "heading": "1 License Point",
+          "description": "Invest license points in a new contract lane or upgrade an existing license. Choices are permanent."
+        }
+      ]
+    },
+    {
+      "requiredValue": 1900,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 6",
+        "description": "Reach Circuit Racing level 6."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Road Racing Bonus +8%",
+          "description": "Adds 8% money payout to the Road Racing reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 2600,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 7",
+        "description": "Reach Circuit Racing level 7."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Oval Bonus +8%",
+          "description": "Adds 8% money payout to the Oval reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 3400,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 8",
+        "description": "Reach Circuit Racing level 8."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Road Racing Bonus +8%",
+          "description": "Adds 8% money payout to the Road Racing reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 4300,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 9",
+        "description": "Reach Circuit Racing level 9."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Oval Bonus +8%",
+          "description": "Adds 8% money payout to the Oval reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 5300,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 10",
+        "description": "Reach Circuit Racing level 10."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Road Racing Bonus +8%",
+          "description": "Adds 8% money payout to the Road Racing reward lane."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "cardMembership",
+          "heading": "1 License Point",
+          "description": "Invest license points in a new contract lane or upgrade an existing license. Choices are permanent."
+        }
+      ]
+    },
+    {
+      "requiredValue": 6500,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 11",
+        "description": "Reach Circuit Racing level 11."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Oval Bonus +8%",
+          "description": "Adds 8% money payout to the Oval reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 7900,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 12",
+        "description": "Reach Circuit Racing level 12."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Road Racing Bonus +8%",
+          "description": "Adds 8% money payout to the Road Racing reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 9400,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 13",
+        "description": "Reach Circuit Racing level 13."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Oval Bonus +8%",
+          "description": "Adds 8% money payout to the Oval reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 11000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 14",
+        "description": "Reach Circuit Racing level 14."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Road Racing Bonus +8%",
+          "description": "Adds 8% money payout to the Road Racing reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 13000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 15",
+        "description": "Reach Circuit Racing level 15."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Oval Bonus +8%",
+          "description": "Adds 8% money payout to the Oval reward lane."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "cardMembership",
+          "heading": "1 License Point",
+          "description": "Invest license points in a new contract lane or upgrade an existing license. Choices are permanent."
+        }
+      ]
+    },
+    {
+      "requiredValue": 15000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 16",
+        "description": "Reach Circuit Racing level 16."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Road Racing Bonus +8%",
+          "description": "Adds 8% money payout to the Road Racing reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 17500,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 17",
+        "description": "Reach Circuit Racing level 17."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Oval Bonus +8%",
+          "description": "Adds 8% money payout to the Oval reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 20000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 18",
+        "description": "Reach Circuit Racing level 18."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Road Racing Bonus +8%",
+          "description": "Adds 8% money payout to the Road Racing reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 23000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 19",
+        "description": "Reach Circuit Racing level 19."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Oval Bonus +8%",
+          "description": "Adds 8% money payout to the Oval reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 26000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 20",
+        "description": "Reach Circuit Racing level 20."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Road Racing Bonus +8%",
+          "description": "Adds 8% money payout to the Road Racing reward lane."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "cardMembership",
+          "heading": "1 License Point",
+          "description": "Invest license points in a new contract lane or upgrade an existing license. Choices are permanent."
+        }
+      ]
+    },
+    {
+      "requiredValue": 29000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 21",
+        "description": "Reach Circuit Racing level 21."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Oval Bonus +8%",
+          "description": "Adds 8% money payout to the Oval reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 33000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 22",
+        "description": "Reach Circuit Racing level 22."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Road Racing Bonus +8%",
+          "description": "Adds 8% money payout to the Road Racing reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 37000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 23",
+        "description": "Reach Circuit Racing level 23."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Oval Bonus +8%",
+          "description": "Adds 8% money payout to the Oval reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 41000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 24",
+        "description": "Reach Circuit Racing level 24."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Road Racing Bonus +8%",
+          "description": "Adds 8% money payout to the Road Racing reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 46000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 25",
+        "description": "Reach Circuit Racing level 25."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Oval Bonus +8%",
+          "description": "Adds 8% money payout to the Oval reward lane."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "cardMembership",
+          "heading": "2 License Points",
+          "description": "Invest license points in a new contract lane or upgrade an existing license. Choices are permanent."
+        }
+      ]
+    },
+    {
+      "requiredValue": 51000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 26",
+        "description": "Reach Circuit Racing level 26."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Road Racing Bonus +8%",
+          "description": "Adds 8% money payout to the Road Racing reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 56000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 27",
+        "description": "Reach Circuit Racing level 27."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Oval Bonus +8%",
+          "description": "Adds 8% money payout to the Oval reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 62000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 28",
+        "description": "Reach Circuit Racing level 28."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Road Racing Bonus +8%",
+          "description": "Adds 8% money payout to the Road Racing reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 68000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 29",
+        "description": "Reach Circuit Racing level 29."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Oval Bonus +8%",
+          "description": "Adds 8% money payout to the Oval reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 74000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 30",
+        "description": "Reach Circuit Racing level 30."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Road Racing Bonus +8%",
+          "description": "Adds 8% money payout to the Road Racing reward lane."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "flag",
+          "heading": "Hard Licenses Available",
+          "description": "License points may now be invested in Hard contract tiers."
+        }
+      ]
+    },
+    {
+      "requiredValue": 81000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 31",
+        "description": "Reach Circuit Racing level 31."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Oval Bonus +8%",
+          "description": "Adds 8% money payout to the Oval reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 88000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 32",
+        "description": "Reach Circuit Racing level 32."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Road Racing Bonus +8%",
+          "description": "Adds 8% money payout to the Road Racing reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 96000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 33",
+        "description": "Reach Circuit Racing level 33."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Oval Bonus +8%",
+          "description": "Adds 8% money payout to the Oval reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 104000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 34",
+        "description": "Reach Circuit Racing level 34."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Road Racing Bonus +8%",
+          "description": "Adds 8% money payout to the Road Racing reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 113000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 35",
+        "description": "Reach Circuit Racing level 35."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Oval Bonus +8%",
+          "description": "Adds 8% money payout to the Oval reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 122000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 36",
+        "description": "Reach Circuit Racing level 36."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Road Racing Bonus +8%",
+          "description": "Adds 8% money payout to the Road Racing reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 131000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 37",
+        "description": "Reach Circuit Racing level 37."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Oval Bonus +8%",
+          "description": "Adds 8% money payout to the Oval reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 141000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 38",
+        "description": "Reach Circuit Racing level 38."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Road Racing Bonus +8%",
+          "description": "Adds 8% money payout to the Road Racing reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 151000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 39",
+        "description": "Reach Circuit Racing level 39."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Oval Bonus +8%",
+          "description": "Adds 8% money payout to the Oval reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 162000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 40",
+        "description": "Reach Circuit Racing level 40."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Road Racing Bonus +8%",
+          "description": "Adds 8% money payout to the Road Racing reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 174000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 41",
+        "description": "Reach Circuit Racing level 41."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Oval Bonus +8%",
+          "description": "Adds 8% money payout to the Oval reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 186000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 42",
+        "description": "Reach Circuit Racing level 42."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Road Racing Bonus +8%",
+          "description": "Adds 8% money payout to the Road Racing reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 198000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 43",
+        "description": "Reach Circuit Racing level 43."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Oval Bonus +8%",
+          "description": "Adds 8% money payout to the Oval reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 211000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 44",
+        "description": "Reach Circuit Racing level 44."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Road Racing Bonus +8%",
+          "description": "Adds 8% money payout to the Road Racing reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 225000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 45",
+        "description": "Reach Circuit Racing level 45."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Oval Bonus +8%",
+          "description": "Adds 8% money payout to the Oval reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 239000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 46",
+        "description": "Reach Circuit Racing level 46."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Road Racing Bonus +8%",
+          "description": "Adds 8% money payout to the Road Racing reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 254000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 47",
+        "description": "Reach Circuit Racing level 47."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Oval Bonus +8%",
+          "description": "Adds 8% money payout to the Oval reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 269000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 48",
+        "description": "Reach Circuit Racing level 48."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Road Racing Bonus +8%",
+          "description": "Adds 8% money payout to the Road Racing reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 285000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 49",
+        "description": "Reach Circuit Racing level 49."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Oval Bonus +8%",
+          "description": "Adds 8% money payout to the Oval reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 301000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 50",
+        "description": "Reach Circuit Racing level 50."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "All Reward Lanes Maxed",
+          "description": "Every reward lane has reached its +200% maximum money bonus."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "star",
+          "heading": "Master Sponsors",
+          "description": "Hard-licensed reward lanes can now generate Master sponsor offers."
+        }
+      ]
+    }
+  ]
+}

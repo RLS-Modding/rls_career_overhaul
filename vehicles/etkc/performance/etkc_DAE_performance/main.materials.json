@@ -1,0 +1,27 @@
+{
+  "generic_perf_parts_001": {
+    "name": "generic_perf_parts_001",
+    "mapTo": "generic_perf_parts.001",
+    "class": "Material",
+    "Stages": [
+      {
+        "diffuseColor": [
+          0.800000012,
+          0.800000012,
+          0.800000012,
+          1
+        ]
+      },
+      {
+        "diffuseColor": null
+      },
+      {
+        "diffuseColor": null
+      },
+      {
+        "diffuseColor": null
+      }
+    ],
+    "translucentBlendOp": "None"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_career_guide_tutorialPopups",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 530,
+    "aliases": [
+      "career_modules_tutorialPopups"
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":2500,  
+    "Configuration": "Finger Pincher ( Joe's Junk Career )",
+    "Description": "Dont know what's the issue with the doors but just be careful with your fingers around those...",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 250,
+    "Torque": 253,
+    "Value": 2450,
+    "Weight": 1646,
+    "Years": {
+      "max": 1953,
+      "min": 1952
+    }  
+}
+
+

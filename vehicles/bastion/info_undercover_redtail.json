@@ -1,0 +1,106 @@
+{
+  "0-100 km/h":4.7,
+  "0-100 mph":8.2,
+  "0-200 km/h":11.6,
+  "0-200 mph":44.6,
+  "0-300 km/h":29.4,
+  "0-60 mph":4.6,
+  "100-0 km/h":33,
+  "100-200 km/h":6.8,
+  "60-0 mph":100.8,
+  "60-100 mph":3.6,
+  "Body Style":"Sedan",
+  "BoundingBox":[
+    [
+      -0.865,
+      -2.178,
+      -0.223
+    ],
+    [
+      1.265,
+      2.972,
+      1.252
+    ]
+  ],
+  "Braking G":1.191,
+  "Config Type":"Police",
+  "Configuration":"Police Redtail (Undercover) RWD (A)",
+  "Drivetrain":"RWD",
+  "Fuel Type":"Gasoline",
+  "Induction Type":"SC",
+  "Name":"Police Redtail (Undercover) RWD (A)",
+  "Off-Road Score":27,
+  "Population":100,
+  "Power":819,
+  "PowerPeakRPM":"5250 - 5900",
+  "Propulsion":"ICE",
+  "Source":"Custom",
+  "Top Speed":93.21533326,
+  "Torque":1155,
+  "TorquePeakRPM":"3700 - 4850",
+  "Transmission":"Automatic",
+  "Value":80000,
+  "Weight":2130,
+  "Weight/Power":2.600732601,
+  "aggregates":{
+    "Body Style":{
+      "Sedan":true
+    },
+    "Brand":{
+      "Bruckell":true
+    },
+    "Config Type":{
+      "Police":true
+    },
+    "Country":{
+      "United States":true
+    },
+    "Derby Class":{
+      "Full-Size Car":true
+    },
+    "Drivetrain":{
+      "RWD":true
+    },
+    "Fuel Type":{
+      "Gasoline":true
+    },
+    "Induction Type":{
+      "SC":true
+    },
+    "Off-Road Score":{
+      "max":27,
+      "min":27
+    },
+    "Propulsion":{
+      "ICE":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Transmission":{
+      "Automatic":true
+    },
+    "Type":{
+      "Car":true
+    },
+    "Value":{
+      "max":80000,
+      "min":80000
+    },
+    "Weight":{
+      "max":2130,
+      "min":2130
+    },
+    "Weight/Power":{
+      "max":2.600732601,
+      "min":2.600732601
+    },
+    "Years":{
+      "max":2022,
+      "min":2016
+    }
+  },
+  "is_default_config":false,
+  "preview":"/vehicles/bastion/undercover_redtail.jpg"
+}

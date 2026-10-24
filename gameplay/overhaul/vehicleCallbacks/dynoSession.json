@@ -1,0 +1,10 @@
+{
+  "id": "dynoSession",
+  "order": 50,
+  "callbacks": [
+    {"id": "onPullSample", "extension": "overhaul_career_parts_dyno_dynoSession", "fn": "onPullSample", "guard": "none"},
+    {"id": "onPullFinished", "extension": "overhaul_career_parts_dyno_dynoSession", "fn": "onPullFinished", "guard": "none"},
+    {"id": "dynoSteeringReady", "extension": "overhaul_career_parts_dyno_dynoSession", "fn": "onSteeringProtectionReady", "guard": "none"},
+    {"id": "dynoConfigSnapshot", "extension": "overhaul_career_parts_dyno_dynoSession", "fn": "onVehicleConfigSnapshotReceived", "guard": "none"}
+  ]
+}

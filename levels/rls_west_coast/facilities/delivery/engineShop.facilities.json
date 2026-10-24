@@ -1,0 +1,17 @@
+{
+  "deliveryProviders": [
+    {
+      "id": "wcusaEngineWorksReceiving",
+      "name": "West Coast Engine Works Receiving",
+      "description": "Manual receiving area for paid, revision-specific 128-slot engine material loads.",
+      "manualAccessPoints": [
+        {"psName": "engineWorksReceiving", "logisticTypesProvided": [], "logisticTypesReceived": ["engineShopMaterials"]}
+      ],
+      "sitesFile": "engineShop.sites.json",
+      "logisticTypesProvided": [],
+      "logisticTypesReceived": ["engineShopMaterials"],
+      "logisticGenerators": [],
+      "logisticMaxItems": 0
+    }
+  ]
+}

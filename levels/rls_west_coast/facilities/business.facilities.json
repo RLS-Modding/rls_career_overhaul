@@ -1,0 +1,555 @@
+{
+  "passiveBusinesses": [
+    {
+      "id": "wcusaDinoCafe",
+      "type": "passiveBusiness",
+      "archetypeId": "dinoShop",
+      "name": "Dino Cafe",
+      "price": 1000000,
+      "financingAllowed": false,
+      "description": "Own Dino Cafe: operate the performance shop with Specialty Retail Supplies from Spearleaf, unlock the attached four-space garage, and enjoy unlimited free dyno pulls here. Repairs remain paid.",
+      "mapId": "rls_west_coast",
+      "supplierFacilityId": "spearleafLogistics",
+      "supplierParkingSpotName": "spearleafLogistics_parkingA",
+      "receivingFacilityId": "wcusaDinoCafeReceiving",
+      "receivingParkingSpotName": "dinoCafe",
+      "icon": "poi_laptop_round",
+      "playModeIconName": "poi_laptop_round",
+      "iconOffsetHeight": 0.15,
+      "iconLift": 0.2,
+      "doors": [
+        [
+          "dinoCafe_area",
+          "dinoCafe_icon"
+        ]
+      ],
+      "activityAcceptProps": [
+        {
+          "icon": "cardboardBox",
+          "keyLabel": "Supply pallet",
+          "valueLabel": "128 slots"
+        },
+        {
+          "icon": "time",
+          "keyLabel": "Production cycle",
+          "valueLabel": "15 active minutes"
+        },
+        {
+          "icon": "garage",
+          "keyLabel": "Included garage",
+          "valueLabel": "4 base spaces"
+        },
+        {
+          "icon": "checkmark",
+          "keyLabel": "Owner dyno access",
+          "valueLabel": "Unlimited free pulls"
+        }
+      ]
+    },
+    {
+      "id": "wcusaMiniMart",
+      "type": "passiveBusiness",
+      "archetypeId": "miniMart",
+      "name": "Mini Mart",
+      "preview": "wcusaMiniMart.jpg",
+      "price": 75000,
+      "financingAllowed": false,
+      "description": "Own and stock the Mini Mart. Deliver supplies from Spearleaf Marine Logistics, then collect the store's earnings here.",
+      "mapId": "rls_west_coast",
+      "supplierFacilityId": "spearleafLogistics",
+      "supplierParkingSpotName": "spearleafLogistics_parkingA",
+      "receivingFacilityId": "wcusaMiniMartReceiving",
+      "receivingParkingSpotName": "miniMart",
+      "icon": "poi_laptop_round",
+      "playModeIconName": "poi_laptop_round",
+      "iconOffsetHeight": 0.15,
+      "iconLift": 0.2,
+      "doors": [
+        ["wcusaMiniMart_area", "wcusaMiniMart_icon"]
+      ],
+      "activityAcceptProps": [
+        {"icon": "cardboardBox", "keyLabel": "Supply pallet", "valueLabel": "128 slots"},
+        {"icon": "time", "keyLabel": "Production cycle", "valueLabel": "6 active minutes"}
+      ]
+    },
+    {
+      "id": "wcusaCanalStMart",
+      "type": "passiveBusiness",
+      "archetypeId": "miniMart",
+      "name": "Canal Street Deli & Food Mart",
+      "preview": "wcusaCanalStMart.jpg",
+      "price": 75000,
+      "financingAllowed": false,
+      "description": "Own and stock the Canal Street convenience store. Deliver Mini Mart Supplies from Spearleaf Marine Logistics, then collect the store's earnings here.",
+      "mapId": "rls_west_coast",
+      "supplierFacilityId": "spearleafLogistics",
+      "supplierParkingSpotName": "spearleafLogistics_parkingA",
+      "receivingFacilityId": "wcusaCanalStMartReceiving",
+      "receivingParkingSpotName": "canalStDeli&FoodMart",
+      "icon": "poi_laptop_round",
+      "playModeIconName": "poi_laptop_round",
+      "iconOffsetHeight": 0.15,
+      "iconLift": 0.2,
+      "doors": [["canalStMart_area", "canalStMart_icon"]],
+      "activityAcceptProps": [
+        {"icon": "cardboardBox", "keyLabel": "Supply pallet", "valueLabel": "128 slots"},
+        {"icon": "time", "keyLabel": "Production cycle", "valueLabel": "6 active minutes"}
+      ]
+    },
+    {
+      "id": "wcusaLuCafe",
+      "type": "passiveBusiness",
+      "archetypeId": "cafe",
+      "name": "Lu Cafe",
+      "preview": "wcusaLuCafe.jpg",
+      "price": 90000,
+      "financingAllowed": false,
+      "description": "Own and stock Lu Cafe. Deliver Cafe Supplies from Spearleaf Marine Logistics, then collect the cafe's earnings here.",
+      "mapId": "rls_west_coast",
+      "supplierFacilityId": "spearleafLogistics",
+      "supplierParkingSpotName": "spearleafLogistics_parkingA",
+      "receivingFacilityId": "wcusaLuCafeReceiving",
+      "receivingParkingSpotName": "luCafe",
+      "icon": "poi_laptop_round",
+      "playModeIconName": "poi_laptop_round",
+      "iconOffsetHeight": 0.15,
+      "iconLift": 0.2,
+      "doors": [["luCafe_area", "luCafe_icon"]],
+      "activityAcceptProps": [
+        {"icon": "cardboardBox", "keyLabel": "Supply pallet", "valueLabel": "128 slots"},
+        {"icon": "time", "keyLabel": "Production cycle", "valueLabel": "8 active minutes"}
+      ]
+    },
+    {
+      "id": "wcusaHongCafe",
+      "type": "passiveBusiness",
+      "archetypeId": "cafe",
+      "name": "Hong Cafe",
+      "preview": "wcusaHongCafe.jpg",
+      "price": 90000,
+      "financingAllowed": false,
+      "description": "Own and stock Hong Cafe. Deliver Cafe Supplies from Spearleaf Marine Logistics, then collect the cafe's earnings here.",
+      "mapId": "rls_west_coast",
+      "supplierFacilityId": "spearleafLogistics",
+      "supplierParkingSpotName": "spearleafLogistics_parkingA",
+      "receivingFacilityId": "wcusaHongCafeReceiving",
+      "receivingParkingSpotName": "hongCafe",
+      "icon": "poi_laptop_round",
+      "playModeIconName": "poi_laptop_round",
+      "iconOffsetHeight": 0.15,
+      "iconLift": 0.2,
+      "doors": [["hongCafe_area", "hongCafe_icon"]],
+      "activityAcceptProps": [
+        {"icon": "cardboardBox", "keyLabel": "Supply pallet", "valueLabel": "128 slots"},
+        {"icon": "time", "keyLabel": "Production cycle", "valueLabel": "8 active minutes"}
+      ]
+    },
+    {
+      "id": "wcusaRainbowBoutique",
+      "type": "passiveBusiness",
+      "archetypeId": "boutique",
+      "name": "Rainbow Boutique",
+      "preview": "wcusaRainbowBoutique.jpg",
+      "price": 145000,
+      "financingAllowed": false,
+      "description": "Own and stock Rainbow Boutique. Deliver Boutique Supplies from Spearleaf Marine Logistics, then collect the shop's earnings here.",
+      "mapId": "rls_west_coast",
+      "supplierFacilityId": "spearleafLogistics",
+      "supplierParkingSpotName": "spearleafLogistics_parkingA",
+      "receivingFacilityId": "wcusaRainbowBoutiqueReceiving",
+      "receivingParkingSpotName": "rainbowBoutique",
+      "icon": "poi_laptop_round",
+      "playModeIconName": "poi_laptop_round",
+      "iconOffsetHeight": 0.15,
+      "iconLift": 0.2,
+      "doors": [["rainbowBoutique_area", "rainbowBoutique_icon"]],
+      "activityAcceptProps": [
+        {"icon": "cardboardBox", "keyLabel": "Supply pallet", "valueLabel": "128 slots"},
+        {"icon": "time", "keyLabel": "Production cycle", "valueLabel": "14 active minutes"}
+      ]
+    },
+    {
+      "id": "wcusaChineseSupermarket",
+      "type": "passiveBusiness",
+      "archetypeId": "supermarket",
+      "name": "Chinese Supermarket",
+      "preview": "wcusaChineseSupermarket.jpg",
+      "price": 275000,
+      "financingAllowed": false,
+      "description": "Own and stock the Chinese Supermarket. Deliver Supermarket Supplies from Spearleaf Marine Logistics, then collect the market's earnings here.",
+      "mapId": "rls_west_coast",
+      "supplierFacilityId": "spearleafLogistics",
+      "supplierParkingSpotName": "spearleafLogistics_parkingA",
+      "receivingFacilityId": "wcusaChineseSupermarketReceiving",
+      "receivingParkingSpotName": "chineseSupermarket",
+      "icon": "poi_laptop_round",
+      "playModeIconName": "poi_laptop_round",
+      "iconOffsetHeight": 0.15,
+      "iconLift": 0.2,
+      "doors": [["chineseSupermarket_area", "chineseSupermarket_icon"]],
+      "activityAcceptProps": [
+        {"icon": "cardboardBox", "keyLabel": "Supply pallet", "valueLabel": "128 slots"},
+        {"icon": "time", "keyLabel": "Production cycle", "valueLabel": "13 active minutes"}
+      ]
+    },
+    {
+      "id": "wcusaHongNailSalon",
+      "type": "passiveBusiness",
+      "archetypeId": "nailSalon",
+      "name": "Hong Nail Salon",
+      "preview": "wcusaHongNailSalon.jpg",
+      "price": 110000,
+      "financingAllowed": false,
+      "description": "Own and stock Hong Nail Salon. Deliver Salon Supplies from Spearleaf Marine Logistics, then collect the salon's earnings here.",
+      "mapId": "rls_west_coast",
+      "supplierFacilityId": "spearleafLogistics",
+      "supplierParkingSpotName": "spearleafLogistics_parkingA",
+      "receivingFacilityId": "wcusaHongNailSalonReceiving",
+      "receivingParkingSpotName": "hongNailSalon",
+      "icon": "poi_laptop_round",
+      "playModeIconName": "poi_laptop_round",
+      "iconOffsetHeight": 0.15,
+      "iconLift": 0.2,
+      "doors": [["hongNailSalon_area", "hongNailSalon_icon"]],
+      "activityAcceptProps": [
+        {"icon": "cardboardBox", "keyLabel": "Supply pallet", "valueLabel": "128 slots"},
+        {"icon": "time", "keyLabel": "Production cycle", "valueLabel": "10 active minutes"}
+      ]
+    },
+    {
+      "id": "wcusaLuNailSalon",
+      "type": "passiveBusiness",
+      "archetypeId": "nailSalon",
+      "name": "Lu Nail Salon",
+      "preview": "wcusaLuNailSalon.jpg",
+      "price": 110000,
+      "financingAllowed": false,
+      "description": "Own and stock Lu Nail Salon. Deliver Salon Supplies from Spearleaf Marine Logistics, then collect the salon's earnings here.",
+      "mapId": "rls_west_coast",
+      "supplierFacilityId": "spearleafLogistics",
+      "supplierParkingSpotName": "spearleafLogistics_parkingA",
+      "receivingFacilityId": "wcusaLuNailSalonReceiving",
+      "receivingParkingSpotName": "luNailSalon",
+      "icon": "poi_laptop_round",
+      "playModeIconName": "poi_laptop_round",
+      "iconOffsetHeight": 0.15,
+      "iconLift": 0.2,
+      "doors": [["luNailSalon_area", "luNailSalon_icon"]],
+      "activityAcceptProps": [
+        {"icon": "cardboardBox", "keyLabel": "Supply pallet", "valueLabel": "128 slots"},
+        {"icon": "time", "keyLabel": "Production cycle", "valueLabel": "10 active minutes"}
+      ]
+    },
+    {
+      "id": "wcusaGreenNailsAndSpa",
+      "type": "passiveBusiness",
+      "archetypeId": "nailSalon",
+      "name": "Green Nails & Spa",
+      "preview": "wcusaGreenNailsAndSpa.jpg",
+      "price": 110000,
+      "financingAllowed": false,
+      "description": "Own and stock Green Nails & Spa. Deliver Salon Supplies from Spearleaf Marine Logistics, then collect the spa's earnings here.",
+      "mapId": "rls_west_coast",
+      "supplierFacilityId": "spearleafLogistics",
+      "supplierParkingSpotName": "spearleafLogistics_parkingA",
+      "receivingFacilityId": "wcusaGreenNailsAndSpaReceiving",
+      "receivingParkingSpotName": "greenNailsAndSpa",
+      "icon": "poi_laptop_round",
+      "playModeIconName": "poi_laptop_round",
+      "iconOffsetHeight": 0.15,
+      "iconLift": 0.2,
+      "doors": [["greenNailsAndSpa_area", "greenNailsAndSpa_icon"]],
+      "activityAcceptProps": [
+        {"icon": "cardboardBox", "keyLabel": "Supply pallet", "valueLabel": "128 slots"},
+        {"icon": "time", "keyLabel": "Production cycle", "valueLabel": "10 active minutes"}
+      ]
+    },
+    {
+      "id": "wcusaHongGiftShop",
+      "type": "passiveBusiness",
+      "archetypeId": "giftShop",
+      "name": "Hong Gift Shop",
+      "preview": "wcusaHongGiftShop.jpg",
+      "price": 105000,
+      "financingAllowed": false,
+      "description": "Own and stock Hong Gift Shop. Deliver Gift Shop Supplies from Spearleaf Marine Logistics, then collect the shop's earnings here.",
+      "mapId": "rls_west_coast",
+      "supplierFacilityId": "spearleafLogistics",
+      "supplierParkingSpotName": "spearleafLogistics_parkingA",
+      "receivingFacilityId": "wcusaHongGiftShopReceiving",
+      "receivingParkingSpotName": "hongGiftShop",
+      "icon": "poi_laptop_round",
+      "playModeIconName": "poi_laptop_round",
+      "iconOffsetHeight": 0.15,
+      "iconLift": 0.2,
+      "doors": [["hongGiftShop_area", "hongGiftShop_icon"]],
+      "activityAcceptProps": [
+        {"icon": "cardboardBox", "keyLabel": "Supply pallet", "valueLabel": "128 slots"},
+        {"icon": "time", "keyLabel": "Production cycle", "valueLabel": "9 active minutes"}
+      ]
+    },
+    {
+      "id": "wcusaRedFortuneGifts",
+      "type": "passiveBusiness",
+      "archetypeId": "giftShop",
+      "name": "Red Fortune Gifts",
+      "preview": "wcusaRedFortuneGifts.jpg",
+      "price": 105000,
+      "financingAllowed": false,
+      "description": "Own and stock Red Fortune Gifts. Deliver Gift Shop Supplies from Spearleaf Marine Logistics, then collect the shop's earnings here.",
+      "mapId": "rls_west_coast",
+      "supplierFacilityId": "spearleafLogistics",
+      "supplierParkingSpotName": "spearleafLogistics_parkingA",
+      "receivingFacilityId": "wcusaRedFortuneGiftsReceiving",
+      "receivingParkingSpotName": "redFortuneGifts",
+      "icon": "poi_laptop_round",
+      "playModeIconName": "poi_laptop_round",
+      "iconOffsetHeight": 0.15,
+      "iconLift": 0.2,
+      "doors": [["redFortuneGifts_area", "redFortuneGifts_icon"]],
+      "activityAcceptProps": [
+        {"icon": "cardboardBox", "keyLabel": "Supply pallet", "valueLabel": "128 slots"},
+        {"icon": "time", "keyLabel": "Production cycle", "valueLabel": "9 active minutes"}
+      ]
+    },
+    {
+      "id": "wcusaLuGiftShop",
+      "type": "passiveBusiness",
+      "archetypeId": "giftShop",
+      "name": "Lu Gift Shop",
+      "preview": "wcusaLuGiftShop.jpg",
+      "price": 105000,
+      "financingAllowed": false,
+      "description": "Own and stock Lu Gift Shop. Deliver Gift Shop Supplies from Spearleaf Marine Logistics, then collect the shop's earnings here.",
+      "mapId": "rls_west_coast",
+      "supplierFacilityId": "spearleafLogistics",
+      "supplierParkingSpotName": "spearleafLogistics_parkingA",
+      "receivingFacilityId": "wcusaLuGiftShopReceiving",
+      "receivingParkingSpotName": "luGiftShop",
+      "icon": "poi_laptop_round",
+      "playModeIconName": "poi_laptop_round",
+      "iconOffsetHeight": 0.15,
+      "iconLift": 0.2,
+      "doors": [["luGiftShop_area", "luGiftShop_icon"]],
+      "activityAcceptProps": [
+        {"icon": "cardboardBox", "keyLabel": "Supply pallet", "valueLabel": "128 slots"},
+        {"icon": "time", "keyLabel": "Production cycle", "valueLabel": "9 active minutes"}
+      ]
+    },
+    {
+      "id": "wcusaHongBaoJewelry",
+      "type": "passiveBusiness",
+      "archetypeId": "jewelryStore",
+      "name": "Hong Bao Jewelry",
+      "preview": "wcusaHongBaoJewelry.jpg",
+      "price": 450000,
+      "financingAllowed": false,
+      "description": "Own and stock Hong Bao Jewelry. Deliver Jewelry Supplies from Spearleaf Marine Logistics, then collect the store's earnings here.",
+      "mapId": "rls_west_coast",
+      "supplierFacilityId": "spearleafLogistics",
+      "supplierParkingSpotName": "spearleafLogistics_parkingA",
+      "receivingFacilityId": "wcusaHongBaoJewelryReceiving",
+      "receivingParkingSpotName": "hongBaoJewelry",
+      "icon": "poi_laptop_round",
+      "playModeIconName": "poi_laptop_round",
+      "iconOffsetHeight": 0.15,
+      "iconLift": 0.2,
+      "doors": [["hongBaoJewelry_area", "hongBaoJewelry_icon"]],
+      "activityAcceptProps": [
+        {"icon": "cardboardBox", "keyLabel": "Supply pallet", "valueLabel": "128 slots"},
+        {"icon": "time", "keyLabel": "Production cycle", "valueLabel": "15 active minutes"}
+      ]
+    },
+    {
+      "id": "wcusaJinYuJewelers",
+      "type": "passiveBusiness",
+      "archetypeId": "jewelryStore",
+      "name": "Jin Yu Jewelers",
+      "preview": "wcusaJinYuJewelers.jpg",
+      "price": 450000,
+      "financingAllowed": false,
+      "description": "Own and stock Jin Yu Jewelers. Deliver Jewelry Supplies from Spearleaf Marine Logistics, then collect the store's earnings here.",
+      "mapId": "rls_west_coast",
+      "supplierFacilityId": "spearleafLogistics",
+      "supplierParkingSpotName": "spearleafLogistics_parkingA",
+      "receivingFacilityId": "wcusaJinYuJewelersReceiving",
+      "receivingParkingSpotName": "jinYuJewelers",
+      "icon": "poi_laptop_round",
+      "playModeIconName": "poi_laptop_round",
+      "iconOffsetHeight": 0.15,
+      "iconLift": 0.2,
+      "doors": [["jinYuJewelers_area", "jinYuJewelers_icon"]],
+      "activityAcceptProps": [
+        {"icon": "cardboardBox", "keyLabel": "Supply pallet", "valueLabel": "128 slots"},
+        {"icon": "time", "keyLabel": "Production cycle", "valueLabel": "15 active minutes"}
+      ]
+    },
+    {
+      "id": "wcusaDryCleaning",
+      "type": "passiveBusiness",
+      "archetypeId": "dryCleaner",
+      "name": "Dry Cleaning",
+      "preview": "wcusaDryCleaning.jpg",
+      "price": 100000,
+      "financingAllowed": false,
+      "description": "Own and stock the dry cleaner. Deliver Dry Cleaning Supplies from Spearleaf Marine Logistics, then collect the business's earnings here.",
+      "mapId": "rls_west_coast",
+      "supplierFacilityId": "spearleafLogistics",
+      "supplierParkingSpotName": "spearleafLogistics_parkingA",
+      "receivingFacilityId": "wcusaDryCleaningReceiving",
+      "receivingParkingSpotName": "dryCleaning",
+      "icon": "poi_laptop_round",
+      "playModeIconName": "poi_laptop_round",
+      "iconOffsetHeight": 0.15,
+      "iconLift": 0.2,
+      "doors": [["dryCleaning_area", "dryCleaning_icon"]],
+      "activityAcceptProps": [
+        {"icon": "cardboardBox", "keyLabel": "Supply pallet", "valueLabel": "128 slots"},
+        {"icon": "time", "keyLabel": "Production cycle", "valueLabel": "10 active minutes"}
+      ]
+    },
+    {
+      "id": "wcusaMenteStore",
+      "type": "passiveBusiness",
+      "archetypeId": "specialtyRetail",
+      "name": "Mente Store",
+      "preview": "wcusaMenteStore.jpg",
+      "price": 180000,
+      "financingAllowed": false,
+      "description": "Own and stock Mente Store. Deliver Specialty Retail Supplies from Spearleaf Marine Logistics, then collect the store's earnings here.",
+      "mapId": "rls_west_coast",
+      "supplierFacilityId": "spearleafLogistics",
+      "supplierParkingSpotName": "spearleafLogistics_parkingA",
+      "receivingFacilityId": "wcusaMenteStoreReceiving",
+      "receivingParkingSpotName": "menteStore",
+      "icon": "poi_laptop_round",
+      "playModeIconName": "poi_laptop_round",
+      "iconOffsetHeight": 0.15,
+      "iconLift": 0.2,
+      "doors": [["menteStore_area", "menteStore_icon"]],
+      "activityAcceptProps": [
+        {"icon": "cardboardBox", "keyLabel": "Supply pallet", "valueLabel": "128 slots"},
+        {"icon": "time", "keyLabel": "Production cycle", "valueLabel": "15 active minutes"}
+      ]
+    },
+    {
+      "id": "wcusaAsianShop",
+      "type": "passiveBusiness",
+      "archetypeId": "specialtyRetail",
+      "name": "Asian Shop",
+      "preview": "wcusaAsianShop.jpg",
+      "price": 180000,
+      "financingAllowed": false,
+      "description": "Own and stock the Asian Shop. Deliver Specialty Retail Supplies from Spearleaf Marine Logistics, then collect the shop's earnings here.",
+      "mapId": "rls_west_coast",
+      "supplierFacilityId": "spearleafLogistics",
+      "supplierParkingSpotName": "spearleafLogistics_parkingA",
+      "receivingFacilityId": "wcusaAsianShopReceiving",
+      "receivingParkingSpotName": "asianShop",
+      "icon": "poi_laptop_round",
+      "playModeIconName": "poi_laptop_round",
+      "iconOffsetHeight": 0.15,
+      "iconLift": 0.2,
+      "doors": [["asianShop_area", "asianShop_icon"]],
+      "activityAcceptProps": [
+        {"icon": "cardboardBox", "keyLabel": "Supply pallet", "valueLabel": "128 slots"},
+        {"icon": "time", "keyLabel": "Production cycle", "valueLabel": "15 active minutes"}
+      ]
+    }
+  ],
+  "tuningShops": [
+    {
+      "id": "fastAutoTuningShop",
+      "type": "tuningShop",
+      "name": "Tuning Shop",
+      "price": 500000,
+      "downPayment": 25000,
+      "description": "Professional vehicle tuning services. Accept tuning jobs and improve vehicle performance.",
+      
+      "icon": "poi_laptop_round",
+      "playModeIconName": "poi_laptop_round",
+      "iconOffsetHeight": 0.15,
+      "iconLift": 0.2,
+      "races" : [
+        "drag",
+        "track",
+        "track_alt"
+      ],
+      
+      "doors": [
+        [
+          "fastAutoTuningShop_area",
+          "fastAutoTuningShop_icon"
+        ],
+        [
+          "fastAutoTuningShop_area1",
+          "fastAutoTuningShop_icon1"
+        ]
+      ],
+      
+      "sitesFile": "tuningShops.sites.json",
+      
+      "businessGarageId": "fastAutoTuningShopGarage",
+      
+      "preview": "fastAutoBusiness.jpg",
+      
+      "activityAcceptProps": [
+        {
+          "icon": "checkmark",
+          "keyLabel": "Tuning Services",
+          "valueLabel": "Available"
+        },
+        {
+          "icon": "checkmark",
+          "keyLabel": "Vehicle Storage",
+          "valueLabel": "Available"
+        }
+      ]
+    }
+  ],
+  "racingTeams": [
+    {
+      "id": "rlsRacingComputer",
+      "type": "racingTeam",
+      "name": "Racing Team",
+      "price": 500000,
+      "downPayment": 25000,
+      "description": "Manage your racing team. Store and prepare vehicles for competition.",
+      "icon": "poi_laptop_round",
+      "playModeIconName": "poi_laptop_round",
+      "iconOffsetHeight": 0.15,
+      "iconLift": 0.2,
+      "doors": [
+        ["rlsRacingComputer_area", "rlsRacingComputer_icon"],
+        ["rlsRacingComputer_area1", "rlsRacingComputer_icon1"]
+      ],
+      "doorLocks": {
+        "rlsRacingComputer_area": { "treeId": "team-operations", "nodeId": "laptop" }
+      },
+      "sitesFile": "racingTeam.sites.json",
+      "businessGarageId": "rlsRacingComputerGarage",
+      "preview": "racingBusiness.jpg",
+      "activityAcceptProps": []
+    }
+  ],
+  "businessGarages": [
+    {
+      "id": "fastAutoTuningShopGarage",
+      "name": "Fast Auto Tuning Shop Garage",
+      "description": "Business garage for storing vehicles",
+      "sitesFile": "tuningShops.sites.json",
+      "parkingSpotNames": ["fastAutoTuningShopParking1", "fastAutoTuningShopParking2", "fastAutoTuningShopParking3", "fastAutoTuningShopParking4"],
+      "zoneNames": ["fastAutoTuningShopGarage1"],
+      "capacity": 5
+    },
+    {
+      "id": "rlsRacingComputerGarage",
+      "name": "RLS Racing Computer Garage",
+      "description": "Business garage for racing team vehicles",
+      "sitesFile": "racingTeam.sites.json",
+      "parkingSpotNames": ["rlsRacing_parking", "rlsRacing_parking2", "rlsRacing_parking3", "rlsRacing_parking4"],
+      "zoneNames": ["RLS Racing Garage"],
+      "capacity": 4
+    }
+  ]
+}

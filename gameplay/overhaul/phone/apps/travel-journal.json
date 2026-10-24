@@ -1,0 +1,23 @@
+{
+  "id": "travel-journal",
+  "name": "Travel Journal",
+  "icon": "photo",
+  "route": "/overhaul/phone-travel-journal",
+  "color": "#9d6d4a",
+  "iconColor": "#fff8e9",
+  "category": "Exploration",
+  "storeTagline": "Find the view, keep the memory",
+  "storeDescription": "Discover scenic locations, enter curated Photo Mode scenes, and build a personal scrapbook for every map.",
+  "defaultPage": 1,
+  "defaultPosition": 0,
+  "uiRoutes": [
+    {
+      "name": "phone-travel-journal",
+      "path": "phone-travel-journal",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneTravelJournal.vue",
+      "uiOrder": 107,
+      "luaOrder": 66,
+      "backTarget": "phone-main"
+    }
+  ]
+}

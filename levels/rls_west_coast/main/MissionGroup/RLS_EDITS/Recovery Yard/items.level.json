@@ -1,0 +1,2 @@
+{"name":"recoveryYard_area","class":"BeamNGGameplayArea","__parent":"Recovery Yard","position":[-464.25885,2059.07715,73.3005676],"rotationMatrix":[0.191988528,0.981397152,0,-0.981397152,0.191988528,0,0,0,1],"scale":[7.65127754,6.57285023,7.37706661]}
+{"name":"recoveryYard_icon","class":"BeamNGPointOfInterest","__parent":"Recovery Yard","position":[-458.282898,2061.23047,74.1656036]}

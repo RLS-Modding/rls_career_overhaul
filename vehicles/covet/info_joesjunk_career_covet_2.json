@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":15000,  
+    "Configuration": "Easy Fix ( Joe's Junk Career )",
+    "Description": "Should be an easy fix... No.",
+    "Drivetrain": "FWD",
+    "Fuel Type": "Gasoline",
+    "Power": 95,
+    "Torque": 96,
+    "Value": 1750,
+    "Weight": 971,
+    "Years": {
+      "max": 1992,
+      "min": 1986
+    }  
+}
+
+

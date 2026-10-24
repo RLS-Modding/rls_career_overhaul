@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":15000,  
+    "Configuration": "Used & Abused - Late ( Joe's Junk Career )",
+    "Description": "Beater Lansdale SE 3.8 with damaged body panels and misc junk parts.",
+    "Drivetrain": "FWD",
+    "Fuel Type": "Gasoline",
+    "Power": 212,
+    "Torque": 215,
+    "Value": 18888,
+    "Weight": 1920,
+    "Years": {
+      "max": 2007,
+      "min": 2003
+    }  
+}
+
+

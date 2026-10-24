@@ -1,0 +1,39 @@
+{
+  "id": "market-watch",
+  "name": "Market Watch",
+  "icon": [
+    "trendingUp",
+    "chartLine",
+    "analytics",
+    "beamCurrency"
+  ],
+  "iconTile": "market-watch.png",
+  "route": "/overhaul/phone-market-watch",
+  "color": "#3b82f6",
+  "iconColor": "#ffffff",
+  "category": "Finance",
+  "defaultPage": 0,
+  "defaultPosition": 10,
+  "defaultDock": 3,
+  "systemApp": true,
+  "hideFromStore": true,
+  "notifications": [
+    {
+      "key": "jobMarket",
+      "label": "Job Market",
+      "default": true,
+      "description": "Alerts when jobs enter high demand, plus occasional opportunity ads at work markers",
+      "order": 0
+    }
+  ],
+  "uiRoutes": [
+    {
+      "name": "phone-market-watch",
+      "path": "phone-market-watch",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneMarketWatch.vue",
+      "uiOrder": 100,
+      "luaOrder": 46,
+      "backTarget": "phone-main"
+    }
+  ]
+}

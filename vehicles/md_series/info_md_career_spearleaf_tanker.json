@@ -1,0 +1,106 @@
+{
+  "Body Style":"dnu",
+  "BoundingBox":[
+    [
+      -0.8854,
+      -1.156,
+      -0.5474
+    ],
+    [
+      1.7534,
+      5.344,
+      2.0804
+    ]
+  ],
+  "Config Type":"Loaner",
+  "Configuration":"md_career_spearleaf_tanker",
+  "Drivetrain":"RWD",
+  "Fuel Type":"Diesel",
+  "Induction Type":"Turbo",
+  "Name":"MD-Series Spearleaf Tanker",
+  "Off-Road Score":27,
+  "Population":5000,
+  "Power":603,
+  "PowerPeakRPM":2550,
+  "Propulsion":"ICE",
+  "Source":"Custom",
+  "Top Speed":26.1845923921,
+  "Torque":1660,
+  "TorquePeakRPM":2150,
+  "Transmission":"Automatic",
+  "Value":190000,
+  "Weight":7130,
+  "Weight/Power":11.824212271973,
+  "aggregates":{
+    "Brand":{
+      "Gavril":true
+    },
+    "Country":{
+      "United States":true
+    },
+    "Derby Class":{
+      "Medium Truck":true
+    },
+    "Drivetrain":{
+      "RWD":true
+    },
+    "Fuel Type":{
+      "Diesel":true
+    },
+    "Induction Type":{
+      "Turbo":true
+    },
+    "Off-Road Score":{
+      "max":26,
+      "min":26
+    },
+    "Propulsion":{
+      "ICE":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Top Speed":{
+      "max":26.178355410268,
+      "min":26.178355410268
+    },
+    "Transmission":{
+      "Automatic":true
+    },
+    "Type":{
+      "Truck":true
+    },
+    "Weight":{
+      "max":7130,
+      "min":7130
+    },
+    "Weight/Power":{
+      "max":11.824212271973,
+      "min":11.824212271973
+    }
+  },
+  "defaultPaint":{
+    "baseColor":[
+      0.83,
+      0.83,
+      0.83,
+      1.2
+    ],
+    "class":"factory",
+    "clearcoat":0,
+    "clearcoatRoughness":0,
+    "id":"white",
+    "metallic":0,
+    "name":"White",
+    "roughness":0.07
+  },
+  "defaultPaintName1":"White",
+  "defaultPaintName2":"White",
+  "defaultPaintName3":"White",
+  "infoFilename":"/vehicles/md_series/info_md_career_spearleaf_tanker.json",
+  "is_default_config":false,
+  "paints":{},
+  "pcFilename":"/vehicles/md_series/md_career_spearleaf_tanker.pc",
+  "preview":"/vehicles/md_series/md_career_spearleaf_tanker.jpg"
+}

@@ -1,0 +1,18 @@
+{
+  "Config Type":"joesjunkcar",
+  "Population":10000,  
+  "Configuration":"Bastion Sport ( Joe's Junk Career )",
+  "Description":"All the Sport specific parts were stripped, leaving only some unwanted parts and a weak engine.",
+  "Drivetrain":"RWD",
+  "Fuel Type":"Gasoline",
+  "Induction Type":"NA",
+  "Power":277,
+  "Torque":280,
+  "Transmission":"Manual",
+  "Value":2250,
+  "Weight":1756,
+  "Years":{
+    "max":2022,
+    "min":2016
+  },
+}

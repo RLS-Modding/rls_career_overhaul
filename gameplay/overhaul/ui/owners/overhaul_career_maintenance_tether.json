@@ -1,0 +1,10 @@
+{
+  "id": "overhaul_career_maintenance_tether",
+  "order": 100,
+  "exports": {
+    "namespace": false,
+    "aliases": [
+      "career_modules_tether"
+    ]
+  }
+}

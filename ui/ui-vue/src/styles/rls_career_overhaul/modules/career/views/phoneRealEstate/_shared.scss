@@ -1,0 +1,115 @@
+// Rules that more than one real estate component renders. Each component imports this file, so every copy is scoped to that component.
+
+.empty-state {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.4);
+  font-size: 14px;
+  &.small { position: relative; inset: auto; font-size: 13px; padding: 40px 20px; flex: 0; }
+}
+
+.badge.listed {
+  background: rgba(249, 115, 22, 0.85);
+  color: white;
+}
+
+.badge.rented {
+  background: rgba(59, 130, 246, 0.85);
+  color: white;
+}
+
+.badge.starter {
+  background: rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.7);
+}
+
+.listings-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.card-img-ph {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #1a1a1a, #0d0d0d);
+
+  span {
+    font-size: 10px;
+    color: rgba(255,255,255,0.18);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  &.small {
+    height: 80px;
+    span { display: none; }
+  }
+}
+
+.card-img-fade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.card-badges {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  display: flex;
+  gap: 4px;
+}
+
+.badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+
+  &.owned { background: #f97316; color: white; }
+  &.free { background: #22c55e; color: white; }
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.45);
+}
+
+.act-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s ease;
+  &:hover { opacity: 0.85; }
+
+  &.route { background: rgba(249,115,22,0.15); color: #f97316; }
+  &.negotiate { background: #f97316; color: white; }
+  &.rental { background: #3b82f6; color: white; }
+  &.danger { background: rgba(239,68,68,0.85); color: white; }
+  &.decline { background: rgba(239,68,68,0.15); color: #ef4444; }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}

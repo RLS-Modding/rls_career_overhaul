@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_career_garage_switchMap",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 310,
+    "aliases": [
+      "career_modules_switchMap"
+    ]
+  }
+}

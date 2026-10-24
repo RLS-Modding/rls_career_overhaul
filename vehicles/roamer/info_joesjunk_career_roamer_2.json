@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":13500,  
+    "Configuration": "Chooo-Chooo ( Joe's Junk Career )",
+    "Description": "Have you ever seen a mix between a locomotive and a gas chamber? Well, you're about to!",
+    "Drivetrain": "4WD",
+    "Fuel Type": "Gasoline",
+    "Power": 314,
+    "Torque": 318,
+    "Value": 3000,
+    "Weight": 2577,
+    "Years": {
+      "max": 2005,
+      "min": 1999
+    }  
+}
+
+

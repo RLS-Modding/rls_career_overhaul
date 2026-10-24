@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_career_saveMigration",
+  "order": 11,
+  "module": "overhaul/career/saveMigration",
+  "scopes": [
+    {
+      "id": "late",
+      "order": 14
+    }
+  ]
+}

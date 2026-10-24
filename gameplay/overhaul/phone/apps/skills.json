@@ -1,0 +1,40 @@
+{
+  "id": "skills",
+  "name": "Skills",
+  "icon": [
+    "beamXPLo",
+    "info"
+  ],
+  "iconVariant": "skills-theme",
+  "route": "/overhaul/phone-skills",
+  "color": "#e85d04",
+  "iconColor": "#ffffff",
+  "category": "Career",
+  "defaultPage": 0,
+  "defaultPosition": 12,
+  "defaultDock": 2,
+  "systemApp": true,
+  "hideFromStore": true,
+  "notificationSources": [
+    "skills"
+  ],
+  "uiRoutes": [
+    {
+      "name": "phone-skills",
+      "path": "phone-skills",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneSkills.vue",
+      "uiOrder": 92,
+      "luaOrder": 62,
+      "backTarget": "phone-main"
+    },
+    {
+      "name": "phone-skills-details",
+      "path": "phone-skills/:skillId",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneSkillDetails.vue",
+      "uiOrder": 93,
+      "luaOrder": 63,
+      "backTarget": "phone-skills",
+      "props": true
+    }
+  ]
+}

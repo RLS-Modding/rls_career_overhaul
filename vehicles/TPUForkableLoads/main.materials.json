@@ -1,0 +1,186 @@
+{
+  "metal_boxTPU" : {
+    "name" : "metal_boxTPU",
+    "class" : "Material",  
+    "mapTo" : "metal_boxTPU",  
+    "persistentId" : "ee57f996-bb36-48c5-a9bb-f491aa74ce6e",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/vehicles/metal_box/metal_box_r.data.png",
+        "baseColorMap": "/vehicles/metal_box/metal_box_b.data.png",
+        "metallicFactor": 1,
+        "metallicMap": "/vehicles/metal_box/metal_box_m.data.png",
+        "normalMap": "/vehicles/metal_box/metal_box_nm.normal.png",
+        "roughnessMap": "/vehicles/metal_box/metal_box_r.data.png"
+      },
+      {},
+      {},
+      {}
+    ],
+    "dynamicCubemap": true,
+    "doubleSided": false,
+    "invertBackFaceNormals": true,
+    "materialTag0": "beamng",
+    "materialTag1": "object",
+    "order_simset": 0,
+    "version": 1.5
+  },
+  "rls_tpu_con_site_addon" : {
+    "name" : "rls_tpu_con_site_addon",
+    "mapTo" : "rls_tpu_con_site_addon",
+    "class" : "Material",
+    "persistentId" : "709a18fa-54d0-4aa6-bd55-2a58a02b2052",
+    "Stages" : [
+      {
+        "colorMap" : "/assets/materials/baked_props/ut_con_site_addon/construction_site_addon_d.dds",
+        "normalMap" : "/assets/materials/baked_props/ut_con_site_addon/construction_site_addon_n.dds",
+        "specularMap" : "/assets/materials/baked_props/ut_con_site_addon/construction_site_addon_s.dds",
+        "specularPower" : 1,
+        "useAnisotropic" : true,
+        "vertColor" : true
+      },
+      {},
+      {},
+      {}
+    ],
+    "materialTag0" : "beamng",
+    "materialTag1" : "building",
+    "materialTag2" : "utah",
+    "translucentBlendOp" : "None"
+  },
+  "barrel_01aTPU" : {
+    "name" : "barrel_01aTPU",
+    "class" : "Material",
+    "persistentId" : "e701fda1-9fbb-480d-9ae0-825a3322aaeb",
+    "Stages" : [
+      {
+        "colorMap" : "vehicles/common/null.dds",
+        "normalMap" : "vehicles/barrels/barrel_01a_n.dds",
+        "pixelSpecular" : true,
+        "specularMap" : "vehicles/common/null.dds",
+        "specularPower" : 32,
+        "useAnisotropic" : true
+      },
+      {
+        "colorMap" : "vehicles/barrels/barrel_01a_d.dds",
+        "normalMap" : "vehicles/barrels/barrel_01a_n.dds",
+        "pixelSpecular" : true,
+        "specularMap" : "vehicles/barrels/barrel_01a_s.dds",
+        "specularPower" : 32,
+        "useAnisotropic" : true
+      },
+      {},
+      {}
+    ],
+    "alphaRef" : 0,
+    "dynamicCubemap" : true,
+    "mapTo" : "barrel_01aTPU",
+    "materialTag0" : "beamng",
+    "materialTag1" : "object",
+    "translucent" : true,
+    "translucentBlendOp" : "None"
+  },
+  "rls_tpu_crate_cola": {
+    "name": "rls_tpu_crate_cola",
+    "mapTo": "rls_tpu_crate_cola",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorMap": "/vehicles/common/loads/crate_cardboard_b.color.png",
+        "normalMap": "/vehicles/common/loads/crate_cola_n.normal.png",
+        "pixelSpecular": true,
+        "roughnessFactor": null,
+        "roughnessMap": "/vehicles/common/loads/crate_cola_r.data.png"
+      },
+      {},
+      {},
+      {}
+    ],
+    "alphaRef": 0,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "translucent": true,
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "rls_tpu_crate_cola.skin.cola": {
+    "name": "rls_tpu_crate_cola.skin.cola",
+    "mapTo": "rls_tpu_crate_cola.skin.cola",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorMap": "/vehicles/common/loads/crate_cola_b.color.png",
+        "normalMap": "/vehicles/common/loads/crate_cola_n.normal.png",
+        "pixelSpecular": true,
+        "roughnessFactor": null,
+        "roughnessMap": "/vehicles/common/loads/crate_cola_r.data.png"
+      },
+      {},
+      {},
+      {}
+    ],
+    "alphaRef": 0,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "translucent": true,
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "rls_tpu_pipes": {
+    "name": "rls_tpu_pipes",
+    "mapTo": "rls_tpu_pipes",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorMap": "/vehicles/common/loads/pipes_b.color.png",
+        "metallicFactor": 1,
+        "metallicMap": "/vehicles/common/loads/pipes_m.data.png",
+        "normalMap": "/vehicles/common/loads/pipes_n.normal.png",
+        "pixelSpecular": true,
+        "roughnessMap": "/vehicles/common/loads/pipes_r.data.png"
+      },
+      {},
+      {},
+      {}
+    ],
+    "alphaRef": 0,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "translucent": true,
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "rls_tpu_pallet_wood": {
+    "name": "rls_tpu_pallet_wood",
+    "mapTo": "rls_tpu_pallet_wood",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/assets/materials/tileable/wood/ut_bld_wood_new/t_ut_bld_wood_new_ao.data.png",
+        "baseColorMap": "/assets/materials/tileable/wood/ut_bld_wood_new/t_ut_bld_wood_new_b.color.png",
+        "normalMap": "/assets/materials/tileable/wood/ut_bld_wood_new/t_ut_bld_wood_new_nm.normal.png",
+        "roughnessMap": "/assets/materials/tileable/wood/ut_bld_wood_new/t_ut_bld_wood_new_r.data.png",
+        "vertColor": true
+      },
+      {
+        "vertColor": null
+      },
+      {
+        "vertColor": null
+      },
+      {
+        "vertColor": null
+      }
+    ],
+    "annotation": "OBSTACLES",
+    "groundType": "WOOD",
+    "materialTag0": "beamng",
+    "materialTag1": "building",
+    "materialTag2": "utah",
+    "translucentBlendOp": "None",
+    "version": 1.5
+  }
+}

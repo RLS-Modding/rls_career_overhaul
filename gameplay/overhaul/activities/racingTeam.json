@@ -1,0 +1,6 @@
+{
+  "id": "racingTeam",
+  "order": 320,
+  "extension": "overhaul_career_business_racingTeam_racingTeam",
+  "definition": "overhaul/career/business/racingTeam/racingTeam/activity"
+}

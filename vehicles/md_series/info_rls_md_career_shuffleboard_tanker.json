@@ -1,0 +1,110 @@
+{
+  "Body Style":"Tanker Truck",
+  "BoundingBox":[
+    [
+      -0.8854,
+      -1.156,
+      -0.5474
+    ],
+    [
+      1.7534,
+      5.344,
+      2.0804
+    ]
+  ],
+  "Config Type":"Loaner",
+  "Configuration":"vehiclesData.md_series.md_career_shuffleboard_tanker.Configuration",
+  "Description":"vehiclesData.md_series.md_60_tanker.Description",
+  "Drag Times":{
+    "time_1000":20.086000327021,
+    "time_1_4":23.940500406548,
+    "time_1_8":15.464500252157,
+    "time_330":10.012000167742,
+    "time_60":3.6155000515282,
+    "velAt_1_4":25.871797411661,
+    "velAt_1_8":20.675989806706
+  },
+  "Drivetrain":"RWD",
+  "Fuel Type":"Diesel",
+  "Induction Type":"Turbo",
+  "Off-Road Score":27,
+  "Performance Data":{
+    "fuelType":{
+      "fuelTank:diesel":true,
+      "pressureTank":true
+    },
+    "inductionType":{
+      "turbocharger":true
+    },
+    "lateralAcceleration":{
+      "maxAcceleration":5.2269044635011
+    },
+    "performanceIndex":12.332844444764,
+    "power":{
+      "propulsionPowerCombined":187873.48821042
+    },
+    "powertrainLayout":{
+      "poweredWheelsFront":0,
+      "poweredWheelsRear":4
+    },
+    "time_1000":20.086000327021,
+    "time_1_4":23.940500406548,
+    "time_1_8":15.464500252157,
+    "time_330":10.012000167742,
+    "time_60":3.6155000515282,
+    "transmissionStyle":{
+      "automaticGearbox":true
+    },
+    "vehicleClass":{
+      "description":"Economy/Utility",
+      "minPI":0,
+      "name":"D"
+    },
+    "velAt_1_4":25.871797411661,
+    "velAt_1_8":20.675989806706,
+    "weight":7148.3383789062
+  },
+  "Population":4800,
+  "Power":254,
+  "PowerPeakRPM":2400,
+  "Propulsion":"ICE",
+  "Top Speed":25.951334,
+  "Torque":815,
+  "TorquePeakRPM":"1350 - 1900",
+  "Transmission":"Automatic",
+  "Value":98000,
+  "Weight":7035,
+  "Weight/Power":27.69685039,
+  "Years":{
+    "max":1998,
+    "min":1992
+  },
+  "capacity":[
+    {
+      "amount":7400,
+      "type":"fluid"
+    }
+  ],
+  "defaultPaintName1":"White",
+  "defaultPaintName2":"Black",
+  "defaultPaintName3":"Black",
+  "isAuxiliary":false,
+  "thumbnailConfig":{
+    "cameraConfig":{
+      "posOffset":{
+        "x":-8.852972931,
+        "y":-6.05982308,
+        "z":1.202833264
+      },
+      "rotOffset":{
+        "w":0.9050298475,
+        "x":0.02478561358,
+        "y":-0.008297452966,
+        "z":0.424544227
+      }
+    },
+    "configCamEnabled":true,
+    "modelCamEnabled":false
+  },
+  "Name":"MD60 Tanker Upfit Shuffleboard (A)"
+}

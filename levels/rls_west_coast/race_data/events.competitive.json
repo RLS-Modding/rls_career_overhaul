@@ -1,0 +1,18 @@
+{
+  "id": "events.competitive",
+  "races": {},
+  "competitiveRaces": {
+    "track": {
+      "competitive": true,
+      "defaultCompetitive": true,
+      "racingTeam": {
+        "rideAlong": true
+      },
+      "staging": {
+        "sitesFile": "competitiveRaceAI.sites.json",
+        "playerSpot": "player_stage_track",
+        "stagingPrefix": "AI_stage_"
+      }
+    }
+  }
+}

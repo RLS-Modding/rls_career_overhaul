@@ -1,0 +1,9 @@
+{
+  "id": "aiRacers",
+  "order": 110,
+  "callbacks": [
+    {"id": "onPlayerVehiclePowerWeight", "extension": "overhaul_events_aiRacers", "fn": "onPlayerVehiclePowerWeight", "guard": "function"},
+    {"id": "onPlayerVehiclePowerWeightRetry", "extension": "overhaul_events_aiRacers", "fn": "onPlayerVehiclePowerWeightRetry", "guard": "function"},
+    {"id": "ingestLivePowerCacheSample", "extension": "overhaul_events_aiRacers", "fn": "ingestLivePowerCacheSample", "guard": "function"}
+  ]
+}

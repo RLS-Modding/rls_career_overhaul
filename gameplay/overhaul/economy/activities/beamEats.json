@@ -1,0 +1,23 @@
+{
+  "id": "beamEats",
+  "order": 40,
+  "branch": "gigWork",
+  "label": "BeamEats",
+  "npcJobsPerDay": 5.0,
+  "branchLabel": "Gig Work",
+  "branchOrder": 30,
+  "marketOrder": 30,
+  "availability": [
+    "overhaul_jobs_beamEats"
+  ],
+  "earningTags": [
+    "beamEats",
+    "beameats"
+  ],
+  "earningOrder": 20,
+  "source": "beamEats_module",
+  "keys": ["beamEats"],
+  "extension": "overhaul_jobs_beamEats",
+  "activity": "beamEats",
+  "whenLoaded": true
+}

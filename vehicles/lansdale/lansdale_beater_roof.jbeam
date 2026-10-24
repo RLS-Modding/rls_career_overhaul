@@ -1,0 +1,91 @@
+{
+"lansdale_beater_roof": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Damaged Solid Roof",
+        "value":100,
+    },
+    "slotType" : "lansdale_roof",
+    "slots": [
+        ["type", "default", "description"],
+        ["lansdale_roof_interior","lansdale_roof_interior", "Headliner", {"coreSlot":true}],
+        ["lansdale_roof_rack","", "Roof Rails"],
+        ["lansdale_roof_accessory","", "Roof Accessory"],
+        ["lansdale_lightbar","", "Lightbar"],
+    ],
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["lansdale_beater_roof_solid", ["lansdale_roof"]],
+    ],
+    "nodes": [
+         ["id", "posX", "posY", "posZ"],
+         {"frictionCoef":0.5},
+         {"nodeMaterial":"|NM_METAL"},
+         {"selfCollision":true},
+         {"collision":true},
+
+         //roof
+         {"nodeWeight":1.8},
+         {"group":"lansdale_roof"}
+         ["rf3",   0.0, 0.583, 1.65],
+         {"group":""},
+    ],
+    "beams": [
+          ["id1:", "id2:"],
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1, "beamShortBound":1},
+
+          //roof main shape lengthwise
+          {"beamSpring":1801000,"beamDamp":60},
+          {"beamDeform":15000,"beamStrength":"FLT_MAX"},
+          {"deformLimitExpansion":1.1},
+          ["rf2", "rf3"],
+          ["rf3", "rf4"],
+          //roof main shape widthwise
+          ["rf3l", "rf3"],
+          ["rf3", "rf3r"],
+
+          //surficial crossing
+          {"deformLimitExpansion":""},
+          {"beamDeform":9000,"beamStrength":"FLT_MAX"},
+          ["rf2l", "rf3"],
+          ["rf3", "rf2r"],
+          ["rf2", "rf3r"],
+          ["rf3l", "rf2"],
+          ["rf3l", "rf4"],
+          ["rf4l", "rf3"],
+          ["rf3", "rf4r"],
+          ["rf4", "rf3r"],
+
+          //rigids
+          {"beamDeform":4000,"beamStrength":"FLT_MAX"},
+          ["rf3l", "rf3r"],
+
+          //rigidifier
+          {"beamSpring":1201000,"beamDamp":60},
+          {"beamDeform":3000,"beamStrength":"FLT_MAX"},
+          ["rfrg1", "rf3"],
+          ["rfrg1", "rf4"],
+          ["rfrg2", "rf3"],
+          ["rfrg2", "rf2"],
+
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1, "beamShortBound":1.0},
+    ],
+    "triangles": [
+            ["id1:","id2:","id3:"],
+            {"groundModel":"metal"},
+            //roof
+            {"group":"lansdale_roof"},
+            {"dragCoef":16.5},
+            ["rf3", "rf2r", "rf2"],
+            ["rf3", "rf2", "rf2l"],
+            ["rf3l", "rf3", "rf2l"],
+            ["rf3", "rf3r", "rf2r"],
+
+            ["rf3l", "rf4", "rf3"],
+            ["rf4", "rf3r", "rf3"],
+            ["rf4", "rf4r", "rf3r"],
+            ["rf4", "rf3l", "rf4l"],
+            {"group":""},
+    ],
+},
+}

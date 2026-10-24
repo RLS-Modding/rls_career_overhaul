@@ -1,0 +1,232 @@
+{"miramar_junk_backlight_coupe": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Broken Backlight",
+        "value":0,
+    },
+    "slotType" : "miramar_backlight_coupe",
+    "flexbodies": [
+         ["mesh", "[group]:", "nonFlexMaterials"],
+         //glass
+         {"deformGroup":"backlight_break", "deformMaterialBase":"miramar_glass", "deformMaterialDamaged":"miramar_glass_dmg"},
+         ["miramar_coupe_backlight", ["miramar_body"],[]{"deformSound":"event:>Destruction>Vehicle>Glass>glassbreaksound9", "deformVolume":0.0}],
+         {"deformGroup":"backlight_break", "deformMaterialBase":"miramar_glass_int", "deformMaterialDamaged":"miramar_glass_dmg"},
+         ["miramar_coupe_backlight_int", ["miramar_body"]],
+         {"deformGroup":""},
+    ],
+    "sounds": {
+        "$+cabinFilterCoef": 0.00
+    },
+    "nodes": [
+         ["id", "posX", "posY", "posZ"],
+         {"selfCollision":true},
+         {"collision":true},
+         {"frictionCoef":0.5},
+         {"group":"miramar_body"},
+         {"nodeMaterial":"|NM_METAL"},
+
+         //--ADD WEIGHT--
+
+         //rear window
+         //roof
+         {"nodeWeight":2.1},
+         ["rf4r", -0.59,  0.91, 1.38],
+         ["rf4",   0.00,  0.9324, 1.41],
+         ["rf4l",  0.59,  0.91, 1.38],
+         //c pillar
+         {"nodeWeight":2.6},
+         ["p10r",-0.62, 1.1413, 1.21],
+         ["p10l", 0.62, 1.1413, 1.21],
+         //base of rear window/trunk
+         {"nodeWeight":2.2},
+         ["tb1r",-0.63, 1.445, 0.97],
+         ["tb1",  0.00, 1.495, 0.98],
+         ["tb1l", 0.63, 1.445, 0.97],
+         {"group":""},
+
+         //windshield 12kg, rear windshield 10kg, sedan window 3kg, coupe window 4kg
+         //1046
+    ],
+    "beams": [
+          ["id1:", "id2:"],
+          {"beamType":"|NORMAL", "beamPrecompression":1, "beamLongBound":1.0, "beamShortBound":1.0},
+
+          //rear window
+          {"disableMeshBreaking":true,"disableTriangleBreaking":true},
+          {"beamSpring":701000,"beamDamp":5},
+          {"beamDeform":2000,"beamStrength":10},
+          {"deformGroup":"backlight_break", "deformationTriggerRatio":0.001},
+          {"breakGroup":"backlight"},
+          {"deformLimitExpansion":""},
+          ["rf4","tb1"],
+          ["rf4","tb1l"],
+          ["rf4","tb1r"],
+          ["rf4r","tb1"],
+          ["rf4l","tb1"],
+          ["tb1r","rf4l"],
+          ["tb1l","rf4r"],
+          ["p10r","p10l"],
+          ["p10r","rf4l"],
+          ["p10r","tb1l"],
+          ["p10l","rf4r"],
+          ["p10l","tb1r"],
+          {"breakGroup":""},
+          {"deformGroup":"", "deformationTriggerRatio":""},
+          {"disableMeshBreaking":false,"disableTriangleBreaking":false},
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+          {"deformLimitExpansion":1.1},
+    ],
+    "triangles": [
+            ["id1:","id2:","id3:"],
+            {"group":"backlight"},
+            {"dragCoef":16.8},
+            {"breakGroup":"backlight"},
+            ["p10l", "tb1l", "tb1"],
+            ["tb1", "tb1r", "p10r"],
+            ["tb1", "p10r", "p10l"],
+            ["p10l", "p10r", "rf4"],
+            ["rf4", "p10r", "rf4r"],
+            ["p10l", "rf4", "rf4l"],
+            {"breakGroup":""},
+            {"group":""},
+    ],
+},
+"miramar_junk_doorglass_R_coupe": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Broken Right Door Glass",
+        "value":0,
+    },
+    "slotType" : "miramar_doorglass_R_coupe",
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        {"deformGroup":"glass_RR_break", "deformMaterialBase":"miramar_glass", "deformMaterialDamaged":"miramar_glass_dmg"},
+        {"deformSound":"event:>Destruction>Vehicle>Glass>glassbreaksound5", "deformVolume":0.0},
+        ["miramar_coupe_doorglass_R", ["miramar_windowframe_FR", "miramar_door_FR", "miramar_doorglass_R"]],
+        {"deformSound":false, "deformVolume":false},
+        ["miramar_coupe_doorglass_R_int", ["miramar_windowframe_FR", "miramar_door_FR", "miramar_doorglass_R"]],
+        {"deformGroup":""},
+
+        ["miramar_coupe_door_R_frame", ["miramar_windowframe_FR", "miramar_door_FR", "miramar_doorglass_R"]],
+    ],
+    "sounds": {
+        "$+cabinFilterCoef": 0.00
+    },
+    "nodes":[
+         ["id", "posX", "posY", "posZ"],
+         {"selfCollision":true},
+         {"collision":true},
+         {"frictionCoef":0.5},
+         {"nodeMaterial":"|NM_METAL"},
+         {"nodeWeight":2.0},
+         {"group":"miramar_doorglass_R"},
+         ["d12r", -0.65, 0.47, 1.36],
+         {"group":"none"},
+        ],
+    "beams":[
+          ["id1:", "id2:"],
+          {"beamType":"|NORMAL", "beamPrecompression":1, "beamLongBound":1.0, "beamShortBound":1.0},
+
+          //window frame
+          {"beamSpring":1001000,"beamDamp":5},
+          {"beamDeform":6500,"beamStrength":10},
+          {"deformLimitExpansion":1.2},
+          {"breakGroup":"windowframe_RR"},
+          {"deformGroup":"glass_RR_break","deformationTriggerRatio":0.03},
+          ["d12r", "d11r"],
+          ["d12r", "d9r"],
+
+          //cross
+          {"deformLimitExpansion":""},
+          {"beamDeform":2000,"beamStrength":10},
+          ["d12r", "d8r"],
+          ["d11r", "d9r"],
+          //rigids
+          ["d12r", "d6r"],
+          ["d12r", "d5r"],
+          ["d12r", "d7r"],
+          ["d12r", "d14r", {"beamDeform":1500,"beamStrength":10}],
+          {"deformGroup":""},
+          {"breakGroup":""},
+
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+    ],
+    "triangles":[
+           ["id1:", "id2:", "id3:"],
+           {"groundModel":"metal"},
+           {"group":"miramar_doorglass_L"},
+           ["d8r", "d11r", "d12r"],
+           ["d8r", "d12r", "d9r"],
+           {"dragCoef":10.5},
+    ],
+},
+"miramar_junk_doorglass_L_coupe": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Broken Left Door Glass",
+        "value":0,
+    },
+    "slotType" : "miramar_doorglass_L_coupe",
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        {"deformGroup":"glass_RL_break", "deformMaterialBase":"miramar_glass", "deformMaterialDamaged":"miramar_glass_dmg"},
+        {"deformSound":"event:>Destruction>Vehicle>Glass>glassbreaksound5", "deformVolume":0.0},
+        ["miramar_coupe_doorglass_L", ["miramar_windowframe_FL", "miramar_door_FL", "miramar_doorglass_L"]],
+        {"deformSound":false, "deformVolume":false},
+        ["miramar_coupe_doorglass_L_int", ["miramar_windowframe_FL", "miramar_door_FL", "miramar_doorglass_L"]],
+        {"deformGroup":""},
+
+        ["miramar_coupe_door_L_frame", ["miramar_windowframe_FL", "miramar_door_FL", "miramar_doorglass_L"]],
+    ],
+    "sounds": {
+        "$+cabinFilterCoef": 0.00
+    },
+    "nodes":[
+         ["id", "posX", "posY", "posZ"],
+         {"selfCollision":true},
+         {"collision":true},
+         {"frictionCoef":0.5},
+         {"nodeMaterial":"|NM_METAL"},
+         {"nodeWeight":2.0},
+         {"group":"miramar_doorglass_L"},
+         ["d12l", 0.65, 0.47, 1.36],
+         {"group":"none"},
+        ],
+    "beams":[
+          ["id1:", "id2:"],
+          {"beamType":"|NORMAL", "beamPrecompression":1, "beamLongBound":1.0, "beamShortBound":1.0},
+
+          //window frame
+          {"beamSpring":1001000,"beamDamp":5},
+          {"beamDeform":6500,"beamStrength":10},
+          {"deformLimitExpansion":1.2},
+          {"breakGroup":"windowframe_RL"},
+          {"deformGroup":"glass_RL_break","deformationTriggerRatio":0.03},
+          ["d12l", "d11l"],
+          ["d12l", "d9l"],
+
+          //cross
+          {"deformLimitExpansion":""},
+          {"beamDeform":2000,"beamStrength":10},
+          ["d12l", "d8l"],
+          ["d11l", "d9l"],
+          //rigids
+          ["d12l", "d6l"],
+          ["d12l", "d5l"],
+          ["d12l", "d7l"],
+          ["d12l", "d14l", {"beamDeform":1500,"beamStrength":10}],
+          {"deformGroup":""},
+          {"breakGroup":""},
+
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+    ],
+    "triangles":[
+           ["id1:", "id2:", "id3:"],
+           {"groundModel":"metal"},
+           {"group":"miramar_doorglass_L"},
+           ["d11l", "d8l", "d12l"],
+           ["d12l", "d8l", "d9l"],
+           {"dragCoef":10.5},
+    ],
+},
+}

@@ -1,0 +1,22 @@
+{
+  "id": "bus",
+  "order": 50,
+  "branch": "civilService",
+  "label": "Bus",
+  "npcJobsPerDay": 4.0,
+  "branchLabel": "Civil Service",
+  "branchOrder": 10,
+  "marketOrder": 20,
+  "availability": [
+    "overhaul_jobs_bus"
+  ],
+  "earningTags": [
+    "bus"
+  ],
+  "earningOrder": 40,
+  "source": "bus_module",
+  "keys": ["bus"],
+  "extension": "overhaul_jobs_bus",
+  "activity": "bus",
+  "whenLoaded": true
+}

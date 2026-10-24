@@ -1,0 +1,20 @@
+<link rel="stylesheet" type="text/css" href="/ui/modModules/overhaulFreeroamRaceHud/roadAuthorityIntro.css" />
+
+<div class="rai-overlay" ng-if="visible">
+  <div class="rai-card" overhaul-popup="dismiss()" bng-blur="true" ng-style="cardStyle()" ng-mousedown="startDrag($event)">
+    <div class="rai-accent"></div>
+    <div class="rai-head">
+      <div class="rai-pre">{{ payload.levelName || payload.level || 'Current map' }}</div>
+      <div class="rai-title">{{ payload.title || 'Road Authority' }}</div>
+    </div>
+    <div class="rai-copy">
+      <strong>{{ payload.subtitle || 'Cleanup reports are now available.' }}</strong>
+      <p>{{ payload.body }}</p>
+    </div>
+    <div class="rai-actions">
+      <button type="button" class="rai-btn rai-btn-primary" bng-scoped-nav-autofocus ng-click="dismiss()">
+        {{ payload.actionLabel || 'Open Reports' }}
+      </button>
+    </div>
+  </div>
+</div>

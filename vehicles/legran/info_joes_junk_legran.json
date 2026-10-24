@@ -1,0 +1,18 @@
+{
+  "Config Type":"joesjunkcar",
+  "Population":9250,  
+  "Configuration":"Legran ( Joe's Junk Career )",
+  "Description":"Used to be a top of the line Legran now its only drivable shell.",
+  "Drivetrain":"FWD",
+  "Fuel Type":"Gasoline",
+  "Induction Type":"NA",
+  "Power":123,
+  "Torque":124,
+  "Transmission":"Automatic",
+  "Value":2000,
+  "Weight":1343,
+  "Years":{
+    "max":1988,
+    "min":1984
+  },
+}

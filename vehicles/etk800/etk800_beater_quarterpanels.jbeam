@@ -1,0 +1,34 @@
+{
+"etk800_beater_quarterpanels": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Damaged Quarter Panels",
+        "value":150,
+    },
+    "slotType" : "etk800_quarterpanels",
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["etk800_beater_body_sedan_quarterpanels", ["etk800_body"]],
+    ],
+    "slots": [
+        ["type", "default", "description"],
+        ["etk800_cladding","", "Side Cladding"],
+    ],
+},
+"etk800_beater_quarterpanels_wagon": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Damaged Quarter Panels",
+        "value":200,
+    },
+    "slotType" : "etk800_quarterpanels_wagon",
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["etk800_beater_quarterpanels", ["etk800_body"]],
+    ],
+    "slots": [
+        ["type", "default", "description"],
+        ["etk800_cladding","", "Side Cladding"],
+    ],
+},
+}

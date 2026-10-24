@@ -1,0 +1,21 @@
+{
+"vivace_beater_quarterpanels": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Damaged Quarter Panels",
+        "value":150,
+    },
+    "slotType" : "vivace_quarterpanels",
+    "slots2":[
+        ["name",                  "allowTypes",              "denyTypes", "default",            "description"],
+        ["vivace_taillight_R",    ["vivace_taillight_R"],    [],          "vivace_taillight_R", "Right Tail Light"],
+        ["vivace_taillight_L",    ["vivace_taillight_L"],    [],          "vivace_taillight_L", "Left Tail Light"],
+        ["vivace_fenderflare_RR", ["vivace_fenderflare_RR"], [],          "",                   "Rear Right Fender Flare"],
+        ["vivace_fenderflare_RL", ["vivace_fenderflare_RL"], [],          "",                   "Rear Left Fender Flare"],
+    ],
+    "flexbodies": [
+         ["mesh", "[group]:", "nonFlexMaterials"],
+         ["vivace_beater_quarterpanels", ["vivace_body"]],
+    ],
+},
+}

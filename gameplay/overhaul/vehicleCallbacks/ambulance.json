@@ -1,0 +1,7 @@
+{
+  "id": "ambulance",
+  "order": 120,
+  "callbacks": [
+    {"id": "ambulanceSensorData", "extension": "overhaul_jobs_ambulance", "fn": "receiveSensorData", "guard": "none"}
+  ]
+}

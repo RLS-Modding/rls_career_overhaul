@@ -1,0 +1,10 @@
+{
+  "id": "overhaul_career_career",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "other",
+    "namespaceOrder": 120,
+    "aliases": []
+  }
+}

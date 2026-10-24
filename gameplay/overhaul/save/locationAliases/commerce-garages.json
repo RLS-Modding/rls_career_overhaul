@@ -1,0 +1,19 @@
+{
+  "id": "commerce-garages",
+  "version": 1,
+  "aliases": [
+    {
+      "kind": "garageRecoveryOwnerMap",
+      "from": "commercialGarage",
+      "to": "rls_west_coast",
+      "maxSaveVersion": 0
+    },
+    {
+      "kind": "garageRecoveryGrant",
+      "from": "commercialGarage",
+      "to": "recoveryYard",
+      "levelId": "rls_west_coast",
+      "maxSaveVersion": 0
+    }
+  ]
+}

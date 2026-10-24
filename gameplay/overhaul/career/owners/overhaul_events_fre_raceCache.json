@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_events_fre_raceCache",
+  "order": 28,
+  "module": "overhaul/events/fre/raceCache",
+  "scopes": [
+    {
+      "id": "children",
+      "order": 28,
+      "parent": "overhaul_events_fre_host"
+    }
+  ]
+}

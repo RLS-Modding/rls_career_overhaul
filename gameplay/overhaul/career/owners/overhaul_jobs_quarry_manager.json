@@ -1,0 +1,6 @@
+{
+  "id": "overhaul_jobs_quarry_manager",
+  "order": 75,
+  "module": "overhaul/jobs/quarry/manager",
+  "scopes": []
+}

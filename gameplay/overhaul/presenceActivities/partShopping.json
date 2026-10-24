@@ -1,0 +1,7 @@
+{
+  "id": "partShopping",
+  "owner": "overhaul_career_parts_partShopping",
+  "method": "isShoppingSessionActive",
+  "activity": "career_partShopping",
+  "order": 20
+}

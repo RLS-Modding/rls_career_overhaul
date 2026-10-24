@@ -1,0 +1,5 @@
+{
+  "id": "apmOnboarding",
+  "order": 100,
+  "module": "/lua/ge/extensions/overhaul/career/startingModes/apmOnboarding.lua"
+}

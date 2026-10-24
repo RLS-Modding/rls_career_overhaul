@@ -1,0 +1,8 @@
+{
+  "id": "businessFleet",
+  "order": 200,
+  "callbacks": [
+    {"id": "fleetRepairBaseline", "extension": "overhaul_career_business_fleet", "fn": "onFleetRepairBaseline", "guard": "none"},
+    {"id": "businessVehicleConfig", "extension": "overhaul_career_business_fleet", "fn": "onVehicleConfigReceived", "guard": "none"}
+  ]
+}

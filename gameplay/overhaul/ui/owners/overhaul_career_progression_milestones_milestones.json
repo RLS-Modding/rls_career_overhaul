@@ -1,0 +1,34 @@
+{
+  "id": "overhaul_career_progression_milestones_milestones",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 480,
+    "aliases": [
+      "career_modules_milestones_milestones"
+    ]
+  },
+  "routes": [
+    {
+      "name": "overhaul.milestones",
+      "order": 6,
+      "meta": {
+        "luaRoute": {
+          "scopeTree": { "root": { "preferAutoFocus": true } },
+          "backTarget": "overhaul.domainSelection",
+          "title": "ui.career.milestones.title",
+          "onEnter": "overhaul_career_progression_milestones_milestones.onMilestonesRouteEnter",
+          "onMount": "overhaul_career_progression_milestones_milestones.onMilestonesRouteMount"
+        }
+      }
+    }
+  ],
+  "additionalMenuButtons": [
+    {
+      "id": "skills",
+      "order": 1,
+      "provider": "overhaul/career/progression/milestones/milestones/menuButton"
+    }
+  ]
+}

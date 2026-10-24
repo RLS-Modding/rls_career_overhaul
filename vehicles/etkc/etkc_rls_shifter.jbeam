@@ -1,0 +1,94 @@
+{
+"etkc_shifter_race_sq_rls": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Sequential Shifter",
+        "value":500,
+    },
+    "slotType" : "etkc_shifter_race",
+    "slots2":[
+        ["name",                "allowTypes",            "denyTypes", "default",               "description"],
+        ["etkc_shiftknob_sq",   ["etkc_shiftknob_sq"],   [],          "etkc_shiftknob_sq",     "Shift knob"],
+        ["etkc_handbrake_race", ["etkc_handbrake_race"], [],          "etkc_handbrake_race_a", "Handbrake"],
+    ],
+    "controller": [
+        ["fileName"],
+        ["propAnimation/sequentialLever", {"name":"sequentialLever"}],
+    ]
+    "sequentialLever": {
+        "shiftSoundNode:":["st_1r"],
+        "shiftSoundEventSequentialGearUp": "event:>Vehicle>Interior>Gearshift>sequential_03_out",
+        "shiftSoundEventSequentialGearDown": "event:>Vehicle>Interior>Gearshift>sequential_03_in",
+        "shiftSoundVolumeSequentialGearUp": 0.5,
+        "shiftSoundVolumeSequentialGearDown": 0.5,
+    }
+    "flexbodies": [
+         ["mesh", "[group]:", "nonFlexMaterials"],
+         ["gro_stand_S", ["etkc_floor","etkc_stand"], [], {"pos":{"x": 0, "y":-0.2, "z":0.565}, "rot":{"x":0, "y":0, "z":0}, "scale":{"x":1.0, "y":1.0, "z":1.1}}],
+         ["grp_stand_plate", ["etkc_stand"], [], {"pos":{"x": 0.045, "y":-0.2, "z":0.565}, "rot":{"x":0, "y":0, "z":0}, "scale":{"x":1.0, "y":1.0, "z":1.0}}],
+
+    ],
+    "props": [
+        ["func",       "mesh",               "idRef:", "idX:", "idY:",  "baseRotation",            "rotation",               "translation",          "min", "max", "offset", "multiplier"],
+        
+        ["dummy",     "grp_shifter_sq_housing",      "st_1r","st_1l","st_2r",      {"x":90, "y":180, "z":0}, {"x":0, "y":0, "z":0},   {"x":0, "y":0.0, "z":0}, 0, 0, 0, 1, {"baseTranslation":{"x":0.1, "y":0.15, "z":-0.097}}],
+        ["dummy",     "grp_shifter_sq_cablemount",   "st_1r","st_1l","st_2r",      {"x":90, "y":180, "z":0}, {"x":0, "y":0, "z":0},   {"x":0, "y":0.0, "z":0}, 0, 0, 0, 1, {"baseTranslation":{"x":0.1, "y":0.15, "z":-0.097}}],
+        ["dummy",     "grp_cable_M",                 "st_1r","st_1l","st_2r",      {"x":90, "y":180, "z":0}, {"x":0, "y":0, "z":0},   {"x":0, "y":0.0, "z":0}, 0, 0, 0, 1, {"baseTranslation":{"x":0.1, "y":0.15, "z":-0.097}}],
+        ["sequentialLeverY",  "grp_shifter_sq_lever",     "st_1r","st_1l","st_2r",         {"x":90, "y":180, "z":0}, {"x":-10, "y":0, "z":0}, {"x":0, "y":0.0, "z":0}, -1, 1, 0, 1, {"baseTranslation":{"x":0.1, "y":0.15, "z":-0.097}}],
+        ["sequentialLeverY",  "grp_shifter_sq_rod",       "st_1r","st_1l","st_2r",         {"x":90, "y":180, "z":0}, {"x":0, "y":0, "z":0},   {"x":0, "y":0.06, "z":0}, -1, 1, 0, 1, {"baseTranslation":{"x":0.1, "y":0.15, "z":-0.027}}]
+    ],
+     "nodes": [
+         ["id",    "posX", "posY", "posZ"],
+         {"frictionCoef":0.5},
+         {"nodeMaterial":"|NM_METAL"},
+         {"collision":true},
+         {"selfCollision":true},
+         {"group":"etkc_stand"},
+         {"nodeWeight":0.6},
+         ["st_1r",-0.053, -0.28,   0.565],
+         ["st_1l", 0.067, -0.28,   0.565],
+
+         ["st_2r",-0.053, -0.16,   0.565],
+         {"group":""},
+    ],
+     "beams":[
+        ["id1:",  "id2:"],
+        {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+        
+        {"beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+        {"beamSpring":282000,"beamDamp":50},
+        {"beamDeform":10000,"beamStrength":"FLT_MAX"},
+        ["st_1r", "st_2r"],
+        ["st_1l", "st_1r"],
+        ["st_1l", "st_2r"],
+        
+        {"beamSpring":282000,"beamDamp":50},
+        {"beamDeform":2000,"beamStrength":40000,"deformLimit":1.5},
+        ["st_1l", "f2r"],
+        ["st_1r", "f2r"],
+        ["st_2r", "f2r"],
+        ["st_1l", "f2l"],
+        ["st_1r", "f2l"],
+        ["st_2r", "f2l"],
+
+        ["st_1l", "f1r"],
+        ["st_1r", "f1r"],
+        ["st_2r", "f1r"],
+        ["st_1l", "f1l"],
+        ["st_1r", "f1l"],
+        ["st_2r", "f1l"],
+
+        ["st_1l", "f5r"],
+        ["st_1r", "f5r"],
+        ["st_1l", "f5l"],
+        ["st_1r", "f5l"],
+
+        ["st_1l", "dsh2"],
+        ["st_1r", "dsh2"],
+        ["st_2r", "dsh2"],
+
+        {"beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+        {"deformLimitExpansion":""},
+    ],
+}
+}

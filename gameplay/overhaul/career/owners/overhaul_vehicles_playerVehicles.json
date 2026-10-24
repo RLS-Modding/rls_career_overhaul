@@ -1,0 +1,38 @@
+{
+  "id": "overhaul_vehicles_playerVehicles",
+  "order": 116,
+  "module": "overhaul/vehicles/playerVehicles",
+  "scopes": [
+    {
+      "id": "bootManual",
+      "order": 27
+    },
+    {
+      "id": "late",
+      "order": 7
+    }
+  ],
+  "bigMap": {
+    "types": [
+      {
+        "id": "playerVehicle",
+        "icon": "carStarred"
+      }
+    ],
+    "groups": [
+      {
+        "id": "type_playerVehicle",
+        "label": "bigMap.group.type.playerVehicle",
+        "icon": "carStarred",
+        "placements": {
+          "career": [
+            {
+              "section": "freeroamPois",
+              "order": 1
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

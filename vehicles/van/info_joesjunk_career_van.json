@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":13500,  
+    "Configuration": "Suspicious ( Joe's Junk Career )",
+    "Description": "Even the FBI dont want to know what happened in the back of this.",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 249,
+    "Torque": 252,
+    "Value": 3500,
+    "Weight": 2741,
+    "Years": {
+      "max": 2017,
+      "min": 2006
+    }  
+}
+
+

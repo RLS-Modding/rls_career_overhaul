@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_ui_radialMenuGuard",
+  "order": 107,
+  "module": "overhaul/ui/radialMenuGuard",
+  "scopes": [
+    {
+      "id": "guards",
+      "order": 3
+    }
+  ]
+}

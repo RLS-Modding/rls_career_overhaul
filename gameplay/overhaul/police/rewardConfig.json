@@ -1,0 +1,17 @@
+{
+  "skill": {
+    "attributeKey": "careerSkills-emergency",
+    "rewardLaneIndex": 1,
+    "rewardLaneCount": 2,
+    "moneyPercentPerLevel": 0.02,
+    "legacyPayTargetScale": 0.75,
+    "legacyPayPerLevel": 0.25,
+    "legacyPayNetOfParent": true,
+    "xpReward": {
+      "mode": "money",
+      "multiplier": 1.0,
+      "minimum": 1,
+      "rounding": "floor"
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":10000,  
+    "Configuration": "Life Insurance Needed ( Joe's Junk Career )",
+    "Description": "Almost top of the line ETK800 now its pretty much at rock bottom.",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 437,
+    "Torque": 443,
+    "Value": 2950,
+    "Weight": 1357,
+    "Years": {
+      "max": 2018,
+      "min": 2013
+    }  
+}
+
+

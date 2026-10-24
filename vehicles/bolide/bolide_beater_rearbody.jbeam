@@ -1,0 +1,468 @@
+{"bolide_beater_rearbody":
+{
+    "information":{
+        "authors":"BeamNG",
+        "name":"Damaged Rear Body",
+        "value":1200,
+    },
+
+    "slotType" :"bolide_rearbody",
+
+    "slots":[
+        ["type", "default", "description"],
+        ["bolide_quarterglass_RR","bolide_quarterglass_RR", "Rear Right Quarter Glass"],
+        ["bolide_quarterglass_RL","bolide_quarterglass_RL", "Rear Left Quarter Glass"],
+        ["bolide_tailgate","bolide_tailgate_a", "Tailgate"],
+        ["bolide_intake_vent","bolide_intake_vent", "Intake Scoops", {"coreSlot":true}],
+    ],
+    "flexbodies":[
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["bolide_beater_rearbody", ["bolide_rearbody"]],
+    ],
+
+    "nodes":[
+         ["id", "posX", "posY", "posZ"],
+         {"frictionCoef":0.5},
+         {"nodeMaterial":"|NM_METAL"},
+
+         //--REAR BODY--
+         {"selfCollision":true},
+         {"collision":true},
+         {"group":"bolide_rearbody"}
+         //roof
+         {"nodeWeight":0.9},
+         ["rrf1r",-0.53,0.52,1.12],
+         ["rrf1",0.0,0.52,1.14],
+         ["rrf1l",0.53,0.52,1.12],
+
+         {"nodeWeight":0.8},
+         ["rrf2r",-0.53,0.736,1.09], //weight added by glass
+         ["rrf2",0.0,0.72,1.12],
+         ["rrf2l",0.53,0.736,1.09], //weight added by glass
+
+         ["rrf3r",-0.53,1.172,1.0], //weight added by glass
+         ["rrf3l",0.53,1.172,1.0], //weight added by glass
+
+         ["rrf4r",-0.53,1.528,0.922],
+         ["rrf4l",0.53,1.528,0.922],
+
+         ["rrf5r",-0.53,1.8,0.85],
+         ["rrf5l",0.53,1.8,0.85],
+
+         //b pillar extension
+         ["p4r",-0.756,0.45,0.811],
+         ["p4l",0.756,0.45,0.811],
+         ["p5r",-0.732,0.706,0.833], //weight added by glass
+         ["p5l",0.732,0.706,0.833], //weight added by glass
+         ["p6r",-0.665,0.472,0.974],
+         ["p6l",0.665,0.472,0.974],
+         ["p7r",-0.65,0.726,0.97], //weight added by glass
+         ["p7l",0.65,0.726,0.97], //weight added by glass
+         //c pillar
+         ["p8r",-0.655,1.23,0.865], //weight added by glass
+         ["p8l",0.655,1.23,0.865], //weight added by glass
+         ["p9r",-0.62,1.516,0.845],
+         ["p9l",0.62,1.516,0.845],
+
+         //engine bay
+         {"nodeWeight":1.3},
+         ["tb1r",-0.502,0.547,0.7],
+         ["tb1l",0.502,0.547,0.7],
+
+         {"nodeWeight":1.2},
+         ["tb2r",-0.475,1.164,0.7],
+         ["tb2l",0.475,1.164,0.7],
+
+         ["tb3r",-0.417,1.488,0.7],
+         ["tb3",0.0,1.488,0.7],
+         ["tb3l",0.417,1.488,0.7],
+
+         ["tb4",0.0,1.819,0.825],
+
+         //rigidifer
+         ["tb5",0.0,1.729,0.625, {"nodeWeight":1.6, "selfCollision":false, "collision":false, "group":""}],
+         {"group":""},
+        ],
+
+    "beams":[
+          ["id1:", "id2:"],
+          //--REAR BODY--
+
+          //enticer
+          {"beamSpring":801000,"beamDamp":70},
+          {"beamDeform":15000,"beamStrength":"FLT_MAX"},
+          {"deformLimitExpansion":""},
+          ["tb1l", "rrf3l"],
+          ["tb1r", "rrf3r"],
+
+          //roof main shape
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1, "beamShortBound":1},
+          {"beamSpring":801000,"beamDamp":70},
+          {"beamDeform":15000,"beamStrength":"FLT_MAX"},
+          {"deformLimitExpansion":1.2},
+          //widthwise
+          ["rrf2l", "rrf2"],
+          ["rrf2", "rrf2r"],
+          ["rrf1r", "rrf1"],
+          ["rrf1", "rrf1l"],
+          //lengthwise
+          ["rrf2", "rrf1"],
+          ["rrf1r", "rrf2r"],
+          ["rrf2r", "rrf3r", {"deformGroup":"quarterglass_RR_break", "deformationTriggerRatio":0.01}],
+          ["rrf3r", "rrf4r"],
+          ["rrf4r", "rrf5r"],
+          ["rrf1l", "rrf2l"],
+          ["rrf2l", "rrf3l", {"deformGroup":"quarterglass_RL_break", "deformationTriggerRatio":0.01}],
+          ["rrf3l", "rrf4l"],
+          ["rrf4l", "rrf5l"],
+
+          //surficial crossing
+          {"deformLimitExpansion":""},
+          {"beamDeform":8500,"beamStrength":"FLT_MAX"},
+          ["rrf2", "rrf1r"],
+          ["rrf2r", "rrf1"],
+          ["rrf1", "rrf2l"],
+          ["rrf1l", "rrf2"],
+
+          //rigids
+          {"beamDeform":6500,"beamStrength":"FLT_MAX"},
+          //lengthwise
+          ["rrf1l", "rrf3l"],
+          ["rrf2l", "rrf4l"],
+          ["rrf3l", "rrf5l"],
+          ["rrf1r", "rrf3r"],
+          ["rrf2r", "rrf4r"],
+          ["rrf3r", "rrf5r"],
+          //widthwise
+          ["rrf1r", "rrf1l"],
+          ["rrf2r", "rrf2l"],
+
+          //b pillar extension main shape
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1, "beamShortBound":1},
+          {"beamDeform":15000,"beamStrength":"FLT_MAX"},
+          //vertical
+          ["p5r", "p7r", {"deformGroup":"quarterglass_RR_break", "deformationTriggerRatio":0.01}],
+          ["p7r", "rrf2r", {"deformGroup":"quarterglass_RR_break", "deformationTriggerRatio":0.01}],
+          ["p4r", "p6r"],
+          ["p6r", "rrf1r"],
+          ["p4l", "p6l"],
+          ["p6l", "rrf1l"],
+          ["p5l", "p7l", {"deformGroup":"quarterglass_RL_break", "deformationTriggerRatio":0.01}],
+          ["p7l", "rrf2l", {"deformGroup":"quarterglass_RL_break", "deformationTriggerRatio":0.01}],
+          //lengthwise
+          ["p6l", "p7l"],
+          ["p6r", "p7r"],
+
+          //surficial crossing
+          {"deformLimitExpansion":""},
+          {"beamDeform":8500,"beamStrength":"FLT_MAX"},
+          ["p7r", "rrf1r"],
+          ["rrf2r", "p6r"],
+          ["p6r", "p5r"],
+          ["p7r", "p4r"],
+          ["rrf1l", "p7l"],
+          ["rrf2l", "p6l"],
+          ["p6l", "p5l"],
+          ["p4l", "p7l"],
+
+          //rigids
+          {"beamDeform":6500,"beamStrength":"FLT_MAX"},
+          //corner to roof
+          ["p7r", "rrf2"],
+          ["p6r", "rrf1"],
+          ["p7l", "rrf2"],
+          ["p6l", "rrf1"],
+          ["rrf2l", "tb1l"],
+          ["rrf1l", "tb1l"],
+          ["rrf2r", "tb1r"],
+          ["rrf1r", "tb1r"],
+          //corner to engine bay
+          ["p7l", "tb1l"],
+          ["p6l", "tb1l"],
+          ["p7r", "tb1r"],
+          ["p6r", "tb1r"],
+          ["rrf2r", "tb2r"],
+          ["rrf2l", "tb2l"],
+          //corner lengthwise
+          ["p7r", "rrf3r", {"deformGroup":"quarterglass_RR_break", "deformationTriggerRatio":0.01}],
+          ["p7r", "p8r", {"deformGroup":"quarterglass_RR_break", "deformationTriggerRatio":0.01}],
+          ["p7l", "p8l", {"deformGroup":"quarterglass_RL_break", "deformationTriggerRatio":0.01}],
+          ["p7l", "rrf3l", {"deformGroup":"quarterglass_RL_break", "deformationTriggerRatio":0.01}],
+          //vertical
+          ["p5l", "rrf2l", {"deformGroup":"quarterglass_RL_break", "deformationTriggerRatio":0.01}],
+          ["p4l", "rrf1l"],
+          ["p5r", "rrf2r", {"deformGroup":"quarterglass_RR_break", "deformationTriggerRatio":0.01}],
+          ["p4r", "rrf1r"],
+
+          //c pillar main shape
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1, "beamShortBound":1},
+          {"beamDeform":15000,"beamStrength":"FLT_MAX"},
+          //vertical
+          ["p9r", "rrf4r"],
+          ["p8r", "rrf3r", {"deformGroup":"quarterglass_RR_break", "deformationTriggerRatio":0.01}],
+          ["p9l", "rrf4l"],
+          ["p8l", "rrf3l", {"deformGroup":"quarterglass_RL_break", "deformationTriggerRatio":0.01}],
+
+          //surficial crossing
+          {"deformLimitExpansion":""},
+          {"beamDeform":8500,"beamStrength":"FLT_MAX"},
+          ["p9r", "rrf3r"],
+          ["p8r", "rrf4r"],
+          ["p9l", "rrf3l"],
+          ["p8l", "rrf4l"],
+
+          //rigids
+          {"beamDeform":6500,"beamStrength":"FLT_MAX"},
+          //corner to engine bay
+          ["rrf3r", "tb2r", {"deformGroup":"quarterglass_RR_break", "deformationTriggerRatio":0.01}],
+          ["rrf4r", "tb3r"],
+          ["rrf4l", "tb3l"],
+          ["rrf3l", "tb2l", {"deformGroup":"quarterglass_RL_break", "deformationTriggerRatio":0.01}],
+          ["rrf4l", "tb2l"],
+          ["rrf3l", "tb3l"],
+          ["rrf3r", "tb3r"],
+          ["rrf4r", "tb2r"],
+
+          //engine bay main shape
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1, "beamShortBound":1},
+          {"beamSpring":1001000,"beamDamp":90},
+          {"beamDeform":15000,"beamStrength":"FLT_MAX"},
+          //widthwise
+          ["tb3r", "tb3"],
+          ["tb3", "tb3l"],
+          ["tb1l", "tb1r"],
+          ["tb3l", "p9l"],
+          ["tb2l", "p8l"],
+          ["tb1l", "p4l"],
+          ["tb1l", "p5l"],
+          ["tb1r", "p4r"],
+          ["tb1r", "p5r"],
+          ["p8r", "tb2r"],
+          ["tb3r", "p9r"],
+          ["rrf5r", "tb4"],
+          ["tb4", "rrf5l"],
+          //lengthwise
+          ["tb1l", "tb2l"],
+          ["tb2l", "tb3l"],
+          ["tb3l", "rrf5l"],
+          ["tb1r", "tb2r"],
+          ["tb2r", "tb3r"],
+          ["tb3r", "rrf5r"],
+          ["tb4", "tb3"],
+          ["rrf5l", "p9l"],
+          ["p9l", "p8l"],
+          ["p8l", "p5l", {"deformGroup":"quarterglass_RL_break", "deformationTriggerRatio":0.01}],
+          ["p5l", "p4l"],
+          ["rrf5r", "p9r"],
+          ["p9r", "p8r"],
+          ["p8r", "p5r", {"deformGroup":"quarterglass_RR_break", "deformationTriggerRatio":0.01}],
+          ["p5r", "p4r"],
+          //surficial crossing
+          {"deformLimitExpansion":""},
+          {"beamDeform":8500,"beamStrength":"FLT_MAX"},
+          ["p5l", "tb2l"],
+          ["tb2l", "p4l"],
+          ["tb1l", "p8l"],
+          ["p5r", "tb2r"],
+          ["tb2r", "p4r"],
+          ["tb1r", "p8r"],
+          ["tb3r", "p8r"],
+          ["tb2r", "p9r"],
+          ["p8l", "tb3l"],
+          ["tb2l", "p9l"],
+          ["tb3", "rrf5l"],
+          ["tb4", "tb3l"],
+          ["rrf5r", "tb3"],
+          ["tb4", "tb3r"],
+
+          //rigids
+          {"beamDeform":6500,"beamStrength":"FLT_MAX"},
+          //corner
+          ["tb3", "tb2l"],
+          ["tb3", "tb2r"],
+          ["tb4", "rrf4l"],
+          ["tb4", "rrf4r"],
+          //widthwise
+          ["tb3r", "tb3l"],
+          ["tb1l", "p4r"],
+          ["tb1r", "p4l"],
+          ["rrf5r", "rrf5l"],
+
+          //rigidifier
+          {"beamDeform":4500,"beamStrength":"FLT_MAX"},
+          ["tb5", "tb3"],
+          ["tb5", "tb4"],
+          ["tb5", "tb3l"],
+          ["tb5", "tb3r"],
+          ["tb5", "rrf5r"],
+          ["tb5", "rrf5l"],
+
+          //attach
+          {"deformLimitExpansion":""},
+          {"beamSpring":901000,"beamDamp":70},
+          {"beamDeform":13000,"beamStrength":60000},
+          {"breakGroup":"rearbody_R1"},
+          ["p4r", "f9rr"],
+          ["p4r", "f9r"],
+          ["p5r", "f9rr"],
+          ["rrf1r", "rf3r"],
+          ["rrf1r", "rf4r"],
+          ["rrf1r", "p3r"],
+          ["rrf1", "rf4r"],
+          ["rrf1", "rf3r"],
+          {"breakGroup":"rearbody_L1"},
+          ["p4l", "f9ll"],
+          ["p4l", "f9l"],
+          ["p5l", "f9ll"],
+          ["rrf1l", "rf3l"],
+          ["rrf1l", "rf4l"],
+          ["rrf1l", "p3l"],
+          ["rrf1", "rf4l"],
+          ["rrf1", "rf3l"],
+          {"breakGroup":"rearbody_R2"},
+          ["tb3r", "rx6r"],
+          ["tb3r", "rx6"],
+          ["tb3r", "rx5r"],
+          ["tb2r", "rx5r"],
+          ["tb2r", "rx3r"],
+          ["tb2r", "rx6"],
+          ["tb3", "rx6r"],
+          ["tb3", "rx5r"],
+          {"breakGroup":"rearbody_L2"},
+          ["tb3l", "rx6l"],
+          ["tb3l", "rx6"],
+          ["tb3l", "rx5l"],
+          ["tb2l", "rx5l"],
+          ["tb2l", "rx3l"],
+          ["tb2l", "rx6"],
+          ["tb3", "rx6l"],
+          ["tb3", "rx5l"],
+          {"breakGroup":""},
+
+          //limiters
+          {"beamPrecompression":1, "beamType":"|SUPPORT", "beamLongBound":2},
+          {"beamDeform":8000, "beamStrength":"FLT_MAX"},
+          //to subframe
+          ["tb3r", "rx4r"],
+          ["tb2r", "rx3r"],
+          ["tb1r", "rx7r"],
+          ["tb1l", "rx7l"],
+          ["tb2l", "rx3l"],
+          ["tb3l", "rx4l"],
+          //to tailcone support
+          {"optional":true},
+          ["rrf5l", "tcs2ll"],
+          ["rrf5r", "tcs2rr"],
+          //to body/chassis
+          ["rrf1r", "rf2r"],
+          ["rrf1", "rf2"],
+          ["rrf1l", "rf2l"],
+          ["p7r", "p3r"],
+          ["p7l", "p3l"],
+          ["p5r", "f9rr"],
+          ["f9ll", "p5l"],
+          {"optional":false},
+          {"beamType":"|NORMAL", "beamLongBound":1},
+
+          //bleed through
+          {"deformLimitExpansion":1.2},
+    ],
+
+    "triangles":[
+        ["id1:", "id2:", "id3:"],
+        {"groundModel":"metal"},
+
+        //rear roof
+        {"dragCoef":4},
+        {"group":"bolide_rearroof"},
+        ["rrf1", "rrf2r", "rrf1r"],
+        ["rrf1", "rrf2", "rrf2r"],
+        ["rrf1", "rrf2l", "rrf2"],
+        ["rrf1", "rrf1l", "rrf2l"],
+
+        //sides
+        {"dragCoef":4},
+        {"group":"bolide_rearroof_R"},
+        ["rrf4r", "rrf5r", "p9r"],
+        ["rrf4r", "p9r", "p8r"],
+        ["p8r", "rrf3r", "rrf4r"],
+        ["rrf3r", "p8r", "p7r"],
+        ["p7r", "rrf2r", "rrf3r"],
+        ["p7r", "p8r", "p5r"],
+        ["p7r", "p5r", "p4r"],
+        ["p4r", "p6r", "p7r"],
+        ["rrf2r", "p7r", "p6r"],
+        ["p6r", "rrf1r", "rrf2r"],
+        {"group":"bolide_rearroof_L"},
+        ["p6l", "p4l", "p5l"],
+        ["p5l", "p7l", "p6l"],
+        ["rrf1l", "p6l", "p7l"],
+        ["p7l", "rrf2l", "rrf1l"],
+        ["p7l", "rrf3l", "rrf2l"],
+        ["p7l", "p5l", "p8l"],
+        ["p8l", "rrf3l", "p7l"],
+        ["rrf3l", "p8l", "p9l"],
+        ["p9l", "rrf4l", "rrf3l"],
+        ["rrf4l", "p9l", "rrf5l"],
+
+        //engine bay
+        {"dragCoef":1},
+        {"group":"bolide_enginebay"},
+        ["tb4", "tb3", "tb3l"],
+        ["tb3", "tb4", "tb3r"],
+        ["rrf4l", "rrf5l", "tb3l"],
+        ["rrf4l", "tb3l", "tb2l"],
+        ["tb2l", "rrf3l", "rrf4l"],
+        ["rrf3l", "tb2l", "tb1l"],
+        ["rrf2l", "rrf3l", "tb1l"],
+        ["rrf2r", "tb1r", "tb2r"],
+        ["tb2r", "rrf3r", "rrf2r"],
+        ["rrf3r", "tb2r", "rrf4r"],
+        ["rrf4r", "tb2r", "tb3r"],
+        ["tb3r", "rrf5r", "rrf4r"],
+        ["rrf2", "tb1r", "rrf2r"],
+        ["rrf2", "rrf2l", "tb1l"],
+        ["tb1l", "tb1r", "rrf2"],
+        ["rrf5r", "tb3r", "p9r"],
+        ["p9r", "tb3r", "tb2r"],
+        ["tb2r", "p8r", "p9r"],
+        ["p8r", "tb2r", "p5r"],
+        ["p5r", "tb2r", "tb1r"],
+        ["tb1r", "p4r", "p5r"],
+        ["p4l", "tb1l", "p5l"],
+        ["p5l", "tb1l", "tb2l"],
+        ["tb2l", "p8l", "p5l"],
+        ["p8l", "tb2l", "p9l"],
+        ["p9l", "tb2l", "tb3l"],
+        ["p9l", "tb3l", "rrf5l"],
+        ["tb3l", "rrf5l", "tb4"],
+        ["tb4", "rrf5r", "tb3r"],
+
+        //rear wall
+        {"dragCoef":1},
+        {"group":"bolide_rearwall"},
+        ["p6r", "p4r", "tb1r"],
+        ["rrf1r", "p6r", "tb1r"],
+        ["p6l", "tb1l", "p4l"],
+        ["p6l", "rrf1l", "tb1l"],
+        ["rrf1", "tb1l", "rrf1l"],
+        ["rrf1", "rrf1r", "tb1r"],
+        ["tb1r", "tb1l", "rrf1"],
+        {"group":""},
+        ],
+},
+"bolide_beater_intake_vent":
+{
+    "information":{
+        "authors":"BeamNG",
+        "name":"Damaged Intake Scoops",
+        "value":45,
+    },
+    "slotType" :"bolide_intake_vent",
+
+    "flexbodies":[
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["bolide_beater_intake_vent", ["bolide_rearbody"]],
+    ],
+},
+}

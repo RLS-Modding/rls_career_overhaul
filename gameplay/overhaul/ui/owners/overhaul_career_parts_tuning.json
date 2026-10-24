@@ -1,0 +1,35 @@
+{
+  "id": "overhaul_career_parts_tuning",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 520,
+    "aliases": [
+      "career_modules_tuning"
+    ]
+  },
+  "backHandlers": [
+    {
+      "id": "overhaulTuningExitHandler",
+      "method": "requestExit",
+      "alias": "tuningExitHandler"
+    }
+  ],
+  "routes": [
+    {
+      "name": "overhaul.computer.tuning",
+      "order": 7,
+      "overlay": true,
+      "meta": {
+        "deferAutosave": true,
+        "luaRoute": {
+          "back": {
+            "mode": "handler",
+            "handler": "tuningExitHandler"
+          }
+        }
+      }
+    }
+  ]
+}

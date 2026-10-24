@@ -1,0 +1,61 @@
+{
+  "metal_galvanized1": {
+    "name": "metal_galvanized1",
+    "mapTo": "metal_galvanized1",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorMap": "/levels/rls_west_coast/art/shapes/objects/rls_hwy_signs/t_metal_galvanized_01_b.color.dds",
+        "metallicFactor": 0.36500001,
+        "metallicMap": "/assets/materials/tileable/metal/metal_galvanized/t_metal_galvanized_02_m.data.dds",
+        "pixelSpecular": true,
+        "roughnessFactor": 0.70599997,
+        "roughnessMap": "/art/shapes/objects/t_metal_galvanized_01_r.data.dds"
+      },
+      {
+        "metallicFactor": null,
+        "pixelSpecular": null,
+        "roughnessFactor": null
+      },
+      {
+        "metallicFactor": null,
+        "pixelSpecular": null,
+        "roughnessFactor": null
+      },
+      {
+        "metallicFactor": null,
+        "pixelSpecular": null,
+        "roughnessFactor": null
+      }
+    ],
+    "alphaRef": 0,
+    "annotation": "BUILDINGS",
+    "groundType": "METAL",
+    "materialTag1": "building",
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "rlstunnelsign1": {
+    "name": "rlstunnelsign1",
+    "mapTo": "rlstunnelsign1",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorMap": "//levels/rls_west_coast/art/shapes/objects/rls_hwy_signs/basesignV2_b.color.png",
+        "metallicFactor": 0.135000005,
+        "roughnessMap": "//levels/rls_west_coast/art/shapes/rls_signs/sign2d_r.data.png"
+      },
+      {
+        "metallicFactor": null
+      },
+      {
+        "metallicFactor": null
+      },
+      {
+        "metallicFactor": null
+      }
+    ],
+    "translucentBlendOp": "None",
+    "version": 1.5
+  }
+}

@@ -1,0 +1,10 @@
+{"name":"RdAlleyCompund_area","class":"BeamNGGameplayArea","__parent":"StorageShop","position":[-84.8228378,64.2058487,123.346809],"rotationMatrix":[0.707106709,0.707106709,0,-0.707106709,0.707106709,0,0,0,0.999999881],"scale":[7.65127754,13.1339436,1.17950797]}
+{"name":"RdAlleyCompund_icon","class":"BeamNGPointOfInterest","__parent":"StorageShop","position":[-80.5953369,50.9713326,123.447304]}
+{"name":"mmmm","class":"SimGroup","__parent":"StorageShop"}
+{"name":"mood","class":"SimGroup","__parent":"StorageShop"}
+{"name":"cones","class":"SimGroup","__parent":"StorageShop"}
+{"name":"ruber things","class":"SimGroup","__parent":"StorageShop"}
+{"name":"posters","class":"SimGroup","__parent":"StorageShop"}
+{"name":"protection","class":"SimGroup","__parent":"StorageShop"}
+{"name":"work stuff","class":"SimGroup","__parent":"StorageShop"}
+{"name":"furniture","class":"SimGroup","__parent":"StorageShop"}

@@ -1,0 +1,6 @@
+{
+  "id": "repo",
+  "order": 30,
+  "extension": "overhaul_jobs_repo",
+  "definition": "overhaul/jobs/repo/activity"
+}

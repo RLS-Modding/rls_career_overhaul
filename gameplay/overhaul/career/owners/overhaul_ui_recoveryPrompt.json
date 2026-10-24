@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_ui_recoveryPrompt",
+  "order": 108,
+  "module": "overhaul/ui/recoveryPrompt",
+  "scopes": [
+    {
+      "id": "services",
+      "order": 9
+    }
+  ]
+}

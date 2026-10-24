@@ -1,0 +1,6 @@
+{
+  "id": "dealership",
+  "order": 300,
+  "listName": "dealerships",
+  "uiLabel": "ui.facilities.type.dealership"
+}

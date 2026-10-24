@@ -1,0 +1,6 @@
+{
+  "id": "broker",
+  "order": 280,
+  "extension": "overhaul_career_logistics_broker",
+  "definition": "overhaul/career/logistics/broker/activity"
+}

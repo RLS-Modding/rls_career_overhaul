@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_phone_musicPlayer",
+  "order": 91,
+  "module": "overhaul/phone/musicPlayer",
+  "scopes": [
+    {
+      "id": "owned",
+      "order": 7
+    }
+  ]
+}

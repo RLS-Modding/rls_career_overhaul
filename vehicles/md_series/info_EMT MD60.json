@@ -1,0 +1,57 @@
+{
+  "0-100 km/h":19.9,
+  "0-60 mph":18.8,
+  "Body Style":"Ambulance",
+  "BoundingBox":[
+    [
+      -0.8854,
+      -1.155984,
+      -0.5474
+    ],
+    [
+      1.7534,
+      6.8936,
+      2.1146
+    ]
+  ],
+  "Commercial Class":"Class 6 Truck",
+  "Config Type":"Service",
+  "Configuration":"EMT MD60",
+  "Description":"Late model crew cab truck with ambulance upfit",
+  "Name":"EMT MD60",
+  "Drag Times":{
+    "brakingG":0.5183545464,
+    "time_0_60":19.74750072,
+    "time_1000":18.93400067,
+    "time_1_4":22.46850085,
+    "time_1_8":14.68800044,
+    "time_330":9.719500318,
+    "time_60":3.895000111,
+    "velAt_1_4":29.06097894,
+    "velAt_1_8":22.52040272
+  },
+  "Drivetrain":"RWD",
+  "Fuel Type":"Diesel",
+  "Induction Type":"Turbo",
+  "Off-Road Score":26,
+  "Population":2700,
+  "Power":312,
+  "PowerPeakRPM":2450,
+  "Propulsion":"ICE",
+  "Top Speed":30.86260796,
+  "Torque":950,
+  "TorquePeakRPM":"1350 - 2050",
+  "Transmission":"Automatic",
+  "InsuranceClass": "commercial",
+  "Type": "Truck",
+  "Value":200000,
+  "Weight":6550,
+  "Weight/Power":20.99358974,
+  "Years":{
+    "max":1998,
+    "min":1992
+  },
+  "defaultPaintName1":"Fire Red",
+  "defaultPaintName2":"Black",
+  "defaultPaintName3":"Fire Red"
+}

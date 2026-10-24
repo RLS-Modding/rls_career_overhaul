@@ -1,0 +1,77 @@
+{
+"WHE_Radiator": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Radiator",
+        "value":35
+    },
+    "slotType" : "WHE_Radiator",
+    "flexbodies": [
+         ["mesh", "[group]:", "nonFlexMaterials"],
+         ["MFL_radiator", ["MFL_Radiator"]],
+    ],
+    "mainEngine":{
+        "radiatorArea":0.2,
+        "radiatorEffectiveness":5000,
+        "coolantVolume":4.5,
+        "radiatorFanType":"mechanical",
+        "radiatorFanTemperature":100,
+        "radiatorFanMaxAirSpeed":2,
+        "thermostatTemperature":90
+        },
+		
+    "nodes":[
+        ["id", "posX", "posY", "posZ"],
+        {"selfCollision":true},
+        {"collision":true},
+        {"nodeMaterial":"|NM_METAL"},
+        {"frictionCoef":0.6},
+        {"group":"MFL_Radiator"},
+
+        {"nodeWeight":2},
+        //main chassis structure
+        {"engineGroup":"radiator"},
+        ["rad1r", -0.384, 1.07, 0.726],
+        ["rad2r", -0.384, 1.07, 0.448],
+        ["rad1l", 0.384, 1.07, 0.726],
+        ["rad2l", 0.384, 1.07, 0.448],
+        {"engineGroup":""}
+	],
+    "beams": [
+        ["id1:", "id2:"],
+        {"breakGroupType":0},
+        {"deformLimitExpansion":1.2},
+        {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+        //refnode
+		
+        {"deformLimitExpansion":1.2},
+        {"beamPrecompression":1, "beamType":"|NORMAL"},
+        {"beamSpring":501000,"beamDamp":50},
+        
+        ["rad1r","rad2r"],
+        ["rad1l","rad2l"],
+        ["rad1l","rad1r"],
+        ["rad2l","rad2r"],
+        ["rad1l","rad2r"],
+        ["rad1r","rad2l"],
+        
+        ["rad2l","rh4l"],
+        ["rad2l","rh4r"],
+        ["rad2l","b4tl"],
+        ["rad2l","b4tr"],
+        ["rad2r","rh4l"],
+        ["rad2r","rh4r"],
+        ["rad2r","b4tl"],
+        ["rad2r","b4tr"],
+        
+        ["rad1l","rh4l"],
+        ["rad1l","rh4r"],
+        ["rad1l","b4tl"],
+        ["rad1l","b4tr"],
+        ["rad1r","rh4l"],
+        ["rad1r","rh4r"],
+        ["rad1r","b4tl"],
+        ["rad1r","b4tr"]
+    ]
+}
+}

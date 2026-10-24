@@ -1,0 +1,105 @@
+{
+  "0-100 km/h":16.2,
+  "0-60 mph":15.6,
+  "100-0 km/h":48.2,
+  "60-0 mph":145.1,
+  "Body Style":"dnu",
+  "BoundingBox":[
+    [
+      -0.981,
+      -3.4636,
+      -0.7626
+    ],
+    [
+      1.849,
+      5.8959,
+      3.0784
+    ]
+  ],
+  "Braking G":0.815,
+  "Config Type":"Loaner",
+  "Configuration":"Hot Rolled Daycab",
+  "Drivetrain":"6x4",
+  "Fuel Type":"Diesel",
+  "Induction Type":"Turbo",
+  "Name":"T-Series Hot Rolled Daycab",
+  "Off-Road Score":22,
+  "Population":5000,
+  "Power":800,
+  "PowerPeakRPM":1850,
+  "Propulsion":"ICE",
+  "Source":"Custom",
+  "Top Speed":38.660412541903,
+  "Torque":3210,
+  "TorquePeakRPM":1200,
+  "Transmission":"Manual",
+  "Value":300000,
+  "Weight":8765,
+  "Weight/Power":10.95625,
+  "aggregates":{
+    "0-100 km/h":{
+      "max":16.2,
+      "min":16.2
+    },
+    "0-60 mph":{
+      "max":15.6,
+      "min":15.6
+    },
+    "Brand":{
+      "Gavril":true
+    },
+    "Country":{
+      "United States":true
+    },
+    "Derby Class":{
+      "Heavy Truck":true
+    },
+    "Drivetrain":{
+      "6x4":true
+    },
+    "Fuel Type":{
+      "Diesel":true
+    },
+    "Induction Type":{
+      "Turbo":true
+    },
+    "Off-Road Score":{
+      "max":22,
+      "min":22
+    },
+    "Propulsion":{
+      "ICE":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Top Speed":{
+      "max":38.734044730558,
+      "min":38.734044730558
+    },
+    "Transmission":{
+      "Manual":true
+    },
+    "Type":{
+      "Truck":true
+    },
+    "Weight":{
+      "max":8765,
+      "min":8765
+    },
+    "Weight/Power":{
+      "max":10.95625,
+      "min":10.95625
+    },
+    "Years":{
+      "max":1986,
+      "min":1971
+    }
+  },
+  "infoFilename":"/vehicles/us_semi/info_us_semi_career_steel_day.json",
+  "is_default_config":false,
+  "paints":{},
+  "pcFilename":"/vehicles/us_semi/us_semi_career_steel_day.pc",
+  "preview":"/vehicles/us_semi/us_semi_career_steel_day.jpg"
+}

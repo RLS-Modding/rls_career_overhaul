@@ -1,0 +1,14 @@
+{
+"barstow_beater_louvers": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Damaged Rear Louvers",
+        "value":50,
+    },
+    "slotType" : "barstow_louvers",
+    "flexbodies": [
+         ["mesh", "[group]:", "nonFlexMaterials"],
+         ["barstow_beater_backlight_grille", ["barstow_body","barstow_roof"]],
+    ],
+},
+}

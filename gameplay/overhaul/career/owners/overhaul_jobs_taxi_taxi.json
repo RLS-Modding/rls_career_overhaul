@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_jobs_taxi_taxi",
+  "order": 81,
+  "module": "overhaul/jobs/taxi/taxi",
+  "scopes": [
+    {
+      "id": "bootManual",
+      "order": 5
+    }
+  ]
+}

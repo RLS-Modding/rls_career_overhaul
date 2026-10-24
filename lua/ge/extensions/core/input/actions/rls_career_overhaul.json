@@ -1,0 +1,14 @@
+{
+  "overhaulLuaReload": {
+    "cat": "rlsCareerOverhaul",
+    "simplemenu": false,
+    "overhaulDevOnly": true,
+    "order": 21,
+    "ctx": "tlua",
+    "actionMap": "Global",
+    "onDown": "if overhaul_shell_gameMode and overhaul_shell_gameMode.isActive() then if overhaul_career_saveSystem and overhaul_career_saveSystem.requestLuaReload then overhaul_career_saveSystem.requestLuaReload() else Lua:requestReload(); ui_message('engine.lua.reloaded', 2, 'lua', 'refresh') end end",
+    "title": "Reload Lua (Career Overhaul)",
+    "desc": "In Career Overhaul, saves the career before reloading Lua. Replaces the game's Lua reload while Career Overhaul runs.",
+    "overhaulGroup": "System"
+  }
+}

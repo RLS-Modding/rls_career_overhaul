@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_world_dynamicRoutes",
+  "order": 119,
+  "module": "overhaul/world/dynamicRoutes",
+  "scopes": [
+    {
+      "id": "bootManual",
+      "order": 23
+    }
+  ]
+}

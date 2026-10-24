@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <asset>
+    <contributor>
+      <author>Blender User</author>
+      <authoring_tool>Blender 3.6.4 commit date:2023-09-25, commit time:13:24, hash:21bfc5e7fe3f</authoring_tool>
+    </contributor>
+    <created>2023-12-06T11:48:53</created>
+    <modified>2023-12-06T11:48:53</modified>
+    <unit name="meter" meter="1"/>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_effects>
+    <effect id="vertexColor_glow-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.64 0.64 0.64 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
+  <library_images/>
+  <library_materials>
+    <material id="vertexColor_glow-material" name="rls_vertexColor_glow">
+      <instance_effect url="#vertexColor_glow-effect"/>
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="Plane_005-mesh" name="Plane.005">
+      <mesh>
+        <source id="Plane_005-mesh-positions">
+          <float_array id="Plane_005-mesh-positions-array" count="36">-0.007597506 0 0.01148468 -9.82732e-6 0 0.003542602 0.008133947 0 0.01148468 0.008738756 0 0.04676544 0.001126468 0 0.05455559 -0.006992638 0 0.04676544 -0.008738696 0 -0.04676628 -0.001126468 0 -0.05455511 0.006992757 0 -0.04676628 0.007597506 0 -0.01148408 9.90182e-6 0 -0.003542304 -0.008133947 0 -0.01148408</float_array>
+          <technique_common>
+            <accessor source="#Plane_005-mesh-positions-array" count="12" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Plane_005-mesh-normals">
+          <float_array id="Plane_005-mesh-normals-array" count="3">0 1 0</float_array>
+          <technique_common>
+            <accessor source="#Plane_005-mesh-normals-array" count="1" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Plane_005-mesh-map-0">
+          <float_array id="Plane_005-mesh-map-0-array" count="48">0.3118861 0.9935025 0.3118861 0.9935025 0.3118861 0.9935025 0.3118861 0.9935025 0.3118861 0.9935025 0.3118861 0.9935025 0.3118861 0.9935025 0.3118861 0.9935025 0.3118861 0.9935025 0.3118861 0.9935025 0.3118861 0.9935025 0.3118861 0.9935025 0.3118861 0.9935025 0.3118861 0.9935025 0.3118861 0.9935025 0.3118861 0.9935025 0.3118861 0.9935025 0.3118861 0.9935025 0.3118861 0.9935025 0.3118861 0.9935025 0.3118861 0.9935025 0.3118861 0.9935025 0.3118861 0.9935025 0.3118861 0.9935025</float_array>
+          <technique_common>
+            <accessor source="#Plane_005-mesh-map-0-array" count="24" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Plane_005-mesh-colors-Col" name="Col">
+          <float_array id="Plane_005-mesh-colors-Col-array" count="96">1 0.317647 0.3490196 1 1 0.317647 0.3490196 1 1 0.317647 0.3490196 1 1 0.317647 0.3490196 1 1 0.317647 0.3490196 1 1 0.317647 0.3490196 1 1 0.317647 0.3490196 1 1 0.317647 0.3490196 1 1 0.317647 0.3490196 1 1 0.317647 0.3490196 1 1 0.317647 0.3490196 1 1 0.317647 0.3490196 1 1 0.317647 0.3490196 1 1 0.317647 0.3490196 1 1 0.317647 0.3490196 1 1 0.317647 0.3490196 1 1 0.317647 0.3490196 1 1 0.317647 0.3490196 1 1 0.317647 0.3490196 1 1 0.317647 0.3490196 1 1 0.317647 0.3490196 1 1 0.317647 0.3490196 1 1 0.317647 0.3490196 1 1 0.317647 0.3490196 1</float_array>
+          <technique_common>
+            <accessor source="#Plane_005-mesh-colors-Col-array" count="24" stride="4">
+              <param name="R" type="float"/>
+              <param name="G" type="float"/>
+              <param name="B" type="float"/>
+              <param name="A" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="Plane_005-mesh-vertices">
+          <input semantic="POSITION" source="#Plane_005-mesh-positions"/>
+        </vertices>
+        <triangles material="vertexColor_glow-material" count="8">
+          <input semantic="VERTEX" source="#Plane_005-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Plane_005-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Plane_005-mesh-map-0" offset="2" set="0"/>
+          <input semantic="COLOR" source="#Plane_005-mesh-colors-Col" offset="3" set="0"/>
+          <p>3 0 0 0 5 0 1 1 4 0 2 2 1 0 3 3 0 0 4 4 2 0 5 5 9 0 6 6 11 0 7 7 10 0 8 8 2 0 9 9 5 0 10 10 3 0 11 11 7 0 12 12 6 0 13 13 8 0 14 14 8 0 15 15 11 0 16 16 9 0 17 17 2 0 18 18 0 0 19 19 5 0 20 20 8 0 21 21 6 0 22 22 11 0 23 23</p>
+        </triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="Scene" name="Scene">
+      <node id="base00" name="base00" type="NODE">
+        <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
+        <node id="nulldetail1" name="nulldetail1" type="NODE">
+          <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
+        </node>
+        <node id="start01" name="start01" type="NODE">
+          <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
+          <node id="one_L5" name="one_L5" type="NODE">
+            <matrix sid="transform">1 0 0 -0.0744338 0 1 0 0.007386208 0 0 1 -0.002178034 0 0 0 1</matrix>
+            <instance_geometry url="#Plane_005-mesh" name="one_L5">
+              <bind_material>
+                <technique_common>
+                  <instance_material symbol="vertexColor_glow-material" target="#vertexColor_glow-material">
+                    <bind_vertex_input semantic="Plane_005-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                  </instance_material>
+                </technique_common>
+              </bind_material>
+            </instance_geometry>
+          </node>
+        </node>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#Scene"/>
+  </scene>
+</COLLADA>

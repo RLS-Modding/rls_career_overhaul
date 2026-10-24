@@ -1,0 +1,10 @@
+{
+  "id": "overhaul_integration_services_garageMode",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "other",
+    "namespaceOrder": 140,
+    "aliases": []
+  }
+}

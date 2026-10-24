@@ -1,0 +1,19 @@
+{
+"bx_beater_quarterpanels_hatch": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Damaged Quarter Panels",
+        "value":100,
+    },
+    "slotType" : "bx_quarterpanels_hatch",
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["bx_beater_quarterpanels_hatch", ["bx_body","bx_shocktop_R","bx_shocktop_F"]],
+    ],
+    "slots": [
+        ["type", "default", "description"],
+        ["bx_fenderflare_RR","", "Rear Right Fender Flare"],
+        ["bx_fenderflare_RL","", "Rear Left Fender Flare"],
+    ],
+},
+}

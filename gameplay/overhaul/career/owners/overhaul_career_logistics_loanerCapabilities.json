@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_career_logistics_loanerCapabilities",
+  "order": 7,
+  "module": "overhaul/career/logistics/loanerCapabilities",
+  "scopes": [],
+  "modulePolicy": {
+    "privateModules": [
+      "overhaul/career/logistics/loanerCapabilities"
+    ]
+  }
+}

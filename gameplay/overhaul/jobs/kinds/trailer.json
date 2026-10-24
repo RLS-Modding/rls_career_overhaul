@@ -1,0 +1,33 @@
+{
+  "id": "trailer",
+  "order": 60,
+  "activity": "employmentShift.trailer",
+  "economyKey": "delivery_trailer",
+  "policy": {
+    "trailerDelivery": true
+  },
+  "equipment": [],
+  "vehicleRoles": [],
+  "cargoKinds": [],
+  "payModel": {
+    "heldWages": true
+  },
+  "handlers": {
+    "surgeLeaf": {
+      "module": "overhaul/career/work/employment/kinds/trailer",
+      "fn": "surgeLeaf"
+    },
+    "loanerOptions": {
+      "module": "overhaul/career/work/employment/kinds/assignmentTrailer",
+      "fn": "loanerOptions"
+    },
+    "rejectSpawn": {
+      "module": "overhaul/career/work/employment/kinds/assignmentTrailer",
+      "fn": "rejectSpawn"
+    },
+    "activate": {
+      "module": "overhaul/career/work/employment/kinds/assignmentTrailer",
+      "fn": "activate"
+    }
+  }
+}

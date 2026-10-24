@@ -1,0 +1,14 @@
+{
+"rls_wl40_counterweightMaterial_R_lead": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Lead Filled",
+        "value":3000,
+    },
+    "slotType" : "wl40_counterweightMaterial_R",
+    "components":{
+        "bumperCounterweightDensity":11340, //kg/m^3
+    },
+},
+
+}

@@ -1,0 +1,10 @@
+{
+  "id": "overhaul_career_business_skillTree",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "aliases": [
+      "career_modules_business_businessSkillTree"
+    ]
+  }
+}

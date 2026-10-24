@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":15000,  
+    "Configuration": "Wacky Wagon ( Joe's Junk Career )",
+    "Description": "Oh boy...",
+    "Drivetrain": "FWD",
+    "Fuel Type": "Gasoline",
+    "Power": 112,
+    "Torque": 113,
+    "Value": 13200,
+    "Weight": 1185,
+    "Years": {
+      "max": 2014,
+      "min": 2009
+    }  
+}
+
+

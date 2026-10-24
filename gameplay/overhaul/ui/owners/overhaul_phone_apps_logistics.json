@@ -1,0 +1,25 @@
+{
+  "id": "overhaul_phone_apps_logistics",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "aliases": []
+  },
+  "acquisitions": [
+    {
+      "id": "phone.logistics",
+      "order": 50,
+      "modes": {
+        "overhaul": true,
+        "freeroam": true
+      },
+      "extensions": [
+        "overhaul_phone_apps_logistics"
+      ],
+      "release": [
+        "overhaul_phone_apps_logistics"
+      ],
+      "namespace": true
+    }
+  ]
+}

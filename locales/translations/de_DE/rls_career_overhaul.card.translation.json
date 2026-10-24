@@ -1,0 +1,4 @@
+{
+  "ui.career.overhaulCard.toNextLevel": "{{percent}}% bis zum nächsten Level",
+  "ui.career.overhaulCard.progressLabel": "{{skill}} Fortschritt bis zum nächsten Level"
+}

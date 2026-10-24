@@ -1,0 +1,11 @@
+{"name":"Fire Station Shop_area","class":"BeamNGGameplayArea","__parent":"FireStationGarage","position":[-886.229492,425.990814,154.321472],"scale":[11.5854397,5.73492432,2.93888307]}
+{"name":"Fire Station Shop_icon","class":"BeamNGPointOfInterest","__parent":"FireStationGarage","position":[-896.71051,422.587463,155.618881]}
+{"class":"TSStatic","__parent":"FireStationGarage","position":[-878.428589,427.96283,151.385605],"isRenderEnabled":false,"rotationMatrix":[0.707106709,0.707106709,0,-0.707106709,0.707106709,0,0,0,0.999999881],"shapeName":"/levels/Utah/art/shapes/buildings/ut_car_overhead.DAE","useInstanceRenderData":true}
+{"class":"TSStatic","__parent":"FireStationGarage","isRenderEnabled":false,"shapeName":"/levels/rls_west_coast/art/shapes/buildings/FireStation.dae","useInstanceRenderData":true}
+{"name":"randomstuff","class":"SimGroup","__parent":"FireStationGarage"}
+{"name":"boards","class":"SimGroup","__parent":"FireStationGarage"}
+{"name":"triplets","class":"SimGroup","__parent":"FireStationGarage"}
+{"name":"walls","class":"SimGroup","__parent":"FireStationGarage"}
+{"name":"shelfs","class":"SimGroup","__parent":"FireStationGarage"}
+{"name":"liuminations","class":"SimGroup","__parent":"FireStationGarage"}
+{"name":"anti fall","class":"SimGroup","__parent":"FireStationGarage"}

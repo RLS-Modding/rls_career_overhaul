@@ -1,0 +1,55 @@
+{
+  "Body Style":"Coupe",
+  "Config Type":"Frame",
+  "Configuration":"Roller Piccolina",
+  "Name":"Piccolina Roller Piccolina",
+  "Population":5000,
+  "Source":"Custom",
+  "Value":10000,
+  "aggregates":{
+    "Body Style":{
+      "Sedan":true
+    },
+    "Brand":{
+      "Autobello":true
+    },
+    "Country":{
+      "Italy":true
+    },
+    "Derby Class":{
+      "Sub-Compact Car":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Type":{
+      "Car":true
+    },
+    "Years":{
+      "max":1973,
+      "min":1957
+    }
+  },
+  "defaultPaint":{
+    "baseColor":[
+      0.66,
+      0.28,
+      0.22,
+      1.2
+    ],
+    "class":"factory",
+    "clearcoat":0,
+    "clearcoatRoughness":0,
+    "metallic":0,
+    "name":"Rosso Corallo",
+    "roughness":0.07
+  },
+  "defaultPaintName1":"Rosso Corallo",
+  "defaultPaintName2":"Rosso Corallo",
+  "defaultPaintName3":"Rosso Corallo",
+  "is_default_config":false,
+  "paints":{},
+  "pcFilename":"/vehicles/autobello/roller-piccolina.pc",
+  "preview":"/vehicles/autobello/roller-piccolina.jpg"
+}

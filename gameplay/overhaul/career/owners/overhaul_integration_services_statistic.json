@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_integration_services_statistic",
+  "order": 61,
+  "module": "overhaul/integration/services/statistic",
+  "scopes": [
+    {
+      "id": "services",
+      "order": 16
+    }
+  ]
+}

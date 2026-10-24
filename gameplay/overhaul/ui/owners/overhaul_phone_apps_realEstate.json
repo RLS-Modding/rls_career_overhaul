@@ -1,0 +1,23 @@
+{
+  "id": "overhaul_phone_apps_realEstate",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "aliases": []
+  },
+  "acquisitions": [
+    {
+      "id": "phone.realEstate",
+      "order": 60,
+      "modes": {
+        "overhaul": true,
+        "freeroam": true
+      },
+      "extensions": [
+        "overhaul_phone_apps_realEstate"
+      ],
+      "release": [],
+      "namespace": true
+    }
+  ]
+}

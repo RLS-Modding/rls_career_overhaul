@@ -1,0 +1,14 @@
+[
+  {
+    "businessType": "passiveBusiness",
+    "businessId": "wcusaDinoCafe",
+    "name": "Dino Cafe",
+    "mapId": "rls_west_coast",
+    "garageId": "wcusaDinoCafeGarage",
+    "dyno": {
+      "triggerName": "dynoSessionTrigger",
+      "sitesFile": "dynoSession",
+      "parkingSpotName": "dynoSessionParking"
+    }
+  }
+]

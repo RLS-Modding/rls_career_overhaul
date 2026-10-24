@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "useWhenLocalMissing": true,
+  "filter": {
+    "whiteList": {},
+    "blackList": {
+      "model_key": [
+        "wydra"
+      ],
+      "Brand": [
+        "FPU"
+      ],
+      "Type": [
+        "Trailer",
+        "Semi Truck",
+        "Forklift",
+        "ATV",
+        "Bus"
+      ],
+      "Body Style": [
+        "ATV"
+      ],
+      "Body Type": [
+        "ATV"
+      ],
+      "Config Type": [
+        "Roller",
+        "Race",
+        "Rally",
+        "Drag",
+        "Drift",
+        "Police",
+        "Frame",
+        "Service"
+      ]
+    }
+  },
+  "subFilters": [
+    {
+      "probability": 7,
+      "whiteList": {
+        "Years": {
+          "min": 2010,
+          "max": 2026
+        }
+      }
+    },
+    {
+      "probability": 6,
+      "whiteList": {
+        "Years": {
+          "min": 2000,
+          "max": 2009
+        }
+      }
+    },
+    {
+      "probability": 5,
+      "whiteList": {
+        "Years": {
+          "min": 1990,
+          "max": 1999
+        }
+      }
+    },
+    {
+      "probability": 4,
+      "whiteList": {
+        "Years": {
+          "min": 1980,
+          "max": 1989
+        }
+      }
+    },
+    {
+      "probability": 3,
+      "whiteList": {
+        "Years": {
+          "min": 1970,
+          "max": 1979
+        }
+      }
+    },
+    {
+      "probability": 2,
+      "whiteList": {
+        "Years": {
+          "min": 1950,
+          "max": 1969
+        }
+      }
+    },
+    {
+      "probability": 1,
+      "whiteList": {
+        "Years": {
+          "min": 1900,
+          "max": 1949
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,429 @@
+{
+  "description": "Description of these Sites. Contains Locations, Zones, and Parking Spots.",
+  "dir": "/mods/unpacked/rls-career-overhaul-dev/levels/west_coast_usa/",
+  "locations": {},
+  "name": "travel.sites.json",
+  "parkingSpots": [
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": [
+          "arrivalVehicleType"
+        ],
+        "tags": {},
+        "types": {
+          "arrivalVehicleType": "string"
+        },
+        "values": {
+          "arrivalVehicleType": "any"
+        }
+      },
+      "isMultiSpot": false,
+      "name": "mapTravel_parking1",
+      "oldId": 4545,
+      "pos": [
+        480.35305786133,
+        1887.7956542969,
+        74.647590637207
+      ],
+      "rot": [
+        0,
+        0,
+        0.2474389363476,
+        0.96890331937294
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 9,
+      "spotDirection": "Right",
+      "spotOffset": 0.12099999934435,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": [
+          "arrivalVehicleType"
+        ],
+        "tags": {},
+        "types": {
+          "arrivalVehicleType": "string"
+        },
+        "values": {
+          "arrivalVehicleType": "any"
+        }
+      },
+      "isMultiSpot": false,
+      "name": "mapTravel_parking2",
+      "oldId": 4546,
+      "pos": [
+        483.28854370117,
+        1887.9351806641,
+        74.669082641602
+      ],
+      "rot": [
+        0,
+        0,
+        0.25375586855257,
+        0.96726838578949
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Left",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": [
+          "arrivalVehicleType"
+        ],
+        "tags": {},
+        "types": {
+          "arrivalVehicleType": "string"
+        },
+        "values": {
+          "arrivalVehicleType": "any"
+        }
+      },
+      "isMultiSpot": false,
+      "name": "mapTravel_parking3",
+      "oldId": 4547,
+      "pos": [
+        486.14575195312,
+        1887.8930664062,
+        74.668823242188
+      ],
+      "rot": [
+        0,
+        0,
+        0.2493727864598,
+        0.96840748226075
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Left",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": [
+          "arrivalVehicleType"
+        ],
+        "tags": {},
+        "types": {
+          "arrivalVehicleType": "string"
+        },
+        "values": {
+          "arrivalVehicleType": "any"
+        }
+      },
+      "isMultiSpot": false,
+      "name": "mapTravel_parking4",
+      "oldId": 4548,
+      "pos": [
+        488.95489501953,
+        1887.7930908203,
+        74.683067321777
+      ],
+      "rot": [
+        0,
+        0,
+        0.24738508462906,
+        0.96891719102859
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Left",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": [
+          "arrivalVehicleType"
+        ],
+        "tags": {},
+        "types": {
+          "arrivalVehicleType": "string"
+        },
+        "values": {
+          "arrivalVehicleType": "any"
+        }
+      },
+      "isMultiSpot": false,
+      "name": "mapTravel_parking5",
+      "oldId": 4549,
+      "pos": [
+        491.95666503906,
+        1887.8283691406,
+        74.677726745605
+      ],
+      "rot": [
+        0,
+        0,
+        0.25094113608022,
+        0.96800223057345
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Left",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": [
+          "arrivalVehicleType"
+        ],
+        "tags": {},
+        "types": {
+          "arrivalVehicleType": "string"
+        },
+        "values": {
+          "arrivalVehicleType": "any"
+        }
+      },
+      "isMultiSpot": false,
+      "name": "mapTravel_parking6",
+      "oldId": 4550,
+      "pos": [
+        494.88348388672,
+        1887.9450683594,
+        74.687004089355
+      ],
+      "rot": [
+        0,
+        0,
+        0.25944516062737,
+        0.96575778722763
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Left",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": [
+          "arrivalVehicleType"
+        ],
+        "tags": {},
+        "types": {
+          "arrivalVehicleType": "string"
+        },
+        "values": {
+          "arrivalVehicleType": "any"
+        }
+      },
+      "isMultiSpot": false,
+      "name": "mapTravel_parking7",
+      "oldId": 4551,
+      "pos": [
+        497.82061767578,
+        1887.9327392578,
+        74.689575195312
+      ],
+      "rot": [
+        0,
+        0,
+        0.25297060608864,
+        0.96747392416
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Left",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": [
+          "arrivalVehicleType"
+        ],
+        "tags": {},
+        "types": {
+          "arrivalVehicleType": "string"
+        },
+        "values": {
+          "arrivalVehicleType": "any"
+        }
+      },
+      "isMultiSpot": false,
+      "name": "mapTravel_parking8",
+      "oldId": 4552,
+      "pos": [
+        500.69671630859,
+        1887.9305419922,
+        74.683837890625
+      ],
+      "rot": [
+        0,
+        0,
+        0.25669294595718,
+        0.96649295091629
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Left",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": [
+          "arrivalVehicleType"
+        ],
+        "tags": {},
+        "types": {
+          "arrivalVehicleType": "string"
+        },
+        "values": {
+          "arrivalVehicleType": "any"
+        }
+      },
+      "isMultiSpot": false,
+      "name": "mapTravel_parking9",
+      "oldId": 4553,
+      "pos": [
+        503.60845947266,
+        1887.8927001953,
+        74.656066894531
+      ],
+      "rot": [
+        0,
+        0,
+        0.25417867302895,
+        0.96715724468231
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Left",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": [
+          "arrivalVehicleType"
+        ],
+        "tags": {},
+        "types": {
+          "arrivalVehicleType": "string"
+        },
+        "values": {
+          "arrivalVehicleType": "any"
+        }
+      },
+      "isMultiSpot": false,
+      "name": "mapTravel_parking10",
+      "oldId": 4554,
+      "pos": [
+        506.62261962891,
+        1888.0817871094,
+        74.655914306641
+      ],
+      "rot": [
+        0,
+        0,
+        0.25541079044342,
+        0.96683257818222
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Left",
+      "spotOffset": 0,
+      "spotRotation": 0
+    }
+  ],
+  "zones": {}
+}

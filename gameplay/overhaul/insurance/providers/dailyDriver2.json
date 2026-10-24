@@ -1,0 +1,105 @@
+{
+  "id": 2,
+  "name": "insurance.policies.dailyDriver2.name",
+  "slogan": "insurance.policies.dailyDriver2.slogan",
+  "class": "dailyDriver",
+  "image": "driveguard",
+  "paperworkFees": 50,
+  "color": "#3f87e2",
+  "resetInsuranceScore": {
+    "price": {
+      "vouchers": {
+        "amount": 2,
+        "canBeNegative": false
+      }
+    },
+    "conditions": {
+      "minScore": 1.15
+    }
+  },
+  "gestures": {
+    "freeRepair": {
+      "distance": 65000
+    }
+  },
+  "perks": {
+    "freeTowing": {
+      "value": 3,
+      "isSignaturePerk": true
+    }
+  },
+  "coverageOptions": {
+    "paintRepair": {
+      "baseValueId": 2,
+      "choices": [
+        {
+          "value": true,
+          "premiumInfluence": 500
+        },
+        {
+          "value": false,
+          "premiumInfluence": 0
+        }
+      ]
+    },
+    "repairTime": {
+      "baseValueId": 1,
+      "choices": [
+        {
+          "value": 60,
+          "premiumInfluence": 800
+        },
+        {
+          "value": 120,
+          "premiumInfluence": 550
+        },
+        {
+          "value": 300,
+          "premiumInfluence": 350
+        },
+        {
+          "value": 600,
+          "premiumInfluence": 250
+        }
+      ]
+    },
+    "roadsideAssistance": {
+      "baseValueId": 1,
+      "choices": [
+        {
+          "value": 3,
+          "premiumInfluence": 0
+        },
+        {
+          "value": 5,
+          "premiumInfluence": 60
+        },
+        {
+          "value": 7,
+          "premiumInfluence": 120
+        },
+        {
+          "value": 10,
+          "premiumInfluence": 160
+        }
+      ]
+    },
+    "deductible": {
+      "baseValueId": 2,
+      "choices": [
+        {
+          "value": 500,
+          "premiumInfluence": 2.0
+        },
+        {
+          "value": 1000,
+          "premiumInfluence": 1.5
+        },
+        {
+          "value": 1500,
+          "premiumInfluence": 1
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "id": "privateSeller",
+  "order": 500,
+  "listName": "privateSellers",
+  "uiLabel": "ui.facilities.type.privateSeller"
+}

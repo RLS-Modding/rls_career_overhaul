@@ -1,0 +1,7 @@
+{
+  "id": "bus",
+  "order": 150,
+  "callbacks": [
+    {"id": "busPartsTree", "extension": "overhaul_jobs_bus", "fn": "returnPartsTree", "guard": "none"}
+  ]
+}

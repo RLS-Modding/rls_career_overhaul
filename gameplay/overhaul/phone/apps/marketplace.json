@@ -1,0 +1,66 @@
+{
+  "id": "marketplace",
+  "name": "Marketplace",
+  "icon": "shoppingCart",
+  "iconTile": "marketplace.png",
+  "route": "/overhaul/phone-marketplace",
+  "color": "#228B22",
+  "iconColor": "#ffffff",
+  "category": "Vehicles",
+  "storeTagline": "Buy and sell cars",
+  "storeDescription": "List vehicles, browse listings, and negotiate deals on the player marketplace.",
+  "defaultPage": 0,
+  "defaultPosition": 2,
+  "notifications": [
+    {
+      "key": "marketplace.newOffer",
+      "label": "New Offer",
+      "default": true,
+      "description": "Buyer offers on your listings",
+      "order": 0
+    }
+  ],
+  "notificationSources": [
+    "marketplace"
+  ],
+  "onInstall": {
+    "extension": "overhaul_career_market_marketplace",
+    "call": "notifyOnPhoneAppInstalled",
+    "loadOnlyInCareer": true
+  },
+  "uiRoutes": [
+    {
+      "name": "phone-marketplace",
+      "path": "phone-marketplace",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneMarketplace.vue",
+      "uiOrder": 67,
+      "luaOrder": 42,
+      "backTarget": "phone-main"
+    },
+    {
+      "name": "phone-marketplace-sell",
+      "path": "phone-marketplace-sell",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneMarketplaceSell.vue",
+      "uiOrder": 68,
+      "luaOrder": 44,
+      "backTarget": "phone-marketplace"
+    },
+    {
+      "name": "phone-marketplace-negotiate",
+      "path": "phone-marketplace-negotiate",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneMarketplaceNegotiate.vue",
+      "uiOrder": 69,
+      "luaOrder": 43,
+      "backTarget": "phone-marketplace-sell"
+    },
+    {
+      "name": "phone-marketplace-vehicle",
+      "path": "phone-marketplace-vehicle/:kind/:vehicleId",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneMarketplaceVehicle.vue",
+      "uiOrder": 70,
+      "luaOrder": 45,
+      "backTarget": "phone-marketplace",
+      "props": true
+    }
+  ]
+}

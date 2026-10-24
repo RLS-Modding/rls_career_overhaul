@@ -1,0 +1,882 @@
+{
+"etkc_junk_trunk": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Soft-Close Trunk",
+        "value":100,
+    },
+    "slotType" : "etkc_trunk",
+    "slots": [
+        ["type", "default", "description"],
+        ["etkc_trunklight_L","etkc_trunklight_L", "Left Trunk Light"],
+        ["etkc_trunklight_R","etkc_trunklight_R", "Right Trunk Light"],
+        ["etkc_licenseplate_R","etkc_licenseplate_R", "Rear License Plate"],
+        ["etkc_spoiler","", "Spoiler"],
+        ["etkc_lipspoiler","", "Lip Spoiler"],
+        ["etkc_lettering_trunk","etkc_lettering_trunk_kc6", "Lettering"],
+    ],
+    "flexbodies": [
+         ["mesh", "[group]:", "nonFlexMaterials"],
+         ["etkc_trunk", ["etkc_trunk"]],
+    ],
+    "controller": [
+        ["fileName"],
+        ["advancedCouplerControl", {"name":"trunkCoupler"}],
+    ]
+    "trunkCoupler":{
+        "couplerNodes":[
+            ["cid1",    "cid2",     "autoCouplingStrength",    "autoCouplingRadius",   "autoCouplingLockRadius",   "autoCouplingSpeed", "couplingStartRadius",  "breakGroup"]
+            ["r7",      "t7",        40000,                     0.01,                   0.005,                      0.2,                 0.2,                   "trunklatch",  {"forceCid1":"t7", "forceCid2":"t4"}]
+        ]
+        "groupType": "autoCoupling",
+        "attachSoundVolume":1,
+        "detachSoundVolume":1,
+        "soundNode:":["t4"]
+        "attachSoundEvent": "event:>Vehicle>Latches>Trunk>modern_03_close",
+        "detachSoundEvent": "event:>Vehicle>Latches>Trunk>modern_03_open",
+        "breakSoundEvent":""
+        "openForceMagnitude": 65,
+        "openForceDuration": 1.0,
+        "closeForceMagnitude": 2000,
+        "closeForceDuration": 0.1,
+    }
+    "triggers":[
+        ["id", "label", "idRef:", "idX:", "idY:", "type", "size", "baseRotation", "rotation", "translation", "baseTranslation"],
+        ["trunk", "", "t4","t4r","t3", "box", {"x":0.1, "y":0.022, "z":0.065}, {"x":0, "y":0, "z":-3}, {"x":0, "y":0, "z":0}, {"x":0, "y":0, "z":0}, {"x":-0.05, "y":0.18, "z":0.012}],
+        ["trunk_int", "", "t4","t4r","t3", "box", {"x":0.12, "y":0.03, "z":0.06}, {"x":0, "y":0, "z":-3}, {"x":0, "y":0, "z":0}, {"x":0, "y":0, "z":0}, {"x":-0.06, "y":0.0, "z":0.04}],
+    ],
+    "triggerEventLinks":[
+        ["triggerId:triggers", "action", "targetEventId:events"],
+        ["trunk", "action0", "trunkLatch"],
+        ["trunk_int", "action0", "trunkLatch"],
+    ],
+    "events":[
+        ["id", "title", "desc"],
+        ["trunkLatch", "ui.inputActions.common.trunkLatch.title", "ui.inputActions.common.trunkLatch.description", {"onUp":"controller.getControllerSafe('trunkCoupler').toggleGroup()"}],
+    ],
+    "props": [
+        ["func"      , "mesh"              , "idRef:", "idX:", "idY:"            , "baseRotation"        , "rotation"                 , "translation"        , "min", "max", "offset", "multiplier"],
+        //license plate lights
+        {
+            "lightInnerAngle":180,
+            "lightOuterAngle":185,
+            "lightRange":0.22,
+            "lightColor":{"r":255, "g":255, "b":210, "a":255},
+            "lightAttenuation":{"x":0, "y":1, "z":1},
+            "lightCastShadows":false,
+            "cookieName":"art/special/BNG_light_cookie_headlight.dds"
+        },
+        ["lowhighbeam" ,         "SPOTLIGHT"        , "t4r", "t4", "t3r", {"x":-105, "y":-45, "z":-0} , {"x":0, "y":0, "z":0}    , {"x":0, "y":0, "z":0}, 0, 0, 0, 1, {"baseTranslation":{"x":0.85, "y":0.699, "z":-0.011},"flareScale":0.004,"lightBrightness":0.9,"deformGroup":"trunklight_R_break"}],
+        ["lowhighbeam" ,         "SPOTLIGHT"        , "t4r", "t4", "t3r", {"x":-105, "y":0, "z":-0} , {"x":0, "y":0, "z":0}    , {"x":0, "y":0, "z":0}, 0, 0, 0, 1, {"baseTranslation":{"x":0.85, "y":0.699, "z":-0.011},"flareScale":0.004,"lightBrightness":0.9,"deformGroup":"trunklight_R_break"}],
+        ["lowhighbeam" ,         "SPOTLIGHT"        , "t4r", "t4", "t3r", {"x":-105, "y":45, "z":-0} , {"x":0, "y":0, "z":0}    , {"x":0, "y":0, "z":0}, 0, 0, 0, 1, {"baseTranslation":{"x":0.85, "y":0.699, "z":-0.011},"flareScale":0.004,"lightBrightness":0.9,"lightRange":0.25,"deformGroup":"trunklight_R_break"}],
+
+        ["lowhighbeam" ,         "SPOTLIGHT"        , "t4l", "t4", "t3l", {"x":285, "y":-45, "z":0} , {"x":0, "y":0, "z":0}    , {"x":0, "y":0, "z":0}, 0, 0, 0, 1, {"baseTranslation":{"x":0.85, "y":0.699, "z":0.011},"flareScale":0.004,"lightBrightness":0.9,"deformGroup":"trunklight_L_break"}],
+        ["lowhighbeam" ,         "SPOTLIGHT"        , "t4l", "t4", "t3l", {"x":285, "y":0, "z":0} , {"x":0, "y":0, "z":0}    , {"x":0, "y":0, "z":0}, 0, 0, 0, 1, {"baseTranslation":{"x":0.85, "y":0.699, "z":0.011},"flareScale":0.004,"lightBrightness":0.9,"deformGroup":"trunklight_L_break"}],
+        ["lowhighbeam" ,         "SPOTLIGHT"        , "t4l", "t4", "t3l", {"x":285, "y":45, "z":0} , {"x":0, "y":0, "z":0}    , {"x":0, "y":0, "z":0}, 0, 0, 0, 1, {"baseTranslation":{"x":0.85, "y":0.699, "z":0.011},"flareScale":0.004,"lightBrightness":0.9,"lightRange":0.25,"deformGroup":"trunklight_L_break"}],
+    ],
+    "nodes": [
+         ["id", "posX", "posY", "posZ"],
+         //--TRUNK--
+         {"nodeMaterial":"|NM_METAL"},
+         {"frictionCoef":0.5},
+         {"group":"etkc_trunk"},
+         {"collision":true},
+         {"selfCollision":true},
+         {"nodeWeight":0.8},
+         ["t1rr", -0.74, 1.40, 1.07],
+         ["t1", 0, 1.56, 1.05],
+         ["t1ll", 0.74, 1.40, 1.07],
+
+         ["t2rr", -0.75, 1.70, 1.0],
+         ["t2r", -0.31, 1.80, 1.0],
+         ["t2l", 0.31, 1.80, 1.0],
+         ["t2ll", 0.75, 1.70, 1.0],
+
+         ["t3rr", -0.64, 2.0, 0.95],
+         ["t3r", -0.36, 2.07, 0.97],
+         ["t3", 0.0, 2.10, 0.98],
+         ["t3l", 0.36, 2.07 0.97],
+         ["t3ll", 0.64, 2.0, 0.95],
+
+         ["t4rr", -0.475, 2.155, 0.66],
+         ["t4r", -0.28, 2.195, 0.66],
+         ["t4", 0, 2.20, 0.66],
+         ["t4l", 0.28, 2.195, 0.66],
+         ["t4ll", 0.475, 2.155, 0.66],
+
+         //trunk hinge
+         {"collision":true},
+         {"selfCollision":false},
+         {"group":""},
+         {"nodeWeight":1.3},
+         ["th1r", -0.70, 1.305, 1.038],
+         ["th1l",  0.70, 1.305, 1.038],
+
+         //rigidifier
+         {"collision":false},
+         {"selfCollision":false},
+         {"nodeWeight":1.5},
+         ["t5",0.0, 1.78, 0.7],
+         {"group":""},
+
+         //latch node
+         {"nodeWeight":1.6},
+         ["t7", -0.0, 2.18, 0.56],
+    ],
+    "beams": [
+          ["id1:", "id2:"],
+          //--TRUNK--
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+          {"beamSpring":450000,"beamDamp":40},
+          {"beamDeform":22000,"beamStrength":"FLT_MAX"},
+          {"deformationTriggerRatio":0.03},
+          //trunk main shape
+          {"deformLimitExpansion":1.1},
+          ["t1rr","t1"],
+          ["t1ll","t1"],
+          ["t2rr","t2r"],
+          ["t2r","t2l"],
+          ["t2ll","t2l"],
+
+          ["t3rr","t3r"],
+          ["t3l","t3ll"],
+
+          {"deformGroup":"chmsl_break"},
+          ["t3r","t3"],
+          ["t3","t3l"],
+          {"deformGroup":""},
+          ["t4rr","t4r"],
+          ["t4ll","t4l"],
+
+          ["t4r","t4"],
+          ["t4l","t4"],
+          ["t1rr","t2rr"],
+          ["t1ll","t2ll"],
+          ["t1","t2r"],
+          ["t1","t2l"],
+
+          ["t2rr","t3rr"],
+          ["t2ll","t3ll"],
+
+          {"deformGroup":"chmsl_break"},
+          ["t2r","t3r"],
+          ["t2l","t3l"],
+          {"deformGroup":""},
+          ["t3rr","t4rr"],
+          ["t3r","t4r"],
+
+          ["t3l","t4l"],
+          ["t3ll","t4ll"],
+          {"deformGroup":"chmsl_break"},
+          ["t3","t4"],
+          ["t2r","t3"],
+          ["t2l","t3"],
+          {"deformGroup":""},
+
+          //surficial crossing
+          {"deformLimitExpansion":""},
+          {"beamDeform":13000,"beamStrength":"FLT_MAX"},
+          ["t1rr","t2r"],
+          ["t1ll","t2l"],
+          ["t1","t2rr"],
+          ["t1","t2ll"],
+          ["t2r","t3rr"],
+          ["t2l","t3ll"],
+
+          {"deformGroup":"chmsl_break"},
+          ["t2rr","t3r"],
+          ["t2ll","t3l"],
+          ["t3","t4l"],
+          ["t3","t4r"],
+          ["t4","t3l"],
+          ["t4","t3r"],
+          {"deformGroup":""},
+          ["t3r","t4rr"],
+          ["t3rr","t4r"],
+          ["t3l","t4ll"],
+          ["t3ll","t4l"],
+
+          //rigids
+          {"beamSpring":501000,"beamDamp":30},
+          {"beamDeform":3000,"beamStrength":"FLT_MAX"},
+          ["t1rr","t1ll"],
+          ["t2rr","t2l"],
+          ["t2r","t2ll"],
+          {"deformGroup":"chmsl_break"},
+          ["t3rr","t3"],
+          ["t3r","t3l"],
+          ["t3","t3ll"],
+          {"deformGroup":""},
+
+          ["t1rr","t3rr"],
+          ["t1ll","t3ll"],
+
+          {"deformGroup":"chmsl_break"},
+          ["t1","t3r"],
+          ["t1","t3"],
+          ["t1","t3l"],
+          {"deformGroup":""},
+          ["t2rr","t4rr"],
+          ["t2r","t4r"],
+          ["t2l","t4l"],
+          ["t2ll","t4ll"],
+
+          ["t2r","t4"],
+          ["t2l","t4"],
+
+          {"deformGroup":"chmsl_break"},
+          ["t1rr","t3"],
+          ["t1ll","t3"],
+          ["t1rr","t3r"],
+          ["t1ll","t3l"],
+          {"deformGroup":""},
+
+          //rigidifier
+          {"beamDeform":3000,"beamStrength":"FLT_MAX"},
+          {"beamSpring":1001000,"beamDamp":80},
+          ["t1rr","t5"],
+          ["t1","t5"],
+          ["t1ll","t5"],
+
+          ["t2rr","t5"],
+          ["t2r","t5"],
+          ["t2l","t5"],
+          ["t2ll","t5"],
+
+          ["t3rr","t5"],
+          ["t3ll","t5"],
+          {"deformGroup":"chmsl_break"},
+          ["t3r","t5"],
+          ["t3","t5"],
+          ["t3l","t5"],
+          {"deformGroup":""},
+          ["t4rr","t5"],
+          ["t4r","t5"],
+          ["t4l","t5"],
+          ["t4ll","t5"],
+          {"deformGroup":""},
+
+          ["t4","t5"],
+
+          //latch node
+          ["t7", "t3"],
+          ["t7", "t3r"],
+          ["t7", "t3l"],
+          ["t7", "t4"],
+          ["t7", "t4r"],
+          ["t7", "t4l"],
+          ["t7", "t5"],
+
+          //trunk hinge node to body
+          {"beamSpring":2501000,"beamDamp":150},
+          {"beamDeform":14000,"beamStrength":"FLT_MAX"},
+          ["th1l", "tb1l"],
+          ["th1l", "p6l"],
+          ["th1l", "tb1"],
+          ["th1l", "q3l"],
+          ["th1l", "f9l"],
+
+          ["th1r", "tb1r"],
+          ["th1r", "p6r"],
+          ["th1r", "tb1"],
+          ["th1r", "q3r"],
+          ["th1r", "f9r"],
+
+          //trunk hinge break
+          {"beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+          {"beamSpring":301000,"beamDamp":100},
+          {"beamDeform":15000,"beamStrength":65000},
+          //r
+          {"breakGroup":"trunkhinge_R"},
+          {"deformGroup":"trunklight_R_break"},
+          ["t1rr", "th1r"],
+          ["t1", "th1r"],
+          ["t2r", "th1r"],
+          ["t2rr", "th1r"],
+          ["t7", "th1r"],
+
+          //l
+          {"breakGroup":"trunkhinge_L"},
+          {"deformGroup":"trunklight_L_break"},
+          ["t1ll", "th1l"],
+          ["t1", "th1l"],
+          ["t2l", "th1l"],
+          ["t2ll", "th1l"],
+          ["t7", "th1l"],
+          {"breakGroup":""},
+
+          {"breakGroup":""},
+          {"deformGroup":""},
+
+          //trunk latch
+          {"beamDeform":3600,"beamStrength":7500},
+          {"breakGroup":"trunklatch"},
+          //["t4rr","r7"],
+          //["t4r","r7"],
+          //["t4","r7"],
+          //["t4l","r7"],
+          //["t4ll","r7"],
+          //
+          //["t4rr","r4"],
+          //["t4r","r4"],
+          //["t4","r4"],
+          //["t4l","r4"],
+          //["t4ll","r4"],
+          {"breakGroup":""},
+
+          //pop open
+          {"breakGroupType":1},
+          {"beamType":"|SUPPORT", "beamLongBound":4},
+          {"beamSpring":2000,"beamDamp":20},
+          {"beamDeform":4000,"beamStrength":10000},
+          {"beamPrecompression":1.06},
+          ["t4l", "r6", {"breakGroup":"trunkhinge_R"}],
+          ["t4r", "r6", {"breakGroup":"trunkhinge_L"}],
+          //gas struts
+          {"breakGroupType":1},
+          {"beamSpring":350,"beamDamp":110},
+          {"beamDeform":4000,"beamStrength":10000},
+          {"beamPrecompression":3.5},
+          ["t3rr", "q3r", {"breakGroup":"trunkhinge_R"}],
+          ["t3ll", "q3l", {"breakGroup":"trunkhinge_L"}],
+          {"beamPrecompression":1},
+          {"breakGroupType":0},
+          {"breakGroup":""},
+
+          //damping
+          {"beamDeform":27600,"beamStrength":225000},
+          {"beamSpring":0,"beamDamp":20},
+          ["t3rr", "q4r", {"breakGroup":"trunkhinge_R"}],
+          ["t3ll", "q4l", {"breakGroup":"trunkhinge_L"}],
+          {"breakGroup":""},
+
+          //limiter
+          {"beamType":"|BOUNDED","beamLongBound":1.6,"beamShortBound":0.0},
+          {"beamDeform":27600,"beamStrength":225000},
+          {"beamSpring":0,"beamDamp":50},
+          {"beamLimitSpring":55000,"beamLimitDamp":300},
+          ["t3rr", "r6rr", {"breakGroup":"trunkhinge_R"}],
+          ["t3ll", "r6ll", {"breakGroup":"trunkhinge_L"}],
+          {"breakGroup":""},
+          //soft limiter
+          {"beamType":"|BOUNDED","beamLongBound":1.4,"beamShortBound":0.0},
+          {"beamDeform":27600,"beamStrength":225000},
+          {"beamSpring":0,"beamDamp":50},
+          {"beamLimitSpring":700,"beamLimitDamp":1300},
+          ["t3rr", "r6rr", {"breakGroup":"trunkhinge_R"}],
+          ["t3ll", "r6ll", {"breakGroup":"trunkhinge_L"}],
+          {"breakGroup":""},
+
+          //trunk support beams
+          {"beamType":"|SUPPORT", "beamLongBound":6},
+          {"beamSpring":601000,"beamDamp":50},
+          {"beamDeform":15000,"beamStrength":1250000},
+          {"breakGroup":"trunk_supportBeams"},
+          ["t1rr","r5rr"],
+          ["t1ll","r5ll"],
+          ["t1","r5"],
+
+          //["t2rr","r6rr"],
+          ["t2r","r6"],
+          ["t2l","r6"],
+          //["t2ll","r6ll"],
+
+          ["t3rr","q12r"],
+          ["t3r","q13r"],
+          ["t3","r7"],
+          ["t3l","q12l"],
+          ["t3ll","q13l"],
+
+          //width
+          ["t1rr","q3r"],
+          ["t1ll","q3l"],
+          ["t2r","q4r"],
+          ["t2l","q4l"],
+          ["t3r","q5r"],
+          ["t3l","q5l"],
+          ["t4r","q12r"],
+          ["t4l","q12l"],
+
+          //weak
+          {"beamDeform":9000,"beamStrength":1250000},
+          ["t4rr","r6rr"],
+          ["t4ll","r6ll"],
+          ["t4","r6"],
+          {"breakGroup":""},
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+          {"deformLimitExpansion":1.1},
+    ],
+    "triangles": [
+            ["id1:","id2:","id3:"],
+            //trunk
+            {"groundModel":"metal"},
+            {"group":"etkc_trunk"},
+            {"dragCoef":10},
+            ["t1rr","t2r","t2rr"],
+            ["t1rr","t1","t2r"],
+            ["t1","t2l","t2r"],
+            ["t1","t1ll","t2l"],
+            ["t2l","t1ll","t2ll"],
+
+            ["t2rr","t2r","t3rr"],
+            ["t2r","t3r","t3rr"],
+            ["t2l","t3l","t3"],
+            ["t2r","t2l","t3"],
+            ["t2r","t3","t3r"],
+            ["t2l","t3ll","t3l"],
+            ["t2l","t2ll","t3ll"],
+
+            {"dragCoef":2},
+            ["t3rr","t3r","t4rr"],
+            ["t3r","t4r","t4rr"],
+            ["t3l","t4l","t4"],
+            ["t3r","t3l","t4"],
+            ["t3r","t4","t4r"],
+            ["t3l","t4ll","t4l"],
+            ["t3l","t3ll","t4ll"],
+    ],
+},
+"etkc_junk_trunk_sport": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Soft-Close Trunk ( Sport )",
+        "value":150,
+    },
+    "slotType" : "etkc_trunk",
+    "slots": [
+        ["type", "default", "description"],
+        ["etkc_trunklight_L","etkc_trunklight_L", "Left Trunk Light"],
+        ["etkc_trunklight_R","etkc_trunklight_R", "Right Trunk Light"],
+        ["etkc_licenseplate_R","etkc_licenseplate_R", "Rear License Plate"],
+        ["etkc_spoiler","", "Spoiler"],
+        ["etkc_lettering_trunk","etkc_lettering_trunk_kc6", "Lettering"],
+    ],
+    "flexbodies": [
+         ["mesh", "[group]:", "nonFlexMaterials"],
+         ["etkc_trunk_sport", ["etkc_trunk"]],
+    ],
+    "controller": [
+        ["fileName"],
+        ["advancedCouplerControl", {"name":"trunkCoupler"}],
+    ]
+    "trunkCoupler":{
+        "couplerNodes":[
+            ["cid1",    "cid2",     "autoCouplingStrength",    "autoCouplingRadius",   "autoCouplingLockRadius",   "autoCouplingSpeed", "couplingStartRadius",  "breakGroup"]
+            ["r7",      "t7",        40000,                     0.01,                   0.005,                      0.2,                 0.2,                   "trunklatch", {"forceCid1":"t7", "forceCid2":"t4"}]
+        ]
+        "groupType": "autoCoupling",
+        "attachSoundVolume":1,
+        "detachSoundVolume":1,
+        "soundNode:":["t4"]
+        "attachSoundEvent": "event:>Vehicle>Latches>Trunk>modern_03_close",
+        "detachSoundEvent": "event:>Vehicle>Latches>Trunk>modern_03_open",
+        "breakSoundEvent":""
+        "openForceMagnitude": 65,
+        "openForceDuration": 1.0,
+        "closeForceMagnitude": 2000,
+        "closeForceDuration": 0.1,
+    }
+    "triggers":[
+        ["id", "label", "idRef:", "idX:", "idY:", "type", "size", "baseRotation", "rotation", "translation", "baseTranslation"],
+        ["trunk", "", "t4","t4r","t3", "box", {"x":0.1, "y":0.022, "z":0.065}, {"x":0, "y":0, "z":-3}, {"x":0, "y":0, "z":0}, {"x":0, "y":0, "z":0}, {"x":-0.05, "y":0.18, "z":0.012}],
+        ["trunk_int", "", "t4","t4r","t3", "box", {"x":0.12, "y":0.03, "z":0.06}, {"x":0, "y":0, "z":-3}, {"x":0, "y":0, "z":0}, {"x":0, "y":0, "z":0}, {"x":-0.06, "y":0.0, "z":0.04}],
+    ],
+    "triggerEventLinks":[
+        ["triggerId:triggers", "action", "targetEventId:events"],
+        ["trunk", "action0", "trunkLatch"],
+        ["trunk_int", "action0", "trunkLatch"],
+    ],
+    "events":[
+        ["id", "title", "desc"],
+        ["trunkLatch", "ui.inputActions.common.trunkLatch.title", "ui.inputActions.common.trunkLatch.description", {"onUp":"controller.getControllerSafe('trunkCoupler').toggleGroup()"}],
+    ],
+    "props": [
+        ["func"      , "mesh"              , "idRef:", "idX:", "idY:"            , "baseRotation"        , "rotation"                 , "translation"        , "min", "max", "offset", "multiplier"],
+        //license plate lights
+        {
+            "lightInnerAngle":180,
+            "lightOuterAngle":185,
+            "lightRange":0.22,
+            "lightColor":{"r":255, "g":255, "b":210, "a":255},
+            "lightAttenuation":{"x":0, "y":1, "z":1},
+            "lightCastShadows":false,
+            "cookieName":"art/special/BNG_light_cookie_headlight.dds"
+        },
+        ["lowhighbeam" ,         "SPOTLIGHT"        , "t4r", "t4", "t3r", {"x":-105, "y":-45, "z":-0} , {"x":0, "y":0, "z":0}    , {"x":0, "y":0, "z":0}, 0, 0, 0, 1, {"baseTranslation":{"x":0.85, "y":0.699, "z":-0.011},"flareScale":0.004,"lightBrightness":0.9,"deformGroup":"trunklight_R_break"}],
+        ["lowhighbeam" ,         "SPOTLIGHT"        , "t4r", "t4", "t3r", {"x":-105, "y":0, "z":-0} , {"x":0, "y":0, "z":0}    , {"x":0, "y":0, "z":0}, 0, 0, 0, 1, {"baseTranslation":{"x":0.85, "y":0.699, "z":-0.011},"flareScale":0.004,"lightBrightness":0.9,"deformGroup":"trunklight_R_break"}],
+        ["lowhighbeam" ,         "SPOTLIGHT"        , "t4r", "t4", "t3r", {"x":-105, "y":45, "z":-0} , {"x":0, "y":0, "z":0}    , {"x":0, "y":0, "z":0}, 0, 0, 0, 1, {"baseTranslation":{"x":0.85, "y":0.699, "z":-0.011},"flareScale":0.004,"lightBrightness":0.9,"lightRange":0.25,"deformGroup":"trunklight_R_break"}],
+
+        ["lowhighbeam" ,         "SPOTLIGHT"        , "t4l", "t4", "t3l", {"x":285, "y":-45, "z":0} , {"x":0, "y":0, "z":0}    , {"x":0, "y":0, "z":0}, 0, 0, 0, 1, {"baseTranslation":{"x":0.85, "y":0.699, "z":0.011},"flareScale":0.004,"lightBrightness":0.9,"deformGroup":"trunklight_L_break"}],
+        ["lowhighbeam" ,         "SPOTLIGHT"        , "t4l", "t4", "t3l", {"x":285, "y":0, "z":0} , {"x":0, "y":0, "z":0}    , {"x":0, "y":0, "z":0}, 0, 0, 0, 1, {"baseTranslation":{"x":0.85, "y":0.699, "z":0.011},"flareScale":0.004,"lightBrightness":0.9,"deformGroup":"trunklight_L_break"}],
+        ["lowhighbeam" ,         "SPOTLIGHT"        , "t4l", "t4", "t3l", {"x":285, "y":45, "z":0} , {"x":0, "y":0, "z":0}    , {"x":0, "y":0, "z":0}, 0, 0, 0, 1, {"baseTranslation":{"x":0.85, "y":0.699, "z":0.011},"flareScale":0.004,"lightBrightness":0.9,"lightRange":0.25,"deformGroup":"trunklight_L_break"}],
+    ],
+    "nodes": [
+         ["id", "posX", "posY", "posZ"],
+         //--TRUNK--
+         {"nodeMaterial":"|NM_METAL"},
+         {"frictionCoef":0.5},
+         {"group":"etkc_trunk"},
+         {"collision":true},
+         {"selfCollision":true},
+         {"nodeWeight":0.80},
+         ["t1rr", -0.74, 1.40, 1.07],
+         ["t1", 0, 1.56, 1.05],
+         ["t1ll", 0.74, 1.40, 1.07],
+
+         ["t2rr", -0.75, 1.70, 1.0],
+         ["t2r", -0.31, 1.80, 1.0],
+         ["t2l", 0.31, 1.80, 1.0],
+         ["t2ll", 0.75, 1.70, 1.0],
+
+         ["t3rr", -0.64, 2.0, 0.95],
+         ["t3r", -0.36, 2.07, 0.99],
+         ["t3", 0.0, 2.12, 1.01],
+         ["t3l", 0.36, 2.07 0.99],
+         ["t3ll", 0.64, 2.0, 0.95],
+
+         ["t4rr", -0.475, 2.155, 0.66],
+         ["t4r", -0.28, 2.195, 0.66],
+         ["t4", 0, 2.20, 0.66],
+         ["t4l", 0.28, 2.195, 0.66],
+         ["t4ll", 0.475, 2.155, 0.66],
+
+         //trunk hinge
+         {"collision":true},
+         {"selfCollision":false},
+         {"group":""},
+         {"nodeWeight":1.3},
+         ["th1r", -0.70, 1.305, 1.038],
+         ["th1l",  0.70, 1.305, 1.038],
+
+         //rigidifier
+         {"collision":false},
+         {"selfCollision":false},
+         {"nodeWeight":1.25},
+         ["t5",0.0, 1.78, 0.7],
+         {"group":""},
+
+         //latch node
+         {"nodeWeight":1.6},
+         ["t7", -0.0, 2.18, 0.56],
+    ],
+    "beams": [
+          ["id1:", "id2:"],
+          //--TRUNK--
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+          {"beamSpring":450000,"beamDamp":40},
+          {"beamDeform":22000,"beamStrength":"FLT_MAX"},
+          {"deformationTriggerRatio":0.03},
+          //trunk main shape
+          {"deformLimitExpansion":1.1},
+          ["t1rr","t1"],
+          ["t1ll","t1"],
+          ["t2rr","t2r"],
+          ["t2r","t2l"],
+          ["t2ll","t2l"],
+
+          ["t3rr","t3r"],
+          ["t3l","t3ll"],
+
+          {"deformGroup":"chmsl_break"},
+          ["t3r","t3"],
+          ["t3","t3l"],
+          {"deformGroup":"trunklight_R_break"},
+          ["t4rr","t4r"],
+          {"deformGroup":"trunklight_L_break"},
+          ["t4ll","t4l"],
+          {"deformGroup":""},
+
+          ["t4r","t4"],
+          ["t4l","t4"],
+          ["t1rr","t2rr"],
+          ["t1ll","t2ll"],
+          ["t1","t2r"],
+          ["t1","t2l"],
+
+          ["t2rr","t3rr"],
+          ["t2ll","t3ll"],
+
+          {"deformGroup":"chmsl_break"},
+          ["t2r","t3r"],
+          ["t2l","t3l"],
+          {"deformGroup":"trunklight_R_break"},
+          ["t3rr","t4rr"],
+          ["t3r","t4r"],
+          {"deformGroup":"trunklight_L_break"},
+          ["t3l","t4l"],
+          ["t3ll","t4ll"],
+          {"deformGroup":"chmsl_break"},
+          ["t3","t4"],
+          ["t2r","t3"],
+          ["t2l","t3"],
+          {"deformGroup":""},
+
+          //surficial crossing
+          {"deformLimitExpansion":""},
+          {"beamDeform":13000,"beamStrength":"FLT_MAX"},
+          ["t1rr","t2r"],
+          ["t1ll","t2l"],
+          ["t1","t2rr"],
+          ["t1","t2ll"],
+          ["t2r","t3rr"],
+          ["t2l","t3ll"],
+
+          {"deformGroup":"chmsl_break"},
+          ["t2rr","t3r"],
+          ["t2ll","t3l"],
+          ["t3","t4l"],
+          ["t3","t4r"],
+          ["t4","t3l"],
+          ["t4","t3r"],
+          {"deformGroup":"trunklight_R_break"},
+          ["t3r","t4rr"],
+          ["t3rr","t4r"],
+          {"deformGroup":"trunklight_L_break"},
+          ["t3l","t4ll"],
+          ["t3ll","t4l"],
+          {"deformGroup":""},
+
+          //rigids
+          {"beamSpring":501000,"beamDamp":30},
+          {"beamDeform":3000,"beamStrength":"FLT_MAX"},
+          ["t1rr","t1ll"],
+          ["t2rr","t2l"],
+          ["t2r","t2ll"],
+          {"deformGroup":"chmsl_break"},
+          ["t3rr","t3"],
+          ["t3r","t3l"],
+          ["t3","t3ll"],
+          {"deformGroup":""},
+
+          ["t1rr","t3rr"],
+          ["t1ll","t3ll"],
+
+          {"deformGroup":"chmsl_break"},
+          ["t1","t3r"],
+          ["t1","t3"],
+          ["t1","t3l"],
+          {"deformGroup":"trunklight_R_break"},
+          ["t2rr","t4rr"],
+          ["t2r","t4r"],
+          {"deformGroup":"trunklight_L_break"},
+          ["t2l","t4l"],
+          ["t2ll","t4ll"],
+          {"deformGroup":""},
+
+          ["t2r","t4"],
+          ["t2l","t4"],
+
+          {"deformGroup":"chmsl_break"},
+          ["t1rr","t3"],
+          ["t1ll","t3"],
+          ["t1rr","t3r"],
+          ["t1ll","t3l"],
+          {"deformGroup":""},
+
+          //rigidifier
+          {"beamDeform":3000,"beamStrength":"FLT_MAX"},
+          {"beamSpring":1001000,"beamDamp":80},
+          ["t1rr","t5"],
+          ["t1","t5"],
+          ["t1ll","t5"],
+
+          ["t2rr","t5"],
+          ["t2r","t5"],
+          ["t2l","t5"],
+          ["t2ll","t5"],
+
+          ["t3rr","t5"],
+          ["t3ll","t5"],
+          {"deformGroup":"chmsl_break"},
+          ["t3r","t5"],
+          ["t3","t5"],
+          ["t3l","t5"],
+          {"deformGroup":"trunklight_R_break"},
+          ["t4rr","t5"],
+          ["t4r","t5"],
+          {"deformGroup":"trunklight_L_break"},
+          ["t4l","t5"],
+          ["t4ll","t5"],
+          {"deformGroup":""},
+
+          ["t4","t5"],
+
+          //latch node
+          ["t7", "t3"],
+          ["t7", "t3r"],
+          ["t7", "t3l"],
+          ["t7", "t4"],
+          ["t7", "t4r"],
+          ["t7", "t4l"],
+          ["t7", "t5"],
+
+          //trunk hinge node to body
+          {"beamSpring":2501000,"beamDamp":150},
+          {"beamDeform":14000,"beamStrength":"FLT_MAX"},
+          ["th1l", "tb1l"],
+          ["th1l", "p6l"],
+          ["th1l", "tb1"],
+          ["th1l", "q3l"],
+          ["th1l", "f9l"],
+
+          ["th1r", "tb1r"],
+          ["th1r", "p6r"],
+          ["th1r", "tb1"],
+          ["th1r", "q3r"],
+          ["th1r", "f9r"],
+
+          //trunk hinge break
+          {"beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+          {"beamSpring":301000,"beamDamp":100},
+          {"beamDeform":15000,"beamStrength":65000},
+          //r
+          {"breakGroup":"trunkhinge_R"},
+          {"deformGroup":"trunklight_R_break"},
+          ["t1rr", "th1r"],
+          ["t1", "th1r"],
+          ["t2r", "th1r"],
+          ["t2rr", "th1r"],
+          ["t7", "th1r"],
+
+          //l
+          {"breakGroup":"trunkhinge_L"},
+          {"deformGroup":"trunklight_L_break"},
+          ["t1ll", "th1l"],
+          ["t1", "th1l"],
+          ["t2l", "th1l"],
+          ["t2ll", "th1l"],
+          ["t7", "th1l"],
+          {"breakGroup":""},
+
+          {"breakGroup":""},
+          {"deformGroup":""},
+
+          //trunk latch
+          {"beamDeform":3600,"beamStrength":7500},
+          {"breakGroup":"trunklatch"},
+          //["t4rr","r7"],
+          //["t4r","r7"],
+          //["t4","r7"],
+          //["t4l","r7"],
+          //["t4ll","r7"],
+          //
+          //["t4rr","r4"],
+          //["t4r","r4"],
+          //["t4","r4"],
+          //["t4l","r4"],
+          //["t4ll","r4"],
+          {"breakGroup":""},
+
+          //pop open
+          {"breakGroupType":1},
+          {"beamType":"|SUPPORT", "beamLongBound":4},
+          {"beamSpring":2000,"beamDamp":20},
+          {"beamDeform":4000,"beamStrength":10000},
+          {"beamPrecompression":1.06},
+          ["t4l", "r6", {"breakGroup":"trunkhinge_R"}],
+          ["t4r", "r6", {"breakGroup":"trunkhinge_L"}],
+
+          //gas struts
+          {"breakGroupType":1},
+          {"beamSpring":350,"beamDamp":110},
+          {"beamDeform":4000,"beamStrength":10000},
+          {"beamPrecompression":3.5},
+          ["t3rr", "q3r", {"breakGroup":"trunkhinge_R"}],
+          ["t3ll", "q3l", {"breakGroup":"trunkhinge_L"}],
+          {"beamPrecompression":1},
+          {"breakGroupType":0},
+          {"breakGroup":""},
+
+          //damping
+          {"beamDeform":27600,"beamStrength":225000},
+          {"beamSpring":0,"beamDamp":20},
+          ["t3rr", "q4r", {"breakGroup":"trunkhinge_R"}],
+          ["t3ll", "q4l", {"breakGroup":"trunkhinge_L"}],
+          {"breakGroup":""},
+
+          //limiter
+          {"beamType":"|BOUNDED","beamLongBound":1.6,"beamShortBound":0.0},
+          {"beamDeform":27600,"beamStrength":225000},
+          {"beamSpring":0,"beamDamp":50},
+          {"beamLimitSpring":55000,"beamLimitDamp":300},
+          ["t3rr", "r6rr", {"breakGroup":"trunkhinge_R"}],
+          ["t3ll", "r6ll", {"breakGroup":"trunkhinge_L"}],
+          {"breakGroup":""},
+          //soft limiter
+          {"beamType":"|BOUNDED","beamLongBound":1.5,"beamShortBound":0.0},
+          {"beamDeform":27600,"beamStrength":225000},
+          {"beamSpring":0,"beamDamp":50},
+          {"beamLimitSpring":700,"beamLimitDamp":1300},
+          ["t3rr", "r6rr", {"breakGroup":"trunkhinge_R"}],
+          ["t3ll", "r6ll", {"breakGroup":"trunkhinge_L"}],
+          {"breakGroup":""},
+          //trunk support beams
+          {"beamType":"|SUPPORT", "beamLongBound":6},
+          {"beamSpring":601000,"beamDamp":50},
+          {"beamDeform":15000,"beamStrength":1250000},
+          {"breakGroup":"trunk_supportBeams"},
+          ["t1rr","r5rr"],
+          ["t1ll","r5ll"],
+          ["t1","r5"],
+
+          //["t2rr","r6rr"],
+          ["t2r","r6"],
+          ["t2l","r6"],
+          //["t2ll","r6ll"],
+
+          ["t3rr","q12r"],
+          ["t3r","q13r"],
+          ["t3","r7"],
+          ["t3l","q12l"],
+          ["t3ll","q13l"],
+
+          //width
+          ["t1rr","q3r"],
+          ["t1ll","q3l"],
+          ["t2r","q4r"],
+          ["t2l","q4l"],
+          ["t3r","q5r"],
+          ["t3l","q5l"],
+          ["t4r","q12r"],
+          ["t4l","q12l"],
+
+          //weak
+          {"beamDeform":9000,"beamStrength":1250000},
+          ["t4rr","r6rr"],
+          ["t4ll","r6ll"],
+          ["t4","r6"],
+          {"breakGroup":""},
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+          {"deformLimitExpansion":1.1},
+    ],
+    "triangles": [
+            ["id1:","id2:","id3:"],
+            //trunk
+            {"groundModel":"metal"},
+            {"group":"etkc_trunk"},
+            {"dragCoef":10},
+            ["t1rr","t2r","t2rr"],
+            ["t1rr","t1","t2r"],
+            ["t1","t2l","t2r"],
+            ["t1","t1ll","t2l"],
+            ["t2l","t1ll","t2ll"],
+
+            ["t2rr","t2r","t3rr"],
+            ["t2r","t3r","t3rr"],
+            ["t2l","t3l","t3"],
+            ["t2r","t2l","t3"],
+            ["t2r","t3","t3r"],
+            ["t2l","t3ll","t3l"],
+            ["t2l","t2ll","t3ll"],
+
+            {"dragCoef":2},
+            ["t3rr","t3r","t4rr"],
+            ["t3r","t4r","t4rr"],
+            ["t3l","t4l","t4"],
+            ["t3r","t3l","t4"],
+            ["t3r","t4","t4r"],
+            ["t3l","t4ll","t4l"],
+            ["t3l","t3ll","t4ll"],
+    ],
+},
+}

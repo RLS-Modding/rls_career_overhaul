@@ -1,0 +1,7 @@
+{
+  "id": "beamEats",
+  "order": 130,
+  "callbacks": [
+    {"id": "beamEatsSensorData", "extension": "overhaul_jobs_beamEats", "fn": "receiveSensorData", "guard": "none"}
+  ]
+}

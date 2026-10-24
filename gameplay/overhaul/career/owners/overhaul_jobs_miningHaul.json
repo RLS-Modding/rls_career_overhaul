@@ -1,0 +1,35 @@
+{
+  "id": "overhaul_jobs_miningHaul",
+  "order": 72,
+  "module": "overhaul/jobs/miningHaul",
+  "reloadOnReady": "restoreWorld",
+  "scopes": [
+    {
+      "id": "world",
+      "order": 9
+    }
+  ],
+  "bigMap": {
+    "types": [
+      {
+        "id": "miningHaul",
+        "icon": "boxTruck"
+      }
+    ],
+    "groups": [
+      {
+        "id": "type_miningHaul",
+        "label": "Mining Company",
+        "icon": "boxTruck",
+        "placements": {
+          "career": [
+            {
+              "section": "freeroamPois",
+              "order": 13
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

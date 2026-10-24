@@ -1,0 +1,587 @@
+{
+"WHE_ForliftRearWeight": {
+    "information":{
+        "authors":"TrackpadUser",
+        "name":"Counterweight",
+        "value":10000
+    },
+    "slotType":"WHE_ForliftRearWeight",
+    "flexbodies":[
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        {"rotation":{"x":0, "y":0, "z":0}, "translation":{"x":0, "y":0, "z":0}},
+        //body
+        {"deformGroup":""},
+        ["MFL_CounterWeight", ["counterweight"]],
+        ["MFL_Grille", ["counterweight"]],
+        ["MFL_TowBar", ["counterweight"]]
+	],
+    "nodes":[
+        ["id", "posX", "posY", "posZ"],
+        {"selfCollision":true},
+        {"collision":true},
+        {"nodeMaterial":"|NM_METAL"},
+        {"frictionCoef":0.6},
+        {"group":"counterweight"},
+		
+        {"nodeWeight":80},
+		//main chassis structure
+        ["w1tr", -0.64, 0.653, 0.4],
+        ["w1t", 0, 0.653, 0.4],
+        ["w1tl", 0.64, 0.653, 0.4],
+        ["w1ttr", -0.64, 0.653, 0.85],
+        ["w1tt", 0, 0.653, 0.85],
+        ["w1ttl", 0.64, 0.653, 0.85],
+		
+        ["w2r", -0.35, 1.1, 0.0],
+        ["w2", 0, 1.1, 0.0],
+        ["w2l", 0.35, 1.1, 0.0],
+        ["w2tr", -0.64, 0.922, 0.4],
+        ["w2t", 0, 0.922, 0.4],
+        ["w2tl", 0.64, 0.922, 0.4],
+        ["w2ttr", -0.64, 0.922, 0.85],
+        ["w2tt", 0, 0.922, 0.85],
+        ["w2ttl", 0.64, 0.922, 0.85],
+		
+		
+        ["w3r", -0.3, 1.25, 0.0],
+        ["w3", 0, 1.25, 0.0],
+        ["w3l", 0.3, 1.25, 0.0],
+        ["w3tr", -0.3, 1.25, 0.4],
+        ["w3t", 0, 1.25, 0.4],
+        ["w3tl", 0.3, 1.25, 0.4],
+        ["w3ttr", -0.3, 1.25, 0.85],
+        ["w3tt", 0, 1.25, 0.85],
+        ["w3ttl", 0.3, 1.25, 0.85]
+	],
+    "beams":[
+        ["id1:", "id2:"],
+        {"breakGroupType":0},
+        {"deformLimitExpansion":1.2},
+        {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+        //refnode
+		
+        {"deformLimitExpansion":1.2},
+        {"beamPrecompression":1, "beamType":"|NORMAL"},
+        {"beamSpring":12501000,"beamDamp":1050},
+        //{"beamDeform":30000,"beamStrength":"FLT_MAX"},
+        {"beamDeform":"FLT_MAX","beamStrength":"FLT_MAX"},
+
+		//len
+		["w2r","w3r"],
+		["w2","w3"],
+		["w2l","w3l"],
+
+		["w1tr","w2tr"],
+		["w2tr","w3tr"],
+		["w1t","w2t"],
+		["w2t","w3t"],
+		["w1tl","w2tl"],
+		["w2tl","w3tl"],
+
+
+		["w1ttr","w2ttr"],
+		["w2ttr","w3ttr"],
+		["w1tt","w2tt"],
+		["w2tt","w3tt"],
+		["w1ttl","w2ttl"],
+		["w2ttl","w3ttl"],
+
+		//width
+		["w1tr","w1t"],
+		["w1t","w1tl"],
+
+		["w1ttr","w1tt"],
+		["w1tt","w1ttl"],
+
+		["w2r","w2"],
+		["w2","w2l"],
+
+		["w2tr","w2t"],
+		["w2t","w2tl"],
+
+		["w2ttr","w2tt"],
+		["w2tt","w2ttl"],
+
+		["w3r","w3"],
+		["w3","w3l"],
+
+		["w3tr","w3t"],
+		["w3t","w3tl"],
+
+		["w3ttr","w3tt"],
+		["w3tt","w3ttl"],
+
+		//vert
+		["w1tr","w1ttr"],
+		["w1t","w1tt"],
+		["w1tl","w1ttl"],
+
+		["w2r","w2tr"],
+		["w2tr","w2ttr"],
+		["w2","w2t"],
+		["w2t","w2tt"],
+		["w2l","w2tl"],
+		["w2tl","w2ttl"],
+
+		["w3r","w3tr"],
+		["w3tr","w3ttr"],
+		["w3","w3t"],
+		["w3t","w3tt"],
+		["w3l","w3tl"],
+		["w3tl","w3ttl"],
+
+		//long crosses
+		["w1tr","w2ttr"],
+		["w1ttr","w2tr"],
+
+		["w2tr","w3ttr"],
+		["w2ttr","w3tr"],
+
+		["w2r","w3tr"],
+		["w2tr","w3r"],
+
+
+		["w1t","w2tt"],
+		["w1tt","w2t"],
+
+		["w2t","w3tt"],
+		["w2tt","w3t"],
+
+		["w2","w3t"],
+		["w2t","w3"],
+
+		["w1tl","w2ttl"],
+		["w1ttl","w2tl"],
+
+		["w2tl","w3ttl"],
+		["w2ttl","w3tl"],
+
+		["w2l","w3tl"],
+		["w2tl","w3l"],
+
+
+		//flat crosses
+		["w1ttr","w2tt"],
+		["w1ttl","w2tt"],
+
+		["w2ttr","w3tt"],
+		["w2ttl","w3tt"],
+
+		["w1tr","w2t"],
+		["w1tl","w2t"],
+
+		["w2tr","w3t"],
+		["w2tl","w3t"],
+
+		["w2r","w3"],
+		["w2l","w3"],
+
+		//lat crosses
+		["w1tr","w1tt"],
+		["w1ttr","w1t"],
+		["w1tl","w1tt"],
+		["w1ttl","w1t"],
+
+		["w2tr","w2tt"],
+		["w2ttr","w2t"],
+		["w2tl","w2tt"],
+		["w2ttl","w2t"],
+
+		["w2r","w2t"],
+		["w2tr","w2"],
+		["w2l","w2t"],
+		["w2tl","w2"],
+
+		["w3tr","w3tt"],
+		["w3ttr","w3t"],
+		["w3tl","w3tt"],
+		["w3ttl","w3t"],
+
+		["w3r","w3t"],
+		["w3tr","w3"],
+		["w3l","w3t"],
+		["w3tl","w3"],
+
+		{"beamSpring":12501000,"beamDamp":1050},
+		//mounts
+		["w1ttr","b3tr"],
+		["w1ttr","b3t"],
+		["w1ttr","b4tr"],
+		["w1ttr","b4t"],
+
+		["w1tt","b3tr"],
+		["w1tt","b3t"],
+		["w1tt","b3tl"],
+		["w1tt","b4tr"],
+		["w1tt","b4t"],
+		["w1tt","b4tl"],
+
+		["w1ttl","b3tl"],
+		["w1ttl","b3t"],
+		["w1ttl","b4tl"],
+		["w1ttl","b4t"],
+
+		["w3r","b3r"],
+		["w3r","b3tr"],
+		["w3r","b3"],
+		["w3r","b3t"],
+
+		["w3","b3r"],
+		["w3","b3tr"],
+		["w3","b3l"],
+		["w3","b3tl"],
+		["w3","b3"],
+		["w3","b3t"],
+
+		["w3l","b3l"],
+		["w3l","b3tl"],
+		["w3l","b3"],
+		["w3l","b3t"],
+
+		["w3tr","b3r"],
+		["w3tr","b3tr"],
+		["w3tr","b3"],
+		["w3tr","b3t"],
+
+		["w3t","b3r"],
+		["w3t","b3tr"],
+		["w3t","b3l"],
+		["w3t","b3tl"],
+		["w3t","b3"],
+		["w3t","b3t"],
+
+		["w3tl","b3l"],
+		["w3tl","b3tl"],
+		["w3tl","b3"],
+		["w3tl","b3t"]
+    ],
+    "triangles": [
+		["id1:","id2:","id3:"],
+		{"dragCoef":10}, 
+		["w1ttl", "w1tl", "w2tl"],
+		["w1ttl", "w2tl", "w2ttl"],
+		["w2ttl", "w2tl", "w3tl"],
+		["w2ttl", "w3tl", "w3ttl"],
+		["w3ttl", "w3tl", "w3t"],
+		["w3ttl", "w3t", "w3tt"],
+		["w3tt", "w3t", "w3tr"],
+		["w3tt", "w3tr", "w3ttr"],
+		["w3ttr", "w3tr", "w2tr"],
+		["w3ttr", "w2tr", "w2ttr"],
+		["w2ttr", "w2tr", "w1tr"],
+		["w2ttr", "w1tr", "w1ttr"],
+		["w1tt", "w2tt", "w2ttr"],
+		["w1tt", "w2ttr", "w1ttr"],
+		["w1ttl", "w2ttl", "w2tt"],
+		["w1ttl", "w2tt", "w1tt"],
+		["w2ttl", "w3ttl", "w3tt"],
+		["w2ttl", "w3tt", "w2tt"],
+		["w3ttr", "w2tt", "w3tt"],
+		["w2tt", "w3ttr", "w2ttr"],
+		["w2tl", "w3l", "w3tl"],
+		["w2tl", "w2l", "w3l"],
+		["w3tl", "w3l", "w3"],
+		["w3tl", "w3", "w3t"],
+		["w3t", "w3", "w3r"],
+		["w3t", "w3r", "w3tr"],
+		["w3tr", "w3r", "w2tr"],
+		["w2tr", "w3r", "w2r"],
+		["w3l", "w2l", "w2"],
+		["w3l", "w2", "w3"],
+		["w3", "w2", "w2r"],
+		["w3", "w2r", "w3r"]
+	]
+},
+"WHE_ForliftRearWeightHeavy": {
+    "information":{
+        "authors":"TrackpadUser",
+        "name":"Heavy Duty Counterweight",
+        "value":10000
+    },
+    "slotType":"WHE_ForliftRearWeight",
+    "flexbodies":[
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        {"rotation":{"x":0, "y":0, "z":0}, "translation":{"x":0, "y":0, "z":0}},
+        //body
+        {"deformGroup":""},
+        ["MFL_CounterWeight", ["counterweight"]],
+        ["MFL_Grille", ["counterweight"]],
+        ["MFL_TowBar", ["counterweight"]]
+	],
+    "nodes":[
+        ["id", "posX", "posY", "posZ"],
+        {"selfCollision":true},
+        {"collision":true},
+        {"nodeMaterial":"|NM_METAL"},
+        {"frictionCoef":0.6},
+        {"group":"counterweight"},
+		
+        {"nodeWeight":110},
+		//main chassis structure
+        ["w1tr", -0.64, 0.653, 0.4],
+        ["w1t", 0, 0.653, 0.4],
+        ["w1tl", 0.64, 0.653, 0.4],
+        ["w1ttr", -0.64, 0.653, 0.85],
+        ["w1tt", 0, 0.653, 0.85],
+        ["w1ttl", 0.64, 0.653, 0.85],
+		
+        ["w2r", -0.35, 1.1, 0.0],
+        ["w2", 0, 1.1, 0.0],
+        ["w2l", 0.35, 1.1, 0.0],
+        ["w2tr", -0.64, 0.922, 0.4],
+        ["w2t", 0, 0.922, 0.4],
+        ["w2tl", 0.64, 0.922, 0.4],
+        ["w2ttr", -0.64, 0.922, 0.85],
+        ["w2tt", 0, 0.922, 0.85],
+        ["w2ttl", 0.64, 0.922, 0.85],
+		
+        ["w3r", -0.3, 1.25, 0.0],
+        ["w3", 0, 1.25, 0.0],
+        ["w3l", 0.3, 1.25, 0.0],
+        ["w3tr", -0.3, 1.25, 0.4],
+        ["w3t", 0, 1.25, 0.4],
+        ["w3tl", 0.3, 1.25, 0.4],
+        ["w3ttr", -0.3, 1.25, 0.85],
+        ["w3tt", 0, 1.25, 0.85],
+        ["w3ttl", 0.3, 1.25, 0.85]
+	],
+    "beams":[
+        ["id1:", "id2:"],
+        {"breakGroupType":0},
+        {"deformLimitExpansion":1.2},
+        {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+        //refnode
+		
+        {"deformLimitExpansion":1.2},
+        {"beamPrecompression":1, "beamType":"|NORMAL"},
+        {"beamSpring":12501000,"beamDamp":1050},
+        //{"beamDeform":30000,"beamStrength":"FLT_MAX"},
+        {"beamDeform":"FLT_MAX","beamStrength":"FLT_MAX"},
+		  
+		//len
+		["w2r","w3r"],
+		["w2","w3"],
+		["w2l","w3l"],
+
+		["w1tr","w2tr"],
+		["w2tr","w3tr"],
+		["w1t","w2t"],
+		["w2t","w3t"],
+		["w1tl","w2tl"],
+		["w2tl","w3tl"],
+
+
+		["w1ttr","w2ttr"],
+		["w2ttr","w3ttr"],
+		["w1tt","w2tt"],
+		["w2tt","w3tt"],
+		["w1ttl","w2ttl"],
+		["w2ttl","w3ttl"],
+
+		//width
+		["w1tr","w1t"],
+		["w1t","w1tl"],
+
+		["w1ttr","w1tt"],
+		["w1tt","w1ttl"],
+
+		["w2r","w2"],
+		["w2","w2l"],
+
+		["w2tr","w2t"],
+		["w2t","w2tl"],
+
+		["w2ttr","w2tt"],
+		["w2tt","w2ttl"],
+
+		["w3r","w3"],
+		["w3","w3l"],
+
+		["w3tr","w3t"],
+		["w3t","w3tl"],
+
+		["w3ttr","w3tt"],
+		["w3tt","w3ttl"],
+
+		//vert
+		["w1tr","w1ttr"],
+		["w1t","w1tt"],
+		["w1tl","w1ttl"],
+
+		["w2r","w2tr"],
+		["w2tr","w2ttr"],
+		["w2","w2t"],
+		["w2t","w2tt"],
+		["w2l","w2tl"],
+		["w2tl","w2ttl"],
+
+		["w3r","w3tr"],
+		["w3tr","w3ttr"],
+		["w3","w3t"],
+		["w3t","w3tt"],
+		["w3l","w3tl"],
+		["w3tl","w3ttl"],
+
+		//long crosses
+		["w1tr","w2ttr"],
+		["w1ttr","w2tr"],
+
+		["w2tr","w3ttr"],
+		["w2ttr","w3tr"],
+
+		["w2r","w3tr"],
+		["w2tr","w3r"],
+
+
+		["w1t","w2tt"],
+		["w1tt","w2t"],
+
+		["w2t","w3tt"],
+		["w2tt","w3t"],
+
+		["w2","w3t"],
+		["w2t","w3"],
+
+		["w1tl","w2ttl"],
+		["w1ttl","w2tl"],
+
+		["w2tl","w3ttl"],
+		["w2ttl","w3tl"],
+
+		["w2l","w3tl"],
+		["w2tl","w3l"],
+
+
+		//flat crosses
+		["w1ttr","w2tt"],
+		["w1ttl","w2tt"],
+
+		["w2ttr","w3tt"],
+		["w2ttl","w3tt"],
+
+		["w1tr","w2t"],
+		["w1tl","w2t"],
+
+		["w2tr","w3t"],
+		["w2tl","w3t"],
+
+		["w2r","w3"],
+		["w2l","w3"],
+
+		//lat crosses
+		["w1tr","w1tt"],
+		["w1ttr","w1t"],
+		["w1tl","w1tt"],
+		["w1ttl","w1t"],
+
+		["w2tr","w2tt"],
+		["w2ttr","w2t"],
+		["w2tl","w2tt"],
+		["w2ttl","w2t"],
+
+		["w2r","w2t"],
+		["w2tr","w2"],
+		["w2l","w2t"],
+		["w2tl","w2"],
+
+		["w3tr","w3tt"],
+		["w3ttr","w3t"],
+		["w3tl","w3tt"],
+		["w3ttl","w3t"],
+
+		["w3r","w3t"],
+		["w3tr","w3"],
+		["w3l","w3t"],
+		["w3tl","w3"],
+
+		{"beamSpring":12501000,"beamDamp":1050},
+		//mounts
+		["w1ttr","b3tr"],
+		["w1ttr","b3t"],
+		["w1ttr","b4tr"],
+		["w1ttr","b4t"],
+
+		["w1tt","b3tr"],
+		["w1tt","b3t"],
+		["w1tt","b3tl"],
+		["w1tt","b4tr"],
+		["w1tt","b4t"],
+		["w1tt","b4tl"],
+
+		["w1ttl","b3tl"],
+		["w1ttl","b3t"],
+		["w1ttl","b4tl"],
+		["w1ttl","b4t"],
+
+		["w3r","b3r"],
+		["w3r","b3tr"],
+		["w3r","b3"],
+		["w3r","b3t"],
+
+		["w3","b3r"],
+		["w3","b3tr"],
+		["w3","b3l"],
+		["w3","b3tl"],
+		["w3","b3"],
+		["w3","b3t"],
+
+		["w3l","b3l"],
+		["w3l","b3tl"],
+		["w3l","b3"],
+		["w3l","b3t"],
+
+		["w3tr","b3r"],
+		["w3tr","b3tr"],
+		["w3tr","b3"],
+		["w3tr","b3t"],
+
+		["w3t","b3r"],
+		["w3t","b3tr"],
+		["w3t","b3l"],
+		["w3t","b3tl"],
+		["w3t","b3"],
+		["w3t","b3t"],
+
+		["w3tl","b3l"],
+		["w3tl","b3tl"],
+		["w3tl","b3"],
+		["w3tl","b3t"]
+    ],
+    "triangles": [
+		["id1:","id2:","id3:"],
+		{"dragCoef":10}, 
+		["w1ttl", "w1tl", "w2tl"],
+		["w1ttl", "w2tl", "w2ttl"],
+		["w2ttl", "w2tl", "w3tl"],
+		["w2ttl", "w3tl", "w3ttl"],
+		["w3ttl", "w3tl", "w3t"],
+		["w3ttl", "w3t", "w3tt"],
+		["w3tt", "w3t", "w3tr"],
+		["w3tt", "w3tr", "w3ttr"],
+		["w3ttr", "w3tr", "w2tr"],
+		["w3ttr", "w2tr", "w2ttr"],
+		["w2ttr", "w2tr", "w1tr"],
+		["w2ttr", "w1tr", "w1ttr"],
+		["w1tt", "w2tt", "w2ttr"],
+		["w1tt", "w2ttr", "w1ttr"],
+		["w1ttl", "w2ttl", "w2tt"],
+		["w1ttl", "w2tt", "w1tt"],
+		["w2ttl", "w3ttl", "w3tt"],
+		["w2ttl", "w3tt", "w2tt"],
+		["w3ttr", "w2tt", "w3tt"],
+		["w2tt", "w3ttr", "w2ttr"],
+		["w2tl", "w3l", "w3tl"],
+		["w2tl", "w2l", "w3l"],
+		["w3tl", "w3l", "w3"],
+		["w3tl", "w3", "w3t"],
+		["w3t", "w3", "w3r"],
+		["w3t", "w3r", "w3tr"],
+		["w3tr", "w3r", "w2tr"],
+		["w2tr", "w3r", "w2r"],
+		["w3l", "w2l", "w2"],
+		["w3l", "w2", "w3"],
+		["w3", "w2", "w2r"],
+		["w3", "w2r", "w3r"]
+	]
+}
+}

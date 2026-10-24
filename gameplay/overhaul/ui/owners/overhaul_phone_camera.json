@@ -1,0 +1,10 @@
+{
+  "id": "overhaul_phone_camera",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "other",
+    "namespaceOrder": 50,
+    "aliases": []
+  }
+}

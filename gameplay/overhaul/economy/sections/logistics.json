@@ -1,0 +1,8 @@
+{
+  "id": "logistics",
+  "order": 20,
+  "label": "Logistics",
+  "children": [
+    {"id": "logistics", "label": "Logistics", "skillKey": "logistics-delivery", "economyKeys": ["delivery_parcel", "delivery_vehicle", "delivery_trailer", "delivery_fluid", "delivery_dryBulk", "delivery_cement", "delivery_cash", "beamEats"], "expandable": ["delivery_parcel", "delivery_vehicle", "delivery_trailer", "delivery_fluid", "delivery_dryBulk", "delivery_cement", "delivery_cash", "beamEats"]}
+  ]
+}

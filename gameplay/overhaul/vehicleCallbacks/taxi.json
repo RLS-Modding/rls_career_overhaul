@@ -1,0 +1,8 @@
+{
+  "id": "taxi",
+  "order": 140,
+  "callbacks": [
+    {"id": "taxiSensorData", "extension": "overhaul_jobs_taxi_taxi", "fn": "receiveSensorData", "guard": "none"},
+    {"id": "taxiPartsTree", "extension": "overhaul_jobs_taxi_taxi", "fn": "returnPartsTree", "guard": "none"}
+  ]
+}

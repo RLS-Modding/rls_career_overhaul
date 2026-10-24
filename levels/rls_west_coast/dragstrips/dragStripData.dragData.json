@@ -1,0 +1,269 @@
+{
+  "canBeReseted": false,
+  "canBeTeleported": true,
+  "context": "freeroam",
+  "dragType": "headsUpRace",
+  "phases": [
+    {
+      "dependency": true,
+      "name": "stage",
+      "startedOffset": 0
+    },
+    {
+      "dependency": true,
+      "name": "countdown",
+      "startedOffset": 0
+    },
+    {
+      "dependency": false,
+      "name": "race",
+      "startedOffset": 0
+    },
+    {
+      "dependency": false,
+      "name": "stop",
+      "startedOffset": 0
+    }
+  ],
+  "prefabs": {
+    "christmasTree": {
+      "isUsed": true,
+      "treeType": ".500"
+    },
+    "decorations": {
+      "isUsed": false
+    },
+    "displaySign": {
+      "isUsed": true
+    },
+    "paths": {
+      "isUsed": false
+    }
+  },
+  "strip": {
+    "lanes": [
+      {
+        "boundary": {
+          "transform": {
+            "pos": {
+              "x": 105.1848602,
+              "y": 55.50203705,
+              "z": 119.3841858
+            },
+            "rot": {
+              "x": -1.565770775e-08,
+              "y": 8.01011194e-09,
+              "z": 0.455439391,
+              "w": 0.8902668196
+            },
+            "scl": {
+              "x": 4.07981262,
+              "y": -427.0298561,
+              "z": 3
+            }
+          }
+        },
+        "color": "blue",
+        "laneOrder": 1,
+        "longName": "Right Lane",
+        "shortName": "Right",
+        "waypoints": {
+          "endLine": {
+            "name": "drag_1_endLine",
+            "transform": {
+              "pos": {
+                "x": 134.1748047,
+                "y": 77.52145386,
+                "z": 119.3841858
+              },
+              "rot": {
+                "x": 0,
+                "y": 0,
+                "z": 0.4467721683,
+                "w": 0.8946477685
+              },
+              "scl": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "waypoint": {
+              "mode": "set",
+              "speed": 800
+            },
+            "sceneName": "alderStrip_main_wp_endLine_1",
+            "sceneAuthority": true
+          },
+          "spawn": {
+            "name": "drag_1_spawn",
+            "transform": {
+              "pos": {
+                "x": -206.5402832,
+                "y": -171.0057068,
+                "z": 119.3841934
+              },
+              "rot": {
+                "x": 0,
+                "y": 0,
+                "z": 0.443787565,
+                "w": 0.8961320199
+              },
+              "scl": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "waypoint": {
+              "mode": "limit",
+              "speed": 20
+            },
+            "sceneName": "alderStrip_main_wp_spawn_1",
+            "sceneAuthority": true
+          },
+          "stage": {
+            "name": "drag_1_stage",
+            "transform": {
+              "pos": {
+                "x": -189.6705017,
+                "y": -157.7243042,
+                "z": 119.3841858
+              },
+              "rot": {
+                "x": -1.481345308e-06,
+                "y": 7.566954598e-07,
+                "z": 0.4549029473,
+                "w": 0.8905410202
+              },
+              "scl": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "waypoint": {
+              "mode": "limit",
+              "speed": 1
+            },
+            "sceneName": "alderStrip_main_wp_stage_1",
+            "sceneAuthority": true
+          }
+        }
+      },
+      {
+        "boundary": {
+          "transform": {
+            "pos": {
+              "x": 94.73217773,
+              "y": 60.03857803,
+              "z": 119.3840027
+            },
+            "rot": {
+              "x": 0,
+              "y": 0,
+              "z": 0.4550000131,
+              "w": 0.8899999857
+            },
+            "scl": {
+              "x": 3.959626965,
+              "y": 443.7658576,
+              "z": 3
+            }
+          }
+        },
+        "color": "blue",
+        "laneOrder": 2,
+        "longName": "Left Lane",
+        "shortName": "Left",
+        "waypoints": {
+          "endLine": {
+            "name": "drag_2_endLine",
+            "transform": {
+              "pos": {
+                "x": 129.1916962,
+                "y": 84.24241638,
+                "z": 119.3841934
+              },
+              "rot": {
+                "x": 8.19371615e-07,
+                "y": -4.065309129e-07,
+                "z": 0.4444521208,
+                "w": 0.8958026079
+              },
+              "scl": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "waypoint": {
+              "mode": "set",
+              "speed": 800
+            },
+            "sceneName": "alderStrip_main_wp_endLine_2",
+            "sceneAuthority": true
+          },
+          "spawn": {
+            "name": "drag_2_spawn",
+            "transform": {
+              "pos": {
+                "x": -212.5357056,
+                "y": -163.1669464,
+                "z": 119.384201
+              },
+              "rot": {
+                "x": 0,
+                "y": 0,
+                "z": 0.4452579451,
+                "w": 0.8954023466
+              },
+              "scl": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "waypoint": {
+              "mode": "limit",
+              "speed": 20
+            },
+            "sceneName": "alderStrip_main_wp_spawn_2",
+            "sceneAuthority": true
+          },
+          "stage": {
+            "name": "drag_2_stage",
+            "transform": {
+              "pos": {
+                "x": -194.8289642,
+                "y": -150.5266724,
+                "z": 119.3841858
+              },
+              "rot": {
+                "x": -8.896499916e-07,
+                "y": 4.538300676e-07,
+                "z": 0.4544123525,
+                "w": 0.8907914536
+              },
+              "scl": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "waypoint": {
+              "mode": "limit",
+              "speed": 1
+            },
+            "sceneName": "alderStrip_main_wp_stage_2",
+            "sceneAuthority": true
+          }
+        }
+      }
+    ]
+  },
+  "stripInfo": {
+    "stripName": "Alder Drag Strip",
+    "id": "alderStrip"
+  }
+}

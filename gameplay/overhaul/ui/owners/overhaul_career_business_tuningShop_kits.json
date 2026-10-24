@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_career_business_tuningShop_kits",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 90,
+    "aliases": [
+      "career_modules_business_tuningShopKits"
+    ]
+  }
+}

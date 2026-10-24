@@ -1,0 +1,16 @@
+{
+  "id" : "dailyDriver",
+  "name" : "insurance.classes.dailyDriver.name",
+  "description" : "insurance.classes.dailyDriver.description",
+  "icon" : "car",
+  "coverageRate" : 0.015,
+  "applicableConditions" : {
+    "priority" : -1,
+    "conditions" : {
+      "applicableValue" : {
+      "min" : 0,
+      "max" : 100000
+      }
+    }
+  }
+}

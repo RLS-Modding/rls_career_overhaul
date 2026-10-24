@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_career_business_fleet",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 40,
+    "aliases": [
+      "career_modules_business_businessInventory"
+    ]
+  }
+}

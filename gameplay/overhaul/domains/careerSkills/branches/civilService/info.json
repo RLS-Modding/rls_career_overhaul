@@ -1,0 +1,861 @@
+{
+  "name": "Civil Service",
+  "description": "Progress your overall Civil Service mastery. Each Civil Service level increases payout for police, bus, and paramedic work by 2%.",
+  "order": 10,
+  "isSkill": false,
+  "attributeKey": "careerSkills-civilService",
+  "icon": "badgeRoundStar",
+  "branchHeading": "Civil Service Careers",
+  "levels": [
+    {
+      "requiredValue": 0,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 1",
+        "description": "Reach level 1 to establish the Civil Service payout baseline (+0%)."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +0%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +0%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 200,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 2",
+        "description": "Reach level 2 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +2%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +2%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 500,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 3",
+        "description": "Reach level 3 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +4%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +4%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 900,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 4",
+        "description": "Reach level 4 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +6%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +6%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 1400,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 5",
+        "description": "Reach level 5 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +8%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +8%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 1900,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 6",
+        "description": "Reach level 6 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +10%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +10%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 2600,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 7",
+        "description": "Reach level 7 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +12%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +12%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 3400,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 8",
+        "description": "Reach level 8 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +14%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +14%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 4300,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 9",
+        "description": "Reach level 9 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +16%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +16%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 5300,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 10",
+        "description": "Reach level 10 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +18%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +18%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 6500,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 11",
+        "description": "Reach level 11 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +20%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +20%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 7900,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 12",
+        "description": "Reach level 12 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +22%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +22%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 9400,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 13",
+        "description": "Reach level 13 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +24%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +24%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 11000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 14",
+        "description": "Reach level 14 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +26%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +26%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 13000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 15",
+        "description": "Reach level 15 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +28%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +28%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 15000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 16",
+        "description": "Reach level 16 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +30%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +30%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 17500,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 17",
+        "description": "Reach level 17 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +32%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +32%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 20000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 18",
+        "description": "Reach level 18 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +34%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +34%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 23000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 19",
+        "description": "Reach level 19 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +36%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +36%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 26000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 20",
+        "description": "Reach level 20 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +38%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +38%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 29000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 21",
+        "description": "Reach level 21 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +40%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +40%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 33000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 22",
+        "description": "Reach level 22 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +42%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +42%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 37000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 23",
+        "description": "Reach level 23 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +44%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +44%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 41000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 24",
+        "description": "Reach level 24 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +46%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +46%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 46000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 25",
+        "description": "Reach level 25 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +48%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +48%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 51000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 26",
+        "description": "Reach level 26 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +50%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +50%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 56000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 27",
+        "description": "Reach level 27 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +52%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +52%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 62000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 28",
+        "description": "Reach level 28 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +54%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +54%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 68000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 29",
+        "description": "Reach level 29 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +56%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +56%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 74000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 30",
+        "description": "Reach level 30 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +58%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +58%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 81000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 31",
+        "description": "Reach level 31 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +60%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +60%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 88000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 32",
+        "description": "Reach level 32 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +62%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +62%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 96000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 33",
+        "description": "Reach level 33 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +64%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +64%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 104000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 34",
+        "description": "Reach level 34 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +66%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +66%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 113000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 35",
+        "description": "Reach level 35 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +68%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +68%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 122000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 36",
+        "description": "Reach level 36 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +70%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +70%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 131000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 37",
+        "description": "Reach level 37 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +72%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +72%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 141000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 38",
+        "description": "Reach level 38 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +74%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +74%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 151000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 39",
+        "description": "Reach level 39 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +76%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +76%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 162000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 40",
+        "description": "Reach level 40 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +78%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +78%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 174000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 41",
+        "description": "Reach level 41 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +80%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +80%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 186000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 42",
+        "description": "Reach level 42 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +82%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +82%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 198000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 43",
+        "description": "Reach level 43 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +84%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +84%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 211000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 44",
+        "description": "Reach level 44 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +86%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +86%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 225000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 45",
+        "description": "Reach level 45 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +88%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +88%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 239000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 46",
+        "description": "Reach level 46 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +90%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +90%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 254000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 47",
+        "description": "Reach level 47 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +92%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +92%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 269000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 48",
+        "description": "Reach level 48 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +94%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +94%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 285000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 49",
+        "description": "Reach level 49 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +96%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +96%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 301000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 50",
+        "description": "Reach level 50 to increase Civil Service payout bonus by another +2%."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Civil Service Payout Bonus +98%",
+          "description": "Total Civil Service payout bonus from Civil Service is now +98%."
+        }
+      ]
+    }
+  ]
+}

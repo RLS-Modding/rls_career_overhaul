@@ -1,0 +1,8 @@
+{
+  "id": "stamina",
+  "order": 10,
+  "callbacks": [
+    {"id": "staminaWalkingMotion", "extension": "overhaul_career_progression_stamina", "fn": "noteWalkingMotion", "guard": "function"},
+    {"id": "playerControllerReady", "extension": "overhaul_career_progression_stamina", "fn": "onPlayerControllerReady", "guard": "function"}
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "id": "rls_west_coast",
+  "version": 1,
+  "sourceLevel": "west_coast_usa",
+  "targetLevel": "rls_west_coast",
+  "title": "RLS West Coast",
+  "copyDefaultLicensePlate": true,
+  "materialCopiesFile": "/gameplay/overhaul/levelMaterialCopies.json",
+  "textPatches": [
+    {
+      "file": "art/shapes/trees/trees_conifer/main.materials.json",
+      "replacements": [
+        {
+          "from": "/levels/west_coast_usa/art/shapes/trees/trees_conifer/t_douglasfir_trunk_b.color.png",
+          "to": "/assets/materials/tree/fir/douglasfir_trunk/t_douglasfir_trunk_b.color.png"
+        },
+        {
+          "from": "/levels/west_coast_usa/art/shapes/trees/trees_oak/t_wcu_oak_bark_ao.data.png",
+          "to": "/assets/materials/tree/fir/douglasfir_trunk/t_wcu_oak_bark_ao.data.png"
+        },
+        {
+          "from": "/levels/west_coast_usa/art/shapes/trees/trees_oak/t_wcu_oak_bark_nm.normal.png",
+          "to": "/assets/materials/tree/fir/douglasfir_trunk/t_wcu_oak_bark_nm.normal.png"
+        },
+        {
+          "from": "/levels/west_coast_usa/art/shapes/trees/trees_oak/t_wcu_oak_bark_r.data.png",
+          "to": "/assets/materials/tree/fir/douglasfir_trunk/t_wcu_oak_bark_r.data.png"
+        }
+      ]
+    },
+    {
+      "file": "art/shapes/buildings/steel_factory/main.materials.json",
+      "replacements": [
+        {
+          "from": "levels/west_coast_usa/art/shapes/buildings/steel_factory/grunge_dripping_d.dds",
+          "to": "assets/materials/tileable/metal/corrugated_modern/grunge_dripping_d.dds"
+        }
+      ]
+    }
+  ],
+  "legacyCachePaths": [
+    {
+      "root": "/mods/unpacked/rls_west_coast/",
+      "stamp": "/settings/rls_career/levelProxy_rls_west_coast.json"
+    }
+  ]
+}

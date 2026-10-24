@@ -1,0 +1,54 @@
+<link rel="stylesheet" type="text/css" href="/ui/modModules/overhaulManager/overhaulManager.css?v=19" />
+<div class="overhaul-container rls-house" data-bx-theme="ingame">
+  <section class="overhaul-panel" overhaul-settings-nav aria-label="{{t('ui.overhaulManager.title')}}">
+    <header class="overhaul-header">
+      <div class="manager-title"><svg class="title-slash" viewBox="0 0 36 40" aria-hidden="true"><path d="M18.6366 0H34.0094L26.73 20H11.3572L18.6366 0Z" fill="#da5706"/><path d="M19.4504 40H4.07812L11.3572 20L4.07812 0H19.4504L26.7295 20L19.4504 40Z" fill="currentColor"/></svg><h1>{{t('ui.overhaulManager.title')}}</h1></div>
+      <span class="feature-summary pill" ng-if="isLoaded" aria-label="{{t('ui.overhaulManager.summary', {enabled: enabledCount, total: featureCount})}}"><strong>{{enabledCount}} / {{featureCount}}</strong> {{t('ui.overhaulManager.on')}}</span>
+    </header>
+    <div class="overhaul-content-frame">
+      <div class="overhaul-content" bng-nav-scroll>
+        <section class="settings-section" ng-repeat="section in sections track by section.key" ng-class="'section-' + section.key">
+          <div class="section-heading">
+            <span class="section-icon manager-icon" ng-style="{'mask-image': 'url(/ui/ui-vue/src/assets/fonts/bngIcons/svg/' + section.icon + '.svg)'}" aria-hidden="true"></span>
+            <div><h2>{{t(section.label)}}</h2><p>{{t(section.note)}}</p></div>
+            <span class="developer-badge pill soft" ng-if="section.key === 'developer'">{{t('ui.overhaulManager.devKey')}}</span>
+          </div>
+          <div class="settings-grid">
+            <article class="setting-card" ng-repeat="option in section.options track by option.key" ng-class="{'setting-card--stacked': option.control !== 'toggle' && option.key !== 'forcePhoneTutorial'}">
+              <span class="option-icon manager-icon" ng-style="{'mask-image': 'url(/ui/ui-vue/src/assets/fonts/bngIcons/svg/' + option.icon + '.svg)'}" aria-hidden="true"></span>
+              <div class="setting-copy">
+                <h3 id="setting-label-{{option.key}}">{{t(option.label)}}</h3>
+                <p>{{option.description ? t(option.description) : t('ui.overhaulManager.adjust', {label: t(option.label)})}}</p>
+              </div>
+              <button type="button" class="btn-secondary btn compact" ng-if="option.key === 'forcePhoneTutorial'" ng-click="replayPhoneTutorial()" ng-disabled="disabled(option)">{{t('ui.overhaulManager.replay')}}</button>
+              <button ng-if="option.control === 'toggle'" type="button" class="toggle-switch switch" ng-class="{'active': values[option.key]}" ng-click="setValue(option, !values[option.key])" ng-disabled="disabled(option)" aria-label="{{t('ui.overhaulManager.toggle', {label: t(option.label)})}}" aria-pressed="{{values[option.key]}}">
+                <span class="toggle-state">{{choiceLabel(option, values[option.key])}}</span><span class="toggle-knob knob" aria-hidden="true"></span>
+              </button>
+              <div class="interval-slider" ng-if="option.control === 'choice'">
+                <div class="interval-options seg bar" role="group" aria-labelledby="setting-label-{{option.key}}">
+                  <button type="button" ng-repeat="value in option.options track by $index" ng-class="{active: values[option.key] === value}" ng-click="setValue(option, value)" ng-disabled="disabled(option)" aria-label="{{t(option.label)}}: {{choiceLabel(option, value)}} {{t(option.unit)}}" aria-pressed="{{values[option.key] === value}}">{{choiceLabel(option, value)}}<span ng-if="option.unit"> {{t(option.unit)}}</span></button>
+                </div>
+              </div>
+              <label class="number-control" ng-if="option.control === 'number'">
+                <span>{{t(option.label)}} <output>{{choiceLabel(option, values[option.key])}} {{t(option.unit)}}</output></span>
+                <input ng-if="option.control === 'number'" type="number" class="field" bng-nav-item tabindex="0" ng-model="values[option.key]" ng-change="changed()" min="{{option.range.min}}" max="{{option.range.max}}" ng-disabled="disabled(option)" aria-label="{{t(option.label)}}" />
+              </label>
+              <button ng-if="option.control === 'slider'" type="button" class="house-slider" role="slider" bng-nav-item tabindex="0" ng-attr-data-setting-key="{{option.key}}" ng-click="setSlider(option, $event)" ng-disabled="disabled(option)" aria-label="{{t(option.label)}}" aria-valuemin="{{option.range.min}}" aria-valuemax="{{option.range.max}}" aria-valuenow="{{values[option.key]}}">
+                <span class="slider-value">{{choiceLabel(option, values[option.key])}} {{t(option.unit)}}</span>
+                <span class="slider-track"><span class="slider-fill" ng-style="{'transform': 'scaleX(' + rangeRatio(option) + ')'}"></span><span class="slider-thumb" ng-style="{'left': (rangeRatio(option) * 100) + '%'}"></span></span>
+              </button>
+              <input class="text-control field" ng-if="option.control === 'text'" type="text" bng-nav-item tabindex="0" ng-model="values[option.key]" ng-change="changed()" ng-disabled="disabled(option)" aria-label="{{t(option.label)}}" />
+            </article>
+          </div>
+        </section>
+      </div>
+    </div>
+    <footer class="overhaul-footer">
+      <div class="save-status" role="status" ng-class="{'save-status--error': saveError}">{{t(saveStatus || (invalid ? 'ui.overhaulManager.invalid' : isDirty ? 'ui.overhaulManager.dirty' : 'ui.overhaulManager.upToDate'))}}</div>
+      <div class="footer-actions">
+        <button type="button" class="btn-back btn" ng-click="goBack()"><span class="back-icon manager-icon" aria-hidden="true"></span>{{t('ui.overhaulManager.back')}}</button>
+        <button type="button" class="btn-save btn btn-primary" ng-click="saveSettings()" ng-disabled="!isDirty || isSaving || invalid">{{t(isSaving ? 'ui.overhaulManager.saving' : 'ui.overhaulManager.save')}}</button>
+      </div>
+    </footer>
+  </section>
+</div>

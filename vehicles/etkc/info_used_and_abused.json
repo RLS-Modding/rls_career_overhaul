@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":9500,  
+    "Configuration": "Used & Abused ( Joe's Junk Career )",
+    "Description": "Beater ETK Coupe with damaged body panels and misc junk parts.",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 362,
+    "Torque": 367,
+    "Value": 21000,
+    "Weight": 1541,
+    "Years": {
+      "max": 2021,
+      "min": 2015
+    }  
+}
+
+

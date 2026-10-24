@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_vehicleFilesCache",
+  "order": 110,
+  "module": "overhaul/vehicleFilesCache",
+  "scopes": [
+    {
+      "id": "services",
+      "order": 1
+    }
+  ]
+}

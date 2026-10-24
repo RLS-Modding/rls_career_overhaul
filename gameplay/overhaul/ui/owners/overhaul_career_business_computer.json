@@ -1,0 +1,26 @@
+{
+  "id": "overhaul_career_business_computer",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 30,
+    "aliases": [
+      "career_modules_business_businessComputer"
+    ]
+  },
+  "routes": [
+    {
+      "name": "business-computer",
+      "order": 1,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "play",
+          "title": "Business Computer",
+          "onEnter": "overhaul_shell_extensionManager.acquireRouteOwner",
+          "scopeTree": {}
+        }
+      }
+    }
+  ]
+}

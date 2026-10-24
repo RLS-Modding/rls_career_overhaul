@@ -1,0 +1,5 @@
+{
+  "id": "overhaul_world_sleep",
+  "order": 620,
+  "module": "overhaul/world/sleep"
+}

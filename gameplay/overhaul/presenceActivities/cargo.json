@@ -1,0 +1,7 @@
+{
+  "id": "cargo",
+  "owner": "overhaul_career_logistics_general",
+  "method": "isDeliveryModeActive",
+  "activity": "career_cargo",
+  "order": 10
+}

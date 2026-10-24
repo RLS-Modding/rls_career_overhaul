@@ -1,0 +1,5 @@
+{
+  "id": "insurances",
+  "icon": "shieldHandCheckmark",
+  "routeTarget": "overhaul.computer.insurances"
+}

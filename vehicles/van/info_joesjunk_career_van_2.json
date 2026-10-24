@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":13500,  
+    "Configuration": "Mystery ( Joe's Junk Career )",
+    "Description": "Van filled with mysteries! How long before the engine will explode? How unsafe it is to drive? What's in the crate on the roof? All mysteries!",
+    "Drivetrain": "FWD",
+    "Fuel Type": "Gasoline",
+    "Power": 177,
+    "Torque": 179,
+    "Value": 2300,
+    "Weight": 2686,
+    "Years": {
+      "max": 2005,
+      "min": 1993
+    }  
+}
+
+

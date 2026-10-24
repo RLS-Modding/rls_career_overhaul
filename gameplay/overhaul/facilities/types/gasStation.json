@@ -1,0 +1,6 @@
+{
+  "id": "gasStation",
+  "order": 200,
+  "listName": "gasStations",
+  "uiLabel": "ui.facilities.type.gasStation"
+}

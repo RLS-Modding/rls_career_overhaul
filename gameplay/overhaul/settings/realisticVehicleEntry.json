@@ -1,0 +1,16 @@
+{
+  "id": "realisticVehicleEntry",
+  "key": "realisticVehicleEntry",
+  "order": 500,
+  "type": "boolean",
+  "default": true,
+  "section": "gameplay",
+  "validateSingle": false,
+  "validateLoaded": false,
+  "ui": {
+    "label": "ui.overhaulManager.settings.realisticVehicleEntry.label",
+    "description": "ui.overhaulManager.settings.realisticVehicleEntry.description",
+    "section": "gameplay",
+    "icon": "vehicleDoors"
+  }
+}

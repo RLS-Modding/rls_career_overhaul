@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":7500,  
+    "Configuration": "Back To The Barn ( Joe's Junk Career )",
+    "Description": "Some cars just deserves to be pushed back in the barn they were found in.",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 184,
+    "Torque": 186,
+    "Value": 2350,
+    "Weight": 1572,
+    "Years": {
+      "max": 1963,
+      "min": 1962
+    }  
+}
+
+

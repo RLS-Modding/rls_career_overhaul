@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":11500,  
+    "Configuration": "Good Enough ( Joe's Junk Career )",
+    "Description": "Good enough to drive around in, bad enough to leave you stranded.",
+    "Drivetrain": "FWD",
+    "Fuel Type": "Gasoline",
+    "Power": 71,
+    "Torque": 71,
+    "Value": 1680,
+    "Weight": 963,
+    "Years": {
+      "max": 1966,
+      "min": 1963
+    }  
+}
+
+

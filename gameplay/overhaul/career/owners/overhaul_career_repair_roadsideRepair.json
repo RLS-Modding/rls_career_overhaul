@@ -1,0 +1,40 @@
+{
+  "id": "overhaul_career_repair_roadsideRepair",
+  "order": 10,
+  "module": "overhaul/career/repair/roadsideRepair",
+  "scopes": [
+    {
+      "id": "owned",
+      "order": 1
+    }
+  ],
+  "bigMap": {
+    "types": [
+      {
+        "id": "repairSpot",
+        "icon": "wrench"
+      }
+    ],
+    "groups": [
+      {
+        "id": "type_repairSpot",
+        "label": "Roadside Service",
+        "icon": "wrench",
+        "placements": {
+          "freeroam": [
+            {
+              "section": "freeroamPois",
+              "order": 9
+            }
+          ],
+          "career": [
+            {
+              "section": "freeroamPois",
+              "order": 11
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

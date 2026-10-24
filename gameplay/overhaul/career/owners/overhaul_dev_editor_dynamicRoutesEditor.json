@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_dev_editor_dynamicRoutesEditor",
+  "order": 13,
+  "module": "overhaul/dev/editor/dynamicRoutesEditor",
+  "beforeUnload": "prepareForUnload",
+  "scopes": [
+    {
+      "id": "editor",
+      "order": 24
+    }
+  ]
+}

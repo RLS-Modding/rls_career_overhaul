@@ -1,0 +1,128 @@
+.dkf-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 8602;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.dkf-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.48);
+  pointer-events: auto;
+}
+
+.dkf-card {
+  position: absolute;
+  pointer-events: auto;
+  width: 420px;
+  max-width: calc(100vw - 40px);
+  box-sizing: border-box;
+  border: 1px solid rgba(224, 107, 50, 0.28);
+  border-radius: 14px;
+  background: rgba(12, 14, 18, 0.92);
+  color: #e8edf5;
+  padding: 16px 18px 14px;
+  text-align: center;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  cursor: grab;
+}
+
+.dkf-card:active {
+  cursor: grabbing;
+}
+
+.dkf-accent {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 0;
+  height: 2px;
+  border-radius: 0 0 6px 6px;
+  background: linear-gradient(90deg, #c24e22 0%, #e0703a 50%, #c24e22 100%);
+}
+
+.dkf-status {
+  margin-bottom: 2px;
+  color: rgba(219, 226, 237, 0.62);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dkf-title {
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.dkf-placement {
+  display: inline-flex;
+  min-width: 120px;
+  justify-content: center;
+  margin: 10px 0;
+  padding: 7px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #f4c49c;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.dkf-body {
+  margin-bottom: 10px;
+  color: rgba(219, 226, 237, 0.7);
+  font-size: 12px;
+}
+
+.dkf-rows {
+  margin-bottom: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.dkf-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+}
+
+.dkf-row + .dkf-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dkf-row span {
+  color: rgba(219, 226, 237, 0.62);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.dkf-row strong {
+  color: #f4c49c;
+  font-size: 14px;
+}
+
+.dkf-total strong {
+  color: #fff;
+  font-size: 17px;
+}
+
+.dkf-btn {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 10px 20px;
+  background: linear-gradient(180deg, #e0703a 0%, #c24e22 100%);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}

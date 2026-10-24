@@ -1,0 +1,55 @@
+{
+  "m_otb_roof_slates_square": {
+    "name": "m_otb_roof_slates_square",
+    "mapTo": "m_otb_roof_slates_square",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/assets/materials/tileable/roofing/m_roof_slates_square/t_roof_slates_square_ao.data.dds",
+        "baseColorFactor": null,
+        "baseColorMap": "/assets/materials/tileable/roofing/m_roof_slates_square/t_roof_slates_square_b.color.dds",
+        "diffuseMapUseUV": null,
+        "normalMap": "/assets/materials/tileable/roofing/m_roof_slates_square/t_roof_slates_square_nm.normal.dds",
+        "opacityFactor": null,
+        "opacityMapUseUV": null,
+        "roughnessMap": "/assets/materials/tileable/roofing/m_roof_slates_square/t_roof_slates_square_r.data.dds",
+        "roughnessMapUseUV": null,
+        "vertColor": true
+      },
+      {
+        "ambientOcclusionMap": "/assets/materials/tileable/metal/m_modern_corrugated/t_wall_breakup_ao.data.dds",
+        "baseColorFactor": [
+          0.578059018,
+          0.578059018,
+          0.578059018,
+          1
+        ],
+        "baseColorMap": "/assets/materials/tileable/metal/m_modern_corrugated/t_wall_breakup_b.color.dds",
+        "diffuseMapUseUV": 1,
+        "opacityFactor": 0.188999996,
+        "opacityMapUseUV": 1,
+        "roughnessMap": "/assets/materials/tileable/metal/m_modern_corrugated/t_wall_breakup_r.data.dds",
+        "roughnessMapUseUV": 1,
+        "vertColor": null
+      },
+      {
+        "baseColorFactor": null,
+        "diffuseMapUseUV": null,
+        "opacityFactor": null,
+        "opacityMapUseUV": null,
+        "roughnessMapUseUV": null,
+        "vertColor": null
+      },
+      {
+        "baseColorFactor": null,
+        "diffuseMapUseUV": null,
+        "opacityFactor": null,
+        "opacityMapUseUV": null,
+        "roughnessMapUseUV": null,
+        "vertColor": null
+      }
+    ],
+    "activeLayers": 2,
+    "version": 1.5
+  }
+}

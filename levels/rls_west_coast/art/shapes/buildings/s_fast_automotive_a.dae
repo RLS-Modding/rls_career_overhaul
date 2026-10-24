@@ -1,0 +1,1564 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <asset>
+    <contributor>
+      <author>Blender User</author>
+      <authoring_tool>Blender 4.5.5 LTS commit date:2025-11-17, commit time:16:03, hash:836beaaf597a</authoring_tool>
+    </contributor>
+    <created>2026-01-02T13:07:25</created>
+    <modified>2026-01-02T13:07:25</modified>
+    <unit name="meter" meter="1"/>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_effects>
+    <effect id="lod_vertcol-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="brick_painted-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="clutter_commercial-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="industrial-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0 0 0 1</color>
+            </diffuse>
+            <reflectivity>
+              <float sid="specular">1</float>
+            </reflectivity>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="stucco1_white-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0 0 0 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="windows_doors_reflective-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="street_concrete1-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="slabs_large-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="concrete_plain-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="canal-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="asphalt_track-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="concrete_painted-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="retainingwall-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="ind_metal_trim-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="roadsigns-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="track_markings-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="curbs-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="slabs_marble-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="tiles_marble_square-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="vertexColor_glow-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="tunnel-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="industrial_trim-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="corrugated_modern-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0 0 0 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="architraves-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0 0 0 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="concrete_precast1-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="walls_transparent-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <reflectivity>
+              <float sid="specular">1</float>
+            </reflectivity>
+            <transparent opaque="A_ONE">
+              <color sid="alpha">0 0 0 0.4745763</color>
+            </transparent>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="construction-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0 0 0 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="tactile_indicator-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0 0 0 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="metal_galvanized-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0 0 0 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="wood_rough-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0 0 0 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="weatherboards-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0 0 0 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="line_yellow-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="ind_metal_grate-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="ind_metal_expanded-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="catchfence-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="sidewalk1-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0 0 0 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="groundmesh_grass2-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0 0 0 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="stone_brick_regular-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0 0 0 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="highrise-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0 0 0 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="grass_garden-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0 0 0 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
+  <library_images/>
+  <library_materials>
+    <material id="lod_vertcol-material" name="lod_vertcol">
+      <instance_effect url="#lod_vertcol-effect"/>
+    </material>
+    <material id="brick_painted-material" name="brick_painted">
+      <instance_effect url="#brick_painted-effect"/>
+    </material>
+    <material id="clutter_commercial-material" name="clutter_commercial">
+      <instance_effect url="#clutter_commercial-effect"/>
+    </material>
+    <material id="industrial-material" name="industrial">
+      <instance_effect url="#industrial-effect"/>
+    </material>
+    <material id="stucco1_white-material" name="stucco1_white">
+      <instance_effect url="#stucco1_white-effect"/>
+    </material>
+    <material id="windows_doors_reflective-material" name="windows_doors_reflective">
+      <instance_effect url="#windows_doors_reflective-effect"/>
+    </material>
+    <material id="street_concrete1-material" name="street_concrete1">
+      <instance_effect url="#street_concrete1-effect"/>
+    </material>
+    <material id="slabs_large-material" name="slabs_large">
+      <instance_effect url="#slabs_large-effect"/>
+    </material>
+    <material id="concrete_plain-material" name="concrete_plain">
+      <instance_effect url="#concrete_plain-effect"/>
+    </material>
+    <material id="canal-material" name="canal">
+      <instance_effect url="#canal-effect"/>
+    </material>
+    <material id="asphalt_track-material" name="asphalt_track">
+      <instance_effect url="#asphalt_track-effect"/>
+    </material>
+    <material id="concrete_painted-material" name="concrete_painted">
+      <instance_effect url="#concrete_painted-effect"/>
+    </material>
+    <material id="retainingwall-material" name="retainingwall">
+      <instance_effect url="#retainingwall-effect"/>
+    </material>
+    <material id="ind_metal_trim-material" name="ind_metal_trim">
+      <instance_effect url="#ind_metal_trim-effect"/>
+    </material>
+    <material id="roadsigns-material" name="roadsigns">
+      <instance_effect url="#roadsigns-effect"/>
+    </material>
+    <material id="track_markings-material" name="track_markings">
+      <instance_effect url="#track_markings-effect"/>
+    </material>
+    <material id="curbs-material" name="curbs">
+      <instance_effect url="#curbs-effect"/>
+    </material>
+    <material id="slabs_marble-material" name="slabs_marble">
+      <instance_effect url="#slabs_marble-effect"/>
+    </material>
+    <material id="tiles_marble_square-material" name="tiles_marble_square">
+      <instance_effect url="#tiles_marble_square-effect"/>
+    </material>
+    <material id="vertexColor_glow-material" name="rls_vertexColor_glow">
+      <instance_effect url="#vertexColor_glow-effect"/>
+    </material>
+    <material id="tunnel-material" name="tunnel">
+      <instance_effect url="#tunnel-effect"/>
+    </material>
+    <material id="industrial_trim-material" name="industrial_trim">
+      <instance_effect url="#industrial_trim-effect"/>
+    </material>
+    <material id="corrugated_modern-material" name="corrugated_modern">
+      <instance_effect url="#corrugated_modern-effect"/>
+    </material>
+    <material id="architraves-material" name="architraves">
+      <instance_effect url="#architraves-effect"/>
+    </material>
+    <material id="concrete_precast1-material" name="concrete_precast1">
+      <instance_effect url="#concrete_precast1-effect"/>
+    </material>
+    <material id="walls_transparent-material" name="walls_transparent">
+      <instance_effect url="#walls_transparent-effect"/>
+    </material>
+    <material id="construction-material" name="construction">
+      <instance_effect url="#construction-effect"/>
+    </material>
+    <material id="tactile_indicator-material" name="tactile_indicator">
+      <instance_effect url="#tactile_indicator-effect"/>
+    </material>
+    <material id="metal_galvanized-material" name="metal_galvanized">
+      <instance_effect url="#metal_galvanized-effect"/>
+    </material>
+    <material id="wood_rough-material" name="wood_rough">
+      <instance_effect url="#wood_rough-effect"/>
+    </material>
+    <material id="weatherboards-material" name="weatherboards">
+      <instance_effect url="#weatherboards-effect"/>
+    </material>
+    <material id="line_yellow-material" name="line_yellow">
+      <instance_effect url="#line_yellow-effect"/>
+    </material>
+    <material id="ind_metal_grate-material" name="ind_metal_grate">
+      <instance_effect url="#ind_metal_grate-effect"/>
+    </material>
+    <material id="ind_metal_expanded-material" name="ind_metal_expanded">
+      <instance_effect url="#ind_metal_expanded-effect"/>
+    </material>
+    <material id="catchfence-material" name="catchfence">
+      <instance_effect url="#catchfence-effect"/>
+    </material>
+    <material id="sidewalk1-material" name="sidewalk1">
+      <instance_effect url="#sidewalk1-effect"/>
+    </material>
+    <material id="groundmesh_grass2-material" name="groundmesh_grass2">
+      <instance_effect url="#groundmesh_grass2-effect"/>
+    </material>
+    <material id="stone_brick_regular-material" name="stone_brick_regular">
+      <instance_effect url="#stone_brick_regular-effect"/>
+    </material>
+    <material id="highrise-material" name="highrise">
+      <instance_effect url="#highrise-effect"/>
+    </material>
+    <material id="grass_garden-material" name="grass_garden">
+      <instance_effect url="#grass_garden-effect"/>
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="Cube_003-mesh" name="Cube.003">
+      <mesh>
+        <source id="Cube_003-mesh-positions">
+          <float_array id="Cube_003-mesh-positions-array" count="0"/>
+          <technique_common>
+            <accessor source="#Cube_003-mesh-positions-array" count="0" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Cube_003-mesh-normals">
+          <float_array id="Cube_003-mesh-normals-array" count="0"/>
+          <technique_common>
+            <accessor source="#Cube_003-mesh-normals-array" count="0" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Cube_003-mesh-map-0">
+          <float_array id="Cube_003-mesh-map-0-array" count="0"/>
+          <technique_common>
+            <accessor source="#Cube_003-mesh-map-0-array" count="0" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Cube_003-mesh-map-1">
+          <float_array id="Cube_003-mesh-map-1-array" count="0"/>
+          <technique_common>
+            <accessor source="#Cube_003-mesh-map-1-array" count="0" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="Cube_003-mesh-vertices">
+          <input semantic="POSITION" source="#Cube_003-mesh-positions"/>
+        </vertices>
+      </mesh>
+    </geometry>
+    <geometry id="Cube_001-mesh" name="Cube.001">
+      <mesh>
+        <source id="Cube_001-mesh-positions">
+          <float_array id="Cube_001-mesh-positions-array" count="36">-0.05423748 4.374573 1.68487 0.1116256 4.372684 1.68487 -0.04297643 5.379475 4.219873 -0.1592485 -4.986027 4.219873 0.1229171 5.377563 4.219873 0.002128481 -5.387535 3.273569 0.002738833 -5.327126 1.68487 0.1176376 4.912472 3.046671 0.1176376 4.907371 4.219873 -0.1712418 -6.056728 1.68487 0.006614625 -4.987827 4.219873 -0.005470335 -6.058628 1.68487</float_array>
+          <technique_common>
+            <accessor source="#Cube_001-mesh-positions-array" count="12" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Cube_001-mesh-normals">
+          <float_array id="Cube_001-mesh-normals-array" count="48">0.9999371 -0.01122164 -4.25614e-5 0.9999371 -0.01121914 -5.07473e-6 0.999937 -0.01122766 -4.88093e-5 0.9999381 -0.01113021 -3.908e-5 0.999937 -0.01122492 -2.64066e-5 0.9999393 -0.01101613 -4.7891e-5 -0.9999371 0.01121646 -4.41097e-6 0 0 -1 -6.93161e-7 0 1 0.01058191 0.9295575 -0.3685253 -0.009999752 -0.9211388 0.3891059 -0.9999371 0.01121592 -6.44843e-6 0 0 -1 4.43712e-6 0 1 0.01070904 0.9295534 -0.3685322 -0.01055538 -0.9211195 0.389137</float_array>
+          <technique_common>
+            <accessor source="#Cube_001-mesh-normals-array" count="16" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Cube_001-mesh-map-0">
+          <float_array id="Cube_001-mesh-map-0-array" count="96">0.4198633 0.1395131 0.4198633 0.1395131 0.4198633 0.1395131 0.4173513 0.1941055 0.622167 0.1357986 0.6338669 0.1941055 0.6185937 0.1795521 0.6185937 0.1795521 0.6185937 0.1795521 0.4173513 0.1941055 0.4086059 0.1723409 0.4099276 0.1357986 0.4099276 0.1357986 0.622167 0.1357986 0.4173513 0.1941055 0.622167 0.1357986 0.6339792 0.1671218 0.6338669 0.1941055 0.3579022 0.4315397 0.6818389 0.5192634 0.3231264 0.5192639 0.7736218 0.3158674 2.212553 0.3408259 0.7735834 0.3408259 0.3940229 0.3158673 -1.035903 0.3408257 -1.035867 0.3158673 -1.412025 0.3158673 -1.035903 0.3408257 -1.41206 0.3408257 0.7736218 0.3158674 0.393985 0.3408259 0.3940229 0.3158673 0.3579022 0.4315397 0.7188932 0.4315397 0.6818389 0.5192634 0.7736218 0.3158674 2.212594 0.3158674 2.212553 0.3408259 0.3940229 0.3158673 0.393985 0.3408259 -1.035903 0.3408257 -1.412025 0.3158673 -1.035867 0.3158673 -1.035903 0.3408257 0.7736218 0.3158674 0.7735834 0.3408259 0.393985 0.3408259</float_array>
+          <technique_common>
+            <accessor source="#Cube_001-mesh-map-0-array" count="48" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Cube_001-mesh-map-1">
+          <float_array id="Cube_001-mesh-map-1-array" count="96">0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0</float_array>
+          <technique_common>
+            <accessor source="#Cube_001-mesh-map-1-array" count="48" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Cube_001-mesh-colors-Attribute" name="Attribute">
+          <float_array id="Cube_001-mesh-colors-Attribute-array" count="192">1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1</float_array>
+          <technique_common>
+            <accessor source="#Cube_001-mesh-colors-Attribute-array" count="48" stride="4">
+              <param name="R" type="float"/>
+              <param name="G" type="float"/>
+              <param name="B" type="float"/>
+              <param name="A" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Cube_001-mesh-colors-Col" name="Col">
+          <float_array id="Cube_001-mesh-colors-Col-array" count="192">0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1</float_array>
+          <technique_common>
+            <accessor source="#Cube_001-mesh-colors-Col-array" count="48" stride="4">
+              <param name="R" type="float"/>
+              <param name="G" type="float"/>
+              <param name="B" type="float"/>
+              <param name="A" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="Cube_001-mesh-vertices">
+          <input semantic="POSITION" source="#Cube_001-mesh-positions"/>
+        </vertices>
+        <triangles material="clutter_commercial-material" count="6">
+          <input semantic="VERTEX" source="#Cube_001-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Cube_001-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Cube_001-mesh-map-0" offset="2" set="0"/>
+          <input semantic="TEXCOORD" source="#Cube_001-mesh-map-1" offset="2" set="1"/>
+          <input semantic="COLOR" source="#Cube_001-mesh-colors-Attribute" offset="3" set="0"/>
+          <input semantic="COLOR" source="#Cube_001-mesh-colors-Col" offset="3" set="1"/>
+          <p>11 0 0 0 6 0 1 1 5 0 2 2 10 1 3 3 1 1 4 4 8 1 5 5 8 2 6 6 7 2 7 7 4 2 8 8 10 3 9 9 5 3 10 10 6 3 11 11 6 4 12 12 1 4 13 13 10 4 14 14 1 5 15 15 7 5 16 16 8 5 17 17</p>
+        </triangles>
+        <triangles material="industrial-material" count="10">
+          <input semantic="VERTEX" source="#Cube_001-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Cube_001-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Cube_001-mesh-map-0" offset="2" set="0"/>
+          <input semantic="TEXCOORD" source="#Cube_001-mesh-map-1" offset="2" set="1"/>
+          <input semantic="COLOR" source="#Cube_001-mesh-colors-Attribute" offset="3" set="0"/>
+          <input semantic="COLOR" source="#Cube_001-mesh-colors-Col" offset="3" set="1"/>
+          <p>0 6 18 18 3 6 19 19 2 6 20 20 9 7 21 21 1 7 22 22 11 7 23 23 3 8 24 24 4 8 25 25 2 8 26 26 0 9 27 27 4 9 28 28 1 9 29 29 9 10 30 30 10 10 31 31 3 10 32 32 0 11 33 33 9 11 34 34 3 11 35 35 9 12 36 36 0 12 37 37 1 12 38 38 3 13 39 39 10 13 40 40 4 13 41 41 0 14 42 42 2 14 43 43 4 14 44 44 9 15 45 45 11 15 46 46 10 15 47 47</p>
+        </triangles>
+      </mesh>
+    </geometry>
+    <geometry id="Cube_002-mesh" name="Cube.002">
+      <mesh>
+        <source id="Cube_002-mesh-positions">
+          <float_array id="Cube_002-mesh-positions-array" count="36">-0.05423748 4.374573 1.68487 0.1116256 4.372684 1.68487 -0.04297643 5.379475 4.219873 -0.1592485 -4.986027 4.219873 0.1229171 5.377563 4.219873 0.002128481 -5.387535 3.273569 0.002738833 -5.327126 1.68487 0.1176376 4.912472 3.046671 0.1176376 4.907371 4.219873 -0.1712418 -6.056728 1.68487 0.006614625 -4.987827 4.219873 -0.005470335 -6.058628 1.68487</float_array>
+          <technique_common>
+            <accessor source="#Cube_002-mesh-positions-array" count="12" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Cube_002-mesh-normals">
+          <float_array id="Cube_002-mesh-normals-array" count="48">0.9999371 -0.01122164 -4.25614e-5 0.9999371 -0.01121914 -5.07473e-6 0.999937 -0.01122766 -4.88093e-5 0.9999381 -0.01113021 -3.908e-5 0.999937 -0.01122492 -2.64066e-5 0.9999393 -0.01101613 -4.7891e-5 -0.9999371 0.01121646 -4.41097e-6 0 0 -1 -6.93161e-7 0 1 0.01058191 0.9295575 -0.3685253 -0.009999752 -0.9211388 0.3891059 -0.9999371 0.01121592 -6.44843e-6 0 0 -1 4.43712e-6 0 1 0.01070904 0.9295534 -0.3685322 -0.01055538 -0.9211195 0.389137</float_array>
+          <technique_common>
+            <accessor source="#Cube_002-mesh-normals-array" count="16" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Cube_002-mesh-map-0">
+          <float_array id="Cube_002-mesh-map-0-array" count="96">0.4198633 0.1395131 0.4198633 0.1395131 0.4198633 0.1395131 0.4173513 0.1941055 0.622167 0.1357986 0.6338669 0.1941055 0.6185937 0.1795521 0.6185937 0.1795521 0.6185937 0.1795521 0.4173513 0.1941055 0.4086059 0.1723409 0.4099276 0.1357986 0.4099276 0.1357986 0.622167 0.1357986 0.4173513 0.1941055 0.622167 0.1357986 0.6339792 0.1671218 0.6338669 0.1941055 0.3579022 0.4315397 0.6818389 0.5192634 0.3231264 0.5192639 0.7736218 0.3158674 2.212553 0.3408259 0.7735834 0.3408259 0.3940229 0.3158673 -1.035903 0.3408257 -1.035867 0.3158673 -1.412025 0.3158673 -1.035903 0.3408257 -1.41206 0.3408257 0.7736218 0.3158674 0.393985 0.3408259 0.3940229 0.3158673 0.3579022 0.4315397 0.7188932 0.4315397 0.6818389 0.5192634 0.7736218 0.3158674 2.212594 0.3158674 2.212553 0.3408259 0.3940229 0.3158673 0.393985 0.3408259 -1.035903 0.3408257 -1.412025 0.3158673 -1.035867 0.3158673 -1.035903 0.3408257 0.7736218 0.3158674 0.7735834 0.3408259 0.393985 0.3408259</float_array>
+          <technique_common>
+            <accessor source="#Cube_002-mesh-map-0-array" count="48" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Cube_002-mesh-map-1">
+          <float_array id="Cube_002-mesh-map-1-array" count="96">0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0</float_array>
+          <technique_common>
+            <accessor source="#Cube_002-mesh-map-1-array" count="48" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Cube_002-mesh-colors-Attribute" name="Attribute">
+          <float_array id="Cube_002-mesh-colors-Attribute-array" count="192">1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1</float_array>
+          <technique_common>
+            <accessor source="#Cube_002-mesh-colors-Attribute-array" count="48" stride="4">
+              <param name="R" type="float"/>
+              <param name="G" type="float"/>
+              <param name="B" type="float"/>
+              <param name="A" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Cube_002-mesh-colors-Col" name="Col">
+          <float_array id="Cube_002-mesh-colors-Col-array" count="192">0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1 0.8117647 0.8117647 0.8117647 1</float_array>
+          <technique_common>
+            <accessor source="#Cube_002-mesh-colors-Col-array" count="48" stride="4">
+              <param name="R" type="float"/>
+              <param name="G" type="float"/>
+              <param name="B" type="float"/>
+              <param name="A" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="Cube_002-mesh-vertices">
+          <input semantic="POSITION" source="#Cube_002-mesh-positions"/>
+        </vertices>
+        <triangles material="clutter_commercial-material" count="6">
+          <input semantic="VERTEX" source="#Cube_002-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Cube_002-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Cube_002-mesh-map-0" offset="2" set="0"/>
+          <input semantic="TEXCOORD" source="#Cube_002-mesh-map-1" offset="2" set="1"/>
+          <input semantic="COLOR" source="#Cube_002-mesh-colors-Attribute" offset="3" set="0"/>
+          <input semantic="COLOR" source="#Cube_002-mesh-colors-Col" offset="3" set="1"/>
+          <p>11 0 0 0 6 0 1 1 5 0 2 2 10 1 3 3 1 1 4 4 8 1 5 5 8 2 6 6 7 2 7 7 4 2 8 8 10 3 9 9 5 3 10 10 6 3 11 11 6 4 12 12 1 4 13 13 10 4 14 14 1 5 15 15 7 5 16 16 8 5 17 17</p>
+        </triangles>
+        <triangles material="industrial-material" count="10">
+          <input semantic="VERTEX" source="#Cube_002-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Cube_002-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Cube_002-mesh-map-0" offset="2" set="0"/>
+          <input semantic="TEXCOORD" source="#Cube_002-mesh-map-1" offset="2" set="1"/>
+          <input semantic="COLOR" source="#Cube_002-mesh-colors-Attribute" offset="3" set="0"/>
+          <input semantic="COLOR" source="#Cube_002-mesh-colors-Col" offset="3" set="1"/>
+          <p>0 6 18 18 3 6 19 19 2 6 20 20 9 7 21 21 1 7 22 22 11 7 23 23 3 8 24 24 4 8 25 25 2 8 26 26 0 9 27 27 4 9 28 28 1 9 29 29 9 10 30 30 10 10 31 31 3 10 32 32 0 11 33 33 9 11 34 34 3 11 35 35 9 12 36 36 0 12 37 37 1 12 38 38 3 13 39 39 10 13 40 40 4 13 41 41 0 14 42 42 2 14 43 43 4 14 44 44 9 15 45 45 11 15 46 46 10 15 47 47</p>
+        </triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="Scene" name="Scene">
+      <node id="base00" name="base00" type="NODE">
+        <matrix sid="transform">1 0 0 9.54475e-5 0 1 0 2.05673e-4 0 0 1 6.57132e-5 0 0 0 1</matrix>
+        <node id="start01" name="start01" type="NODE">
+          <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
+          <node id="tunnel_mainTrackEntrance_a1800" name="tunnel_mainTrackEntrance_a1800" type="NODE">
+            <matrix sid="transform">1 0 0 -9.54475e-5 0 1 0 -2.05673e-4 0 0 1 -6.57132e-5 0 0 0 1</matrix>
+            <instance_geometry url="#Cube_002-mesh" name="tunnel_mainTrackEntrance_a1800">
+              <bind_material>
+                <technique_common>
+                  <instance_material symbol="lod_vertcol-material" target="#lod_vertcol-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="brick_painted-material" target="#brick_painted-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="clutter_commercial-material" target="#clutter_commercial-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="industrial-material" target="#industrial-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="stucco1_white-material" target="#stucco1_white-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="windows_doors_reflective-material" target="#windows_doors_reflective-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="street_concrete1-material" target="#street_concrete1-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="slabs_large-material" target="#slabs_large-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="concrete_plain-material" target="#concrete_plain-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="canal-material" target="#canal-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="asphalt_track-material" target="#asphalt_track-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="concrete_painted-material" target="#concrete_painted-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="retainingwall-material" target="#retainingwall-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="ind_metal_trim-material" target="#ind_metal_trim-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="roadsigns-material" target="#roadsigns-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="track_markings-material" target="#track_markings-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="curbs-material" target="#curbs-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="slabs_marble-material" target="#slabs_marble-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="tiles_marble_square-material" target="#tiles_marble_square-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="vertexColor_glow-material" target="#vertexColor_glow-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="tunnel-material" target="#tunnel-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="industrial_trim-material" target="#industrial_trim-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="corrugated_modern-material" target="#corrugated_modern-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="architraves-material" target="#architraves-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="concrete_precast1-material" target="#concrete_precast1-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="walls_transparent-material" target="#walls_transparent-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="construction-material" target="#construction-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="tactile_indicator-material" target="#tactile_indicator-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="metal_galvanized-material" target="#metal_galvanized-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="wood_rough-material" target="#wood_rough-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="weatherboards-material" target="#weatherboards-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="line_yellow-material" target="#line_yellow-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="ind_metal_grate-material" target="#ind_metal_grate-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="ind_metal_expanded-material" target="#ind_metal_expanded-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="catchfence-material" target="#catchfence-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="sidewalk1-material" target="#sidewalk1-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="groundmesh_grass2-material" target="#groundmesh_grass2-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="stone_brick_regular-material" target="#stone_brick_regular-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="highrise-material" target="#highrise-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="grass_garden-material" target="#grass_garden-material">
+                    <bind_vertex_input semantic="Cube_002-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_002-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                </technique_common>
+              </bind_material>
+            </instance_geometry>
+          </node>
+          <node id="tunnel_mainTrackEntrance_a1000" name="tunnel_mainTrackEntrance_a1000" type="NODE">
+            <matrix sid="transform">1 0 0 -9.54475e-5 0 1 0 -2.05673e-4 0 0 1 -6.57132e-5 0 0 0 1</matrix>
+            <instance_geometry url="#Cube_001-mesh" name="tunnel_mainTrackEntrance_a1000">
+              <bind_material>
+                <technique_common>
+                  <instance_material symbol="lod_vertcol-material" target="#lod_vertcol-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="brick_painted-material" target="#brick_painted-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="clutter_commercial-material" target="#clutter_commercial-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="industrial-material" target="#industrial-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="stucco1_white-material" target="#stucco1_white-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="windows_doors_reflective-material" target="#windows_doors_reflective-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="street_concrete1-material" target="#street_concrete1-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="slabs_large-material" target="#slabs_large-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="concrete_plain-material" target="#concrete_plain-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="canal-material" target="#canal-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="asphalt_track-material" target="#asphalt_track-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="concrete_painted-material" target="#concrete_painted-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="retainingwall-material" target="#retainingwall-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="ind_metal_trim-material" target="#ind_metal_trim-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="roadsigns-material" target="#roadsigns-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="track_markings-material" target="#track_markings-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="curbs-material" target="#curbs-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="slabs_marble-material" target="#slabs_marble-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="tiles_marble_square-material" target="#tiles_marble_square-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="vertexColor_glow-material" target="#vertexColor_glow-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="tunnel-material" target="#tunnel-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="industrial_trim-material" target="#industrial_trim-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="corrugated_modern-material" target="#corrugated_modern-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="architraves-material" target="#architraves-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="concrete_precast1-material" target="#concrete_precast1-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="walls_transparent-material" target="#walls_transparent-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="construction-material" target="#construction-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="tactile_indicator-material" target="#tactile_indicator-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="metal_galvanized-material" target="#metal_galvanized-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="wood_rough-material" target="#wood_rough-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="weatherboards-material" target="#weatherboards-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="line_yellow-material" target="#line_yellow-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="ind_metal_grate-material" target="#ind_metal_grate-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="ind_metal_expanded-material" target="#ind_metal_expanded-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="catchfence-material" target="#catchfence-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="sidewalk1-material" target="#sidewalk1-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="groundmesh_grass2-material" target="#groundmesh_grass2-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="stone_brick_regular-material" target="#stone_brick_regular-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="highrise-material" target="#highrise-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="grass_garden-material" target="#grass_garden-material">
+                    <bind_vertex_input semantic="Cube_001-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_001-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                </technique_common>
+              </bind_material>
+            </instance_geometry>
+          </node>
+          <node id="Colmesh-1" name="Colmesh-1" type="NODE">
+            <matrix sid="transform">1 0 0 -9.54475e-5 0 1 0 -2.05673e-4 0 0 1 -6.57132e-5 0 0 0 1</matrix>
+            <instance_geometry url="#Cube_003-mesh" name="Colmesh-1">
+              <bind_material>
+                <technique_common>
+                  <instance_material symbol="lod_vertcol-material" target="#lod_vertcol-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="brick_painted-material" target="#brick_painted-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="clutter_commercial-material" target="#clutter_commercial-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="industrial-material" target="#industrial-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="stucco1_white-material" target="#stucco1_white-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="windows_doors_reflective-material" target="#windows_doors_reflective-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="street_concrete1-material" target="#street_concrete1-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="slabs_large-material" target="#slabs_large-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="concrete_plain-material" target="#concrete_plain-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="canal-material" target="#canal-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="asphalt_track-material" target="#asphalt_track-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="concrete_painted-material" target="#concrete_painted-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="retainingwall-material" target="#retainingwall-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="ind_metal_trim-material" target="#ind_metal_trim-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="roadsigns-material" target="#roadsigns-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="track_markings-material" target="#track_markings-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="curbs-material" target="#curbs-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="slabs_marble-material" target="#slabs_marble-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="tiles_marble_square-material" target="#tiles_marble_square-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="vertexColor_glow-material" target="#vertexColor_glow-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="tunnel-material" target="#tunnel-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="industrial_trim-material" target="#industrial_trim-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="corrugated_modern-material" target="#corrugated_modern-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="architraves-material" target="#architraves-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="concrete_precast1-material" target="#concrete_precast1-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="walls_transparent-material" target="#walls_transparent-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="construction-material" target="#construction-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="tactile_indicator-material" target="#tactile_indicator-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="metal_galvanized-material" target="#metal_galvanized-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="wood_rough-material" target="#wood_rough-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="weatherboards-material" target="#weatherboards-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="line_yellow-material" target="#line_yellow-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="ind_metal_grate-material" target="#ind_metal_grate-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="ind_metal_expanded-material" target="#ind_metal_expanded-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="catchfence-material" target="#catchfence-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="sidewalk1-material" target="#sidewalk1-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="groundmesh_grass2-material" target="#groundmesh_grass2-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="stone_brick_regular-material" target="#stone_brick_regular-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="highrise-material" target="#highrise-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                  <instance_material symbol="grass_garden-material" target="#grass_garden-material">
+                    <bind_vertex_input semantic="Cube_003-mesh-map-0" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="Cube_003-mesh-map-1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                </technique_common>
+              </bind_material>
+            </instance_geometry>
+          </node>
+        </node>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#Scene"/>
+  </scene>
+</COLLADA>

@@ -1,0 +1,45 @@
+{
+  "id": "overhaul_events_host",
+  "order": 34,
+  "module": "overhaul/events/host",
+  "scopes": [
+    {
+      "id": "bootManual",
+      "order": 1
+    },
+    {
+      "id": "freeroamEvents",
+      "order": 2
+    }
+  ],
+  "reloadOnReady": "reloadForCurrentLevel",
+  "bigMap": {
+    "types": [
+      {
+        "id": "events",
+        "icon": "raceFlag"
+      }
+    ],
+    "groups": [
+      {
+        "id": "type_events",
+        "label": "Events",
+        "icon": "raceFlag",
+        "placements": {
+          "freeroam": [
+            {
+              "section": "freeroamPois",
+              "order": 6
+            }
+          ],
+          "career": [
+            {
+              "section": "freeroamPois",
+              "order": 8
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

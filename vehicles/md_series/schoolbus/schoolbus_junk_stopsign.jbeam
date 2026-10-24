@@ -1,0 +1,252 @@
+{
+"schoolbus_junk_stopsign": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"You Better Stop Sign",
+        "value":25,
+    },
+    "slotType" : "schoolbus_stopsign",
+    "flexbodies": [
+         ["mesh", "[group]:", "nonFlexMaterials"],
+         ["schoolbus_stop_sign_body", ["schoolbus_stop_sign_body"]],
+         ["schoolbus_stop_sign", ["schoolbus_stop_sign"]],
+
+         {"materialOverride":[["off_road_lights_aux1", "off_road_lights_red_L"], ["off_road_lights_glass_aux1", "off_road_lights_glass_L"]]},
+         {"deformGroup":"stopsign", "deformMaterialBase":"off_road_lights", "deformMaterialDamaged":"off_road_lights"},
+         ["round_led_2inch_aux1", ["schoolbus_stop_sign"],[],{"pos":{"x":1.272, "y":0.733, "z":1.700}, "rot":{"x":0, "y":0, "z": 90}, "scale":{"x":1, "y":1, "z":1}}],
+         ["round_led_2inch_aux1", ["schoolbus_stop_sign"],[],{"pos":{"x":1.260, "y":0.733, "z":1.700}, "rot":{"x":0, "y":0, "z":-90}, "scale":{"x":1, "y":1, "z":1}}],
+         {"deformGroup":"stopsign", "deformMaterialBase":"off_road_lights_glass", "deformMaterialDamaged":"off_road_lights_glass_dmg"},
+         ["round_led_2inch_glass_red_aux1", ["schoolbus_stop_sign"],[],{"pos":{"x":1.272, "y":0.733, "z":1.700}, "rot":{"x":0, "y":0, "z": 90}, "scale":{"x":1, "y":1, "z":1}}],
+         ["round_led_2inch_glass_red_aux1", ["schoolbus_stop_sign"],[],{"pos":{"x":1.260, "y":0.733, "z":1.700}, "rot":{"x":0, "y":0, "z":-90}, "scale":{"x":1, "y":1, "z":1}}],
+
+         {"materialOverride":[["off_road_lights_aux1", "off_road_lights_red_R"], ["off_road_lights_glass_aux1", "off_road_lights_glass_R"]]},
+         {"deformGroup":"stopsign", "deformMaterialBase":"off_road_lights", "deformMaterialDamaged":"off_road_lights"},
+         ["round_led_2inch_aux1", ["schoolbus_stop_sign"],[],{"pos":{"x":1.272, "y":0.733, "z":1.372}, "rot":{"x":0, "y":0, "z": 90}, "scale":{"x":1, "y":1, "z":1}}],
+         ["round_led_2inch_aux1", ["schoolbus_stop_sign"],[],{"pos":{"x":1.260, "y":0.733, "z":1.372}, "rot":{"x":0, "y":0, "z":-90}, "scale":{"x":1, "y":1, "z":1}}],
+         {"deformGroup":"stopsign", "deformMaterialBase":"off_road_lights_glass", "deformMaterialDamaged":"off_road_lights_glass_dmg"},
+         ["round_led_2inch_glass_red_aux1", ["schoolbus_stop_sign"],[],{"pos":{"x":1.272, "y":0.733, "z":1.372}, "rot":{"x":0, "y":0, "z": 90}, "scale":{"x":1, "y":1, "z":1}}],
+         ["round_led_2inch_glass_red_aux1", ["schoolbus_stop_sign"],[],{"pos":{"x":1.260, "y":0.733, "z":1.372}, "rot":{"x":0, "y":0, "z":-90}, "scale":{"x":1, "y":1, "z":1}}],
+
+         {"materialOverride":[["off_road_lights_aux1", "off_road_lights_aux1"], ["off_road_lights_glass_aux1", "off_road_lights_glass_aux1"]]},
+         {"deformGroup":"", "deformMaterialBase":"", "deformMaterialDamaged":""},
+    ],
+    "props": [
+        ["func"      , "mesh"              , "idRef:", "idX:", "idY:"            , "baseRotation"        , "rotation"                 , "translation"        , "min", "max", "offset", "multiplier"],
+        {
+            "lightInnerAngle":0,
+            "lightOuterAngle":120,
+            "lightBrightness":0.45,
+            "lightRange":8,
+            "lightColor":{"r":155, "g":10, "b":10, "a":255},
+            "lightAttenuation":{"x":0, "y":1, "z":1},
+            "lightCastShadows":true,
+            "flareScale":0.02,
+            "flareName":"vehicleBrakeLightFlare",
+            "texSize":256,
+            "shadowSoftness":0.5,
+        },
+        ["red_L", "SPOTLIGHT", "ss4l", "ss3l", "ss2l", {"x":0, "y":0, "z":0  } , {"x":0, "y":0, "z":0}    , {"x":0, "y":0, "z":0}, 0, 0, 0, 1, {"baseTranslationGlobal":{"x":1.272, "y":0.733, "z":1.700},"deformGroup":"stopsign"}],
+        ["red_L", "SPOTLIGHT", "ss4l", "ss3l", "ss2l", {"x":0, "y":0, "z":180} , {"x":0, "y":0, "z":0}    , {"x":0, "y":0, "z":0}, 0, 0, 0, 1, {"baseTranslationGlobal":{"x":1.260, "y":0.733, "z":1.700},"deformGroup":"stopsign"}],
+        ["red_R", "SPOTLIGHT", "ss3l", "ss4l", "ss1l", {"x":0, "y":0, "z":180} , {"x":0, "y":0, "z":0}    , {"x":0, "y":0, "z":0}, 0, 0, 0, 1, {"baseTranslationGlobal":{"x":1.272, "y":0.733, "z":1.372},"deformGroup":"stopsign"}],
+        ["red_R", "SPOTLIGHT", "ss3l", "ss4l", "ss1l", {"x":0, "y":0, "z":0  } , {"x":0, "y":0, "z":0}    , {"x":0, "y":0, "z":0}, 0, 0, 0, 1, {"baseTranslationGlobal":{"x":1.260, "y":0.733, "z":1.372},"deformGroup":"stopsign"}],
+    ],
+    "controller": [
+        ["fileName"],
+        ["pneumatics/actuators", {"name":"stopSign"}],
+        ["sound/linearMovement", {"name":"stopSign_movement"}],
+    ],
+    "stopSign": {
+        "airTankName": "mainAirTank",
+        "supplyHoseRadius": 0.0500,
+        "pressureDumpFlowRate": 0.50,
+        "maxSupplyPressurePSI": 50,
+        "pressuredBeams":"stopSign_BeamData",
+        "crossFlowGroups": "stopSignCrossFlow",
+        "groupSounds": "stopSign_BeamSoundData",
+        //"debug": true
+    },
+    "stopSign_BeamData": [
+        ["beamName", "groupName"],
+        {"valveStateElectricsName":"stopSign"},
+       // {"debug": true}
+        ["stopSign", "stopSign", {"crossFlowTag": "stopSign"}],
+    ],
+    "stopSignCrossFlow": [
+        ["crossFlowTag", "virtualBufferCapacity"],
+       // {"debug": true}
+        ["stopSign", 0.001],
+    ],
+    "stopSign_movement": {
+        "hasSegments":false
+        "hasEndstops":true
+        "minPositionSoundEvent":"event:>Vehicle>Sliding>StopSign_LimitDown",
+        "maxPositionSoundEvent":"event:>Vehicle>Sliding>StopSign_LimitUp",
+        "movementSoundEvent":"",
+        "movementSoundVolume":2.0,
+        "movementSoundNode:":["ss5l"]
+        "positionSensorBeamTag":"stopSign"
+        "minPosition":0.09
+        "maxPosition": 0.22
+       // "debugMode": false
+
+        "movementSoundPitchMaxVelocity":0.26
+        "movementSoundVolumeCoefMinVelocity":0.03
+        "movementSoundVolumeCoefMaxVelocity":0.24
+        "movementSoundPlayingThresholdVelocity":0.01
+        "movementSoundPlayingThresholdVolume":0.05
+    },
+    "nodes": [
+        ["id",    "posX", "posY", "posZ"],
+        {"frictionCoef":0.5},
+        {"nodeMaterial":"|NM_METAL"},
+        {"nodeWeight":0.55},
+        {"collision":true},
+        {"selfCollision":true},
+        {"group":"schoolbus_stop_sign_body"},
+        ["ssb1l", 1.215,  0.250,  1.439],
+        ["ssb2l", 1.215,  0.250,  1.628],
+        ["ssb3l", 1.215,  0.837,  1.305],
+        ["ssb4l", 1.215,  0.837,  1.762],
+        {"nodeWeight":0.85},
+        {"group":"schoolbus_stop_sign"},
+        ["ss1l",  1.245,  0.442,  1.305],
+        ["ss2l",  1.245,  0.442,  1.762],
+        {"nodeWeight":0.45},
+        ["ss3l",  1.245,  0.961,  1.305],
+        ["ss4l",  1.245,  0.961,  1.762],
+        //airbag nodes
+        {"nodeWeight":0.8},
+        {"selfCollision":false},
+        {"collision":false},
+        {"group":""},
+        ["ssb5l", 1.155,  0.550,  1.5335],
+        ["ss5l",  1.235,  0.550,  1.5335],
+        //rigidifiers
+        {"nodeWeight":0.45},
+        ["ssb5",  1.000,  0.610,  1.533],
+        ["ss5",   1.000,  0.610,  1.533],
+    ],
+    "torsionbars": [
+        ["id1:", "id2:", "id3:", "id4:"],
+        {"spring":20, "damp":1, "deform":125000, "strength":1000},
+        //limiters
+        ["ssb4l", "ss2l", "ss1l", "ss3l",{"precompressionAngle": -1.6,"precompressionTime":1.01,"spring":0, "damp":5,"spring2":55000,  "damp2":50,"breakGroup":"stopsign_hinge","breakGroupType":0}],
+        ["ssb3l", "ss1l", "ss2l", "ss4l",{"precompressionAngle": -1.6,"precompressionTime":1.01,"spring":0, "damp":5,"spring2":55000,  "damp2":50,"breakGroup":"stopsign_hinge","breakGroupType":0}],
+    ],
+    "beams": [
+          ["id1:",  "id2:"],
+          //--FRONT CROSSING ARM--
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1, "beamShortBound":1},
+          {"beamSpring":501000,"beamDamp":70},
+          {"beamDeform":16500,"beamStrength":"FLT_MAX"},
+
+          //main shape
+          ["ssb1l", "ssb2l"],
+          ["ssb1l", "ssb3l"],
+          ["ssb1l", "ssb4l"],
+          ["ssb2l", "ssb3l"],
+          ["ssb2l", "ssb4l"],
+          ["ssb3l", "ssb4l"],
+          {"deformGroup":"stopsign", "deformationTriggerRatio":0.05},
+          ["ss1l",  "ss2l"],
+          ["ss1l",  "ss3l"],
+          ["ss1l",  "ss4l"],
+          ["ss2l",  "ss3l"],
+          ["ss2l",  "ss4l"],
+          ["ss3l",  "ss4l"],
+          {"deformGroup":"", "deformationTriggerRatio":""},
+
+          //rigidifier
+          {"beamSpring":401000,"beamDamp":50},
+          {"beamDeform":1500,"beamStrength":"FLT_MAX"},
+          ["ssb1l", "ssb5"],
+          ["ssb2l", "ssb5"],
+          ["ssb3l", "ssb5"],
+          ["ssb4l", "ssb5"],
+          {"deformGroup":"stopsign", "deformationTriggerRatio":0.05},
+          ["ss1l",  "ss5"],
+          ["ss2l",  "ss5"],
+          ["ss3l",  "ss5"],
+          ["ss4l",  "ss5"],
+          {"deformGroup":"", "deformationTriggerRatio":""},
+          //airbag nodes
+          {"beamSpring":401000,"beamDamp":50},
+          {"beamDeform":15000,"beamStrength":"FLT_MAX"},
+          ["ss5l",  "ss1l"],
+          ["ss5l",  "ss2l"],
+          ["ss5l",  "ss3l"],
+          ["ss5l",  "ss4l"],
+          ["ss5l",  "ss5"],
+
+          {"beamSpring":901000,"beamDamp":50},
+          {"beamDeform":15000,"beamStrength":"FLT_MAX"},
+          ["ssb5l",  "ssb1l"],
+          ["ssb5l",  "ssb2l"],
+          ["ssb5l",  "ssb3l"],
+          ["ssb5l",  "ssb4l"],
+          ["ssb5l",  "ssb5"],
+          //attach
+          {"beamSpring":501000,"beamDamp":50},
+          {"beamDeform":10000,"beamStrength":50000},
+          {"breakGroup":"stopsign"},
+          ["ssb1l", "b13ll"],
+          ["ssb1l", "b12ll"],
+          ["ssb1l", "ri1l"],
+          ["ssb2l", "b13ll"],
+          ["ssb2l", "b12ll"],
+          ["ssb2l", "ri1l"],
+          ["ssb3l", "b13ll"],
+          ["ssb3l", "b12ll"],
+          ["ssb3l", "ri1l"],
+          ["ssb4l", "b13ll"],
+          ["ssb4l", "b12ll"],
+          ["ssb4l", "ri1l"],
+          ["ssb5",  "b13ll"],
+          ["ssb5",  "b12ll"],
+          ["ssb5",  "ri1l"],
+
+          {"beamDeform":5000,"beamStrength":10000},
+          {"breakGroup":"stopsign_hinge"},
+          {"deformGroup":"stopsign", "deformationTriggerRatio":0.05},
+          ["ss1l",  "ssb1l"],
+          ["ss1l",  "ssb2l"],
+          ["ss1l",  "ssb3l"],
+          ["ss1l",  "ssb4l"],
+          ["ss1l",  "ssb5"],
+          ["ss2l",  "ssb1l"],
+          ["ss2l",  "ssb2l"],
+          ["ss2l",  "ssb3l"],
+          ["ss2l",  "ssb4l"],
+          ["ss2l",  "ssb5"],
+          //spring return
+          {"beamPrecompression":0.1,"beamSpring":1000,"beamDamp":5},
+          {"beamDeform":15000,"beamStrength":"FLT_MAX"},
+          ["ssb5l",  "ss5l", {"tag":"stopSign"}],
+          //airbag limiter
+          {"beamPrecompression":1, "beamType":"|SUPPORT", "beamLongBound":15, "beamShortBound":1},
+          {"beamSpring":800100,"beamDamp":50},
+          {"beamDeform":15000,"beamStrength":"FLT_MAX"},
+          ["ssb5l",  "ss5l"],
+          //pressured beam
+          {"beamPrecompression":1, "beamType":"|PRESSURED", "beamLongBound":1, "beamShortBound":1},
+          {"beamSpring":0,"beamDamp":15,"beamDeform":200000,"beamStrength":350000},
+          ["ssb5l",  "ss5l", {"pressurePSI":0,"surface":0.004,"volumeCoef":0.5,"name":"stopSign"}],
+
+          {"breakGroup":""},
+          {"deformGroup":"", "deformationTriggerRatio":""},
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1, "beamShortBound":1},
+    ],
+    "triangles": [
+            ["id1:",  "id2:",  "id3:"],
+            {"dragCoef":30},
+            {"groundModel":"metal"},
+            {"group":"schoolbus_stopsign"},
+            ["ssb1l", "ssb2l", "ssb3l"],
+            ["ssb3l", "ssb2l", "ssb4l"],
+            ["ss2l",  "ss1l",  "ss3l"],
+            ["ss2l",  "ss3l",  "ss4l"],
+            {"group":""},
+    ],
+},
+
+}

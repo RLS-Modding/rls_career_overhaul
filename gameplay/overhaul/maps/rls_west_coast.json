@@ -1,0 +1,16 @@
+{
+  "id": "rls_west_coast",
+  "version": 1,
+  "label": "West Coast USA",
+  "careerCompatible": true,
+  "defaultStart": true,
+  "builtIn": true,
+  "negotiationPersonalities": "/levels/west_coast_usa/facilities/negotiationPersonalities.json",
+  "preview": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/assets/profilePreview_rls_west_coast.jpg",
+  "travelPreview": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/assets/profilePreview_rls_west_coast.jpg",
+  "startPreviews": {
+    "career": "/levels/west_coast_usa/facilities/images/hilltop_villa.jpg",
+    "story": "facilities/freeroamEvents/track.jpg",
+    "custom": "facilities/carmeets/Pier Meet.jpg"
+  }
+}

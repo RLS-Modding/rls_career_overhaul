@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_jobs_quarry_quarry",
+  "order": 76,
+  "module": "overhaul/jobs/quarry/quarry",
+  "scopes": [
+    {
+      "id": "bootManual",
+      "order": 8
+    }
+  ]
+}

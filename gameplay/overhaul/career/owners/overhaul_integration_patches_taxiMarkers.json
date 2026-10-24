@@ -1,0 +1,15 @@
+{
+  "id": "overhaul_integration_patches_taxiMarkers",
+  "order": 49,
+  "module": "overhaul/integration/patches/taxiMarkers",
+  "scopes": [
+    {
+      "id": "owned",
+      "order": 5
+    },
+    {
+      "id": "services",
+      "order": 24
+    }
+  ]
+}

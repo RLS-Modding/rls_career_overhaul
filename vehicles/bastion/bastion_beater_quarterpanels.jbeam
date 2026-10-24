@@ -1,0 +1,20 @@
+{
+"bastion_beater_quarterpanels": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Damaged Quarter Panels",
+        "value":150,
+    },
+    "slotType" : "bastion_quarterpanels",
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["bastion_beater_quarterpanel_L", ["bastion_body"]],
+        ["bastion_beater_quarterpanel_R", ["bastion_body"]],
+    ],
+    "slots": [
+        ["type", "default", "description"],
+        ["bastion_fenderflare_RL","", "Rear Left Fender Flare"],
+        ["bastion_fenderflare_RR","", "Rear Right Fender Flare"],
+    ],
+},
+}

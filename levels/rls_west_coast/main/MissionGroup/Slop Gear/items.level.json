@@ -1,0 +1,2 @@
+{"name":"slopGear_icon","class":"BeamNGPointOfInterest","__parent":"Slop Gear","position":[869.96637,686.897949,149.139496],"rotationMatrix":[0.554169178,-0.832403958,0,0.832403958,0.554169178,0,0,0,1]}
+{"name":"slopGear_area","class":"BeamNGGameplayArea","__parent":"Slop Gear","position":[870.298035,686.900208,147.740311],"rotationMatrix":[0.972356796,0.233499944,0,-0.233499944,0.972356796,0,0,0,1],"scale":[1.13588154,1.11619401,2.05547523]}

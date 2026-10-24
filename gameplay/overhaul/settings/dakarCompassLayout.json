@@ -1,0 +1,14 @@
+{
+  "id": "dakarCompassLayout",
+  "key": "dakarCompassLayout",
+  "order": 1200,
+  "type": "table",
+  "default": {
+    "x": 24,
+    "y": 120,
+    "width": 180
+  },
+  "section": "hud",
+  "validateSingle": false,
+  "validateLoaded": false
+}

@@ -1,0 +1,1 @@
+{"name":"dynoSessionTrigger","class":"BeamNGTrigger","__parent":"Dyno Tuning","position":[506.728851,-718.615295,201.501328],"luaFunction":"onBeamNGTrigger","rotationMatrix":[-0.914544463,-0.404484987,-4.54747351e-13,0.404484987,-0.914544463,-1.01308033e-05,4.09775748e-06,-9.26507164e-06,1],"scale":[3.33068371,3.18144512,2.70788574]}

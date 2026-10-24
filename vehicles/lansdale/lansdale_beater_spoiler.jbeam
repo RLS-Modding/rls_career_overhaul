@@ -1,0 +1,65 @@
+{
+"lansdale_beater_spoiler_early": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Damaged Early Spoiler",
+        "value":25,
+    },
+    "slotType" : "lansdale_spoiler",
+    "slots": [
+        ["type", "default", "description"],
+        ["lansdale_spoiler_sport","", "Spoiler Extension"],
+    ],
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["lansdale_beater_pre_trunk_spoiler", ["lansdale_tailgate_spoiler"]],
+    ],
+    "nodes": [
+        ["id", "posX", "posY", "posZ"],
+        {"collision":true},
+        {"selfCollision":true},
+        {"nodeMaterial":"|NM_METAL"},
+        {"frictionCoef":0.5},
+
+        //--TAILGATE--
+        {"collision":true},
+        {"group":["lansdale_tailgate", "lansdale_tailgate_spoiler"]},
+        {"nodeWeight":2.6},
+        ["t1rr",-0.551,1.929,1.63, {"nodeWeight":2.9}],
+        ["t1",0.0,1.96,1.62],
+        ["t1ll",0.551,1.929,1.63, {"nodeWeight":2.9}],
+    ],
+},
+"lansdale_beater_spoiler_late": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Damaged Late Spoiler",
+        "value":35,
+    },
+    "slotType" : "lansdale_spoiler",
+    "slots": [
+        ["type", "default", "description"],
+        ["lansdale_chmsl_late","lansdale_chmsl_late", "Center Stop Light"],
+        ["lansdale_spoiler_sport","", "Spoiler Extension"],
+    ],
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["lansdale_beater_facelift_trunk_spoiler", ["lansdale_tailgate_spoiler"]],
+    ],
+    "nodes": [
+        ["id", "posX", "posY", "posZ"],
+        {"collision":true},
+        {"selfCollision":true},
+        {"nodeMaterial":"|NM_METAL"},
+        {"frictionCoef":0.5},
+
+        //--TAILGATE--
+        {"collision":true},
+        {"group":["lansdale_tailgate", "lansdale_tailgate_spoiler"]},
+        {"nodeWeight":2.6},
+        ["t1rr",-0.551,1.929,1.63, {"nodeWeight":2.9}],
+        ["t1",0.0,1.96,1.62],
+        ["t1ll",0.551,1.929,1.63, {"nodeWeight":2.9}],
+    ],
+},
+}

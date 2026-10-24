@@ -1,0 +1,23 @@
+{
+  "id": "overhaul_career_repair_roadsideService",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 280,
+    "aliases": [
+      "career_modules_roadsideServiceComputer"
+    ]
+  },
+  "routes": [
+    {
+      "name": "roadside-service",
+      "order": 71,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "play"
+        }
+      }
+    }
+  ]
+}

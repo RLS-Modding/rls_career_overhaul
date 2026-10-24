@@ -1,0 +1,18 @@
+{
+  "_comment": "Generic company vehicles issued when an organization's fleet has no truck for the shift. reputationLvl is the minimum organization reputation to issue the entry, so the pool follows the employer's reputation. deliveryLvl, when present, is the delivery skill level it also needs.",
+  "vehicles": [
+    {"model": "van", "config": "h25_career_with_cargo", "reputationLvl": -1},
+    {"model": "van", "config": "smallboxvan751523", "reputationLvl": 0},
+    {"model": "md_series", "config": "mediumboxtruck196979", "reputationLvl": 1},
+    {"model": "us_semi", "config": "rigidtankertruck443910", "reputationLvl": -1},
+    {"model": "md_series", "config": "smalldumptruck767436", "reputationLvl": -1},
+    {"model": "us_semi", "config": "mediumdumptruck159523", "reputationLvl": 1},
+    {"model": "us_semi", "config": "cementmixer817238", "reputationLvl": -1},
+    {"model": "pickup", "config": "pickup_career_rls_repo", "reputationLvl": -1, "deliveryLvl": 0},
+    {"model": "pickup", "config": "U-Pull Career Truck New", "reputationLvl": -1, "deliveryLvl": 0},
+    {"model": "md_series", "config": "U-Pull Career Goose", "reputationLvl": -1, "deliveryLvl": 0},
+    {"model": "van", "config": "h45_career_rls_repo", "reputationLvl": -1, "deliveryLvl": 0},
+    {"model": "md_series", "config": "md_career_5th_wheel", "reputationLvl": 0, "deliveryLvl": 1},
+    {"model": "us_semi", "config": "semidaycab035558", "reputationLvl": 1, "deliveryLvl": 3}
+  ]
+}

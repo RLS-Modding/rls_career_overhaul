@@ -1,0 +1,6 @@
+{
+  "parkingSpots":[
+    {"oldId":1,"name":"brokerDepotDesk","pos":[-247.9966583,-40.10191727,120.790329],"rot":[-0.00234686608,0.003625264915,0.9985765162,0.05316199458],"scl":[4.35,10.87,5.43],"isMultiSpot":false,"customFields":{"names":[],"tags":[],"types":{},"values":{}}}
+  ],
+  "zones":[],"locations":[]
+}

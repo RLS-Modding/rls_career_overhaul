@@ -1,0 +1,18 @@
+{
+  "Config Type":"joesJunkshell",
+  "Population":600,  
+  "Configuration":"( Junk Shell )",
+  "Description":"BX empty shell.",
+  "Drivetrain":"RWD",
+  "Fuel Type":"Gasoline",
+  "Induction Type":"NA",
+  "Power":0,
+  "Torque":0,
+  "Transmission":"Manual",
+  "Value":500,
+  "Weight":797,
+  "Years":{
+    "max":1994,
+    "min":1990
+  },
+}

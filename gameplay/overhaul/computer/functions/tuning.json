@@ -1,0 +1,5 @@
+{
+  "id": "tuning",
+  "icon": "cogs",
+  "routeTarget": "overhaul.computer.tuning"
+}

@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_career_business_partCustomization",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 50,
+    "aliases": [
+      "career_modules_business_businessPartCustomization"
+    ]
+  }
+}

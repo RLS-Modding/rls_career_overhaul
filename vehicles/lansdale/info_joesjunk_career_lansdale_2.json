@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":12500,  
+    "Configuration": "3.8 SE AWD ( Joe's Junk Career )",
+    "Description": "Was stolen, vandalized, thrown into a lake where it sat for a few days. Why and how it still runs is a mystery but that's why i own one in real life; those are tanks.",
+    "Drivetrain": "AWD",
+    "Fuel Type": "Gasoline",
+    "Power": 188,
+    "Torque": 186,
+    "Value": 2750,
+    "Weight": 1936,
+    "Years": {
+      "max": 2002,
+      "min": 1996
+    }  
+}
+
+

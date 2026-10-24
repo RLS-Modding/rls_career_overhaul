@@ -1,0 +1,28 @@
+{
+  "Body Style":"dnu",
+  "Config Type":"Loaner",
+  "Configuration":"With Cargo",
+  "Name":"Large Box Utility Trailer With Cargo",
+  "Population":5000,
+  "Source":"Custom",
+  "Value":10000,
+  "Weight":630,
+  "aggregates":{
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Type":{
+      "Trailer":true
+    },
+    "Weight":{
+      "max":630,
+      "min":630
+    }
+  },
+  "infoFilename":"/vehicles/boxutility_large/info_trailer_career_cargo_large.json",
+  "is_default_config":false,
+  "paints":{},
+  "pcFilename":"/vehicles/boxutility_large/trailer_career_cargo_large.pc",
+  "preview":"/vehicles/boxutility_large/trailer_career_cargo_large.jpg"
+}

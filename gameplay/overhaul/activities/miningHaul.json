@@ -1,0 +1,6 @@
+{
+  "id": "miningHaul",
+  "order": 140,
+  "extension": "overhaul_jobs_miningHaul",
+  "definition": "overhaul/jobs/miningHaul/activity"
+}

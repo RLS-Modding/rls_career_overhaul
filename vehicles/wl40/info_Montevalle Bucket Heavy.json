@@ -1,0 +1,108 @@
+{
+  "Body Style":"Wheel Loader",
+  "BoundingBox":[
+    [
+      -1.52,
+      -8.483,
+      -1.14
+    ],
+    [
+      2.66,
+      3.901,
+      3.362
+    ]
+  ],
+  "Config Type":"Loaner",
+  "Configuration":"Montevalle Bucket Heavy",
+  "Drivetrain":"4WD",
+  "Fuel Type":"Diesel",
+  "Induction Type":"Turbo",
+  "Name":"WL-40 Montevalle Bucket Heavy",
+  "Off-Road Score":13,
+  "Population":400,
+  "Power":537,
+  "PowerPeakRPM":1850,
+  "Propulsion":"ICE",
+  "Source":"Custom",
+  "Top Speed":9.8296719876959,
+  "Torque":2325,
+  "TorquePeakRPM":1150,
+  "Transmission":"Automatic",
+  "Value":500000,
+  "Weight":55740,
+  "Weight/Power":103.79888268156,
+  "aggregates":{
+    "Body Style":{
+      "Wheel Loader":true
+    },
+    "Brand":{
+      "Hirochi":true
+    },
+    "Country":{
+      "Japan":true
+    },
+    "Derby Class":{
+      "Wheel Loader":true
+    },
+    "Drivetrain":{
+      "4WD":true
+    },
+    "Fuel Type":{
+      "Diesel":true
+    },
+    "Induction Type":{
+      "Turbo":true
+    },
+    "InsuranceClass":{
+      "commercial":true
+    },
+    "Propulsion":{
+      "ICE":true
+    },
+    "Source":{
+      "BeamNG - Official":true,
+      "Custom":true
+    },
+    "Transmission":{
+      "Automatic":true
+    },
+    "Type":{
+      "Heavy Machinery":true
+    },
+    "Weight":{
+      "max":55740,
+      "min":55740
+    },
+    "Weight/Power":{
+      "max":103.79888268156,
+      "min":103.79888268156
+    },
+    "Years":{
+      "max":2007,
+      "min":2000
+    }
+  },
+  "defaultPaint":{
+    "baseColor":[
+      0.8,
+      0.6,
+      0.07,
+      2
+    ],
+    "class":"custom",
+    "clearcoat":1,
+    "clearcoatRoughness":0.75,
+    "id":"heavy_machinery_yellow",
+    "metallic":0,
+    "name":"Yellow",
+    "roughness":1
+  },
+  "defaultPaintName1":"heavy_machinery_yellow",
+  "defaultPaintName2":"heavy_machinery_yellow",
+  "defaultPaintName3":"heavy_machinery_yellow",
+  "infoFilename":"/vehicles/wl40/info_Montevalle Bucket Heavy.json",
+  "is_default_config":false,
+  "paints":{},
+  "pcFilename":"/vehicles/wl40/Montevalle Bucket Heavy.pc",
+  "preview":"/vehicles/wl40/Montevalle Bucket Heavy.jpg"
+}

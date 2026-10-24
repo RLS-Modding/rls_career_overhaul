@@ -1,0 +1,839 @@
+{
+"ForkLift_ForkFrame": {
+    "information":{
+        "authors":"TrackpadUser",
+        "name":"Fixed Forks",
+        "value":10000,
+    },
+    "slotType":"ForkLift_ForkFrame",
+    "flexbodies":[
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        {"rotation":{"x":0, "y":0, "z":0}, "translation":{"x":0, "y":0, "z":0}},
+        //body
+        {"deformGroup":""},
+        ["MFL_Forks", ["Fork"]],
+        ["MFL_ForkRollers", ["ForkFrame"]],
+        ["MFL_ForkFrame", ["ForkFrame"]],
+        ["MFL_LIFTCHAIN", ["LiftChain"]]
+	],
+    "slots":[
+        ["type", "default", "description"],
+        ["MFL_ForkEXT", "", "Fork Attachment"]
+	],
+    "nodes":[
+        ["id", "posX", "posY", "posZ"],
+        {"selfCollision":true},
+        {"collision":true},
+        {"nodeMaterial":"|NM_METAL"},
+        {"frictionCoef":0.6},
+
+        {"selfCollision":true},
+        {"nodeWeight":15},
+        {"group":"ForkFrame"},
+		
+		//Fork support frame
+        ["forkft", 0.0, -1.25, 0.638],
+        ["forkf", 0.0, -1.25, -0.17],
+		
+        ["forkftr", -0.65, -1.25, 0.638],
+        ["forkfr", -0.65, -1.25, -0.17],
+
+        ["forkftl", 0.65, -1.25,  0.638],
+        ["forkfl", 0.65, -1.25, -0.17],
+
+		//Fork nodes
+        {"group":"Fork"},
+        {"frictionCoef":0.6},
+        ["fork1r", -0.23, -2.47, -0.17],
+        ["fork1rr",-0.432, -2.47, -0.17],
+        {"selfCollision":false},
+        ["fork2r", -0.23, -1.25, -0.17],
+        ["fork2rr",-0.432, -1.25, -0.17],
+        ["fork3r", -0.23, -1.25, 0.638],
+        ["fork3rr",-0.432, -1.25, 0.638],
+        {"selfCollision":true},
+        ["fork1l", 0.23, -2.47, -0.17],
+        ["fork1ll",0.432, -2.47, -0.17],
+        {"selfCollision":false},
+        ["fork2l", 0.23, -1.25, -0.17],
+        ["fork2ll",0.432, -1.25, -0.17],
+        ["fork3l", 0.23, -1.25, 0.638],
+        ["fork3ll",0.432, -1.25, 0.638],
+		
+		//Fork collider help nodes
+        {"selfCollision":false},
+        {"nodeWeight":10},
+        ["forkcol1r", -0.23, -2.1, -0.17],
+        ["forkcol1rr",-0.432, -2.1, -0.17],
+        ["forkcol2r", -0.23, -1.65, -0.17],
+        ["forkcol2rr",-0.432, -1.65, -0.17],
+		
+        ["forkcol1l", 0.23, -2.1, -0.17],
+        ["forkcol1ll",0.432, -2.1, -0.17],
+        ["forkcol2l", 0.23, -1.65, -0.17],
+        ["forkcol2ll",0.432, -1.65, -0.17],
+        {"frictionCoef":0.6},
+		
+        {"group":"LiftChain"},
+        {"nodeWeight":2},
+		["LCForkFrameL", 0.186, -1.15, 0.456],
+		["LCForkFrameR", -0.186, -1.15, 0.456],
+
+        {"collision":true},
+        {"selfCollision":true}
+	],    
+    "camerasInternal":[
+        ["type", "x", "y", "z", "fov", "id1:", "id2:", "id3:", "id4:", "id5:", "id6:"],
+        {"nodeWeight":0.5},
+        {"selfCollision":false},
+        {"collision":false},
+        {"beamSpring":100000,"beamDamp":120},
+        {"beamDeform":100000,"beamStrength":"FLT_MAX"},
+        //hood cam
+        ["Fork",0.0, -1.15, 0.3, 75, "forkftr","forkftl","forkft","forkf","fork1l","fork1r"]
+    ],
+	"rails": {
+	//outer mast rails
+		"UpperForkFrame":{"links:":["forkftr", "forkft", "forkftl"], "looped":false, "capped":true},
+		"LowerForkFrame":{"links:":["forkfr", "forkf", "forkfl"], "looped":false, "capped":true},
+		
+		"ForkRailR":{"links:":["fork1r", "fork2r"], "looped":false, "capped":true},
+		"ForkRailRR":{"links:":["fork1rr", "fork2rr"], "looped":false, "capped":true},
+		"ForkRailL":{"links:":["fork1l", "fork2l"], "looped":false, "capped":true},
+		"ForkRailLL":{"links:":["fork1ll", "fork2ll"], "looped":false, "capped":true},
+	},
+	"slidenodes": [ 
+		["id:", "railName", "attached", "fixToRail", "tolerance", "spring", "strength", "capStrength"],
+		
+		["fork2rr", "LowerForkFrame", true, true, 0, 10000000, 100000000, 345435],
+		["fork2r", "LowerForkFrame", true, true, 0, 10000000, 100000000, 345435],
+		["fork3r", "UpperForkFrame", true, true, 0, 10000000, 100000000, 345435],
+		["fork3rr", "UpperForkFrame", true, true, 0, 10000000, 100000000, 345435],
+		["fork2ll", "LowerForkFrame", true, true, 0, 10000000, 100000000, 345435],
+		["fork2l", "LowerForkFrame", true, true, 0, 10000000, 100000000, 345435],
+		["fork3l", "UpperForkFrame", true, true, 0, 10000000, 100000000, 345435],
+		["fork3ll", "UpperForkFrame", true, true, 0, 10000000, 100000000, 345435],
+		
+		["forkcol1r", "ForkRailR", true, true, 0, 10000000, 100000000, 345435],
+		["forkcol2r", "ForkRailR", true, true, 0, 10000000, 100000000, 345435],
+		["forkcol1rr", "ForkRailRR", true, true, 0, 10000000, 100000000, 345435],
+		["forkcol2rr", "ForkRailRR", true, true, 0, 10000000, 100000000, 345435],
+		["forkcol1l", "ForkRailL", true, true, 0, 10000000, 100000000, 345435],
+		["forkcol2l", "ForkRailL", true, true, 0, 10000000, 100000000, 345435],
+		["forkcol1ll", "ForkRailLL", true, true, 0, 10000000, 100000000, 345435],
+		["forkcol2ll", "ForkRailLL", true, true, 0, 10000000, 100000000, 345435],
+	],
+    "beams":[
+        ["id1:", "id2:"],
+        {"breakGroupType":0},
+        {"deformLimitExpansion":1.2},
+        {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+        //refnode
+		
+        {"deformLimitExpansion":1.2},
+        {"beamSpring":5001000,"beamDamp":350},
+        {"beamDeform":"FLT_MAX","beamStrength":"FLT_MAX"},
+		//Fork Frame Face
+		["forkftr","forkft"],
+		["forkft","forkftl"],
+		["forkfr","forkf"],
+		["forkf","forkfl"],
+		
+		["forkftr","forkfr"],
+		["forkft","forkf"],
+		["forkftl","forkfl"],
+	
+		["forkftr","forkf"],
+		["forkfr","forkft"],
+		["forkftl","forkf"],
+		["forkfl","forkft"],
+		
+		["fma2r","forkf"],
+		["fma2tr","forkf"],
+		["fma2l","forkf"],
+		["fma2tl","forkf"],
+		["fma1r","forkf"],
+		["fma1tr","forkf"],
+		["fma1l","forkf"],
+		["fma1tl","forkf"],
+		
+		["fma2r","forkft"],
+		["fma2tr","forkft"],
+		["fma2l","forkft"],
+		["fma2tl","forkft"],
+		["fma1r","forkft"],
+		["fma1tr","forkft"],
+		["fma1l","forkft"],
+		["fma1tl","forkft"],
+		
+		["fma2r","forkfr"],
+		["fma2tr","forkfr"],
+		["fma2l","forkfr"],
+		["fma2tl","forkfr"],
+		["fma1r","forkfr"],
+		["fma1tr","forkfr"],
+		["fma1l","forkfr"],
+		["fma1tl","forkfr"],
+		
+		
+		["fma2r","forkftr"],
+		["fma2tr","forkftr"],
+		["fma2l","forkftr"],
+		["fma2tl","forkftr"],
+		["fma1r","forkftr"],
+		["fma1tr","forkftr"],
+		["fma1l","forkftr"],
+		["fma1tl","forkftr"],
+		
+		["fma2r","forkfl"],
+		["fma2tr","forkfl"],
+		["fma2l","forkfl"],
+		["fma2tl","forkfl"],
+		["fma1r","forkfl"],
+		["fma1tr","forkfl"],
+		["fma1l","forkfl"],
+		["fma1tl","forkfl"],
+		
+		["fma2r","forkftl"],
+		["fma2tr","forkftl"],
+		["fma2l","forkftl"],
+		["fma2tl","forkftl"],
+		["fma1r","forkftl"],
+		["fma1tr","forkftl"],
+		["fma1l","forkftl"],
+		["fma1tl","forkftl"],
+		
+		
+        {"beamSpring":2001000,"beamDamp":550},
+        {"beamPrecompression":1.0},
+		
+		//FORKS MAIN SHAPE
+		 ["fork3r","fork3rr"],
+		 ["fork2r","fork2rr"],
+		 ["fork1r","fork1rr"],
+		 
+		 ["fork3r","fork2r"],
+		 ["fork2r","fork1r"],
+		 ["fork3rr","fork2rr"],
+		 ["fork2rr","fork1rr"],
+		 
+		 ["fork3r","fork2rr"],
+		 ["fork3rr","fork2r"],
+		 ["fork2r","fork1rr"],
+		 ["fork2rr","fork1r"],
+		 
+		 ["fork3r","fork1r"],
+		 ["fork3rr","fork1rr"],
+		 ["fork3r","fork1rr"],
+		 ["fork3rr","fork1r"],
+		 
+		
+		 ["fork3l","fork3ll"],
+		 ["fork2l","fork2ll"],
+		 ["fork1l","fork1ll"],
+		 
+		 ["fork3l","fork2l"],
+		 ["fork2l","fork1l"],
+		 ["fork3ll","fork2ll"],
+		 ["fork2ll","fork1ll"],
+		 
+		 ["fork3l","fork2ll"],
+		 ["fork3ll","fork2l"],
+		 ["fork2l","fork1ll"],
+		 ["fork2ll","fork1l"],
+		 
+		 ["fork3l","fork1l"],
+		 ["fork3ll","fork1ll"],
+		 ["fork3l","fork1ll"],
+		 ["fork3ll","fork1l"],
+		
+		//FORK SUPPORT
+		 ["fork3ll","forkftl"],
+		 ["fork2ll","forkfl"],
+		 ["fork3rr","forkftr"],
+		 ["fork2rr","forkfr"],
+		 
+		 ["fork3ll","fma2tl"],
+		 ["fork3l","fma2tl"],
+		 ["fork3rr","fma2tr"],
+		 ["fork3r","fma2tr"],
+		 ["fork3ll","fma2l"],
+		 ["fork3l","fma2l"],
+		 ["fork3rr","fma2r"],
+		 ["fork3r","fma2r"],
+		 
+		 ["fork2ll","fma2l"],
+		 ["fork2l","fma2l"],
+		 ["fork2rr","fma2r"],
+		 ["fork2r","fma2r"],
+		 ["fork2ll","fma2tl"],
+		 ["fork2l","fma2tl"],
+		 ["fork2rr","fma2tr"],
+		 ["fork2r","fma2tr"],
+		 
+		
+		//inter fork rigids
+		["fork3r","fork3l"],
+		["fork2r","fork2l"],
+		["fork1r","fork1l"],
+		["fork1r","fork2l"],
+		["fork1l","fork2r"],
+		["fork1r","fork3l"],
+		["fork1l","fork3r"],
+		
+		//fork colliders
+        {"beamSpring":1501000,"beamDamp":350},
+		
+		["fork2r","forkcol2r"],
+		["forkcol2r","forkcol1r"],
+		["forkcol1r","fork1r"],
+		
+		["fork2rr","forkcol2rr"],
+		["forkcol2rr","forkcol1rr"],
+		["forkcol1rr","fork1rr"],
+		
+		["fork2l","forkcol2l"],
+		["forkcol2l","forkcol1l"],
+		["forkcol1l","fork1l"],
+		
+		["fork2ll","forkcol2ll"],
+		["forkcol2ll","forkcol1ll"],
+		["forkcol1ll","fork1ll"],
+
+
+		//lift chain deform node
+		
+        {"beamSpring":501000,"beamDamp":50},
+		["LCForkFrameL", "forkftl"],
+		["LCForkFrameL", "forkfl"],
+		["LCForkFrameL", "forkft"],
+		["LCForkFrameL", "forkf"],
+
+		["LCForkFrameR", "forkftr"],
+		["LCForkFrameR", "forkfr"],
+		["LCForkFrameR", "forkft"],
+		["LCForkFrameR", "forkf"],
+		["LCForkFrameR", "LCForkFrameL"],
+
+		//fork tip damper
+		{"deformLimitExpansion":""},
+		{"beamPrecompression":1.0, "beamType":"|BOUNDED", "beamLongBound":1.0, "beamShortBound":1.0},
+		{"beamLimitSpring":0,"beamLimitDamp":0},
+		{"beamSpring":0,"beamDamp":400},
+		["fork1r","ima1tr", {"beamDampVelocitySplit":0.5,"beamDampFast":4000,"beamDampReboundFast":4000,"dampCutoffHz":1000}],
+		["fork1rr","ima1tr", {"beamDampVelocitySplit":0.5,"beamDampFast":4000,"beamDampReboundFast":4000,"dampCutoffHz":1000}],
+		["fork1l","ima1tl", {"beamDampVelocitySplit":0.5,"beamDampFast":4000,"beamDampReboundFast":4000,"dampCutoffHz":1000}],
+		["fork1ll","ima1tl", {"beamDampVelocitySplit":0.5,"beamDampFast":4000,"beamDampReboundFast":4000,"dampCutoffHz":1000}],
+
+		["fork1r","oma1r", {"beamDampVelocitySplit":0.5,"beamDampFast":4000,"beamDampReboundFast":4000,"dampCutoffHz":1000}],
+		["fork1rr","oma1r", {"beamDampVelocitySplit":0.5,"beamDampFast":4000,"beamDampReboundFast":4000,"dampCutoffHz":1000}],
+		["fork1l","oma1l", {"beamDampVelocitySplit":0.5,"beamDampFast":4000,"beamDampReboundFast":4000,"dampCutoffHz":1000}],
+		["fork1ll","oma1l", {"beamDampVelocitySplit":0.5,"beamDampFast":4000,"beamDampReboundFast":4000,"dampCutoffHz":1000}],
+    ],
+    "triangles": [
+		["id1:","id2:","id3:"],
+		{"dragCoef":10},        
+		{"groundModel":"metal"},
+		{"triangleType":"NORMALTYPE"},
+	
+		["forkftr","forkfr","forkft"]
+		["forkft","forkfr","forkf"]
+		["forkftl","forkft","forkfl"]
+		["forkft","forkf","forkfl"]
+		
+		["fork2l","fork1ll","fork2ll"]
+		["fork2l","fork1l","fork1ll"]
+				
+		["fork2r","fork2rr","fork1rr"]
+		["fork2r","fork1rr","fork1r"]
+	]
+},
+"ForkLift_ForkFrameTriplexFreeLift": {
+    "information":{
+        "authors":"TrackpadUser",
+        "name":"Fixed Forks With Free Lift",
+        "value":10000
+    },
+    "slotType":"ForkLift_ForkFrameTriplex",
+    "flexbodies":[
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        {"rotation":{"x":0, "y":0, "z":0}, "translation":{"x":0, "y":0, "z":0}},
+        //body
+        {"deformGroup":""},
+        ["MFL_Forks", ["Fork"]],
+        ["MFL_TriplexForkFrame", ["ForkFrame"]],
+        ["MFL_TriplexForkRollers", ["ForkFrame"]],
+		
+        ["MFL_FreeliftCylinder", ["InnerMast"]],
+        ["MFL_FreeliftCylinderInt", ["LiftCyl"]],
+        ["MFL_TriplexFreeLiftRoller", ["LiftCyl"]],
+        ["MFL_FreeliftChain", ["LiftChain"]]
+	],
+	"controller": [
+        ["fileName"],       
+        ["forkLiftController", {"FreeLift": true}]
+    ],
+    "slots":[
+        ["type", "default", "description"],
+        ["MFL_ForkEXT", "", "Fork Attachment"],
+	],
+    "nodes":[
+        ["id", "posX", "posY", "posZ"],
+        {"selfCollision":true},
+        {"collision":true},
+        {"nodeMaterial":"|NM_METAL"},
+        {"frictionCoef":0.6},
+        {"group":"ForkFrame"},
+	
+
+        {"selfCollision":true},
+		
+		//Fork support frame
+        ["forkft", 0.0, -1.25, 0.638],
+        ["forkf", 0.0, -1.25, -0.17],
+		
+        ["forkftr", -0.65, -1.25, 0.638],
+        ["forkfr", -0.65, -1.25, -0.17],
+
+        ["forkftl", 0.65, -1.25,  0.638],
+        ["forkfl", 0.65, -1.25, -0.17],
+
+		//Fork nodes
+        {"group":"Fork"},
+        {"frictionCoef":0.6},
+        ["fork1r", -0.23, -2.47, -0.17],
+        ["fork1rr",-0.432, -2.47, -0.17],
+        {"selfCollision":false},
+        ["fork2r", -0.23, -1.25, -0.17],
+        ["fork2rr",-0.432, -1.25, -0.17],
+        ["fork3r", -0.23, -1.25, 0.638],
+        ["fork3rr",-0.432, -1.25, 0.638],
+        {"selfCollision":true},
+        {"nodeWeight":20},
+		
+        ["fork1l", 0.23, -2.47, -0.17],
+        ["fork1ll",0.432, -2.47, -0.17],
+        {"selfCollision":false},
+        ["fork2l", 0.23, -1.25, -0.17],
+        ["fork2ll",0.432, -1.25, -0.17],
+        ["fork3l", 0.23, -1.25, 0.638],
+        ["fork3ll",0.432, -1.25, 0.638],
+		
+		//Fork collider help nodes
+        {"selfCollision":false},
+        {"nodeWeight":10},
+        ["forkcol1r", -0.23, -2.1, -0.17],
+        ["forkcol1rr",-0.432, -2.1, -0.17],
+        ["forkcol2r", -0.23, -1.65, -0.17],
+        ["forkcol2rr",-0.432, -1.65, -0.17],
+		
+        ["forkcol1l", 0.23, -2.1, -0.17],
+        ["forkcol1ll",0.432, -2.1, -0.17],
+        ["forkcol2l", 0.23, -1.65, -0.17],
+        ["forkcol2ll",0.432, -1.65, -0.17],
+        {"frictionCoef":0.6},
+        {"collision":true},
+        {"selfCollision":true}
+	],    
+    "camerasInternal":[
+        ["type", "x", "y", "z", "fov", "id1:", "id2:", "id3:", "id4:", "id5:", "id6:"],
+        {"nodeWeight":0.5},
+        {"selfCollision":false},
+        {"collision":false},
+        {"beamSpring":100000,"beamDamp":120},
+        {"beamDeform":100000,"beamStrength":"FLT_MAX"},
+        //hood cam
+        ["Fork",0.0, -1.15, 0.3, 75, "forkftr","forkftl","forkft","forkf","fork1l","fork1r"]
+    ],
+	"rails": {
+	//outer mast rails
+		"UpperForkFrame":{"links:":["forkftr", "forkft", "forkftl"], "looped":false, "capped":true},
+		"LowerForkFrame":{"links:":["forkfr", "forkf", "forkfl"], "looped":false, "capped":true},
+		
+		"ForkRailR":{"links:":["fork1r", "fork2r"], "looped":false, "capped":true},
+		"ForkRailRR":{"links:":["fork1rr", "fork2rr"], "looped":false, "capped":true},
+		"ForkRailL":{"links:":["fork1l", "fork2l"], "looped":false, "capped":true},
+		"ForkRailLL":{"links:":["fork1ll", "fork2ll"], "looped":false, "capped":true}
+	},
+	"slidenodes": [ 
+		["id:", "railName", "attached", "fixToRail", "tolerance", "spring", "strength", "capStrength"],
+		//inner mast to outer mast connection				
+		["fork2rr", "LowerForkFrame", true, true, 0, 10000000, 100000000, 345435],
+		["fork2r", "LowerForkFrame", true, true, 0, 10000000, 100000000, 345435],
+		["fork3r", "UpperForkFrame", true, true, 0, 10000000, 100000000, 345435],
+		["fork3rr", "UpperForkFrame", true, true, 0, 10000000, 100000000, 345435],
+		["fork2ll", "LowerForkFrame", true, true, 0, 10000000, 100000000, 345435],
+		["fork2l", "LowerForkFrame", true, true, 0, 10000000, 100000000, 345435],
+		["fork3l", "UpperForkFrame", true, true, 0, 10000000, 100000000, 345435],
+		["fork3ll", "UpperForkFrame", true, true, 0, 10000000, 100000000, 345435],
+		
+		["forkcol1r", "ForkRailR", true, true, 0, 10000000, 100000000, 345435],
+		["forkcol2r", "ForkRailR", true, true, 0, 10000000, 100000000, 345435],
+		["forkcol1rr", "ForkRailRR", true, true, 0, 10000000, 100000000, 345435],
+		["forkcol2rr", "ForkRailRR", true, true, 0, 10000000, 100000000, 345435],
+		["forkcol1l", "ForkRailL", true, true, 0, 10000000, 100000000, 345435],
+		["forkcol2l", "ForkRailL", true, true, 0, 10000000, 100000000, 345435],
+		["forkcol1ll", "ForkRailLL", true, true, 0, 10000000, 100000000, 345435],
+		["forkcol2ll", "ForkRailLL", true, true, 0, 10000000, 100000000, 345435],
+		
+	],
+    "beams":[
+        ["id1:", "id2:"],
+        {"breakGroupType":0},
+        {"deformLimitExpansion":1.2},
+        {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+        //refnode
+		
+        {"deformLimitExpansion":1.2},
+        {"beamPrecompression":1, "beamType":"|NORMAL"},
+        {"beamSpring":5001000,"beamDamp":350},
+        {"beamDeform":"FLT_MAX","beamStrength":"FLT_MAX"},
+        //{"beamDeform":30000,"beamStrength":"FLT_MAX"},
+
+		//frame slider
+		["fma1r","fma2r"],
+		["fma1tr","fma2tr"],
+		["fma1l","fma2l"],
+		["fma1tl","fma2tl"],
+		
+		["fma1r","fma1l"],
+		["fma1tr","fma1tl"],
+		["fma2r","fma2l"],
+		["fma2tr","fma2tl"],
+		
+		["fma1r","fma1tr"],
+		["fma1l","fma1tl"],
+		["fma2r","fma2tr"],
+		["fma2l","fma2tl"],
+		
+		["fma1r","fma1tl"],
+		["fma1tr","fma1l"],
+		["fma2r","fma2tl"],
+		["fma2tr","fma2l"],
+		
+		["fma1r","fma2l"],
+		["fma1l","fma2r"],
+		["fma1tr","fma2tl"],
+		["fma1tl","fma2tr"],
+		
+		["fma1r","fma2tr"],
+		["fma1tr","fma2r"],
+		["fma1l","fma2tl"],
+		["fma1tl","fma2l"],
+		
+		//Fork Frame Face
+		["forkftr","forkft"],
+		["forkft","forkftl"],
+		["forkfr","forkf"],
+		["forkf","forkfl"],
+		
+		["forkftr","forkfr"],
+		["forkft","forkf"],
+		["forkftl","forkfl"],
+	
+		["forkftr","forkf"],
+		["forkfr","forkft"],
+		["forkftl","forkf"],
+		["forkfl","forkft"],
+		
+		["fma2r","forkf"],
+		["fma2tr","forkf"],
+		["fma2l","forkf"],
+		["fma2tl","forkf"],
+		["fma1r","forkf"],
+		["fma1tr","forkf"],
+		["fma1l","forkf"],
+		["fma1tl","forkf"],
+		
+		["fma2r","forkft"],
+		["fma2tr","forkft"],
+		["fma2l","forkft"],
+		["fma2tl","forkft"],
+		["fma1r","forkft"],
+		["fma1tr","forkft"],
+		["fma1l","forkft"],
+		["fma1tl","forkft"],
+		
+		["fma2r","forkfr"],
+		["fma2tr","forkfr"],
+		["fma2l","forkfr"],
+		["fma2tl","forkfr"],
+		["fma1r","forkfr"],
+		["fma1tr","forkfr"],
+		["fma1l","forkfr"],
+		["fma1tl","forkfr"],
+		
+		
+		["fma2r","forkftr"],
+		["fma2tr","forkftr"],
+		["fma2l","forkftr"],
+		["fma2tl","forkftr"],
+		["fma1r","forkftr"],
+		["fma1tr","forkftr"],
+		["fma1l","forkftr"],
+		["fma1tl","forkftr"],
+		
+		["fma2r","forkfl"],
+		["fma2tr","forkfl"],
+		["fma2l","forkfl"],
+		["fma2tl","forkfl"],
+		["fma1r","forkfl"],
+		["fma1tr","forkfl"],
+		["fma1l","forkfl"],
+		["fma1tl","forkfl"],
+		
+		["fma2r","forkftl"],
+		["fma2tr","forkftl"],
+		["fma2l","forkftl"],
+		["fma2tl","forkftl"],
+		["fma1r","forkftl"],
+		["fma1tr","forkftl"],
+		["fma1l","forkftl"],
+		["fma1tl","forkftl"],
+		
+		
+        {"beamSpring":2001000,"beamDamp":550},
+        {"beamPrecompression":1.0},
+		
+		//FORKS MAIN SHAPE
+		 ["fork3r","fork3rr"],
+		 ["fork2r","fork2rr"],
+		 ["fork1r","fork1rr"],
+		 
+		 ["fork3r","fork2r"],
+		 ["fork2r","fork1r"],
+		 ["fork3rr","fork2rr"],
+		 ["fork2rr","fork1rr"],
+		 
+		 ["fork3r","fork2rr"],
+		 ["fork3rr","fork2r"],
+		 ["fork2r","fork1rr"],
+		 ["fork2rr","fork1r"],
+		 
+		 ["fork3r","fork1r"],
+		 ["fork3rr","fork1rr"],
+		 ["fork3r","fork1rr"],
+		 ["fork3rr","fork1r"],
+		 
+		
+		 ["fork3l","fork3ll"],
+		 ["fork2l","fork2ll"],
+		 ["fork1l","fork1ll"],
+		 
+		 ["fork3l","fork2l"],
+		 ["fork2l","fork1l"],
+		 ["fork3ll","fork2ll"],
+		 ["fork2ll","fork1ll"],
+		 
+		 ["fork3l","fork2ll"],
+		 ["fork3ll","fork2l"],
+		 ["fork2l","fork1ll"],
+		 ["fork2ll","fork1l"],
+		 
+		 ["fork3l","fork1l"],
+		 ["fork3ll","fork1ll"],
+		 ["fork3l","fork1ll"],
+		 ["fork3ll","fork1l"],
+		
+		//FORK SUPPORT
+		 ["fork3ll","forkftl"],
+		 ["fork2ll","forkfl"],
+		 ["fork3rr","forkftr"],
+		 ["fork2rr","forkfr"],
+		 
+		 ["fork3ll","fma2tl"],
+		 ["fork3l","fma2tl"],
+		 ["fork3rr","fma2tr"],
+		 ["fork3r","fma2tr"],
+		 ["fork3ll","fma2l"],
+		 ["fork3l","fma2l"],
+		 ["fork3rr","fma2r"],
+		 ["fork3r","fma2r"],
+		 
+		 ["fork2ll","fma2l"],
+		 ["fork2l","fma2l"],
+		 ["fork2rr","fma2r"],
+		 ["fork2r","fma2r"],
+		 ["fork2ll","fma2tl"],
+		 ["fork2l","fma2tl"],
+		 ["fork2rr","fma2tr"],
+		 ["fork2r","fma2tr"],
+		 
+		
+		//inter fork rigids
+		["fork3r","fork3l"],
+		["fork2r","fork2l"],
+		["fork1r","fork1l"],
+		["fork1r","fork2l"],
+		["fork1l","fork2r"],
+		["fork1r","fork3l"],
+		["fork1l","fork3r"],
+		
+		//fork colliders
+        {"beamSpring":1501000,"beamDamp":350},
+		
+		["fork2r","forkcol2r"],
+		["forkcol2r","forkcol1r"],
+		["forkcol1r","fork1r"],
+		
+		["fork2rr","forkcol2rr"],
+		["forkcol2rr","forkcol1rr"],
+		["forkcol1rr","fork1rr"],
+		
+		["fork2l","forkcol2l"],
+		["forkcol2l","forkcol1l"],
+		["forkcol1l","fork1l"],
+		
+		["fork2ll","forkcol2ll"],
+		["forkcol2ll","forkcol1ll"],
+		["forkcol1ll","fork1ll"],
+
+		
+		
+		//fork tip damper
+		{"deformLimitExpansion":""},
+		{"beamPrecompression":1.0, "beamType":"|BOUNDED", "beamLongBound":1.0, "beamShortBound":1.0},
+		{"beamLimitSpring":0,"beamLimitDamp":0},
+		{"beamSpring":0,"beamDamp":400},
+		["fork1r","ima1tr", {"beamDampVelocitySplit":0.1,"beamDampFast":8000,"beamDampReboundFast":8000,"dampCutoffHz":1000}],
+		["fork1rr","ima1tr", {"beamDampVelocitySplit":0.1,"beamDampFast":8000,"beamDampReboundFast":8000,"dampCutoffHz":1000}],
+		["fork1l","ima1tl", {"beamDampVelocitySplit":0.1,"beamDampFast":8000,"beamDampReboundFast":8000,"dampCutoffHz":1000}],
+		["fork1ll","ima1tl", {"beamDampVelocitySplit":0.1,"beamDampFast":8000,"beamDampReboundFast":8000,"dampCutoffHz":1000}],
+		
+		["fork1r","oma1r", {"beamDampVelocitySplit":0.1,"beamDampFast":8000,"beamDampReboundFast":8000,"dampCutoffHz":1000}],
+		["fork1rr","oma1r", {"beamDampVelocitySplit":0.1,"beamDampFast":8000,"beamDampReboundFast":8000,"dampCutoffHz":1000}],
+		["fork1l","oma1l", {"beamDampVelocitySplit":0.1,"beamDampFast":8000,"beamDampReboundFast":8000,"dampCutoffHz":1000}],
+		["fork1ll","oma1l", {"beamDampVelocitySplit":0.1,"beamDampFast":8000,"beamDampReboundFast":8000,"dampCutoffHz":1000}],
+    ],
+    "triangles": [
+		["id1:","id2:","id3:"],
+		{"dragCoef":10},        
+		{"groundModel":"metal"},
+		{"triangleType":"NORMALTYPE"},
+		
+		["forkftr","forkfr","forkft"],
+		["forkft","forkfr","forkf"],
+		["forkftl","forkft","forkfl"],
+		["forkft","forkf","forkfl"],
+		
+		["fork2l","fork1ll","fork2ll"],
+		["fork2l","fork1l","fork1ll"],
+				
+		["fork2r","fork2rr","fork1rr"],
+		["fork2r","fork1rr","fork1r"]
+	]
+},
+"MFL_ForkEXT": {
+    "information":{
+        "authors":"TrackpadUser",
+        "name":"Fork Extensions",
+        "value":10000,
+    },
+    "slotType":"MFL_ForkEXT",
+    "flexbodies":[
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        {"rotation":{"x":0, "y":0, "z":0}, "translation":{"x":0, "y":0, "z":0}},
+        //body
+        {"deformGroup":""},
+        ["MFL_ForksExension", ["Fork"]],
+	],
+    "nodes":[
+        ["id", "posX", "posY", "posZ"],
+        {"selfCollision":true},
+        {"collision":true},
+        {"nodeMaterial":"|NM_METAL"},
+        {"frictionCoef":0.6},
+        {"nodeWeight":15},
+
+		//Fork nodes
+        {"group":"Fork"},
+        {"frictionCoef":0.6},
+        ["fork1r", -0.23, -3.12, -0.17],
+        ["fork1rr",-0.432, -3.12, -0.17],
+        ["fork1l", 0.23, -3.12, -0.17],
+        ["fork1ll",0.432, -3.12, -0.17],
+		
+		//Fork collider help nodes
+        {"selfCollision":false},
+        {"nodeWeight":10},
+        ["forkcol1r", -0.23, -2.5, -0.17],
+        ["forkcol1rr",-0.432, -2.5, -0.17],
+        ["forkcol2r", -0.23, -1.9, -0.17],
+        ["forkcol2rr",-0.432, -1.9, -0.17],
+		
+        ["forkcol1l", 0.23, -2.5, -0.17],
+        ["forkcol1ll",0.432, -2.5, -0.17],
+        ["forkcol2l", 0.23, -1.9, -0.17],
+        ["forkcol2ll",0.432, -1.9, -0.17],
+        {"frictionCoef":0.6},
+
+        {"collision":true},
+        {"selfCollision":true}
+	]    
+},
+"MFL_ForkTow": {
+    "information":{
+        "authors":"TrackpadUser",
+        "name":"Towing attachment",
+        "value":10000,
+    },
+    "slotType":"MFL_ForkEXT",
+    "flexbodies":[
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        {"rotation":{"x":0, "y":0, "z":0}, "translation":{"x":0, "y":0, "z":0}},
+        //body
+        {"deformGroup":""},
+        ["MFL_ForkHitch", ["Fork"]],
+        ["MFL_ForkHitchAdapter", ["Fork"]],
+        ["MFL_ForkHitchAdapterCenter", ["Fork"]],
+	],
+    "nodes":[
+        ["id", "posX", "posY", "posZ"],
+        {"selfCollision":true},
+        {"collision":true},
+        {"nodeMaterial":"|NM_METAL"},
+        {"frictionCoef":0.6},
+        {"nodeWeight":20},
+
+		//Fork nodes
+        {"group":"Fork"},
+        {"frictionCoef":0.6},
+        ["forkTowBall", -0.0, -2.38, -0.09,{"couplerTag":"tow_hitch","couplerStrength":2001000,"couplerRadius":1, "breakGroup":"ballhitch"}],
+        {"frictionCoef":0.6},
+
+        {"collision":true},
+        {"selfCollision":true},
+	],    
+	
+    "beams":[
+        ["id1:", "id2:"],
+        {"breakGroupType":0},
+        {"deformLimitExpansion":1.2},
+        {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+        //refnode
+		
+        {"deformLimitExpansion":1.2},
+        {"beamPrecompression":1, "beamType":"|NORMAL"},
+        {"beamSpring":5001000,"beamDamp":350},
+        {"beamDeform":"FLT_MAX","beamStrength":"FLT_MAX"},
+        //{"beamDeform":30000,"beamStrength":"FLT_MAX"},
+
+		//frame slider
+		["forkTowBall","fork1l"],
+		["forkTowBall","fork2l"],
+		["forkTowBall","fork3l"],
+		["forkTowBall","fork1r"],
+		["forkTowBall","fork2r"],
+		["forkTowBall","fork3r"]
+    ],
+    "triangles": [
+		["id1:","id2:","id3:"],
+		{"dragCoef":10},        
+		{"groundModel":"metal"},
+		{"triangleType":"NORMALTYPE"},
+
+		["forkftr","forkfr","forkft"],
+		["forkft","forkfr","forkf"]
+	]
+}
+}

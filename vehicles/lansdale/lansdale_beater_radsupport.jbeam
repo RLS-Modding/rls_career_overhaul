@@ -1,0 +1,48 @@
+{
+"lansdale_beater_radsupport_early": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Damaged Early Radiator Support",
+        "value":50,
+    },
+    "slotType" : "lansdale_radsupport",
+    "slots": [
+        ["type", "default", "description"],
+        ["lansdale_bumperbar_F","lansdale_bumperbar_F", "Front Bumper Support"],
+        ["lansdale_headlight_R_early","lansdale_headlight_R_early", "Right Headlight"],
+        ["lansdale_headlight_L_early","lansdale_headlight_L_early", "Left Headlight"],
+        ["lansdale_bumper_F_early","lansdale_bumper_F_early_A", "Front Bumper"],
+        ["lansdale_hood_early","lansdale_hood_early", "Hood"],
+        ["lansdale_fascia_F_early","lansdale_fascia_F_early_A", "Front Fascia"],
+        ["lansdale_fender_R_early","lansdale_fender_R_early", "Front Right Fender"],
+        ["lansdale_fender_L_early","lansdale_fender_L_early", "Front Left Fender"],
+    ],
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["lansdale_beater_pre_rad_support", ["lansdale_body"]],
+    ],
+},
+"lansdale_beater_radsupport_late": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Damaged Late Radiator Support",
+        "value":60,
+    },
+    "slotType" : "lansdale_radsupport",
+    "slots": [
+        ["type", "default", "description"],
+        ["lansdale_bumperbar_F","lansdale_bumperbar_F", "Front Bumper Support"],
+        ["lansdale_headlight_R_late","lansdale_headlight_R_late", "Right Headlight"],
+        ["lansdale_headlight_L_late","lansdale_headlight_L_late", "Left Headlight"],
+        ["lansdale_bumper_F_late","lansdale_bumper_F_late_A", "Front Bumper"],
+        ["lansdale_hood_late","lansdale_hood_late", "Hood"],
+        ["lansdale_fender_R_late","lansdale_fender_R_late", "Front Right Fender"],
+        ["lansdale_fender_L_late","lansdale_fender_L_late", "Front Left Fender"],
+        ["lansdale_enginebay_trim_late","lansdale_enginebay_trim_late", "Radiator Cover"],
+    ],
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["lansdale_beater_facelift_rad_support", ["lansdale_body"]],
+    ],
+},
+}

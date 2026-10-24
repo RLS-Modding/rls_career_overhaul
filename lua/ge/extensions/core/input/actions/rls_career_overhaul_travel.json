@@ -1,0 +1,11 @@
+{
+  "overhaulTravelPanel": {
+    "cat": "rlsCareerOverhaul",
+    "order": 258,
+    "ctx": "tlua",
+    "onDown": "if overhaul_career_garage_switchMap then overhaul_career_garage_switchMap.engagePanel() end",
+    "title": "Use Travel Panel",
+    "desc": "Use the travel panel while inside a travel zone. Back returns to driving",
+    "overhaulGroup": "Travel"
+  }
+}

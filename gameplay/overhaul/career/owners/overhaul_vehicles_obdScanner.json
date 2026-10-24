@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_vehicles_obdScanner",
+  "order": 115,
+  "module": "overhaul/vehicles/obdScanner",
+  "scopes": [
+    {
+      "id": "late",
+      "order": 10
+    }
+  ]
+}

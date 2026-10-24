@@ -1,0 +1,588 @@
+{
+  "version": 1,
+  "loaners": {
+    "fastAutomotive": {
+      "associatedOrganization": "fastAutomotive",
+      "nonTrailerSpots": [
+        "fastAutomotive_loaner"
+      ],
+      "loanableVehicles": [
+        {
+          "model": "van",
+          "config": "cargoservicevan872426",
+          "reputationLvl": -1,
+          "deliveryLvl": 0,
+          "mileage": 241401600
+        }
+      ],
+      "sitesFile": "rlsLoaners.sites.json"
+    },
+    "exhaustShop": {
+      "associatedOrganization": "belascoCityExhaust",
+      "nonTrailerSpots": [
+        "exhaustShop_loaner"
+      ],
+      "loanableVehicles": [
+        {
+          "model": "van",
+          "config": "cargoservicevan872426",
+          "reputationLvl": -1,
+          "deliveryLvl": 0,
+          "mileage": 241401600
+        }
+      ],
+      "sitesFile": "rlsLoaners.sites.json"
+    },
+    "torresTires": {
+      "associatedOrganization": "torresTires",
+      "nonTrailerSpots": [
+        "torresTires_loaner"
+      ],
+      "loanableVehicles": [
+        {
+          "model": "van",
+          "config": "cargoservicevan872426",
+          "reputationLvl": -1,
+          "deliveryLvl": 0,
+          "mileage": 241401600
+        }
+      ],
+      "sitesFile": "rlsLoaners.sites.json"
+    },
+    "smashAutoRepairs": {
+      "associatedOrganization": "smashAutoRepairs",
+      "nonTrailerSpots": [
+        "smashAutoRepairs_loaner"
+      ],
+      "loanableVehicles": [
+        {
+          "model": "van",
+          "config": "cargoservicevan872426",
+          "reputationLvl": -1,
+          "deliveryLvl": 0,
+          "mileage": 241401600
+        }
+      ],
+      "sitesFile": "rlsLoaners.sites.json"
+    },
+    "jerryRigs": {
+      "associatedOrganization": "jerryRiggs",
+      "nonTrailerSpots": [
+        "jerryRigs_loaner"
+      ],
+      "loanableVehicles": [
+        {
+          "model": "van",
+          "config": "cargoservicevan872426",
+          "reputationLvl": -1,
+          "deliveryLvl": 0,
+          "mileage": 241401600
+        }
+      ],
+      "sitesFile": "rlsLoaners.sites.json"
+    },
+    "shuffleboardGarage": {
+      "associatedOrganization": "shuffleboardLogistics",
+      "nonTrailerSpots": [
+        "shuffleboardGarage_loaner"
+      ],
+      "loanableVehicles": [
+        {
+          "model": "van",
+          "config": "cargoservicevan872426",
+          "reputationLvl": -1,
+          "deliveryLvl": 0,
+          "mileage": 241401600
+        }
+      ],
+      "sitesFile": "rlsLoaners.sites.json"
+    },
+    "quarrysideAutoSales": {
+      "associatedOrganization": "quarrysideAutoSales",
+      "nonTrailerSpots": [
+        "quarrysideAutoSales_loaner"
+      ],
+      "loanableVehicles": [
+        {
+          "model": "van",
+          "config": "cargoservicevan872426",
+          "reputationLvl": -1,
+          "deliveryLvl": 0,
+          "mileage": 241401600
+        }
+      ],
+      "sitesFile": "rlsLoaners.sites.json"
+    },
+    "belascoAuto": {
+      "associatedOrganization": "belascoAuto",
+      "nonTrailerSpots": [
+        "belascoAuto_loaner"
+      ],
+      "loanableVehicles": [
+        {
+          "model": "van",
+          "config": "cargoservicevan872426",
+          "reputationLvl": -1,
+          "deliveryLvl": 0,
+          "mileage": 241401600
+        }
+      ],
+      "sitesFile": "rlsLoaners.sites.json"
+    },
+    "jeffersonMotors": {
+      "associatedOrganization": "jeffersonMotors",
+      "nonTrailerSpots": [
+        "jeffersonMotors_loaner"
+      ],
+      "loanableVehicles": [
+        {
+          "model": "van",
+          "config": "cargoservicevan872426",
+          "reputationLvl": -1,
+          "deliveryLvl": 0,
+          "mileage": 241401600
+        }
+      ],
+      "sitesFile": "rlsLoaners.sites.json"
+    },
+    "richsMotorCompany": {
+      "associatedOrganization": "richsMotorCompany",
+      "nonTrailerSpots": [
+        "richsMotorCompany_loaner"
+      ],
+      "loanableVehicles": [
+        {
+          "model": "van",
+          "config": "cargoservicevan872426",
+          "reputationLvl": -1,
+          "deliveryLvl": 0,
+          "mileage": 241401600
+        }
+      ],
+      "sitesFile": "rlsLoaners.sites.json"
+    },
+    "policeStation": {
+      "associatedOrganization": "localDeliveryAssociation",
+      "nonTrailerSpots": [
+        "policeStation_loaner"
+      ],
+      "loanableVehicles": [
+        {
+          "model": "van",
+          "config": "cargoservicevan872426",
+          "reputationLvl": -1,
+          "deliveryLvl": 0,
+          "mileage": 241401600
+        }
+      ],
+      "sitesFile": "rlsLoaners.sites.json"
+    },
+    "snoozeNews": {
+      "associatedOrganization": "localDeliveryAssociation",
+      "nonTrailerSpots": [
+        "snoozeNews_loaner"
+      ],
+      "loanableVehicles": [
+        {
+          "model": "van",
+          "config": "cargoservicevan872426",
+          "reputationLvl": -1,
+          "deliveryLvl": 0,
+          "mileage": 241401600
+        }
+      ],
+      "sitesFile": "rlsLoaners.sites.json"
+    },
+    "turboBurger": {
+      "associatedOrganization": "localDeliveryAssociation",
+      "nonTrailerSpots": [
+        "turboBurger_loaner"
+      ],
+      "loanableVehicles": [
+        {
+          "model": "van",
+          "config": "cargoservicevan872426",
+          "reputationLvl": -1,
+          "deliveryLvl": 0,
+          "mileage": 241401600
+        }
+      ],
+      "sitesFile": "rlsLoaners.sites.json"
+    },
+    "diner": {
+      "associatedOrganization": "localDeliveryAssociation",
+      "nonTrailerSpots": [
+        "diner_loaner"
+      ],
+      "loanableVehicles": [
+        {
+          "model": "van",
+          "config": "cargoservicevan872426",
+          "reputationLvl": -1,
+          "deliveryLvl": 0,
+          "mileage": 241401600
+        }
+      ],
+      "sitesFile": "rlsLoaners.sites.json"
+    },
+    "chinatownRestaurant": {
+      "associatedOrganization": "localDeliveryAssociation",
+      "nonTrailerSpots": [
+        "chinatownRestaurant_loaner"
+      ],
+      "loanableVehicles": [
+        {
+          "model": "van",
+          "config": "cargoservicevan872426",
+          "reputationLvl": -1,
+          "deliveryLvl": 0,
+          "mileage": 241401600
+        }
+      ],
+      "sitesFile": "rlsLoaners.sites.json"
+    },
+    "greenPier": {
+      "associatedOrganization": "localDeliveryAssociation",
+      "nonTrailerSpots": [
+        "greenPier_loaner"
+      ],
+      "loanableVehicles": [
+        {
+          "model": "van",
+          "config": "cargoservicevan872426",
+          "reputationLvl": -1,
+          "deliveryLvl": 0,
+          "mileage": 241401600
+        }
+      ],
+      "sitesFile": "rlsLoaners.sites.json"
+    },
+    "lensflareLogistics": {
+      "associatedOrganization": "lensflareStudios",
+      "nonTrailerSpots": [
+        "lensflareLogistics_loaner"
+      ],
+      "loanableVehicles": [
+        {
+          "model": "van",
+          "config": "smallboxvan751523",
+          "reputationLvl": -1,
+          "deliveryLvl": 1,
+          "mileage": 241401600
+        },
+        {
+          "model": "md_series",
+          "config": "mediumboxtruck196979",
+          "reputationLvl": 0,
+          "deliveryLvl": 2,
+          "mileage": 241401600
+        }
+      ],
+      "sitesFile": "rlsLoaners.sites.json"
+    },
+    "sealbrik": {
+      "associatedOrganization": "sealbrikPlant",
+      "nonTrailerSpots": [
+        "sealbrikPlant_loaner"
+      ],
+      "loanableVehicles": [
+        {
+          "model": "us_semi",
+          "config": "rigidtankertruck443910",
+          "reputationLvl": -1,
+          "deliveryLvl": 1,
+          "mileage": 241401600
+        },
+        {
+          "model": "us_semi",
+          "config": "cementmixer817238",
+          "reputationLvl": -1,
+          "deliveryLvl": 1,
+          "mileage": 241401600
+        },
+        {
+          "model": "us_semi",
+          "config": "semidaycab035558",
+          "reputationLvl": -1,
+          "deliveryLvl": 3,
+          "mileage": 241401600
+        },
+        {
+          "model": "boxutility_large",
+          "config": "trailer_career_cargo_large",
+          "reputationLvl": -1,
+          "deliveryLvl": 1,
+          "mileage": 241401600
+        },
+        {
+          "model": "dryvan",
+          "config": "parceldryvantrailer428142",
+          "reputationLvl": 0,
+          "deliveryLvl": 6,
+          "mileage": 241401600
+        }
+      ],
+      "sitesFile": "rlsLoaners.sites.json"
+    },
+    "sketchyPickup": {
+      "associatedOrganization": "sketchyLogistics",
+      "nonTrailerSpots": [
+        "sketchyPickup_loaner"
+      ],
+      "loanableVehicles": [
+        {
+          "model": "md_series",
+          "config": "small_money_transport_career",
+          "reputationLvl": -1,
+          "deliveryLvl": 1,
+          "mileage": 241401600
+        },
+        {
+          "model": "md_series",
+          "config": "large_money_transport_career",
+          "reputationLvl": 2,
+          "deliveryLvl": 2,
+          "mileage": 241401600
+        },
+        {
+          "model": "md_series",
+          "config": "smalldumptruck767436",
+          "reputationLvl": -1,
+          "deliveryLvl": 1,
+          "mileage": 241401600
+        },
+        {
+          "model": "us_semi",
+          "config": "mediumdumptruck159523",
+          "reputationLvl": 1,
+          "deliveryLvl": 2,
+          "mileage": 241401600
+        }
+      ],
+      "sitesFile": "rlsLoaners.sites.json"
+    },
+    "industrialWarehouse": {
+      "associatedOrganization": "industrialWarehouse",
+      "nonTrailerSpots": [
+        "industrialWarehouse_loaner"
+      ],
+      "trailerSpots": [
+        "industrialWarehouse_loanerTrailer"
+      ],
+      "loanableVehicles": [
+        {
+          "model": "van",
+          "config": "smallboxvan751523",
+          "reputationLvl": -1,
+          "deliveryLvl": 1,
+          "mileage": 241401600
+        },
+        {
+          "model": "md_series",
+          "config": "mediumboxtruck196979",
+          "reputationLvl": 0,
+          "deliveryLvl": 2,
+          "mileage": 241401600
+        },
+        {
+          "model": "us_semi",
+          "config": "semidaycab035558",
+          "reputationLvl": 1,
+          "deliveryLvl": 3,
+          "mileage": 241401600
+        },
+        {
+          "model": "dryvan",
+          "config": "parceldryvantrailer428142",
+          "reputationLvl": 1,
+          "deliveryLvl": 3,
+          "mileage": 241401600
+        }
+      ],
+      "sitesFile": "rlsLoaners.sites.json"
+    },
+    "spearleafLogistics": {
+      "associatedOrganization": "spearleafLogistics",
+      "nonTrailerSpots": [
+        "spearleafLogistics_loaner"
+      ],
+      "trailerSpots": [
+        "spearleafLogistics_loanerTrailer"
+      ],
+      "loanableVehicles": [
+        {
+          "model": "van",
+          "config": "smallboxvan751523",
+          "reputationLvl": -1,
+          "deliveryLvl": 1,
+          "mileage": 241401600
+        },
+        {
+          "model": "md_series",
+          "config": "mediumboxtruck196979",
+          "reputationLvl": 0,
+          "deliveryLvl": 2,
+          "mileage": 241401600
+        },
+        {
+          "model": "us_semi",
+          "config": "semidaycab035558",
+          "reputationLvl": 1,
+          "deliveryLvl": 3,
+          "mileage": 241401600
+        },
+        {
+          "model": "dryvan",
+          "config": "parceldryvantrailer428142",
+          "reputationLvl": 1,
+          "deliveryLvl": 3,
+          "mileage": 241401600
+        },
+        {
+          "model": "md_series",
+          "config": "smalldumptruck767436",
+          "reputationLvl": -1,
+          "deliveryLvl": 1,
+          "mileage": 241401600
+        },
+        {
+          "model": "us_semi",
+          "config": "mediumdumptruck159523",
+          "reputationLvl": 1,
+          "deliveryLvl": 2,
+          "mileage": 241401600
+        }
+      ],
+      "sitesFile": "rlsLoaners.sites.json"
+    },
+    "bpsHub": {
+      "associatedOrganization": "bps",
+      "nonTrailerSpots": [
+        "bpsLoaner_parking"
+      ],
+      "trailerSpots": [],
+      "loanableVehicles": [
+        {
+          "model": "van",
+          "config": "h25_career_with_cargo",
+          "maxParcelPayloadKg": 1300,
+          "reputationLvl": -1,
+          "deliveryLvl": 0,
+          "rentalCategory": "hSeries",
+          "mileage": 241401600
+        },
+        {
+          "model": "van",
+          "config": "BPS Box Van",
+          "maxParcelPayloadKg": 2500,
+          "reputationLvl": 1,
+          "deliveryLvl": 2,
+          "rentalCategory": "boxVans",
+          "mileage": 241401600
+        },
+        {
+          "model": "us_semi",
+          "config": "BPS Cargo Box",
+          "maxParcelPayloadKg": 6000,
+          "reputationLvl": 3,
+          "deliveryLvl": 3,
+          "rentalCategory": "cargoBoxTrucks",
+          "mileage": 241401600
+        }
+      ],
+      "sitesFile": "rlsLoaners.sites.json"
+    },
+    "finkIndustries": {
+      "associatedOrganization": "finkIndustries",
+      "nonTrailerSpots": [
+        "finkIndustriesLoaner_truck"
+      ],
+      "trailerSpots": [
+        "finkIndustriesLoaner_trailer"
+      ],
+      "loanableVehicles": [
+        {
+          "model": "pickup",
+          "config": "d25_longbed_A",
+          "reputationLvl": -1,
+          "deliveryLvl": 0,
+          "rentalCategory": "dSeries",
+          "mileage": 241401600
+        },
+        {
+          "model": "tiltdeck",
+          "config": "22ft_standard",
+          "reputationLvl": -1,
+          "deliveryLvl": 0,
+          "rentalCategory": "tiltDeckTrailers",
+          "mileage": 241401600
+        },
+        {
+          "model": "tiltdeck",
+          "config": "30ft_standard",
+          "reputationLvl": -1,
+          "deliveryLvl": 0,
+          "rentalCategory": "tiltDeckTrailers",
+          "mileage": 241401600
+        },
+        {
+          "model": "pickup",
+          "config": "d35_longbed_dually_A",
+          "reputationLvl": 0,
+          "deliveryLvl": 0,
+          "rentalCategory": "dSeries",
+          "mileage": 241401600
+        },
+        {
+          "model": "tiltdeck",
+          "config": "22ft_gooseneck",
+          "reputationLvl": 0,
+          "deliveryLvl": 0,
+          "rentalCategory": "tiltDeckTrailers",
+          "mileage": 241401600
+        },
+        {
+          "model": "tiltdeck",
+          "config": "30ft_gooseneck",
+          "reputationLvl": 0,
+          "deliveryLvl": 0,
+          "rentalCategory": "tiltDeckTrailers",
+          "mileage": 241401600
+        },
+        {
+          "model": "tiltdeck",
+          "config": "40ft_gooseneck",
+          "reputationLvl": 1,
+          "deliveryLvl": 1,
+          "rentalCategory": "tiltDeckTrailers",
+          "mileage": 241401600
+        },
+        {
+          "model": "us_semi",
+          "config": "Fink Industries Rollback",
+          "reputationLvl": 3,
+          "deliveryLvl": 3,
+          "rentalCategory": "tSeriesRollbacks",
+          "mileage": 241401600
+        },
+        {
+          "model": "us_semi",
+          "config": "Fink Industries TC83",
+          "reputationLvl": 3,
+          "deliveryLvl": 3,
+          "rentalCategory": "tSeriesRollbacks",
+          "mileage": 241401600
+        },
+        {
+          "model": "dryvan",
+          "config": "Fink Industries Car Hauler",
+          "reputationLvl": 3,
+          "deliveryLvl": 3,
+          "rentalCategory": "carHaulTrailers",
+          "mileage": 241401600
+        }
+      ],
+      "sitesFile": "rlsLoaners.sites.json"
+    }
+  }
+}

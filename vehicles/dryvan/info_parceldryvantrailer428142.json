@@ -1,0 +1,16 @@
+{
+  "Body Style": "Dry Van Trailer",
+  "Config Type": "Loaner",
+  "Configuration": "Parcel Dry Van Trailer",
+  "Description": "A full-size dry van trailer fitted with high-capacity parcel storage.",
+  "Name": "Parcel Dry Van Trailer",
+  "loanerName": "Parcel Dry Van Trailer",
+  "Type": "Trailer",
+  "capacity": [
+    {"amount": 3840, "type": "parcel"}
+  ],
+  "defaultPaintName1": "White",
+  "defaultPaintName2": "White",
+  "defaultPaintName3": "White",
+  "isAuxiliary": true
+}

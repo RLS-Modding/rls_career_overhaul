@@ -1,0 +1,150 @@
+{
+    "apps":  [
+                 {
+                     "appName":  "overhaulTacho",
+                     "appVersion":  1,
+                     "placement":  {
+                                       "width":  "300px",
+                                       "bottom":  "5px",
+                                       "height":  "300px",
+                                       "right":  "5px"
+                                   },
+                     "settings":  {
+                                      "noCockpit":  true
+                                  }
+                 },
+                 {
+                     "appName":  "forcedInduction",
+                     "placement":  {
+                                       "width":  "150px",
+                                       "bottom":  "320px",
+                                       "height":  "150px",
+                                       "right":  "20px"
+                                   },
+                     "settings":  {
+                                      "noCockpit":  true
+                                  }
+                 },
+                 {
+                     "appName":  "simplePowertrainControl",
+                     "placement":  {
+                                       "bottom":  "0px",
+                                       "height":  "170px",
+                                       "left":  "",
+                                       "position":  "absolute",
+                                       "right":  "260px",
+                                       "top":  "",
+                                       "width":  "230px"
+                                   }
+                 },
+                 {
+                     "appName":  "raceCountdown",
+                     "placement":  {
+                                       "bottom":  "",
+                                       "height":  "160px",
+                                       "left":  0,
+                                       "margin":  "auto",
+                                       "position":  "absolute",
+                                       "right":  0,
+                                       "top":  "95px",
+                                       "width":  "900px"
+                                   }
+                 },
+                 {
+                     "appName":  "raceRealtimeDisplay",
+                     "placement":  {
+                                       "bottom":  "",
+                                       "height":  "160px",
+                                       "left":  0,
+                                       "margin":  "auto",
+                                       "position":  "absolute",
+                                       "right":  0,
+                                       "top":  "95px",
+                                       "width":  "1000px"
+                                   }
+                 },
+                 {
+                     "appName":  "damageApp",
+                     "appVersion":  4,
+                     "placement":  {
+                                       "bottom":  "355px",
+                                       "height":  "280px",
+                                       "left":  "5px",
+                                       "position":  "absolute",
+                                       "right":  "",
+                                       "top":  "",
+                                       "width":  "158px"
+                                   }
+                 },
+                 {
+                     "appName":  "navigation",
+                     "appVersion":  5,
+                     "placement":  {
+                                       "bottom":  "5px",
+                                       "height":  "350px",
+                                       "left":  "5px",
+                                       "width":  "300px"
+                                   }
+                 },
+                 {
+                     "appName":  "inputHints",
+                     "appVersion":  8,
+                     "placement":  {
+                                       "bottom":  "",
+                                       "height":  "600px",
+                                       "right":  "0px",
+                                       "position":  "absolute",
+                                       "left":  "",
+                                       "top":  "0px",
+                                       "width":  "450px"
+                                   }
+                 },
+                 {
+                     "appName":  "overhaulTopLeftApps",
+                     "appVersion":  2,
+                     "placement":  {
+                                       "bottom":  "",
+                                       "height":  "600px",
+                                       "left":  "0px",
+                                       "position":  "absolute",
+                                       "right":  "",
+                                       "top":  "0px",
+                                       "width":  "380px"
+                                   }
+                 },
+                 {
+                     "appName":  "topCenterApps",
+                     "placement":  {
+                                       "bottom":  "",
+                                       "height":  "210px",
+                                       "left":  0,
+                                       "margin":  "auto",
+                                       "position":  "absolute",
+                                       "right":  0,
+                                       "top":  "105px",
+                                       "width":  "620px"
+                                   }
+                 },
+                 {
+                     "appName":  "dragRace",
+                     "appVersion":  1,
+                     "placement":  {
+                                       "height":  "800px",
+                                       "right":  "0px",
+                                       "top":  "0px",
+                                       "width":  "260px"
+                                   }
+                 }
+             ],
+    "description":  "Overhaul driving layout",
+    "title":  "Overhaul",
+    "type":  "overhaul",
+    "version":  0.52,
+    "removedApps":  {
+                        "utilityApps":  1,
+                        "gameplayApps":  1,
+                        "secondaryApps":  1,
+                        "messages":  1,
+                        "tasklist":  1
+                    }
+}
