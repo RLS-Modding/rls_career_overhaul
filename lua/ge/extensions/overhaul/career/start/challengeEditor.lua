@@ -92,6 +92,36 @@ local function getAvailableGarages()
   return availableGarages
 end
 
+-- Starter vehicle selection --------------------------------------------
+
+local function configTypeOf(vehicleInfo)
+  local configType = vehicleInfo["Config Type"]
+  if not configType and vehicleInfo.aggregates and vehicleInfo.aggregates["Config Type"] then
+    configType = next(vehicleInfo.aggregates["Config Type"])
+  end
+  return configType
+end
+
+-- The editor offers the same worn-out pool as the hardcore start; JSON challenges may name any config.
+local function getAvailableStarterVehicles()
+  local available = {}
+  local seen = {}
+  if not util_configListGenerator then return available end
+  for _, vehicleInfo in ipairs(util_configListGenerator.getEligibleVehicles(false, false) or {}) do
+    local id = vehicleInfo.model_key and vehicleInfo.key and (vehicleInfo.model_key .. "/" .. vehicleInfo.key)
+    if id and not seen[id] and configTypeOf(vehicleInfo) == "Hardcore" then
+      seen[id] = true
+      table.insert(available, {
+        id = id,
+        name = vehicleInfo.Name or vehicleInfo.Configuration or id,
+        model = vehicleInfo.model_key,
+      })
+    end
+  end
+  table.sort(available, function(left, right) return left.name < right.name end)
+  return available
+end
+
 -- Activity projections -------------------------------------------------
 
 local function getActivityTypeInfo(state, activityType)
@@ -176,7 +206,9 @@ local function editorDefaults()
     loanInterest = DEFAULT_LOAN_INTEREST,
     loanPayments = DEFAULT_LOAN_PAYMENTS,
     targetMoney = DEFAULT_TARGET_MONEY,
-    startingGarages = {}
+    startingGarages = {},
+    startingGarageMode = "default",
+    starterVehicles = {}
   }
 end
 
@@ -191,6 +223,7 @@ local function getChallengeEditorData(state)
     activityTypesBySource = activityTypesBySource,
     currentMultipliers = currentMultipliers,
     availableGarages = availableGarages,
+    availableStarterVehicles = getAvailableStarterVehicles(),
     loanTerms = {6, 12, 18, 24, 36, 48, 60},
     defaults = editorDefaults(),
     stats = {
@@ -216,6 +249,7 @@ local function getEditorDataLight(state)
     winConditions = winConditions,
     activityTypes = activityTypes,
     availableGarages = getAvailableGarages(),
+    availableStarterVehicles = getAvailableStarterVehicles(),
     defaults = {
       startingCapital = DEFAULT_STARTING_CAPITAL,
       loanAmount = DEFAULT_LOAN_AMOUNT,
@@ -294,6 +328,14 @@ local function buildChallengeRecord(state, challengeData)
 
   if challengeData.startingGarages and type(challengeData.startingGarages) == "table" and #challengeData.startingGarages > 0 then
     newChallenge.startingGarages = challengeData.startingGarages
+  end
+
+  if challengeData.startingGarageMode == "none" then
+    newChallenge.startingGarageMode = "none"
+  end
+
+  if type(challengeData.starterVehicles) == "table" and #challengeData.starterVehicles > 0 then
+    newChallenge.starterVehicles = challengeData.starterVehicles
   end
 
   if challengeData.map then
@@ -406,6 +448,8 @@ local function getChallengeOptionsForCareerCreation(state)
       winConditionDescription = winConditionInfo.description,
       variables = variables,
       startingGarages = challenge.startingGarages or {},
+      startingGarageMode = challenge.startingGarageMode or "default",
+      starterVehicles = challenge.starterVehicles or {},
       economyAdjuster = challenge.economyAdjuster or {},
       allActivityTypes = allActivityTypes,
       currentMultipliers = currentMultipliers,
@@ -493,7 +537,10 @@ local function getSingleChallengeForUI(state, challengeId)
     winConditionName = winConditionInfo.name,
     winConditionDescription = winConditionInfo.description,
     isLocal = challenge.isLocal or false,
-    map = challenge.map
+    map = challenge.map,
+    startingGarages = challenge.startingGarages or {},
+    startingGarageMode = challenge.startingGarageMode or "default",
+    starterVehicles = challenge.starterVehicles or {}
   }
 end
 
@@ -773,6 +820,7 @@ function M.create(ctx, catalog)
 
   return {
     getAvailableGarages = getAvailableGarages,
+    getAvailableStarterVehicles = getAvailableStarterVehicles,
     getChallengeEditorData = bind(getChallengeEditorData),
     createChallengeFromUI = bind(createChallengeFromUI),
     getChallengeOptionsForCareerCreation = bind(getChallengeOptionsForCareerCreation),
