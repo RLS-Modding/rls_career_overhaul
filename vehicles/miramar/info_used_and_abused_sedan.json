@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":6500,  
+    "Configuration": "Used & Abused - Sedan ( Joe's Junk Career )",
+    "Description": "Beater Miramar Sedan with damaged body panels and misc junk parts.",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 107,
+    "Torque": 108,
+    "Value": 14000,
+    "Weight": 1070,
+    "Years": {
+      "max": 1968,
+      "min": 1967
+    }  
+}
+
+

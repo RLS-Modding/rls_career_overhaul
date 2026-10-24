@@ -1,0 +1,354 @@
+{
+"bolide_beater_sideskirt_a_R":
+{
+    "information":{
+        "authors":"BeamNG",
+        "name":"Damaged Right Side Skirt",
+        "value":50,
+    },
+
+    "slotType" :"bolide_sideskirt_R",
+
+    "flexbodies":[
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["bolide_beater_sideskirt_a_R", ["bolide_sideskirt_R"]],
+    ],
+
+    "nodes":[
+         ["id", "posX", "posY", "posZ"],
+         {"frictionCoef":0.5},
+         {"nodeMaterial":"|NM_METAL"},
+
+         //--SIDESKIRT--
+         {"selfCollision":true},
+         {"collision":true},
+         {"nodeWeight":0.7}
+         {"group":"bolide_sideskirt_R"},
+         ["sk1r", -0.799, -0.922, 0.155],
+         ["sk1rr", -0.855, -0.924, 0.242],
+
+         ["sk2r", -0.799, -0.22, 0.155],
+         ["sk2rr", -0.864, -0.22, 0.242],
+
+         ["sk3r", -0.814, 0.335, 0.155],
+         ["sk3rr", -0.871, 0.335, 0.242],
+
+         ["sk4r", -0.822, 0.876, 0.155],
+         ["sk4rr", -0.887, 0.875, 0.254, {"selfCollision":false, "collision":false}],
+         {"group":""},
+
+         //rigidifier
+         ["sk5r", -0.723, -0.584, 0.266, {"selfCollision":false, "collision":false}],
+         ["sk6r", -0.723, 0.584, 0.266, {"selfCollision":false, "collision":false}],
+        ],
+
+    "beams":[
+          ["id1:", "id2:"],
+          //--SIDESKIRT--
+
+          //sideskirt main shape
+          {"beamSpring":601000,"beamDamp":40},
+          {"beamDeform":9000,"beamStrength":"FLT_MAX"},
+          {"deformLimitExpansion":1.2},
+          //lengthwise
+          ["sk1r", "sk2r"],
+          ["sk2r", "sk3r"],
+          ["sk3r", "sk4r"],
+          ["sk1rr", "sk2rr"],
+          ["sk2rr", "sk3rr"],
+          ["sk3rr", "sk4rr"],
+          //vertical
+          ["sk1r", "sk1rr"],
+          ["sk2r", "sk2rr"],
+          ["sk3r", "sk3rr"],
+          ["sk4r", "sk4rr"],
+
+          //crossing
+          {"beamDeform":5000,"beamStrength":"FLT_MAX"},
+          {"deformLimitExpansion":""},
+          ["sk1r", "sk2rr"],
+          ["sk2r", "sk1rr"],
+          ["sk2r", "sk3rr"],
+          ["sk2rr", "sk3r"],
+          ["sk3r", "sk4rr"],
+          ["sk4r", "sk3rr"],
+
+          //rigids
+          {"beamDeform":4000,"beamStrength":"FLT_MAX"},
+          ["sk1r", "sk3r"],
+          ["sk2r", "sk4r"],
+
+          //rigidifier
+          {"beamDeform":4000,"beamStrength":"FLT_MAX"},
+          ["sk5r", "sk1r"],
+          ["sk5r", "sk1rr"],
+          ["sk5r", "sk2r"],
+          ["sk5r", "sk2rr"],
+          ["sk5r", "sk3r"],
+          ["sk5r", "sk3rr"],
+          ["sk6r", "sk4r"],
+          ["sk6r", "sk4rr"],
+          ["sk6r", "sk3r"],
+          ["sk6r", "sk3rr"],
+          ["sk6r", "sk2r"],
+          ["sk6r", "sk2rr"],
+          ["sk5r", "sk6r"],
+
+          //attach
+          {"deformLimitExpansion":""},
+          {"beamSpring":401000,"beamDamp":40},
+          {"beamDeform":4000,"beamStrength":17000},
+          {"breakGroup":"sideskirt_R1"},
+          ["f1rr", "sk1r"],
+          ["f1r", "sk1r"],
+          ["f5rr", "sk1r"],
+          ["sk1rr", "f1rr"],
+          ["sk1rr", "f5rr"],
+          ["sk1rr", "f1r"],
+          ["sk1rr", "f5r"],
+          ["sk2r", "f1rr"],
+          ["sk2rr", "f1rr"],
+          ["sk2rr", "f5rr"],
+          {"breakGroup":"sideskirt_R2"},
+          ["sk3r", "f3rr"],
+          ["sk3r", "f8rr"],
+          ["sk3r", "f3r"],
+          ["sk3r", "f2rr"],
+          ["sk3rr", "f3rr"],
+          ["sk3rr", "f8rr"],
+          ["sk3rr", "f3r"],
+          ["sk3rr", "f2rr"],
+          ["sk3rr", "f7rr"],
+          ["sk2r", "f3rr"],
+          ["sk2rr", "f3rr"],
+          ["sk2rr", "f8rr"],
+          {"breakGroup":"sideskirt_R3"},
+          {"optional":true},
+          ["sk4rr", "rx9r"],
+          ["sk4r", "rx9r"],
+          ["sk3r", "rx9r"],
+          ["sk3rr", "rx9r"],
+          ["sk4rr", "rx1r"],
+          ["sk3rr", "rx7r"],
+          ["sk4rr", "rx3r"],
+          {"optional":false},
+          {"breakGroup":""},
+
+          //limiters
+          {"beamPrecompression":0.7, "beamType":"|SUPPORT", "beamLongBound":8},
+          {"beamDeform":11000, "beamStrength":"FLT_MAX"},
+          {"breakGroup":"sideskirt_R_supportBeams"},
+          //to chassis
+          ["sk1rr", "f6rr"],
+          ["sk2rr", "f7rr"],
+          ["sk3rr", "f9rr"],
+          ["sk1r", "f1r"],
+          ["sk1rr", "f1r"],
+          ["sk2r", "f2r"],
+          ["sk2rr", "f2r"],
+          ["sk3r", "f3r"],
+          ["sk3rr", "f3r"],
+          //to quarter panel
+          {"optional":true},
+          ["sk4rr", "q7r"],
+          ["sk3rr", "q6r"],
+          //to fender
+          ["sk1rr", "fe12r"],
+          ["sk1rr", "fe13r"],
+          {"optional":false},
+          {"breakGroup":""},
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+    ],
+
+    "triangles":[
+        ["id1:", "id2:", "id3:"],
+        {"groundModel":"metal"},
+        //side skirt
+        {"dragCoef":5},
+        {"group":"bolide_sideskirt_R"},
+        ["sk1r",  "sk1rr", "sk2rr"],
+        ["sk2rr", "sk2r",  "sk1r"],
+        ["sk2rr", "sk3rr", "sk2r"],
+        ["sk3rr", "sk3r",  "sk2r"],
+        ["sk4rr", "sk3r",  "sk3rr"],
+        ["sk4rr", "sk4r",  "sk3r"],
+        {"group":""},
+        ],
+},
+"bolide_beater_sideskirt_a_L":
+{
+    "information":{
+        "authors":"BeamNG",
+        "name":"Damaged Left Side Skirt",
+        "value":50,
+    },
+
+    "slotType" :"bolide_sideskirt_L",
+
+    "flexbodies":[
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["bolide_beater_sideskirt_a_L", ["bolide_sideskirt_L"]],
+    ],
+
+    "nodes":[
+         ["id", "posX", "posY", "posZ"],
+         {"frictionCoef":0.5},
+         {"nodeMaterial":"|NM_METAL"},
+
+         //--SIDESKIRT--
+         {"selfCollision":true},
+         {"collision":true},
+         {"nodeWeight":0.7}
+         {"group":"bolide_sideskirt_L"},
+         ["sk1l", 0.799, -0.922, 0.155],
+         ["sk1ll", 0.855, -0.924, 0.242],
+
+         ["sk2l", 0.799, -0.22, 0.155],
+         ["sk2ll", 0.864, -0.22, 0.242],
+
+         ["sk3l", 0.814, 0.335, 0.155],
+         ["sk3ll", 0.871, 0.335, 0.242],
+
+         ["sk4l", 0.822, 0.876, 0.155],
+         ["sk4ll", 0.887, 0.875, 0.254, {"selfCollision":false, "collision":false}],
+         {"group":""},
+
+         //rigidifier
+         ["sk5l", 0.723, -0.584, 0.266, {"selfCollision":false, "collision":false}],
+         ["sk6l", 0.723, 0.584, 0.266, {"selfCollision":false, "collision":false}],
+        ],
+
+    "beams":[
+          ["id1:", "id2:"],
+          //--SIDESKIRT--
+
+          //sideskirt main shape
+          {"beamSpring":601000,"beamDamp":40},
+          {"beamDeform":9000,"beamStrength":"FLT_MAX"},
+          {"deformLimitExpansion":1.2},
+          //lengthwise
+          ["sk1l", "sk2l"],
+          ["sk2l", "sk3l"],
+          ["sk3l", "sk4l"],
+          ["sk1ll", "sk2ll"],
+          ["sk2ll", "sk3ll"],
+          ["sk3ll", "sk4ll"],
+          //vertical
+          ["sk1l", "sk1ll"],
+          ["sk2l", "sk2ll"],
+          ["sk3l", "sk3ll"],
+          ["sk4l", "sk4ll"],
+
+          //crossing
+          {"beamDeform":5000,"beamStrength":"FLT_MAX"},
+          {"deformLimitExpansion":""},
+          ["sk1l", "sk2ll"],
+          ["sk2l", "sk1ll"],
+          ["sk2l", "sk3ll"],
+          ["sk2ll", "sk3l"],
+          ["sk3l", "sk4ll"],
+          ["sk4l", "sk3ll"],
+
+          //rigids
+          {"beamDeform":4000,"beamStrength":"FLT_MAX"},
+          ["sk1l", "sk3l"],
+          ["sk2l", "sk4l"],
+
+          //rigidifier
+          {"beamDeform":4000,"beamStrength":"FLT_MAX"},
+          ["sk5l", "sk1l"],
+          ["sk5l", "sk1ll"],
+          ["sk5l", "sk2l"],
+          ["sk5l", "sk2ll"],
+          ["sk5l", "sk3l"],
+          ["sk5l", "sk3ll"],
+          ["sk6l", "sk4l"],
+          ["sk6l", "sk4ll"],
+          ["sk6l", "sk3l"],
+          ["sk6l", "sk3ll"],
+          ["sk6l", "sk2l"],
+          ["sk6l", "sk2ll"],
+          ["sk5l", "sk6l"],
+
+          //attach
+          {"deformLimitExpansion":""},
+          {"beamSpring":401000,"beamDamp":40},
+          {"beamDeform":4000,"beamStrength":17000},
+          {"breakGroup":"sideskirt_L1"},
+          ["f1ll", "sk1l"],
+          ["f1l", "sk1l"],
+          ["f5ll", "sk1l"],
+          ["sk1ll", "f1ll"],
+          ["sk1ll", "f5ll"],
+          ["sk1ll", "f1l"],
+          ["sk1ll", "f5l"],
+          ["sk2l", "f1ll"],
+          ["sk2ll", "f1ll"],
+          ["sk2ll", "f5ll"],
+          {"breakGroup":"sideskirt_L2"},
+          ["sk3l", "f3ll"],
+          ["sk3l", "f8ll"],
+          ["sk3l", "f3l"],
+          ["sk3l", "f2ll"],
+          ["sk3ll", "f3ll"],
+          ["sk3ll", "f8ll"],
+          ["sk3ll", "f3l"],
+          ["sk3ll", "f2ll"],
+          ["sk3ll", "f7ll"],
+          ["sk2l", "f3ll"],
+          ["sk2ll", "f3ll"],
+          ["sk2ll", "f8ll"],
+          {"breakGroup":"sideskirt_L3"},
+          {"optional":true},
+          ["sk4ll", "rx9l"],
+          ["sk4l", "rx9l"],
+          ["sk3l", "rx9l"],
+          ["sk3ll", "rx9l"],
+          ["sk4ll", "rx1l"],
+          ["sk3ll", "rx7l"],
+          ["sk4ll", "rx3l"],
+          {"optional":false},
+          {"breakGroup":""},
+
+          //limiters
+          {"beamPrecompression":0.7, "beamType":"|SUPPORT", "beamLongBound":8},
+          {"beamDeform":11000, "beamStrength":"FLT_MAX"},
+          {"breakGroup":"sideskirt_L_supportBeams"},
+          //to chassis
+          ["sk1ll", "f6ll"],
+          ["sk2ll", "f7ll"],
+          ["sk3ll", "f9ll"],
+          ["sk1l", "f1l"],
+          ["sk1ll", "f1l"],
+          ["sk2l", "f2l"],
+          ["sk2ll", "f2l"],
+          ["sk3l", "f3l"],
+          ["sk3ll", "f3l"],
+          //to quarter panel
+          {"optional":true},
+          ["sk4ll", "q7l"],
+          ["sk3ll", "q6l"],
+          //to fender
+          ["sk1ll", "fe12l"],
+          ["sk1ll", "fe13l"],
+          {"optional":false},
+          {"breakGroup":""},
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+    ],
+
+    "triangles":[
+        ["id1:", "id2:", "id3:"],
+        {"groundModel":"metal"},
+        //side skirt
+        {"dragCoef":5},
+        {"group":"bolide_sideskirt_L"},
+        ["sk1ll", "sk1l",  "sk2ll"],
+        ["sk2l",  "sk2ll", "sk1l"],
+        ["sk3ll", "sk2ll", "sk2l"],
+        ["sk3l",  "sk3ll", "sk2l"],
+        ["sk3l",  "sk4ll", "sk3ll"],
+        ["sk4l",  "sk4ll", "sk3l"],
+        {"group":""},
+        ],
+},
+}

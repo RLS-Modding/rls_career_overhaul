@@ -1,0 +1,15 @@
+{
+  "id": "overhaul_jobs_cleanupClub",
+  "order": 70,
+  "module": "overhaul/jobs/cleanupClub",
+  "scopes": [
+    {
+      "id": "bootManual",
+      "order": 19
+    },
+    {
+      "id": "careerWorld",
+      "order": 1
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_shell_jobsystem",
+  "order": 96,
+  "module": "overhaul/shell/jobsystem",
+  "scopes": [
+    {
+      "id": "services",
+      "order": 12
+    }
+  ]
+}

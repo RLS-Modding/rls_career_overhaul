@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_career_economy_payment",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 230,
+    "aliases": [
+      "career_modules_payment"
+    ]
+  }
+}

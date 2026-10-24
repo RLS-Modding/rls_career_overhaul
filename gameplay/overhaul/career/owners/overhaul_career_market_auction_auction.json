@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_career_market_auction_auction",
+  "order": 1000,
+  "module": "overhaul/career/market/auction/auction",
+  "scopes": [],
+  "policyOnly": true,
+  "modulePolicy": {
+    "privateFolders": [
+      "overhaul/career/market/auction/"
+    ]
+  }
+}

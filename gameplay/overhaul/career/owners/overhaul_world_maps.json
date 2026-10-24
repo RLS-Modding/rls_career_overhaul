@@ -1,0 +1,34 @@
+{
+  "id": "overhaul_world_maps",
+  "order": 124,
+  "module": "overhaul/world/maps",
+  "scopes": [
+    {
+      "id": "settings",
+      "order": 2
+    }
+  ],
+  "bigMap": {
+    "types": [
+      {
+        "id": "travel",
+        "icon": "fastTravel"
+      }
+    ],
+    "groups": [
+      {
+        "id": "type_travel",
+        "label": "Travel Points",
+        "icon": "fastTravel",
+        "placements": {
+          "career": [
+            {
+              "section": "freeroamPois",
+              "order": 12
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

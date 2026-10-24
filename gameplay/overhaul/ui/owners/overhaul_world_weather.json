@@ -1,0 +1,26 @@
+{
+  "id": "overhaul_world_weather",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "aliases": [
+      "career_modules_dynamicWeather"
+    ]
+  },
+  "acquisitions": [
+    {
+      "id": "phone.weather",
+      "stateOwner": "overhaul_world_weather",
+      "order": 100,
+      "modes": {
+        "overhaul": true,
+        "freeroam": true
+      },
+      "extensions": [
+        "overhaul_world_weather"
+      ],
+      "release": [],
+      "namespace": true
+    }
+  ]
+}

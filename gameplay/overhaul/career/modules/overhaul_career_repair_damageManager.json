@@ -1,0 +1,5 @@
+{
+  "id": "overhaul_career_repair_damageManager",
+  "order": 280,
+  "module": "overhaul/career/repair/damageManager"
+}

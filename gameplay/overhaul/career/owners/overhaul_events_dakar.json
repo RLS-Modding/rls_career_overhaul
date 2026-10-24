@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_events_dakar",
+  "order": 1000,
+  "module": "overhaul/events/dakar",
+  "scopes": [],
+  "policyOnly": true,
+  "modulePolicy": {
+    "career": true,
+    "privateFolders": ["overhaul/events/dakar/"]
+  }
+}

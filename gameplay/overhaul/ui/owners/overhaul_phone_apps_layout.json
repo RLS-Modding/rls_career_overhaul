@@ -1,0 +1,34 @@
+{
+  "id": "overhaul_phone_apps_layout",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "aliases": []
+  },
+  "acquisitions": [
+    {
+      "id": "phone.layout",
+      "order": 20,
+      "modes": {
+        "overhaul": true,
+        "freeroam": true
+      },
+      "extensions": [
+        "overhaul_phone_apps_layout"
+      ],
+      "release": [],
+      "namespace": true
+    }
+  ],
+  "routes": [
+    {
+      "name": "phone-app",
+      "order": 25,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "phone-main"
+        }
+      }
+    }
+  ]
+}

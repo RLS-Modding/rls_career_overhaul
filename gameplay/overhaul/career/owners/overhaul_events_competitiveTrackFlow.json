@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_events_competitiveTrackFlow",
+  "order": 21,
+  "module": "overhaul/events/competitiveTrackFlow",
+  "scopes": [
+    {
+      "id": "children",
+      "order": 21,
+      "parent": "overhaul_events_host"
+    }
+  ]
+}

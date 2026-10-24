@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_integration_services_police",
+  "order": 58,
+  "module": "overhaul/integration/services/police",
+  "scopes": [
+    {
+      "id": "services",
+      "order": 19
+    }
+  ]
+}

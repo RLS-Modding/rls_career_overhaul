@@ -1,0 +1,31 @@
+{
+  "engineShops": [
+    {
+      "id": "wcusaEngineWorks",
+      "type": "engineShop",
+      "name": "West Coast Engine Works",
+      "preview": "wcusaEngineWorks.jpg",
+      "price": 200000,
+      "downPayment": 50000,
+      "description": "Certify your personal Engine Packages, manufacture exact physical copies, and sell or install the finished engines.",
+      "mapId": "rls_west_coast",
+      "icon": "poi_laptop_round",
+      "playModeIconName": "poi_laptop_round",
+      "iconOffsetHeight": 0.15,
+      "iconLift": 0.2,
+      "doors": [["wcusaEngineWorks_area", "wcusaEngineWorks_icon"]],
+      "sitesFile": "engineShop.sites.json",
+      "zoneNames": ["West Coast Engine Works Garage"],
+      "migrationVehicleSpawn": {"pos": [-18, 828, 75], "rot": [0, 0, 1, 0]},
+      "supplierFacilityId": "spearleafLogistics",
+      "supplierParkingSpotName": "spearleafLogistics_parkingA",
+      "receivingFacilityId": "wcusaEngineWorksReceiving",
+      "receivingParkingSpotName": "engineWorksReceiving",
+      "activityAcceptProps": [
+        {"icon": "engine", "keyLabel": "Engine Packages", "valueLabel": "Personal vehicles"},
+        {"icon": "cardboardBox", "keyLabel": "Warehouse", "valueLabel": "15-50 spots"},
+        {"icon": "time", "keyLabel": "Production", "valueLabel": "World clock"}
+      ]
+    }
+  ]
+}

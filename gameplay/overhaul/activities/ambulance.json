@@ -1,0 +1,6 @@
+{
+  "id": "ambulance",
+  "order": 240,
+  "extension": "overhaul_jobs_ambulance",
+  "definition": "overhaul/jobs/ambulance/activity"
+}

@@ -1,0 +1,46 @@
+{
+  "id": "overhaul_career_work_employment",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "aliases": [
+      "career_modules_delivery_employment"
+    ]
+  },
+  "acquisitions": [
+    {
+      "id": "career.employment",
+      "order": 130,
+      "modes": {
+        "overhaul": true
+      },
+      "extensions": [
+        "overhaul_career_work_employment"
+      ],
+      "release": [],
+      "namespace": true
+    }
+  ],
+  "routes": [
+    {
+      "name": "overhaul.employeeShift",
+      "order": 10,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "play",
+          "onLeave": "overhaul_career_work_employment.onShiftRouteLeave"
+        }
+      }
+    },
+    {
+      "name": "overhaul.employeeDropOff",
+      "order": 11,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "play",
+          "onLeave": "overhaul_career_work_employment.onDropOffRouteLeave"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "id": "controls",
+  "name": "Controls",
+  "icon": "gamepad",
+  "route": "/overhaul/phone-controls",
+  "color": "#2563eb",
+  "iconColor": "#ffffff",
+  "category": "Tools",
+  "description": "Change keyboard, controller, mouse and wheel shortcuts for RLS Career Overhaul. Uses the game's Controls settings.",
+  "systemApp": true,
+  "defaultPage": 1,
+  "defaultPosition": 15,
+  "uiRoutes": [{
+    "name": "phone-controls",
+    "path": "phone-controls",
+    "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneControls.vue",
+    "uiOrder": 99,
+    "luaOrder": 62,
+    "backTarget": "phone-main",
+    "title": "Controls"
+  }]
+}

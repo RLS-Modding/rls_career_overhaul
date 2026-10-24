@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_career_garage_computer",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 360,
+    "aliases": [
+      "career_modules_computer"
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":12500,  
+    "Configuration": "Former Fleet D15 ( Joe's Junk Career )",
+    "Description": "Yours for only 19.95$!",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 150,
+    "Torque": 152,
+    "Value": 1995,
+    "Weight": 1862,
+    "Years": {
+      "max": 2003,
+      "min": 1998
+    }  
+}
+
+

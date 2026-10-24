@@ -1,0 +1,6 @@
+{
+  "id": "maintenance",
+  "order": 390,
+  "extension": "overhaul_career_maintenance_maintenanceComputer",
+  "definition": "overhaul/career/maintenance/maintenanceComputer/activity"
+}

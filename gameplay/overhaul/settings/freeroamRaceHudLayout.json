@@ -1,0 +1,14 @@
+{
+  "id": "freeroamRaceHudLayout",
+  "key": "freeroamRaceHudLayout",
+  "order": 1000,
+  "type": "table",
+  "default": {
+    "x": 12,
+    "y": 12,
+    "width": 340
+  },
+  "section": "hud",
+  "validateSingle": false,
+  "validateLoaded": false
+}

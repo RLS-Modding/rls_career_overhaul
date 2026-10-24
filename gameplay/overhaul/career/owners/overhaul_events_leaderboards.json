@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_events_leaderboards",
+  "order": 35,
+  "module": "overhaul/events/leaderboards",
+  "scopes": [
+    {
+      "id": "bootManual",
+      "order": 17
+    }
+  ]
+}

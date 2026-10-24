@@ -1,0 +1,398 @@
+{"bolide_beater_body":
+{
+    "information":{
+        "authors":"BeamNG",
+        "name":"Damaged Coupe Body",
+        "value":3200,
+    },
+
+    "slotType" :"bolide_body",
+
+    "slots":[
+        ["type", "default", "description"],
+        //glass
+        ["skin_interior", "bolide_skin_interior_black", "Interior Color", {"coreSlot":true}],
+        ["bolide_windshield","bolide_windshield", "Windshield"],
+        ["bolide_rearglass","bolide_rearglass", "Rear Glass"],
+        //bodywork
+        ["bolide_door_R","bolide_door_a_R", "Right Door"],
+        ["bolide_door_L","bolide_door_a_L", "Left Door"],
+        ["bolide_gutters","bolide_gutters", "Rain Gutters"],
+        //interior
+        ["bolide_dash","bolide_dash", "Dashboard", {"coreSlot":true}],
+        ["bolide_intcarpet","bolide_intcarpet", "Interior", {"coreSlot":true}],
+        //misc
+        ["bolide_roof_accessory","","Roof Accessory"],
+        ["bolide_rollcage","", "Roll Cage"],
+        ["bolide_flashers","", "Concealed Flashers"],
+        ["bolide_roof_lightbar","", "LED Lightbar"],
+    ],
+    "flexbodies":[
+        ["mesh", "[group]:", "nonFlexMaterials"],
+         //body
+         ["bolide_beater_body", ["bolide_body", "bolide_chassis"]],
+    ],
+
+    "sounds": {
+        "cabinFilterCoef": 0.12
+        "windNode":"bb1"
+    }
+    "nodes":[
+         ["id", "posX", "posY", "posZ"],
+         {"frictionCoef":0.5},
+         {"nodeMaterial":"|NM_METAL"},
+
+         //--BODY--
+         {"selfCollision":true},
+         {"collision":true},
+
+         //relocate
+         //weight added by glass
+         {"nodeWeight":3.2},
+         ["f6rr",-0.804,-0.836,0.74, {"group":["bolide_chassis","bolide_windshield"]}],
+         ["f6r",-0.445,-0.961,0.74, {"group":["bolide_chassis","bolide_windshield"]}],
+         ["f6",0,-0.961,0.74, {"group":"", "selfCollision":false, "collision":false}],
+         ["f6l",0.445,-0.961,0.74, {"group":["bolide_chassis","bolide_windshield"]}],
+         ["f6ll",0.804,-0.836,0.74, {"group":["bolide_chassis","bolide_windshield"]}],
+
+         //roof
+         {"nodeWeight":1.5},
+         //weight added in glass
+         {"group":["bolide_body","bolide_roof"]}
+         ["rf1r",-0.536,-0.17,1.11, {"group":["bolide_body","bolide_windshield","bolide_roof"]}],
+         ["rf1",0.0,-0.202,1.125, {"group":["bolide_body","bolide_windshield","bolide_roof"]}],
+         ["rf1l",0.536,-0.17,1.11, {"group":["bolide_body","bolide_windshield","bolide_roof"]}],
+
+         {"nodeWeight":1.1},
+         ["rf2r",-0.536,0.15,1.125],
+         ["rf2",0.0,0.15,1.14, {"nodeWeight":1.0}],
+         ["rf2l",0.536,0.15,1.125],
+
+         {"nodeWeight":1.5}
+         {"group":"bolide_body"}
+         ["rf3r",-0.53,0.49,1.12],
+         ["rf3",0.0,0.48,1.13],
+         ["rf3l",0.53,0.49,1.12],
+
+         {"group":"bolide_body"}
+         ["rf4r",-0.44,0.62,1.01, {"tag":"strutbrace_R2"}],
+         ["rf4",0.0,0.616,1.03],
+         ["rf4l",0.44,0.62,1.01, {"tag":"strutbrace_L2"}],
+
+         //roof rigidifier
+         {"nodeWeight":1.0},
+         ["rf5",0.0,0.156,0.98, {"group":"", "selfCollision":false, "collision":false}],
+
+         //pillars
+         {"nodeWeight":1.3},
+         //a pillar
+         ["p1r",-0.548,-0.542,0.94, {"group":["bolide_body","gps","bolide_windshield"]}], //weight added by glass
+         ["p1l",0.548,-0.542,0.94, {"group":["bolide_body","gps","bolide_windshield"]}], //weight added by glass
+         ["p2r",-0.66,-0.49,0.94],
+         ["p2l",0.66,-0.49,0.94],
+         ["p2rr",-0.66,-0.469,0.793, {"group":"", "selfCollision":false, "collision":false}],
+         ["p2ll",0.66,-0.469,0.793, {"group":"", "selfCollision":false, "collision":false}],
+         //b pillar
+         ["p3r",-0.63,0.466,0.974, {"couplerTag":"subframe_R_3rr", "couplerStrength":190000, "couplerRadius":0.1, "couplerStartRadius":0.1, "couplerLock":true, "breakGroup":"subframe_RR3"}],
+         ["p3l",0.63,0.466,0.974, {"couplerTag":"subframe_R_3ll", "couplerStrength":190000, "couplerRadius":0.1, "couplerStartRadius":0.1, "couplerLock":true, "breakGroup":"subframe_RR3"}],
+         {"group":""},
+
+         //catch node
+         ["h7", 0.0, -1.02, 0.77],
+        ],
+    "slidenodes": [
+        ["id:", "railName", "attached", "fixToRail", "tolerance", "spring", "strength", "capStrength"],
+        ["f6", "hrail", true, true, 0.0, 800100, "FLT_MAX", "FLT_MAX"],
+    ],
+    "rails": {
+        "hrail":{"links:":["f6l", "f6r"], "broken:":[], "looped":false, "capped":true},
+    },
+    "beams":[
+          ["id1:", "id2:"],
+          //hoodcatch
+          {"beamPrecompression":1, "beamType":"|BOUNDED", "beamLongBound":1, "beamShortBound":1},
+          {"beamSpring":0,"beamDamp":100},
+          {"beamLimitSpring":101000,"beamLimitDamp":20},
+          {"beamDeform":7000,"beamStrength":90000},
+          {"longBoundRange":0.02, "shortBoundRange":0.01},
+          {"beamPrecompression":1.01},
+          {"optional":true},
+          ["h7", "f6"],
+          ["h7", "f5r"],
+          ["h7", "f5l"],
+          {"beamPrecompression":1.0},
+          {"longBoundRange":0.0, "shortBoundRange":0.0},
+          ["h7", "f6r"],
+          ["h7", "f6l"],
+          {"beamLimitSpring":101000,"beamLimitDamp":20},
+          ["h7", "f7"],
+          ["h7", "f7"],
+          {"optional":false},
+          {"longBoundRange":"", "shortBoundRange":""},
+          //--BODY--
+
+          //roof main shape
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1, "beamShortBound":1},
+          {"beamSpring":1201000,"beamDamp":125},
+          {"beamDeform":30000,"beamStrength":"FLT_MAX"},
+          {"deformLimitExpansion":1.2},
+          //widthwise
+          ["rf1r", "rf1", {"deformGroup":"windshield_break","deformationTriggerRatio":0.01}],
+          ["rf1", "rf1l", {"deformGroup":"windshield_break","deformationTriggerRatio":0.01}],
+          ["rf2r", "rf2"],
+          ["rf2", "rf2l"],
+          ["rf3r", "rf3"],
+          ["rf3", "rf3l"],
+          ["rf4r", "rf4", {"deformGroup":"rearglass_break","deformationTriggerRatio":0.01}],
+          ["rf4", "rf4l", {"deformGroup":"rearglass_break","deformationTriggerRatio":0.01}],
+          //lengthwise
+          ["rf1r", "rf2r"],
+          ["rf2r", "rf3r"],
+          ["rf3r", "rf4r"],
+          ["rf1l", "rf2l"],
+          ["rf2l", "rf3l"],
+          ["rf3l", "rf4l"],
+          ["rf1", "rf2"],
+          ["rf2", "rf3"],
+          ["rf3", "rf4"],
+
+          //surficial crossing
+          {"deformLimitExpansion":""},
+          {"beamDeform":13500,"beamStrength":"FLT_MAX"},
+          ["rf1r", "rf2"],
+          ["rf2r", "rf1"],
+          ["rf1", "rf2l"],
+          ["rf2", "rf1l"],
+          ["rf2", "rf3l"],
+          ["rf3", "rf2l"],
+          ["rf2r", "rf3"],
+          ["rf3r", "rf2"],
+          ["rf3r", "rf4"],
+          ["rf4r", "rf3"],
+          ["rf3", "rf4l"],
+          ["rf4", "rf3l"],
+
+          //rigids
+          {"beamSpring":901000,"beamDamp":125},
+          {"beamDeform":6500,"beamStrength":"FLT_MAX"},
+          //lengthwise
+          ["rf1r", "rf3r"],
+          ["rf2r", "rf4r"],
+          ["rf1l", "rf3l"],
+          ["rf2l", "rf4l"],
+          //widthwise
+          ["rf1r", "rf1l", {"deformGroup":"windshield_break","deformationTriggerRatio":0.01}],
+          ["rf3r", "rf3l"],
+          ["rf4r", "rf4l", {"deformGroup":"rearglass_break","deformationTriggerRatio":0.01}],
+
+          //rigidifier
+          {"beamSpring":1201000,"beamDamp":125},
+          {"beamDeform":2800,"beamStrength":"FLT_MAX"},
+          ["rf5", "rf1r"],
+          ["rf5", "rf1"],
+          ["rf5", "rf1l"],
+          ["rf5", "rf2r"],
+          ["rf5", "rf2"],
+          ["rf5", "rf2l"],
+          ["rf5", "rf3r"],
+          ["rf5", "rf3"],
+          ["rf5", "rf3l"],
+
+          //body latch
+          ["f6", "f6r"],
+
+          //a pillar main shape
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1, "beamShortBound":1},
+          {"beamSpring":2301000,"beamDamp":100},
+          {"beamDeform":35000,"beamStrength":"FLT_MAX"},
+          {"deformGroup":"windshield_break", "deformationTriggerRatio":0.01},
+          {"deformLimitExpansion":1.2},
+          ["rf1r", "p2r"],
+          ["p2r", "f6rr"],
+          ["rf1r", "p1r"],
+          ["p1r", "f6rr"],
+          ["p1r", "p2r"],
+          ["rf1l", "p2l"],
+          ["p2l", "f6ll"],
+          ["rf1l", "p1l"],
+          ["p1l", "f6ll"],
+          ["p1l", "p2l"],
+
+          //new triangle node
+          {"deformLimitExpansion":""},
+          {"beamDeform":25000,"beamStrength":"FLT_MAX"},
+          ["p2rr", "p2r"],
+          ["p2rr", "p1r"],
+          ["p2ll", "p2l"],
+          ["p2ll", "p1l"],
+          ["p2rr", "rf1r"],
+          ["p2rr", "f6rr"],
+          ["p2ll", "rf1l"],
+          ["p2ll", "f6ll"],
+
+          //strength
+          {"beamSpring":2001000,"beamDamp":100},
+          {"beamDeform":4000,"beamStrength":"FLT_MAX"},
+          ["p2rr", "rf2r"],
+          ["p2rr", "f1rr"],
+          ["p2ll", "rf2l"],
+          ["p2ll", "f1ll"],
+          ["p2rr", "rf1"],
+          ["p2rr", "f6r"],
+          ["p2ll", "rf1"],
+          ["p2ll", "f6l"],
+
+          //corners
+          {"beamSpring":1501000,"beamDamp":100},
+          {"beamDeform":4500,"beamStrength":"FLT_MAX"},
+          ["p1r", "rf1"],
+          ["p1r", "f6r"],
+          ["p2r", "rf2r"],
+          ["p2r", "f5rr"],
+          ["p1l", "rf1"],
+          ["p1l", "f6l"],
+          ["p2l", "rf2l"],
+          ["p2l", "f5ll"],
+
+          //rigids
+          {"beamDeform":15000,"beamStrength":"FLT_MAX"},
+          ["rf1r","f6rr"],
+          ["rf1l","f6ll"],
+          {"deformGroup":"", "deformationTriggerRatio":""},
+
+          //b pillar main shape
+          {"deformLimitExpansion":1.2},
+          {"beamSpring":1201000,"beamDamp":105},
+          {"beamDeform":25000,"beamStrength":"FLT_MAX"},
+          {"deformGroup":"rearglass_break","deformationTriggerRatio":0.01}
+          ["f9rr", "p3r"],
+          ["p3r", "rf3r"],
+          ["f9r", "rf4r"],
+          ["f9l", "rf4l"],
+          ["f9ll", "p3l"],
+          ["p3l", "rf3l"],
+
+          //surficial crossing
+          {"deformLimitExpansion":""},
+          {"beamDeform":9500,"beamStrength":"FLT_MAX"},
+          ["p3r", "f9r"],
+          ["p3r", "rf4r"],
+          ["rf3r", "f9r"],
+          ["rf4r", "f9rr"],
+          ["p3l", "rf4l"],
+          ["p3l", "f9l"],
+          ["f9ll", "rf4l"],
+          ["f9l", "rf3l"],
+
+          //rigids
+          {"deformLimitExpansion":""},
+          {"beamDeform":5000,"beamStrength":"FLT_MAX"},
+          //corner
+          ["rf4r", "f9l"],
+          ["rf4l", "f9r"],
+          ["p3r", "rf1r"],
+          ["p3r", "rf2r"],
+          ["f9rr", "rf2r"],
+          ["p3l", "rf2l"],
+          ["p3l", "rf1l"],
+          ["f9ll", "rf2l"],
+          ["f9r", "rf4"],
+          ["f9l", "rf4"],
+          ["p3r", "rf3"],
+          ["p3l", "rf3"],
+          ["rf3", "f9rr"],
+          ["rf3", "f9ll"],
+          ["rf3", "f9l"],
+          ["rf3", "f9r"],
+          //vertical
+          {"beamDeform":3000,"beamStrength":"FLT_MAX"},
+          ["f9rr", "rf3r"],
+          ["f8rr", "rf3r"],
+          ["rf4r", "f3r"],
+          ["f9ll", "rf3l"],
+          ["f8ll", "p3l"],
+          ["f3l", "rf4l"],
+          {"deformGroup":"", "deformationTriggerRatio":""}
+
+          //bleed through
+          {"deformLimitExpansion":1.2},
+    ],
+
+    "triangles":[
+        ["id1:", "id2:", "id3:"],
+        {"groundModel":"metal"},
+
+        {"dragCoef":6},
+        //roof
+        {"group":"bolide_roof"},
+        ["rf3", "rf2r", "rf2"],
+        ["rf2", "rf2r", "rf1"],
+        ["rf1", "rf2l", "rf2"],
+        ["rf2l", "rf3", "rf2"],
+        ["rf3", "rf3r", "rf2r"],
+        ["rf2r", "rf1r", "rf1"],
+        ["rf1", "rf1l", "rf2l"],
+        ["rf2l", "rf3l", "rf3"],
+
+        //rear
+        {"dragCoef":1},
+        {"group":"bolide_rearwall"},
+        ["rf3l", "rf4", "rf3"],
+        ["rf3", "rf4", "rf3r"],
+        ["rf3r", "rf4", "rf4r"],
+        ["rf3l", "rf4l", "rf4"],
+        ["rf4r", "p3r", "rf3r"],
+        ["rf4r", "f9r", "p3r"],
+        ["p3r", "f9r", "f9rr"],
+        ["rf3l", "p3l", "rf4l"],
+        ["rf4l", "p3l", "f9l"],
+        ["p3l", "f9ll", "f9l"],
+        ["rf4l", "f9l", "rf4"],
+        ["rf4", "f9r", "rf4r"],
+        ["rf4", "f9l", "f9r"],
+
+        //windshield
+        {"dragCoef":4},
+        {"group":"bolide_windshield"},
+        ["rf1r", "p2r", "p1r"],
+        ["p2r", "f6rr", "p1r"],
+        ["rf1l", "p1l", "p2l"],
+        ["p1l", "f6ll", "p2l"],
+        ["p1l", "f6l", "f6ll"],
+        ["rf1l", "rf1", "p1l"],
+        ["rf1", "rf1r", "p1r"],
+        ["p1r", "f6rr", "f6r"],
+        {"optional":true},
+        ["wi1", "f6l", "p1l"],
+        ["wi1", "p1l", "rf1"],
+        ["wi1", "rf1", "p1r"],
+        ["wi1", "p1r", "f6r"],
+        ["wi1", "f6r", "f6l"],
+        {"optional":false},
+
+        //right side
+        {"dragCoef":11},
+        {"group":"bolide_righside"},
+        //["rf3r", "p3r",  "rf2r"],
+        //["rf2r", "p3r",  "rf1r"],
+        //["p3r",  "f9rr", "rf1r"],
+        //["rf1r", "f9rr", "p2r"],
+        //["p2r",  "f9rr", "f6rr"],
+        //["f6rr", "f7rr", "f5rr"],
+        //["f9rr", "f8rr", "f7rr"],
+        //["f7rr", "f6rr", "f9rr"],
+
+        //left side
+        {"group":"bolide_righside"},
+        //["p3l",  "rf3l", "rf2l"],
+        //["p3l",  "rf2l", "rf1l"],
+        //["f9ll", "p3l",  "rf1l"],
+        //["f9ll", "rf1l", "p2l"],
+        //["f9ll", "p2l",  "f6ll"],
+        //["f7ll", "f6ll", "f5ll"],
+        //["f8ll", "f9ll", "f7ll"],
+        //["f6ll", "f7ll", "f9ll"],
+        {"group":""},
+        ],
+},
+}

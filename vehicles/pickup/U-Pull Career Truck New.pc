@@ -135,7 +135,7 @@
     "pickup_power_steering":"",
     "pickup_radiator":"pickup_radiator",
     "pickup_radsupport":"pickup_radsupport",
-    "pickup_receiver_attachment":"pickup_receiver_ball",
+    "towhitch_receiver_attachment":"tow_hitch_straight",
     "pickup_reversewarn":"",
     "pickup_rollcage":"",
     "pickup_roofrack":"",

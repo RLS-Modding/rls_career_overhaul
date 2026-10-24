@@ -1,0 +1,6 @@
+{
+  "id": "cargoDelivery",
+  "order": 270,
+  "extension": "overhaul_career_logistics_cargoScreen",
+  "definition": "overhaul/career/logistics/cargoScreen/activity"
+}

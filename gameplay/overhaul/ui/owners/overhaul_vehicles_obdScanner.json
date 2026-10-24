@@ -1,0 +1,10 @@
+{
+  "id": "overhaul_vehicles_obdScanner",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "other",
+    "namespaceOrder": 40,
+    "aliases": []
+  }
+}

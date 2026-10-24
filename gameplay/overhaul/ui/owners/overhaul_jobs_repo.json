@@ -1,0 +1,10 @@
+{
+  "id": "overhaul_jobs_repo",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "other",
+    "namespaceOrder": 60,
+    "aliases": []
+  }
+}

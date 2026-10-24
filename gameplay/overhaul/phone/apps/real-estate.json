@@ -1,0 +1,77 @@
+{
+  "id": "real-estate",
+  "name": "Real Estate",
+  "icon": "doorFrontCoins",
+  "iconTile": "real-estate.png",
+  "route": "/overhaul/phone-real-estate",
+  "color": "#f97316",
+  "iconColor": "#ffffff",
+  "category": "Property",
+  "storeTagline": "Buy and sell property",
+  "storeDescription": "Browse real estate listings, track owned properties, and handle deals on the move.",
+  "defaultPage": 0,
+  "defaultPosition": 9,
+  "notifications": [
+    {
+      "key": "realEstate.mortgageMissed",
+      "label": "Mortgage Missed",
+      "default": true,
+      "description": "Missed payment, rate increase",
+      "order": 0
+    },
+    {
+      "key": "realEstate.mortgageForeclosure",
+      "label": "Foreclosure",
+      "default": true,
+      "description": "Property repossessed",
+      "order": 1,
+      "pending": "perEntity"
+    },
+    {
+      "key": "realEstate.mortgagePaidOff",
+      "label": "Mortgage Paid Off",
+      "default": true,
+      "description": "Mortgage cleared",
+      "order": 2,
+      "pending": "perEntity"
+    },
+    {
+      "key": "realEstate.mortgageCreated",
+      "label": "Mortgage Created",
+      "default": true,
+      "description": "Financing approved",
+      "order": 3
+    },
+    {
+      "key": "realEstate.mortgagePrepayment",
+      "label": "Mortgage Prepayment",
+      "default": true,
+      "description": "Extra payment applied",
+      "order": 4
+    },
+    {
+      "key": "realEstate.newOffer",
+      "label": "Property Offer",
+      "default": true,
+      "description": "Buyer offers on your listings",
+      "order": 5,
+      "pending": "perEntity"
+    }
+  ],
+  "unlock": {
+    "type": "careerActive"
+  },
+  "notificationSources": [
+    "real estate"
+  ],
+  "uiRoutes": [
+    {
+      "name": "phone-real-estate",
+      "path": "phone-real-estate",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneRealEstate.vue",
+      "uiOrder": 89,
+      "luaOrder": 57,
+      "backTarget": "phone-main"
+    }
+  ]
+}

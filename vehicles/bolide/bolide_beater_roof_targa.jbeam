@@ -1,0 +1,144 @@
+{"bolide_beater_roof_targa":
+{
+    "information":{
+        "authors":"BeamNG",
+        "name":"Damaged Roof Panel",
+        "value":150,
+    },
+
+    "slotType" :"bolide_roof_targa",
+
+    "flexbodies":[
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["bolide_beater_targa_roof", ["bolide_roof_targa"]],
+        ["bolide_doorseal_targa_roof", ["bolide_roof_targa"]],
+    ],
+
+    "nodes":[
+         ["id", "posX", "posY", "posZ"],
+         {"frictionCoef":0.5},
+         {"nodeMaterial":"|NM_PLASTIC"},
+
+         //--TARGA ROOF--
+         {"selfCollision":true},
+         {"collision":true},
+         {"group":"bolide_roof_targa"}
+         //roof
+         {"nodeWeight":0.7},
+         ["trf1r",-0.536,-0.17,1.11, {"couplerTag":"targa_FR", "couplerStrength":40000, "couplerRadius":0.1, "couplerStartRadius":0.1, "couplerLock":true, "breakGroup":"targa_F"}],
+         ["trf1",0.0,-0.202,1.125,   {"couplerTag":"targa_FM", "couplerStrength":40000, "couplerRadius":0.1, "couplerStartRadius":0.1, "couplerLock":true, "breakGroup":"targa_F"}],
+         ["trf1l",0.536,-0.17,1.11,  {"couplerTag":"targa_FL", "couplerStrength":40000, "couplerRadius":0.1, "couplerStartRadius":0.1, "couplerLock":true, "breakGroup":"targa_F"}],
+
+         {"selfCollision":false},
+         ["trf2r",-0.536,0.15,1.125],
+         ["trf2",0.0,0.15,1.14],
+         ["trf2l",0.536,0.15,1.125],
+         {"selfCollision":true},
+
+         ["trf3r",-0.53,0.49,1.12, {"couplerTag":"targa_RR", "couplerStrength":40000, "couplerRadius":0.1, "couplerStartRadius":0.1, "couplerLock":true, "breakGroup":"targa_R"}],
+         ["trf3",0.0,0.48,1.13,    {"couplerTag":"targa_RM", "couplerStrength":40000, "couplerRadius":0.1, "couplerStartRadius":0.1, "couplerLock":true, "breakGroup":"targa_R"}],
+         ["trf3l",0.53,0.49,1.12,  {"couplerTag":"targa_RL", "couplerStrength":40000, "couplerRadius":0.1, "couplerStartRadius":0.1, "couplerLock":true, "breakGroup":"targa_R"}],
+
+         //roof rigidifier
+         {"nodeWeight":1.0},
+         ["trf5",0.0,0.156,0.9, {"group":"", "selfCollision":false, "collision":false}],
+         {"group":""},
+        ],
+
+    "beams":[
+          ["id1:", "id2:"],
+          //--REAR BODY--
+
+          //roof main shape
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1, "beamShortBound":1},
+          {"beamSpring":1201000,"beamDamp":70},
+          {"beamDeform":15000,"beamStrength":"FLT_MAX"},
+          {"deformLimitExpansion":1.2},
+          ["trf1r", "trf1"],
+          ["trf1", "trf1l"],
+          ["trf2", "trf2r"],
+          ["trf2", "trf2l"],
+          ["trf3", "trf3l"],
+          ["trf3", "trf3r"],
+          ["trf1r", "trf2r"],
+          ["trf2r", "trf3r"],
+          ["trf1", "trf2"],
+          ["trf2", "trf3"],
+          ["trf1l", "trf2l"],
+          ["trf2l", "trf3l"],
+
+          //surficial crossing
+          {"deformLimitExpansion":""},
+          {"beamDeform":8500,"beamStrength":"FLT_MAX"},
+          ["trf1", "trf2r"],
+          ["trf1r", "trf2"],
+          ["trf2", "trf3r"],
+          ["trf2r", "trf3"],
+          ["trf2l", "trf3"],
+          ["trf2", "trf3l"],
+          ["trf1l", "trf2"],
+          ["trf2l", "trf1"],
+
+          //rigidifier
+          {"beamDeform":7500,"beamStrength":"FLT_MAX"},
+          ["trf5", "trf2l"],
+          ["trf5", "trf2"],
+          ["trf5", "trf2r"],
+          ["trf5", "trf1l"],
+          ["trf5", "trf1"],
+          ["trf5", "trf1r"],
+          ["trf5", "trf3l"],
+          ["trf5", "trf3"],
+          ["trf5", "trf3r"],
+
+          //rigids
+          {"beamDeform":4500,"beamStrength":"FLT_MAX"},
+          //lengthwise
+          ["trf1r", "trf3r"],
+          ["trf1l", "trf3l"],
+          //widthwise
+          ["trf1l", "trf1r"],
+          ["trf2r", "trf2l"],
+          ["trf3r", "trf3l"],
+
+          //limiters
+          {"beamPrecompression":1, "beamType":"|SUPPORT", "beamLongBound":2},
+          {"beamDeform":8000, "beamStrength":"FLT_MAX"},
+          {"breakGroup":"roof_supportBeams"},
+          ["trf1l", "f6ll"],
+          ["trf1r", "f6rr"],
+          ["trf1r", "rf3r"],
+          ["trf1l", "rf3l"],
+          ["trf3l", "rf1l"],
+          ["trf3r", "rf1r"],
+          {"breakGroup":""},
+          ["rf3r", "rf4r"],
+          ["rf3", "rf4"],
+          ["rf3l", "rf4l"],
+          ["rf3r", "f9rr"],
+          ["rf3l", "f9ll"],
+          ["rf3l", "f9l"],
+          ["rf3r", "f9r"],
+          {"beamType":"|NORMAL", "beamLongBound":1},
+          //bleed through
+          {"deformLimitExpansion":1.2},
+    ],
+    "triangles":[
+        ["id1:", "id2:", "id3:"],
+        {"groundModel":"metal"},
+
+        //roof
+        {"dragCoef":6},
+        {"group":"bolide_roof_targaf"},
+        ["trf1r", "trf1", "trf2r"],
+        ["trf2r", "trf1", "trf2"],
+        ["trf1", "trf1l", "trf2l"],
+        ["trf2", "trf1", "trf2l"],
+        ["trf2", "trf2l", "trf3"],
+        ["trf3", "trf2r", "trf2"],
+        ["trf2r", "trf3", "trf3r"],
+        ["trf3", "trf2l", "trf3l"],
+        {"group":""},
+        ],
+},
+}

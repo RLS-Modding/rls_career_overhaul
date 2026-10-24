@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_vehicles_hubDyno",
+  "order": 112,
+  "module": "overhaul/vehicles/hubDyno",
+  "scopes": [
+    {
+      "id": "late",
+      "order": 11
+    }
+  ]
+}

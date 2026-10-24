@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<!-- RLS celebration card (level up / contract complete / race complete), house look.
+     The controller owns queueing, timings and sounds so every card follows the same lifecycle. -->
+<link rel="stylesheet" href="/ui/modModules/overhaulCelebrationPopUp/overhaulCelebrationPopUp.css?v=house4" />
+
+<div class="celebration-popup-host" ng-if="popup.visible">
+  <div class="celebration-popup-wrapper" ng-class="{ closing: popup.closing }">
+    <div class="celebration-card" ng-class="'kind-' + popup.kind">
+
+      <!-- ===== Level up ===== -->
+      <div class="cel-level-summary" ng-if="popup.kind === 'levelUp'">
+        <div class="card-cnt" ng-repeat="skill in popup.levelUp.groups track by skill.key">
+          <div class="cel-head">
+            <span class="cel-badge">
+              <span class="cel-glyph"
+                    ng-style="{ '-webkit-mask-image': 'url(' + (iconUrl ? iconUrl(skill.reward.icon, 'star') : getIconSrc(skill.reward.icon || 'star')) + ')', 'mask-image': 'url(' + (iconUrl ? iconUrl(skill.reward.icon, 'star') : getIconSrc(skill.reward.icon || 'star')) + ')' }"></span>
+            </span>
+            <div class="cel-title">
+              <div class="cel-caption">{{ ((skill.reward.animationData && skill.reward.animationData.name) || 'Skill') | contextTranslate }}</div>
+              <div class="cel-level">Level {{ skill.fromLevel }} <span class="cel-range-arrow">&rarr;</span> {{ skill.levelValue }}</div>
+            </div>
+          </div>
+
+          <div class="cel-body" ng-if="skill.currentUnlocks.length">
+            <div class="cel-section">Unlocked</div>
+            <div class="cel-unlocks">
+              <div ng-repeat="item in skill.currentUnlocks track by $index">
+                <div class="cel-unlock">
+                  <span class="cel-unlock-icon"
+                        ng-style="{ '-webkit-mask-image': 'url(' + (iconUrl ? iconUrl(item.icon, 'checkmark') : getIconSrc(item.icon || 'checkmark')) + ')', 'mask-image': 'url(' + (iconUrl ? iconUrl(item.icon, 'checkmark') : getIconSrc(item.icon || 'checkmark')) + ')' }"></span>
+                  <div class="cel-unlock-text">
+                    <div class="cel-unlock-heading">{{ item.heading }} <span class="cel-unlock-count" ng-if="item.levelCount > 1">&times;{{ item.levelCount }}</span></div>
+                    <div class="cel-unlock-desc" ng-if="item.description">{{ item.description }}</div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ===== Contract complete ===== -->
+      <div class="card-cnt" ng-if="popup.kind === 'contract'">
+        <div class="cel-head">
+          <span class="cel-badge"><span class="cel-glyph glyph-check"></span></span>
+          <div class="cel-title">
+            <div class="cel-caption">Contract complete</div>
+            <div class="cel-name">{{ popup.contract.raceLabel }}</div>
+          </div>
+        </div>
+
+        <div class="cel-body">
+          <div class="cel-chips">
+            <span class="cel-chip">{{ popup.contract.disciplineLabel }}</span>
+            <span class="cel-chip">{{ popup.contract.tierLabel }}</span>
+            <span class="cel-chip">{{ popup.contract.requiredModelLabel }}</span>
+          </div>
+          <div class="cel-note">{{ popup.contract.objectiveText }}</div>
+          <div class="cel-rewards">
+            <span class="cel-money"><span class="cur"></span>{{ popup.contract.rewardMoney }}</span>
+            <span class="cel-xp">+{{ popup.contract.rewardXp }}<span class="unit"> XP</span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== Race complete ===== -->
+      <div class="card-cnt" ng-if="popup.kind === 'raceComplete'">
+        <div class="cel-head">
+          <span class="cel-badge"><span class="cel-glyph glyph-flag"></span></span>
+          <div class="cel-title">
+            <div class="cel-caption">Race complete</div>
+            <div class="cel-name">{{ popup.race.raceLabel }}</div>
+          </div>
+          <div class="cel-position" ng-if="popup.race.position != null">
+            <span class="pos">P{{ popup.race.position }}</span><span class="field"> / {{ popup.race.fieldSize }}</span>
+          </div>
+        </div>
+
+        <div class="cel-body">
+          <div class="cel-stats">
+            <div class="cel-stat" ng-if="popup.race.raceTime">
+              <div class="k">Time</div><div class="v">{{ popup.race.raceTime }}</div>
+            </div>
+            <div class="cel-stat" ng-if="popup.race.bestLap">
+              <div class="k">Best lap</div><div class="v">{{ popup.race.bestLap }}</div>
+            </div>
+            <div class="cel-stat" ng-if="popup.race.lapsCompleted != null && popup.race.lapsTotal != null">
+              <div class="k">Laps</div><div class="v">{{ popup.race.lapsCompleted }} / {{ popup.race.lapsTotal }}</div>
+            </div>
+          </div>
+
+          <div class="cel-laps" ng-if="popup.race.lapRows.length">
+            <div class="cel-lap" ng-repeat="lap in popup.race.lapRows track by lap.index"
+                 ng-class="{ best: lap.isBest, invalid: lap.invalid }">
+              <span class="idx">{{ lap.index }}</span>
+              <span class="time">{{ lap.time }}</span>
+              <span class="tag" ng-if="lap.isBest">Best</span>
+              <span class="tag bad" ng-if="lap.invalid">Invalid</span>
+            </div>
+          </div>
+
+          <div class="cel-warning" ng-if="popup.race.sanctionedNoRewardDetail">{{ popup.race.sanctionedNoRewardDetail }}</div>
+
+          <div class="cel-rewards" ng-class="{ muted: popup.race.sanctionedNoRewardDetail }">
+            <span class="cel-money"><span class="cur"></span>{{ popup.race.rewardMoney }}</span>
+            <span class="cel-xp">+{{ popup.race.rewardXp }}<span class="unit"> XP</span></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -1,0 +1,24 @@
+{
+  "id": "freeroam-events",
+  "name": "Events",
+  "icon": "raceFlag",
+  "iconTile": "events.png",
+  "route": "/overhaul/phone-events",
+  "color": "#e63946",
+  "iconColor": "#ffffff",
+  "category": "Activities",
+  "storeTagline": "Freeroam events",
+  "storeDescription": "Find and jump into freeroam events around the map without digging through menus.",
+  "defaultPage": 0,
+  "defaultPosition": 10,
+  "uiRoutes": [
+    {
+      "name": "phone-events",
+      "path": "phone-events",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneFreeroamEvents.vue",
+      "uiOrder": 103,
+      "luaOrder": 31,
+      "backTarget": "phone-main"
+    }
+  ]
+}

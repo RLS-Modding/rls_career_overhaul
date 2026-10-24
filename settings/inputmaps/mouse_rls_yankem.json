@@ -1,0 +1,7 @@
+{
+  "displayName": "Mouse",
+  "imagePack": "mouse",
+  "bindings": [
+    {"control": "button0", "action": "rlsYankemSelect"}
+  ]
+}

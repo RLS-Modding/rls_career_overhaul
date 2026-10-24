@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_vehicles_licensePlates",
+  "order": 113,
+  "module": "overhaul/vehicles/licensePlates",
+  "scopes": [
+    {
+      "id": "late",
+      "order": 13
+    }
+  ]
+}

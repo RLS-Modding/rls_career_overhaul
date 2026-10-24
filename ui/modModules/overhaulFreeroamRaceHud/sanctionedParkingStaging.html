@@ -1,0 +1,66 @@
+<link rel="stylesheet" type="text/css" href="/ui/modModules/overhaulFreeroamRaceHud/sanctionedParkingStaging.css" />
+
+<div class="sps-overlay" ng-if="spVisible">
+  <div class="sps-card" overhaul-popup="cancelStaging()" bng-blur="true">
+    <div class="sps-headline">
+      <div class="sps-title">{{ stagingHeadline(payload) }}</div>
+    </div>
+
+    <div class="sps-podium" ng-if="payload.payoutFirst != null || payload.payoutSecond != null || payload.payoutThird != null">
+      <div class="sps-place" ng-if="payload.payoutFirst != null">
+        <span class="sps-place-lbl">1st</span>
+        <span class="sps-place-val">${{ formatRewardDollars(payload.payoutFirst) }}</span>
+      </div>
+      <div class="sps-place" ng-if="payload.payoutSecond != null">
+        <span class="sps-place-lbl">2nd</span>
+        <span class="sps-place-val">${{ formatRewardDollars(payload.payoutSecond) }}</span>
+      </div>
+      <div class="sps-place" ng-if="payload.payoutThird != null">
+        <span class="sps-place-lbl">3rd</span>
+        <span class="sps-place-val">${{ formatRewardDollars(payload.payoutThird) }}</span>
+      </div>
+    </div>
+
+    <div class="sps-rows">
+      <div class="sps-row" ng-if="payload.raceClassLabel || payload.hpBracketLabel || payload.hpBracketBranch">
+        <span class="sps-k">Race class</span>
+        <span class="sps-v sps-class-val">{{ payload.raceClassLabel || payload.hpBracketLabel || payload.hpBracketBranch }}</span>
+      </div>
+      <div class="sps-row" ng-if="payload.playerSanctionedClassLabel">
+        <span class="sps-k">Your car (hp/kg tier)</span>
+        <span class="sps-v sps-class-val">{{ payload.playerSanctionedClassLabel }}</span>
+      </div>
+      <div class="sps-row" ng-if="payload.playerPw != null && payload.playerPw > 0">
+        <span class="sps-k">Your hp/kg</span>
+        <span class="sps-v">{{ payload.playerPw | number:2 }}</span>
+      </div>
+      <div class="sps-row" ng-if="payload.classPwMin != null && payload.classPwMax != null">
+        <span class="sps-k">Class hp/kg range</span>
+        <span class="sps-v">{{ payload.classPwMin | number:2 }} – {{ payload.classPwMax | number:2 }}</span>
+      </div>
+    </div>
+
+    <div class="sps-warn" ng-if="payload.playerPw != null && payload.classPwMax != null && payload.playerPw > payload.classPwMax">
+      Vehicle is above this race's power-to-weight cap. You can race, but podium rewards may be withheld.
+    </div>
+
+    <div class="sps-wait" ng-if="payload.awaitingSpawn">
+      Loading AI…
+    </div>
+
+    <div class="sps-actions">
+      <button type="button" class="sps-btn sps-btn-primary"
+              ng-if="payload.phase === 'prompt'"
+              ng-disabled="payload.awaitingSpawn"
+              bng-scoped-nav-autofocus ng-click="stageAndSpawn()">
+        Stage and spawn AI
+      </button>
+      <button type="button" class="sps-btn sps-btn-primary"
+              ng-if="payload.phase === 'spawned_ready'"
+              ng-disabled="payload.awaitingSpawn || (payload.requiresAiSpawn && (payload.spawnedAiCount == null || payload.spawnedAiCount < 1))"
+              bng-scoped-nav-autofocus ng-click="startEvent()">
+        Start event
+      </button>
+    </div>
+  </div>
+</div>

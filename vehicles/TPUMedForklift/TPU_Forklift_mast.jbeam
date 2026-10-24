@@ -179,12 +179,14 @@
 	],
 	"controller": [
 	   ["fileName"],
-	   ["hydraulics/hydraulicsCombustionEngineControl", {"mode":"electricsRaiseAndConnect", "relevantElectrics":["tilt_input","lift_input"], "raisedIdleRPM": 700}]
+	   ["forkLiftMastInput", {}],
+	   ["hydraulics/hydraulicsCombustionEngineControl", {"mode":"electricsRaiseAndConnect", "relevantElectrics":["tilt_input","lift_input","upfit_tilt","mast_tilt_input"], "raisedIdleRPM": 700}]
    ],
+   //0.40 hydraulicCylinder scales per beam count: friction halved, relief doubled to keep 0.39 forces
    "powertrainHydros": [
 	   ["type",                "name",     "connectedPump",    "valveType",    "pistonDiameter", "shaftDiameter",  "maxSpeed", "minExtend",    "maxExtend",    "directionElectricsName",   "beamTags"],
-	   ["hydraulicCylinder",   "ram1",     "pump1",            "closed",         0.1,             0,                5.5,        0.53,          0.7,            "tilt_input",             ["tiltBeam"], {"dropInputThreshold":-0.001,"cylinderReliefPressure":30000000, "minimumDragCoef":10000000, "maximumDragCoef":100000000,"frictionCoef":1500}],
-	   ["hydraulicCylinder",   "ram3",     "pump1",            "drop",         0.07,             0,                1.5,        0.56,           3.00,            "lift_input",             ["forkBeam"], {"dropInputThreshold":-0.001,"cylinderReliefPressure":30000000, "minimumDragCoef":1000000, "maximumDragCoef":100000000,"frictionCoef":500,"cylinderReliefSlipSpeedLimit":1.0}]
+	   ["hydraulicCylinder",   "ram1",     "pump1",            "closed",         0.1,             0,                5.5,        0.53,          0.7,            "tilt_input",             ["tiltBeam"], {"dropInputThreshold":-0.001,"cylinderReliefPressure":60000000, "minimumDragCoef":10000000, "maximumDragCoef":100000000,"frictionCoef":750}],
+	   ["hydraulicCylinder",   "ram3",     "pump1",            "drop",         0.07,             0,                1.5,        0.56,           3.00,            "lift_input",             ["forkBeam"], {"dropInputThreshold":-0.001,"cylinderReliefPressure":60000000, "minimumDragCoef":1000000, "maximumDragCoef":100000000,"frictionCoef":250,"cylinderReliefSlipSpeedLimit":1.0}]
    ],
     "beams":[
         ["id1:", "id2:"],
@@ -509,35 +511,32 @@
         //body
         {"deformGroup":""},
         ["MFL_OuterMast", ["OuterMast"]],
-        ["MFL_OuterMastBraces", ["OuterMast"]],
-        ["MFL_OuterMastMount", ["OuterMast"]],
         ["MFL_OuterMastTopRoller", ["OuterMast"]],
         ["MFL_MastStickers", ["OuterMast"]],
 		
         ["MFL_TriplexMidMast", ["MidMast"]],
         ["MFL_TriplexMidMastTopRoller", ["MidMast"]],
         ["MFL_LiftCylInner", ["MidMast"]],
-        ["MFL_TripleInnerMastTopBraceBracket", ["MidMast"]],
 		
         ["MFL_TriplexMidMastLowerRoller", ["InnerMast"]],
         ["MFL_TriplexInnerMast", ["InnerMast"]],
-        ["MFL_TripleInnerMastTopBrace", ["InnerMast"]],
 		
         ["MFL_LiftCylOuter", ["OuterMast"]],
 		
-        ["MFL_TiltCylMount", ["OuterMast"]],
         ["MFL_TiltCylInner", ["TiltInnerCyl"]],
         ["MFL_TiltCylOuter", ["TiltOuterCyl"]]
 	],
 	"controller": [
 	   ["fileName"],
-	   ["hydraulics/hydraulicsCombustionEngineControl", {"mode":"electricsRaiseAndConnect", "relevantElectrics":["tilt_input","lift_input","freelift_input"], "raisedIdleRPM": 700}]
+	   ["forkLiftMastInput", {}],
+	   ["hydraulics/hydraulicsCombustionEngineControl", {"mode":"electricsRaiseAndConnect", "relevantElectrics":["tilt_input","lift_input","freelift_input","upfit_tilt","mast_tilt_input"], "raisedIdleRPM": 700}]
    ],
+   //0.40 hydraulicCylinder scales per beam count: friction halved, relief doubled to keep 0.39 forces
    "powertrainHydros": [
 	   ["type",                "name",     "connectedPump",    "valveType",    "pistonDiameter", "shaftDiameter",  "maxSpeed", "minExtend",    "maxExtend",    "directionElectricsName",   "beamTags"],
-	   ["hydraulicCylinder",   "ram1",     "pump1",            "closed",         0.1,             0,                5.5,        0.53,          0.7,            "tilt_input",             ["tiltBeam"], {"dropInputThreshold":-0.001,"cylinderReliefPressure":30000000, "minimumDragCoef":10000000, "maximumDragCoef":100000000,"frictionCoef":1500}],
-	   ["hydraulicCylinder",   "ram2",     "pump1",            "drop",         0.07,             0,                2.5,        0.2,          1.1,            "lift_input",             ["freeliftBeam"], {"dropInputThreshold":-0.001,"cylinderReliefPressure":30000000, "minimumDragCoef":1000000, "maximumDragCoef":100000000,"frictionCoef":500,"cylinderReliefSlipSpeedLimit":1.5}],
-       ["hydraulicCylinder",   "ram3",     "pump1",            "drop",         0.07,             0,                2.5,        0.56,           4.80,            "lift_input",             ["forkBeam"], {"dropInputThreshold":-0.001,"cylinderReliefPressure":30000000, "minimumDragCoef":1000000, "maximumDragCoef":100000000,"frictionCoef":500,"cylinderReliefSlipSpeedLimit":1.5}]
+	   ["hydraulicCylinder",   "ram1",     "pump1",            "closed",         0.1,             0,                5.5,        0.53,          0.7,            "tilt_input",             ["tiltBeam"], {"dropInputThreshold":-0.001,"cylinderReliefPressure":60000000, "minimumDragCoef":10000000, "maximumDragCoef":100000000,"frictionCoef":750}],
+	   ["hydraulicCylinder",   "ram2",     "pump1",            "drop",         0.07,             0,                2.5,        0.2,          1.1,            "lift_input",             ["freeliftBeam"], {"dropInputThreshold":-0.001,"cylinderReliefPressure":60000000, "minimumDragCoef":1000000, "maximumDragCoef":100000000,"frictionCoef":250,"cylinderReliefSlipSpeedLimit":1.5}],
+       ["hydraulicCylinder",   "ram3",     "pump1",            "drop",         0.07,             0,                2.5,        0.56,           4.80,            "lift_input",             ["forkBeam"], {"dropInputThreshold":-0.001,"cylinderReliefPressure":60000000, "minimumDragCoef":1000000, "maximumDragCoef":100000000,"frictionCoef":250,"cylinderReliefSlipSpeedLimit":1.5}]
    ],
     "slots":[
         ["type", "default", "description"],

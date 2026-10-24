@@ -1,0 +1,114 @@
+{
+  "0-100 km/h":29.3,
+  "0-60 mph":27.4,
+  "Body Style":"Box Truck",
+  "BoundingBox":[
+    [
+      -0.826,
+      -1.156,
+      -0.6174
+    ],
+    [
+      1.694,
+      7.2126,
+      2.8588
+    ]
+  ],
+  "Config Type":"Loaner",
+  "Configuration":"vehiclesData.md_series.md_career_shuffleboard_cargobox.Configuration",
+  "Description":"vehiclesData.md_series.md_career_shuffleboard_cargobox.Description",
+  "Drag Times":{
+    "time_0_60":27.435500413179,
+    "time_1000":20.568000309169,
+    "time_1_4":24.667000368237,
+    "time_1_8":15.635000236332,
+    "time_330":10.001000151038,
+    "time_60":3.4015000537038,
+    "velAt_1_4":24.88358670573,
+    "velAt_1_8":19.577901006952
+  },
+  "Drivetrain":"RWD",
+  "Fuel Type":"Diesel",
+  "Induction Type":"Turbo",
+  "Off-Road Score":27,
+  "Performance Data":{
+    "fuelType":{
+      "fuelTank:diesel":true,
+      "pressureTank":true
+    },
+    "inductionType":{
+      "turbocharger":true
+    },
+    "lateralAcceleration":{
+      "maxAcceleration":4.4286396947391
+    },
+    "performanceIndex":11.110916471745,
+    "power":{
+      "propulsionPowerCombined":187872.94558452
+    },
+    "powertrainLayout":{
+      "poweredWheelsFront":0,
+      "poweredWheelsRear":4
+    },
+    "time_0_60":27.435500413179,
+    "time_1000":20.568000309169,
+    "time_1_4":24.667000368237,
+    "time_1_8":15.635000236332,
+    "time_330":10.001000151038,
+    "time_60":3.4015000537038,
+    "transmissionStyle":{
+      "automaticGearbox":true
+    },
+    "vehicleClass":{
+      "description":"Economy/Utility",
+      "minPI":0,
+      "name":"D"
+    },
+    "velAt_1_4":24.88358670573,
+    "velAt_1_8":19.577901006952,
+    "weight":8104.7666015625
+  },
+  "Population":6100,
+  "Power":254,
+  "PowerPeakRPM":2400,
+  "Propulsion":"ICE",
+  "Top Speed":28.78780937,
+  "Torque":815,
+  "TorquePeakRPM":"1350 - 1900",
+  "Transmission":"Automatic",
+  "Value":87000,
+  "Weight":7990,
+  "Weight/Power":31.45669291,
+  "Years":{
+    "max":1998,
+    "min":1992
+  },
+  "capacity":[
+    {
+      "amount":768,
+      "type":"parcel"
+    }
+  ],
+  "defaultPaintName1":"White",
+  "defaultPaintName2":"Black",
+  "defaultPaintName3":"White",
+  "isAuxiliary":false,
+  "thumbnailConfig":{
+    "cameraConfig":{
+      "posOffset":{
+        "x":-11.07515133,
+        "y":-7.046711224,
+        "z":1.937364513
+      },
+      "rotOffset":{
+        "w":-0.9048683082,
+        "x":-0.02407620144,
+        "y":0.009931301882,
+        "z":-0.4248941641
+      }
+    },
+    "configCamEnabled":true,
+    "modelCamEnabled":false
+  },
+  "Name":"MD60 Cargo Box Shuffleboard (A)"
+}

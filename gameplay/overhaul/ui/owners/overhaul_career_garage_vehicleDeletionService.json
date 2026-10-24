@@ -1,0 +1,10 @@
+{
+  "id": "overhaul_career_garage_vehicleDeletionService",
+  "order": 100,
+  "exports": {
+    "namespace": false,
+    "aliases": [
+      "career_modules_vehicleDeletionService"
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "displayName": "Keyboard",
+  "imagePack": "keyboard",
+  "bindings": [
+    {"control": "alt w", "action": "rlsYankemToggle"},
+    {"control": "alt comma", "action": "rlsYankemReelIn"},
+    {"control": "alt period", "action": "rlsYankemReelOut"}
+  ]
+}

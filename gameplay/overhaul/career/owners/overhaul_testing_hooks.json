@@ -1,0 +1,9 @@
+{
+  "id": "overhaul_testing_hooks",
+  "order": 999,
+  "module": "overhaul/testing/hooks",
+  "scopes": [],
+  "integration": {"global": "beamTest", "readyHook": "onBeamTestReady"},
+  "beforeUnload": "prepareForUnload",
+  "modulePolicy": {"career": false}
+}

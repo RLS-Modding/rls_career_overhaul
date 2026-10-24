@@ -1,0 +1,5 @@
+{
+  "id": "maintenance",
+  "icon": "wrench",
+  "routeTarget": "maintenance"
+}

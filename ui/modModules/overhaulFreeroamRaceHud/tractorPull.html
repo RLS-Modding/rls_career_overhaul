@@ -1,0 +1,67 @@
+<link rel="stylesheet" href="/ui/modModules/overhaulFreeroamRaceHud/tractorPull.css">
+
+<div class="tp-root" ng-if="visible" ng-class="'tp-mode-' + mode">
+  <section class="tp-card" ng-if="mode === 'select'" overhaul-popup="cancel()">
+    <header>
+      <div>
+        <div class="tp-kicker">FRE SPEED EVENT</div>
+        <h2>{{payload.title}}</h2>
+        <p>{{number(payload.trackDistanceFeet, 0)}} ft pulling lane</p>
+      </div>
+      <button class="tp-icon-button" bng-scoped-nav-autofocus ng-click="cancel()" aria-label="Close">×</button>
+    </header>
+    <div class="tp-grid">
+      <button class="tp-sled" ng-repeat="sled in payload.sleds track by sled.id" ng-click="selectSled(sled.id)">
+        <span class="tp-sled-name">{{sled.label}}</span>
+        <span class="tp-sled-meta">Full pull: {{money(sled.baseReward)}}</span>
+      </button>
+    </div>
+    <p class="tp-help">The sled spawns at the head of the lane. Its first movement starts the run.</p>
+  </section>
+
+  <section class="tp-card" ng-if="mode === 'hitch'" overhaul-popup="backToSleds()">
+    <header>
+      <div>
+        <div class="tp-kicker">{{payload.sledLabel}}</div>
+        <h2>Choose Hitch</h2>
+        <p>Full pull: {{money(payload.baseReward)}}</p>
+      </div>
+      <button class="tp-icon-button" bng-scoped-nav-autofocus ng-click="cancel()" aria-label="Close">&times;</button>
+    </header>
+    <div class="tp-grid">
+      <button class="tp-sled" ng-repeat="hitch in payload.hitches track by hitch.id" ng-click="selectHitch(hitch.id)">
+        <span class="tp-sled-name">{{hitch.label}}</span>
+      </button>
+    </div>
+    <button class="tp-secondary tp-back" bng-scoped-nav-autofocus ng-click="backToSleds()">Back to Sleds</button>
+  </section>
+
+  <section class="tp-hud" ng-if="mode === 'hud'">
+    <div class="tp-hud-title">{{payload.sledLabel}}</div>
+    <div class="tp-distance">{{number(payload.distanceFeet, 1)}} <small>ft</small></div>
+    <div class="tp-progress"><i ng-style="progressStyle()"></i></div>
+    <div class="tp-hud-row">
+      <span>{{payload.status}}</span>
+      <span>{{time(payload.elapsedTime)}} · {{number(payload.fullDistanceFeet, 0)}} ft</span>
+    </div>
+    <button class="tp-secondary tp-hud-abandon" ng-if="payload.canAbandon" ng-click="cancel()">Abandon Pull</button>
+  </section>
+
+  <section class="tp-card tp-results" ng-if="mode === 'results'" overhaul-popup="dismissResults()">
+    <div class="tp-kicker">{{payload.sledLabel}}</div>
+    <h2>{{payload.title}}</h2>
+    <div class="tp-result-distance">{{number(payload.distanceFeet, 1)}} <small>ft</small></div>
+    <div class="tp-result-line" ng-if="payload.timeRecorded">
+      <span>Time</span><strong>{{time(payload.elapsedTime)}}</strong>
+    </div>
+    <div class="tp-result-line">
+      <span>Reward</span><strong>{{money(payload.rewardMoney)}} + {{number(payload.rewardXp, 0)}} Speed XP</strong>
+    </div>
+    <div class="tp-result-line" ng-if="payload.timeBonusPercent > 0">
+      <span>Full-pull time bonus</span><strong>+{{payload.timeBonusPercent}}%</strong>
+    </div>
+    <div class="tp-badge" ng-if="payload.newBest">NEW PERSONAL BEST</div>
+    <div class="tp-badge tp-warning" ng-if="payload.invalid">RUN INVALID</div>
+    <button class="tp-primary" bng-scoped-nav-autofocus ng-click="dismissResults()">Done</button>
+  </section>
+</div>

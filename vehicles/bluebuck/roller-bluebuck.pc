@@ -65,7 +65,7 @@
     "licenseplate_design_2_1":"",
     "linelock":"",
     "paint_design":"",
-    "skin_interior":"bluebuck_skin_interior",
+    "skin_interior":"bluebuck_skin_interior_black",
     "soundscape_horn":"",
     "tire_F_14x6":"tire_F_735_14_ww",
     "tire_R_14x6":"tire_R_735_14_ww",

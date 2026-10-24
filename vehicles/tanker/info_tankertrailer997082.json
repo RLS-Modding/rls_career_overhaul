@@ -1,0 +1,16 @@
+{
+  "Body Style": "Tanker Trailer",
+  "Config Type": "Loaner",
+  "Configuration": "Short Tanker Trailer",
+  "Description": "A short tanker trailer with dynamic fluid cargo storage.",
+  "Name": "Short Tanker Trailer",
+  "loanerName": "Short Tanker Trailer",
+  "Type": "Trailer",
+  "capacity": [
+    {"amount": 17700, "type": "fluid"}
+  ],
+  "defaultPaintName1": "White",
+  "defaultPaintName2": "White",
+  "defaultPaintName3": "White",
+  "isAuxiliary": true
+}

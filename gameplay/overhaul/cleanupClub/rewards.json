@@ -1,0 +1,73 @@
+{
+  "fallbackMoney": {
+    "min": 500,
+    "max": 1000
+  },
+  "rewards": [
+    {
+      "id": "owned_part_small",
+      "type": "ownedVehiclePart",
+      "weight": 5,
+      "value": {
+        "min": 100,
+        "max": 2000
+      }
+    },
+    {
+      "id": "owned_part_large",
+      "type": "ownedVehiclePart",
+      "weight": 4,
+      "value": {
+        "min": 3000,
+        "max": 10000
+      }
+    },
+    {
+      "id": "money_small",
+      "type": "money",
+      "weight": 3,
+      "money": {
+        "min": 1000,
+        "max": 3000
+      }
+    },
+    {
+      "id": "money_medium",
+      "type": "money",
+      "weight": 2,
+      "money": {
+        "min": 5000,
+        "max": 10000
+      }
+    },
+    {
+      "id": "vehicle_junker",
+      "type": "vehicle",
+      "weight": 2,
+      "value": {
+        "min": 0,
+        "max": 10000
+      }
+    },
+    {
+      "id": "vehicle_project",
+      "type": "vehicle",
+      "weight": 1,
+      "value": {
+        "min": 10000,
+        "max": 200000
+      }
+    }
+  ],
+  "shapes": {
+    "debris": "/art/shapes/garage_and_dealership/Clutter/big_pile.DAE",
+    "vehicle": "/levels/west_coast_usa/art/shapes/objects/s_containers_20_beamng.dae"
+  },
+  "vehicleRewardSellerIds": [
+    "private",
+    "scrappers",
+    "nebenan",
+    "vogelsangGroen",
+    "vogelsangbayIbishu"
+  ]
+}

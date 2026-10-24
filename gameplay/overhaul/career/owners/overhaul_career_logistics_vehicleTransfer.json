@@ -1,0 +1,15 @@
+{
+  "id": "overhaul_career_logistics_vehicleTransfer",
+  "order": 8,
+  "module": "overhaul/career/logistics/vehicleTransfer",
+  "scopes": [
+    {
+      "id": "bootManual",
+      "order": 13
+    },
+    {
+      "id": "late",
+      "order": 8
+    }
+  ]
+}

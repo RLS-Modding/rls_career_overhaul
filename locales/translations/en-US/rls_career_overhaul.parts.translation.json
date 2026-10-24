@@ -1,0 +1,5 @@
+{
+  "ui.career.partInventory.noSearchMatches": "No parts match your search.",
+  "ui.career.partInventory.noLooseParts": "No loose parts. Parts you take off a vehicle are stored here.",
+  "ui.career.partInventory.noRemovableParts": "No removable parts on this vehicle."
+}

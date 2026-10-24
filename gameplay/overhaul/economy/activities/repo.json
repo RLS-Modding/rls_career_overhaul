@@ -1,0 +1,30 @@
+{
+  "id": "repo",
+  "order": 20,
+  "branch": "gigWork",
+  "label": "Repo",
+  "npcJobsPerDay": 4.0,
+  "branchLabel": "Gig Work",
+  "branchOrder": 30,
+  "marketOrder": 20,
+  "availability": [
+    "overhaul_jobs_repo"
+  ],
+  "earningTags": [
+    "repo"
+  ],
+  "earningOrder": 30,
+  "challengeDisplay": [
+    {
+      "order": 30,
+      "name": "Vehicle Repossession",
+      "category": "Transport",
+      "prefix": "repo"
+    }
+  ],
+  "source": "repo_module",
+  "keys": ["repo"],
+  "extension": "overhaul_jobs_repo",
+  "activity": "repo",
+  "whenLoaded": true
+}

@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_career_guide_guide",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 190,
+    "aliases": [
+      "career_modules_guide"
+    ]
+  }
+}

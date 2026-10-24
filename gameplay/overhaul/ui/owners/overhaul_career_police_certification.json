@@ -1,0 +1,23 @@
+{
+  "id": "overhaul_career_police_certification",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 10,
+    "aliases": [
+      "career_modules_assignRole"
+    ]
+  },
+  "routes": [
+    {
+      "name": "roleAssignment",
+      "order": 73,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "play"
+        }
+      }
+    }
+  ]
+}

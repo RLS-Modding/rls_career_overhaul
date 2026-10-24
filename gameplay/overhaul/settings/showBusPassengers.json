@@ -1,0 +1,16 @@
+{
+  "id": "showBusPassengers",
+  "key": "showBusPassengers",
+  "order": 700,
+  "type": "boolean",
+  "default": true,
+  "section": "gameplay",
+  "validateSingle": false,
+  "validateLoaded": false,
+  "ui": {
+    "label": "ui.overhaulManager.settings.showBusPassengers.label",
+    "description": "ui.overhaulManager.settings.showBusPassengers.description",
+    "section": "gameplay",
+    "icon": "bus"
+  }
+}

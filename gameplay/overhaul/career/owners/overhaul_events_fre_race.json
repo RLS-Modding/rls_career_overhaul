@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_events_fre_race",
+  "order": 27,
+  "module": "overhaul/events/fre/race",
+  "scopes": [
+    {
+      "id": "children",
+      "order": 27,
+      "parent": "overhaul_events_fre_host"
+    }
+  ]
+}

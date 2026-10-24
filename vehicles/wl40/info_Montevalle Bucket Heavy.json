@@ -97,9 +97,9 @@
     "name":"Yellow",
     "roughness":1
   },
-  "defaultPaintName1":"Yellow",
-  "defaultPaintName2":"Yellow",
-  "defaultPaintName3":"Yellow",
+  "defaultPaintName1":"heavy_machinery_yellow",
+  "defaultPaintName2":"heavy_machinery_yellow",
+  "defaultPaintName3":"heavy_machinery_yellow",
   "infoFilename":"/vehicles/wl40/info_Montevalle Bucket Heavy.json",
   "is_default_config":false,
   "paints":{},

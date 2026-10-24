@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_career_logistics_loanerVehicles",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 450,
+    "aliases": [
+      "career_modules_loanerVehicles"
+    ]
+  }
+}

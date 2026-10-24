@@ -1,0 +1,22 @@
+{
+  "Configuration":"Fink Industries Car Hauler",
+  "defaultMultiPaintSetup":{
+    "name":"finkindustriescarhauler798220 Multi Paint Setup",
+    "paint1":{
+      "baseColor":[
+        1,
+        0.8299999833107,
+        0.50800001621246,
+        1
+      ],
+      "class":"hidden",
+      "clearcoat":0.800000012,
+      "clearcoatRoughness":0,
+      "metallic":0.180999994,
+      "name":"finkindustriescarhauler798220 Paint 1",
+      "roughness":0.0610000007
+    },
+    "paint2":"jet_black",
+    "paint3":"matte_black"
+  }
+}

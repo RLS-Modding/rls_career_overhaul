@@ -1,0 +1,6 @@
+{
+  "id": "garage",
+  "order": 100,
+  "listName": "garages",
+  "uiLabel": "ui.facilities.type.garage"
+}

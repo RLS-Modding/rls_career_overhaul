@@ -1,0 +1,15 @@
+{
+  "id": "dyno",
+  "order": 60,
+  "extension": "overhaul_career_parts_dyno_dynoSession",
+  "definition": "overhaul/career/parts/dyno/dynoSession/activity",
+  "recovery": {
+    "displacedDistanceMetres": 15,
+    "displacedConfirmSeconds": 0.5,
+    "serviceReturnSeconds": 0.5,
+    "serviceOpenGraceSeconds": 5,
+    "pullWatchdogSimSeconds": 60,
+    "restoreTimeoutSeconds": 15,
+    "maxRestoreTickSeconds": 0.25
+  }
+}

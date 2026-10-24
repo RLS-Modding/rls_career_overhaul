@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_jobs_recovery",
+  "order": 79,
+  "module": "overhaul/jobs/recovery",
+  "scopes": [
+    {
+      "id": "bootManual",
+      "order": 4
+    }
+  ]
+}

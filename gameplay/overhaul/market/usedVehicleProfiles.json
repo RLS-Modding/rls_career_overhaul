@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "profiles": {
+    "competition": {
+      "annualMiles": 2500,
+      "minFactor": 0.5,
+      "maxFactor": 1.4,
+      "minMiles": 2000,
+      "maxMiles": 40000,
+      "wearFactor": 3.0
+    },
+    "collector": {
+      "minFactor": 0.28,
+      "maxFactor": 0.62,
+      "minMiles": 18000,
+      "maxMiles": 130000,
+      "timeCapsuleChance": 0.05,
+      "classicMinAge": 25,
+      "restoredClassicChance": 0.35,
+      "restoredWearFactor": 0.25,
+      "collectorWearFactor": 0.7,
+      "restoredMinMiles": 5000
+    },
+    "mainstream": {
+      "minFactor": 0.7,
+      "maxFactor": 1.05,
+      "minMiles": 250,
+      "maxMiles": 220000
+    },
+    "prestige": {
+      "minFactor": 0.22,
+      "maxFactor": 0.6,
+      "minMiles": 1000,
+      "maxMiles": 80000,
+      "timeCapsuleChance": 0.05
+    },
+    "worksite": {
+      "minFactor": 1.0,
+      "maxFactor": 1.45,
+      "minMiles": 60000,
+      "maxMiles": 280000
+    },
+    "budget": {
+      "minFactor": 1.15,
+      "maxFactor": 1.75,
+      "minMiles": 70000,
+      "maxMiles": 350000
+    },
+    "policeFleet": {
+      "annualMiles": 18000,
+      "minFactor": 0.85,
+      "maxFactor": 1.25,
+      "minMiles": 60000,
+      "maxMiles": 180000
+    },
+    "serviceFleet": {
+      "annualMiles": 17000,
+      "minFactor": 0.85,
+      "maxFactor": 1.3,
+      "minMiles": 50000,
+      "maxMiles": 200000
+    },
+    "frame": {
+      "minFactor": 1.05,
+      "maxFactor": 1.65,
+      "minMiles": 90000,
+      "maxMiles": 320000
+    },
+    "trailer": {
+      "annualMiles": 7000,
+      "minFactor": 0.65,
+      "maxFactor": 1.25,
+      "minMiles": 10000,
+      "maxMiles": 150000
+    },
+    "heavyTruck": {
+      "annualMiles": 30000,
+      "minFactor": 0.85,
+      "maxFactor": 1.35,
+      "minMiles": 80000,
+      "maxMiles": 600000
+    },
+    "import": {
+      "minFactor": 0.75,
+      "maxFactor": 1.2,
+      "minMiles": 10000,
+      "maxMiles": 300000
+    },
+    "loaner": {
+      "annualMiles": 18000,
+      "minFactor": 0.95,
+      "maxFactor": 1.35,
+      "minMiles": 80000,
+      "maxMiles": 240000
+    },
+    "salvage": {
+      "minFactor": 1.35,
+      "maxFactor": 2.05,
+      "minMiles": 120000,
+      "maxMiles": 400000
+    },
+    "limitedMileage": {
+      "annualMiles": 2500,
+      "minFactor": 0.5,
+      "maxFactor": 1.0,
+      "minMiles": 10000,
+      "maxMiles": 40000
+    },
+    "private": {
+      "minFactor": 0.75,
+      "maxFactor": 1.55,
+      "minMiles": 500,
+      "maxMiles": 350000,
+      "timeCapsuleChance": 0.015
+    }
+  },
+  "categoryProfiles": {
+    "configTypes": {
+      "Race": "competition",
+      "Rally": "competition",
+      "Frame": "frame"
+    },
+    "bodyStyles": {
+      "Semi Truck": "heavyTruck",
+      "Tanker Truck": "heavyTruck",
+      "Dump Truck": "heavyTruck"
+    }
+  },
+  "channelProfiles": {
+    "private": "private"
+  }
+}

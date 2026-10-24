@@ -1,0 +1,950 @@
+{
+    "name": "Police",
+    "description": "Progress a dedicated 1-50 police track. Each Police level increases arrest payout by 2%. Civil Service branch levels also increase payout by 2%. Police Dealership unlocks at level 10; certification unlocks at level 20.",
+    "order": 10,
+    "isSkill": false,
+    "attributeKey": "careerSkills-police",
+    "icon": "wigwags",
+    "levels": [
+        {
+            "requiredValue": 0,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 1",
+                "description": "Reach level 1 to unlock arrest payout bonus (+0%)."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +0%",
+                    "description": "Total arrest payout bonus from Police Skill is now +0%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 200,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 2",
+                "description": "Reach level 2 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +2%",
+                    "description": "Total arrest payout bonus from Police Skill is now +2%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 500,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 3",
+                "description": "Reach level 3 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +4%",
+                    "description": "Total arrest payout bonus from Police Skill is now +4%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 900,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 4",
+                "description": "Reach level 4 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +6%",
+                    "description": "Total arrest payout bonus from Police Skill is now +6%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 1400,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 5",
+                "description": "Reach level 5 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +8%",
+                    "description": "Total arrest payout bonus from Police Skill is now +8%."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "badgeRoundStar",
+                    "heading": "Milestone Tier 1",
+                    "description": "Reached level 5 in Police Skill."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "keys1",
+                    "heading": "Police Loaner Milestone I",
+                    "description": "Loaner progression marker for police vehicles. Actual loaner unlocks remain based on police organization reputation."
+                }
+            ]
+        },
+        {
+            "requiredValue": 1900,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 6",
+                "description": "Reach level 6 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +10%",
+                    "description": "Total arrest payout bonus from Police Skill is now +10%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 2600,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 7",
+                "description": "Reach level 7 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +12%",
+                    "description": "Total arrest payout bonus from Police Skill is now +12%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 3400,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 8",
+                "description": "Reach level 8 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +14%",
+                    "description": "Total arrest payout bonus from Police Skill is now +14%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 4300,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 9",
+                "description": "Reach level 9 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +16%",
+                    "description": "Total arrest payout bonus from Police Skill is now +16%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 5300,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 10",
+                "description": "Reach level 10 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +18%",
+                    "description": "Total arrest payout bonus from Police Skill is now +18%."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "badgeRoundStar",
+                    "heading": "Milestone Tier 2",
+                    "description": "Reached level 10 in Police Skill."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "keys1",
+                    "heading": "Police Dealership Unlock",
+                    "description": "Unlock access to the Police Dealership at Police Skill level 10."
+                }
+            ]
+        },
+        {
+            "requiredValue": 6500,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 11",
+                "description": "Reach level 11 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +20%",
+                    "description": "Total arrest payout bonus from Police Skill is now +20%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 7900,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 12",
+                "description": "Reach level 12 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +22%",
+                    "description": "Total arrest payout bonus from Police Skill is now +22%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 9400,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 13",
+                "description": "Reach level 13 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +24%",
+                    "description": "Total arrest payout bonus from Police Skill is now +24%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 11000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 14",
+                "description": "Reach level 14 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +26%",
+                    "description": "Total arrest payout bonus from Police Skill is now +26%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 13000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 15",
+                "description": "Reach level 15 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +28%",
+                    "description": "Total arrest payout bonus from Police Skill is now +28%."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "badgeRoundStar",
+                    "heading": "Milestone Tier 3",
+                    "description": "Reached level 15 in Police Skill."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "keys1",
+                    "heading": "Police Loaner Milestone III",
+                    "description": "Loaner progression marker for police vehicles. Actual loaner unlocks remain based on police organization reputation."
+                }
+            ]
+        },
+        {
+            "requiredValue": 15000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 16",
+                "description": "Reach level 16 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +30%",
+                    "description": "Total arrest payout bonus from Police Skill is now +30%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 17500,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 17",
+                "description": "Reach level 17 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +32%",
+                    "description": "Total arrest payout bonus from Police Skill is now +32%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 20000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 18",
+                "description": "Reach level 18 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +34%",
+                    "description": "Total arrest payout bonus from Police Skill is now +34%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 23000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 19",
+                "description": "Reach level 19 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +36%",
+                    "description": "Total arrest payout bonus from Police Skill is now +36%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 26000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 20",
+                "description": "Reach level 20 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +38%",
+                    "description": "Total arrest payout bonus from Police Skill is now +38%."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "badgeRoundStar",
+                    "heading": "Milestone Tier 4",
+                    "description": "Reached level 20 in Police Skill."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "garage01",
+                    "heading": "Police Certification Unlock",
+                    "description": "Unlock police vehicle certification at Police Skill level 20 so you can convert your own vehicle for police work."
+                }
+            ]
+        },
+        {
+            "requiredValue": 29000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 21",
+                "description": "Reach level 21 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +40%",
+                    "description": "Total arrest payout bonus from Police Skill is now +40%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 33000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 22",
+                "description": "Reach level 22 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +42%",
+                    "description": "Total arrest payout bonus from Police Skill is now +42%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 37000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 23",
+                "description": "Reach level 23 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +44%",
+                    "description": "Total arrest payout bonus from Police Skill is now +44%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 41000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 24",
+                "description": "Reach level 24 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +46%",
+                    "description": "Total arrest payout bonus from Police Skill is now +46%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 46000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 25",
+                "description": "Reach level 25 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +48%",
+                    "description": "Total arrest payout bonus from Police Skill is now +48%."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "badgeRoundStar",
+                    "heading": "Milestone Tier 5",
+                    "description": "Reached level 25 in Police Skill."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "keys1",
+                    "heading": "Police Loaner Milestone IV",
+                    "description": "Loaner progression marker for police vehicles. Actual loaner unlocks remain based on police organization reputation."
+                }
+            ]
+        },
+        {
+            "requiredValue": 51000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 26",
+                "description": "Reach level 26 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +50%",
+                    "description": "Total arrest payout bonus from Police Skill is now +50%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 56000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 27",
+                "description": "Reach level 27 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +52%",
+                    "description": "Total arrest payout bonus from Police Skill is now +52%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 62000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 28",
+                "description": "Reach level 28 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +54%",
+                    "description": "Total arrest payout bonus from Police Skill is now +54%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 68000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 29",
+                "description": "Reach level 29 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +56%",
+                    "description": "Total arrest payout bonus from Police Skill is now +56%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 74000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 30",
+                "description": "Reach level 30 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +58%",
+                    "description": "Total arrest payout bonus from Police Skill is now +58%."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "badgeRoundStar",
+                    "heading": "Milestone Tier 6",
+                    "description": "Reached level 30 in Police Skill."
+                }
+            ]
+        },
+        {
+            "requiredValue": 81000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 31",
+                "description": "Reach level 31 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +60%",
+                    "description": "Total arrest payout bonus from Police Skill is now +60%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 88000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 32",
+                "description": "Reach level 32 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +62%",
+                    "description": "Total arrest payout bonus from Police Skill is now +62%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 96000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 33",
+                "description": "Reach level 33 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +64%",
+                    "description": "Total arrest payout bonus from Police Skill is now +64%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 104000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 34",
+                "description": "Reach level 34 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +66%",
+                    "description": "Total arrest payout bonus from Police Skill is now +66%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 113000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 35",
+                "description": "Reach level 35 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +68%",
+                    "description": "Total arrest payout bonus from Police Skill is now +68%."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "badgeRoundStar",
+                    "heading": "Milestone Tier 7",
+                    "description": "Reached level 35 in Police Skill."
+                }
+            ]
+        },
+        {
+            "requiredValue": 122000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 36",
+                "description": "Reach level 36 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +70%",
+                    "description": "Total arrest payout bonus from Police Skill is now +70%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 131000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 37",
+                "description": "Reach level 37 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +72%",
+                    "description": "Total arrest payout bonus from Police Skill is now +72%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 141000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 38",
+                "description": "Reach level 38 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +74%",
+                    "description": "Total arrest payout bonus from Police Skill is now +74%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 151000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 39",
+                "description": "Reach level 39 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +76%",
+                    "description": "Total arrest payout bonus from Police Skill is now +76%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 162000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 40",
+                "description": "Reach level 40 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +78%",
+                    "description": "Total arrest payout bonus from Police Skill is now +78%."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "badgeRoundStar",
+                    "heading": "Milestone Tier 8",
+                    "description": "Reached level 40 in Police Skill."
+                }
+            ]
+        },
+        {
+            "requiredValue": 174000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 41",
+                "description": "Reach level 41 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +80%",
+                    "description": "Total arrest payout bonus from Police Skill is now +80%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 186000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 42",
+                "description": "Reach level 42 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +82%",
+                    "description": "Total arrest payout bonus from Police Skill is now +82%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 198000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 43",
+                "description": "Reach level 43 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +84%",
+                    "description": "Total arrest payout bonus from Police Skill is now +84%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 211000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 44",
+                "description": "Reach level 44 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +86%",
+                    "description": "Total arrest payout bonus from Police Skill is now +86%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 225000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 45",
+                "description": "Reach level 45 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +88%",
+                    "description": "Total arrest payout bonus from Police Skill is now +88%."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "badgeRoundStar",
+                    "heading": "Milestone Tier 9",
+                    "description": "Reached level 45 in Police Skill."
+                }
+            ]
+        },
+        {
+            "requiredValue": 239000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 46",
+                "description": "Reach level 46 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +90%",
+                    "description": "Total arrest payout bonus from Police Skill is now +90%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 254000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 47",
+                "description": "Reach level 47 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +92%",
+                    "description": "Total arrest payout bonus from Police Skill is now +92%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 269000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 48",
+                "description": "Reach level 48 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +94%",
+                    "description": "Total arrest payout bonus from Police Skill is now +94%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 285000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 49",
+                "description": "Reach level 49 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +96%",
+                    "description": "Total arrest payout bonus from Police Skill is now +96%."
+                }
+            ]
+        },
+        {
+            "requiredValue": 301000,
+            "description": {
+                "type": "unlockCard",
+                "icon": "info",
+                "heading": "Level 50",
+                "description": "Reach level 50 to increase arrest payout bonus by another +2%."
+            },
+            "unlocks": [
+                {
+                    "type": "unlockCard",
+                    "icon": "wigwags",
+                    "heading": "Arrest Payout Bonus +98%",
+                    "description": "Total arrest payout bonus from Police Skill is now +98%."
+                },
+                {
+                    "type": "unlockCard",
+                    "icon": "badgeRoundStar",
+                    "heading": "Milestone Tier 10",
+                    "description": "Reached level 50 in Police Skill."
+                }
+            ]
+        }
+    ]
+}

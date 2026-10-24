@@ -1,0 +1,10 @@
+{
+  "rlsTesterMenuToggle": {
+    "cat": "gameplay",
+    "order": 258,
+    "ctx": "tlua",
+    "onDown": "if not overhaul_dev_testerMenu then extensions.load('overhaul_dev_testerMenu') end if overhaul_dev_testerMenu then overhaul_dev_testerMenu.toggle() end",
+    "title": "RLS Tester Menu",
+    "desc": "Toggle the RLS tester menu"
+  }
+}

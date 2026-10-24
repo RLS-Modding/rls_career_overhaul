@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_career_guide_betaWelcome",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 340,
+    "aliases": [
+      "career_modules_betaWelcome"
+    ]
+  }
+}

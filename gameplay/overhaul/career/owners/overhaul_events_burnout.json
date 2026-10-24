@@ -1,0 +1,10 @@
+{
+  "id": "overhaul_events_burnout",
+  "order": 1000,
+  "module": "overhaul/events/burnout",
+  "scopes": [],
+  "policyOnly": true,
+  "modulePolicy": {
+    "career": true
+  }
+}

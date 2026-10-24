@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":13750,  
+    "Configuration": "Certified ( Joe's Junk Career )",
+    "Description": "Certified piece of sh**!",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 123,
+    "Torque": 124,
+    "Value": 2150,
+    "Weight": 1192,
+    "Years": {
+      "max": 1994,
+      "min": 1990
+    }  
+}
+
+

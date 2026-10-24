@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_jobs_bus",
+  "order": 66,
+  "module": "overhaul/jobs/bus",
+  "scopes": [
+    {
+      "id": "bootManual",
+      "order": 11
+    }
+  ]
+}

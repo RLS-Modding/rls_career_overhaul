@@ -1,0 +1,10 @@
+{
+  "id": "overhaul_career_progression_skills",
+  "order": 100,
+  "exports": {
+    "namespace": false,
+    "aliases": [
+      "career_branches"
+    ]
+  }
+}

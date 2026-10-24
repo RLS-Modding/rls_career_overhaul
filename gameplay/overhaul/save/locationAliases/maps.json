@@ -1,0 +1,15 @@
+{
+  "id": "maps",
+  "version": 1,
+  "aliases": [
+    {
+      "kind": "map",
+      "from": "west_coast_usa",
+      "to": "rls_west_coast",
+      "maxSaveVersion": 64,
+      "rewriteLevelPaths": true,
+      "rewriteMapSaveFiles": true,
+      "onlyIfTargetFileExists": true
+    }
+  ]
+}

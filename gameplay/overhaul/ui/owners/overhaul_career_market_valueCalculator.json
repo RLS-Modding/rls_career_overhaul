@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_career_market_valueCalculator",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 550,
+    "aliases": [
+      "career_modules_valueCalculator"
+    ]
+  }
+}

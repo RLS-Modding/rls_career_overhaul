@@ -1,0 +1,110 @@
+{
+  "gasoline": {
+    "name": "Gasoline",
+    "density": 0.74,
+    "type": "fluid",
+    "moneyPerKg": 0.51,
+    "icon": "droplet"
+  },
+  "diesel": {
+    "name": "Diesel",
+    "density": 0.85,
+    "type": "fluid",
+    "moneyPerKg": 0.47,
+    "icon": "droplet"
+  },
+  "water": {
+    "name": "Water",
+    "density": 1.0,
+    "type": "fluid",
+    "moneyPerKg": 0.42,
+    "icon": "droplet"
+  },
+  "hazardousFluid": {
+    "name": "Hazardous Fluid",
+    "density": 1.2,
+    "type": "fluid",
+    "moneyPerKg": 0.39,
+    "icon": "droplet"
+  },
+  "sand": {
+    "name": "Sand",
+    "density": 1.6,
+    "type": "dryBulk",
+    "moneyPerKg": 0.365,
+    "icon": "rocks"
+  },
+  "gravel": {
+    "name": "Gravel",
+    "density": 1.75,
+    "type": "dryBulk",
+    "moneyPerKg": 0.345,
+    "icon": "rocks"
+  },
+  "soil": {
+    "name": "Soil",
+    "density": 1.3,
+    "type": "dryBulk",
+    "moneyPerKg": 0.42,
+    "icon": "rocks"
+  },
+  "cement": {
+    "name": "Ready-Mix Concrete",
+    "density": 2.4,
+    "type": "cement",
+    "moneyPerKg": 0.33,
+    "icon": "rocks"
+  },
+  "fertilizer": {
+    "name": "Fertilizer",
+    "density": 0.9,
+    "type": "dryBulk",
+    "moneyPerKg": 0.56,
+    "icon": "rocks"
+  },
+  "lime": {
+    "name": "Agricultural Lime",
+    "density": 1.3,
+    "type": "dryBulk",
+    "moneyPerKg": 0.425,
+    "icon": "rocks"
+  },
+  "ash": {
+    "name": "Ash",
+    "density": 0.75,
+    "type": "dryBulk",
+    "moneyPerKg": 0.58,
+    "icon": "rocks"
+  },
+  "mysteriousWaste": {
+    "name": "Mysterious Waste",
+    "density": 1.8,
+    "type": "dryBulk",
+    "moneyPerKg": 0.42,
+    "icon": "rocks"
+  },
+  "cash": {
+    "name": "1 kg Cash Brick",
+    "density": 1,
+    "type": "cash",
+    "moneyPerKg": 24,
+    "units": "Brick",
+    "icon": "beamCurrency"
+  },
+  "coin": {
+    "name": "12 kg Coin Box",
+    "density": 12,
+    "type": "cash",
+    "moneyPerKg": 2.0833333333,
+    "units": "Box",
+    "icon": "beamCurrency"
+  },
+  "gold": {
+    "name": "20 x 1 kg Gold Bars",
+    "density": 20,
+    "type": "cash",
+    "moneyPerKg": 1.3,
+    "units": "Bundle",
+    "icon": "beamCurrency"
+  }
+}

@@ -1,0 +1,241 @@
+// Shared house layout for the supply pickup screens (Business Supplies, Engine Materials).
+// Sass @use does not expose the importer's mixins here.
+@use "./rlsCard.scss" as *;
+
+.supply-shell {
+  width: 100%;
+  height: 100%;
+  min-height: 100vh; // the route container has no height of its own, so fill the viewport to centre
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2em;
+  box-sizing: border-box;
+  color: #fff;
+  background: rgba(5, 8, 10, 0.55);
+}
+.pickup-shell {
+  width: min(58em, 100%);
+}
+.hero {
+  aspect-ratio: 16 / 4;
+}
+// supplier without a picture of its own: a short name card instead of an empty banner
+.hero.text-only {
+  aspect-ratio: auto;
+  min-height: 0;
+  padding: 0.75em 1em 0.7em;
+}
+.hero.text-only::after {
+  content: none;
+}
+.hero.text-only .hero-copy {
+  position: static;
+}
+.money-text {
+  color: var(--money);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.notice-bad {
+  margin: 0;
+  padding: 0.7em 0.85em 0.6em;
+  border-radius: 0.5em;
+  background: rgba(252, 165, 165, 0.14);
+  color: var(--bad);
+  font-weight: 600;
+}
+
+/* ---- what's waiting: equal tiles, number first */
+.summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9em, 1fr));
+  gap: 0.5em;
+}
+.tile {
+  display: grid;
+  align-content: start;
+  gap: 0.3em;
+  min-width: 0;
+  padding: 0.75em 0.85em 0.7em;
+  border-radius: 0.5em;
+  background: var(--panel);
+}
+.tile-key {
+  color: var(--faint);
+  font-size: 0.68em;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+.tile-value {
+  font-size: 1.5em;
+  font-weight: 800;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+  small {
+    color: var(--faint);
+    font-size: 0.6em;
+    font-weight: 700;
+  }
+}
+.tile-note {
+  color: var(--faint);
+  font-size: 0.8em;
+  font-weight: 600;
+}
+.stock-bar {
+  position: relative;
+  display: block;
+  height: 0.35em;
+  border-radius: 1em;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.12);
+  > span {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    transform-origin: left center;
+  }
+  .stored {
+    background: rgba(255, 255, 255, 0.6);
+  }
+  .reserved {
+    background: var(--accent);
+    opacity: 0.6;
+  }
+}
+
+/* ---- this trip */
+.trip {
+  gap: 0.6em;
+  .big {
+    font-variant-numeric: tabular-nums;
+    small {
+      color: var(--faint);
+      font-size: 0.6em;
+      font-weight: 700;
+    }
+  }
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4em;
+  > button {
+    appearance: none;
+    margin: 0;
+    padding: 0.55em 0.75em 0.42em;
+    border: 0;
+    border-radius: 0.6em;
+    background: var(--panel);
+    color: var(--muted);
+    font: inherit;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    &:hover,
+    &.active {
+      background: var(--panel-2);
+      color: #fff;
+    }
+    // house ring from rlsCard.scss (imported before this partial)
+    @include card-focus;
+  }
+}
+.no-capacity {
+  display: grid;
+  gap: 0.25em;
+  strong {
+    color: var(--warn);
+  }
+}
+.charge-note {
+  margin: 0;
+}
+
+/* ---- parked vehicles: photo beside name, containers as lines */
+.fleet {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: clamp(12em, 34vh, 24em);
+}
+.vehicle {
+  display: grid;
+  gap: 0.55em;
+  padding: 0.6em 0.7em 0.6em 0.6em;
+  border-radius: 0.5em;
+  background: var(--panel);
+  &.off .vehicle-copy strong,
+  &.off .vehicle-img {
+    opacity: 0.55;
+  }
+}
+.vehicle-top {
+  display: grid;
+  grid-template-columns: 7em minmax(0, 1fr);
+  gap: 0.75em;
+  align-items: center;
+}
+.vehicle-img {
+  aspect-ratio: 16 / 9;
+  border-radius: 0.35em;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.3);
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+.vehicle-copy {
+  display: grid;
+  justify-items: start;
+  gap: 0.25em;
+  min-width: 0;
+  strong {
+    font-size: 1.05em;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+}
+.fits {
+  color: #fff;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.containers {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.3em;
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.6em;
+    min-width: 0;
+    padding-top: 0.35em;
+    border-top: 1px solid var(--line);
+    font-size: 0.9em;
+    font-weight: 600;
+    &.off .container-name {
+      color: var(--faint);
+    }
+  }
+}
+.container-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.container-free {
+  flex: 0 0 auto;
+  color: var(--faint);
+  font-size: 0.9em;
+  font-variant-numeric: tabular-nums;
+}

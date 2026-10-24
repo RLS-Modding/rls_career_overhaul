@@ -1,0 +1,44 @@
+{
+  "id": "police",
+  "order": 70,
+  "activity": "employmentShift.police",
+  "economyKey": "police",
+  "roleplayPoi": {"type": "policeWork", "icon": "poi_delivery_round", "cardIcon": "strobeLights"},
+  "policy": {
+    "roleplay": true,
+    "openEnded": true,
+    "emergency": true,
+    "ownerTasklist": true,
+    "accidentRecoveryDisabled": true
+  },
+  "equipment": [],
+  "vehicleRoles": [],
+  "cargoKinds": [],
+  "payModel": {
+    "heldWages": true
+  },
+  "handlers": {
+    "beginAssignment": {
+      "module": "overhaul/career/work/employment/kinds/assignmentRoleplay",
+      "fn": "beginAssignment"
+    },
+    "shiftState": {
+      "module": "overhaul/career/work/employment/kinds/assignmentRoleplay",
+      "fn": "shiftState"
+    },
+    "allowsPersonalVehicle": {
+      "module": "overhaul/career/work/employment/kinds/police",
+      "fn": "allowsPersonalVehicle"
+    },
+    "finalAssignment": {
+      "module": "overhaul/career/work/employment/kinds/police",
+      "fn": "finalAssignment"
+    },
+    "handoffTasklist": {
+      "module": "overhaul/career/work/employment/kinds/police",
+      "fn": "handoffTasklist"
+    }
+  },
+  "skillLabel": "Police Skill",
+  "workLabel": "police patrol"
+}

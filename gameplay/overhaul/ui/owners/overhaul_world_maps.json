@@ -1,0 +1,21 @@
+{
+  "id": "overhaul_world_maps",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "other",
+    "namespaceOrder": 90,
+    "aliases": []
+  },
+  "routes": [
+    {
+      "name": "dakar",
+      "order": 15,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "play"
+        }
+      }
+    }
+  ]
+}

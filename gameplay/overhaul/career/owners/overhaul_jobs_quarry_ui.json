@@ -1,0 +1,6 @@
+{
+  "id": "overhaul_jobs_quarry_ui",
+  "order": 77,
+  "module": "overhaul/jobs/quarry/ui",
+  "scopes": []
+}

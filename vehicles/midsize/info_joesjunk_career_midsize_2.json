@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":15000,  
+    "Configuration": "Jalopy Taxi ( Joe's Junk Career )",
+    "Description": "Last stop: the junkyard!",
+    "Drivetrain": "FWD",
+    "Fuel Type": "Gasoline",
+    "Power": 91,
+    "Torque": 92,
+    "Value": 2150,
+    "Weight": 1397,
+    "Years": {
+      "max": 2000,
+      "min": 1996
+    }  
+}
+
+

@@ -1,0 +1,97 @@
+{
+  "id": "delivery",
+  "order": 80,
+  "refreshOffers": true,
+  "branch": "logistics",
+  "branchLabel": "Logistics",
+  "branchOrder": 20,
+  "availability": [
+    "overhaul_jobs_quarry_quarry",
+    "overhaul_career_logistics_general"
+  ],
+  "marketLeaves": [
+    {
+      "id": "delivery_parcel",
+      "label": "Parcels",
+      "npcJobsPerDay": 8.0,
+      "marketOrder": 10,
+      "earningTags": [
+        "delivery_parcel",
+        "deliveryReward"
+      ],
+      "earningOrder": 140
+    },
+    {
+      "id": "delivery_vehicle",
+      "label": "Car Jockeys",
+      "npcJobsPerDay": 4.5,
+      "marketOrder": 20,
+      "earningTags": [
+        "delivery_vehicle",
+        "vehicleDelivery"
+      ],
+      "earningOrder": 80
+    },
+    {
+      "id": "delivery_trailer",
+      "label": "Trailers",
+      "npcJobsPerDay": 4.0,
+      "marketOrder": 30,
+      "earningTags": [
+        "delivery_trailer"
+      ],
+      "earningOrder": 90
+    },
+    {
+      "id": "delivery_fluid",
+      "label": "Fluids",
+      "npcJobsPerDay": 3.0,
+      "marketOrder": 40,
+      "earningTags": [
+        "delivery_fluid"
+      ],
+      "earningOrder": 100
+    },
+    {
+      "id": "delivery_dryBulk",
+      "label": "Dry Bulk",
+      "npcJobsPerDay": 3.0,
+      "marketOrder": 50,
+      "earningTags": [
+        "delivery_dryBulk"
+      ],
+      "earningOrder": 110
+    },
+    {
+      "id": "delivery_cement",
+      "label": "Cement",
+      "npcJobsPerDay": 2.5,
+      "marketOrder": 60,
+      "earningTags": [
+        "delivery_cement"
+      ],
+      "earningOrder": 120
+    },
+    {
+      "id": "delivery_cash",
+      "label": "Cash Runs",
+      "npcJobsPerDay": 2.5,
+      "marketOrder": 70,
+      "earningTags": [
+        "delivery_cash"
+      ],
+      "earningOrder": 130
+    }
+  ],
+  "challengeDisplay": [
+    {
+      "order": 40,
+      "name": "Delivery - ",
+      "category": "Delivery",
+      "prefix": "delivery_",
+      "suffixStart": 10
+    }
+  ],
+  "source": "delivery_module",
+  "keys": ["delivery_parcel", "delivery_vehicle", "delivery_trailer", "delivery_fluid", "delivery_dryBulk", "delivery_cement", "delivery_cash"]
+}

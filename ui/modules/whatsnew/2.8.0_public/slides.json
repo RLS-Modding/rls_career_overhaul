@@ -1,0 +1,76 @@
+{
+  "label": "v2.8.0 Public Release",
+  "continueLabel": "Continue",
+  "loadingLabel": "Loading career...",
+  "dontShowLabel": "Don't show again",
+  "slides": [
+    {
+      "kind": "intro",
+      "image": "west-coast.jpg",
+      "eyebrow": "What's New",
+      "title": "RLS Career Overhaul v2.8.0",
+      "subtitle": "Public Release",
+      "summary": "The biggest changes since v2.7.2: smoother driving, better jobs and clearer money.",
+      "contentsLabel": "In this update"
+    },
+    {
+      "image": "race-car.jpg",
+      "textSide": "top-left",
+      "kicker": "Your career, your controls",
+      "title": "Your career, your way",
+      "summary": "Your own game mode, saves and West Coast map. Updated for BeamNG.drive 0.40.3.",
+      "facts": [
+        "Import old careers and keep the originals",
+        "Use a controller across career menus and shops",
+        "Choose your phone button in the intro",
+        "Track income and spending in the new Wallet app",
+        "See your money, car and skills on Pause Home"
+      ]
+    },
+    {
+      "image": "bus.jpg",
+      "textSide": "top-left",
+      "kicker": "Jobs and deliveries",
+      "title": "Better jobs and deliveries",
+      "summary": "Find work, manage your loads and keep your progress.",
+      "facts": [
+        "Find suitable work faster in Job Broker",
+        "Group matching jobs in My Loads",
+        "Keep delivery progress and pickups through reloads",
+        "Choose fluid quantities before loading",
+        "Start shifts at your employer's depot",
+        "Seated passengers and more natural taxi rides"
+      ]
+    },
+    {
+      "image": "off-road.jpg",
+      "textSide": "top-left",
+      "kicker": "Cars, businesses and events",
+      "title": "Cars, workshops and events",
+      "summary": "Better buying, clearer workshop choices and lasting records.",
+      "facts": [
+        "Visit the auction hall or sell up to five cars",
+        "Keep hauled cars with you through map travel",
+        "Stored engines and fleet cars keep their condition",
+        "Clearer engine prices and accurate certification limits",
+        "Choose which car to tune at tuning tents",
+        "See event records and the car that set them"
+      ]
+    },
+    {
+      "image": "drift.jpg",
+      "textSide": "top-left",
+      "kicker": "Speed, saves and everyday fixes",
+      "title": "Smoother driving. Safer saves.",
+      "summary": "Lighter menus, less background work and better save protection.",
+      "facts": [
+        "Faster profiles, phone, garage and Job Broker",
+        "Smaller logistics saves keep your accepted jobs",
+        "Four autosaves and safer save recovery",
+        "Damage stays accurate through reloads",
+        "Track career activity in Logbook History",
+        "Reliable traffic, parking and map weather"
+      ]
+    }
+  ]
+}

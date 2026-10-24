@@ -1,23 +1,22 @@
-<html ng-app="gaugesScreen">
+<html>
 
 <head>
-    <script src="/ui/lib/ext/angular/angular.js"></script>
     <script src="racetec.js"></script>
     <link type="text/css" rel="stylesheet" href="racetec.css">
     <title></title>
 </head>
-<body ng-controller="GaugesScreenController as gaugeCtrl">
+<body>
     <div id="screen">
             <div id="Speed" class="ui-element ui-text">
-                <p class="small-value">{{data.speedVal}}</p>
-                <p class="small-unit">{{data.speedUnit}}</p>
+                <p class="small-value"></p>
+                <p class="small-unit"></p>
             </div>
             <div id="RPMBlock" class="ui-element ui-text">
-                <p class="small-value">{{data.ripems}}</p>
+                <p class="small-value"></p>
                 <p class="small-unit">RPM</p>
             </div>
            <div id="SpeedSelector" class="ui-element">
-                <p>{{data.gear}}</p>
+                <p></p>
 			</div>
     </div>
 </body>

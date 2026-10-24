@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":400,  
+    "Configuration": "350 USDM (M) ( Joe's Junk Career )",
+    "Description": "This one had seen better days that's for sure.",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 219,
+    "Torque": 222,
+    "Value": 8500,
+    "Weight": 1099,
+    "Years": {
+      "max": 1988,
+      "min": 1981
+    }  
+}
+
+

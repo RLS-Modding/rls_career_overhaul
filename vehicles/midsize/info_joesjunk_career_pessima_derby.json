@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":10000,  
+    "Configuration": "Derby Debby ( Joe's Junk Career )",
+    "Description": "Was prepped for the next derby demolition festival but you can still used it to do groceries and pick up kids from school... If youre brave enough.",
+    "Drivetrain": "FWD",
+    "Fuel Type": "Gasoline",
+    "Power": 149,
+    "Torque": 151,
+    "Value": 2000,
+    "Weight": 1291,
+    "Years": {
+      "max": 2000,
+      "min": 1996
+    }  
+}
+
+

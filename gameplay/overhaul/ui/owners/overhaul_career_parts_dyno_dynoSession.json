@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_career_parts_dyno_dynoSession",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 130,
+    "aliases": [
+      "career_modules_dynoSession"
+    ]
+  }
+}

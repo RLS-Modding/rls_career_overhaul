@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_career_garage_property_propertyMortgage",
+  "order": 1000,
+  "module": "overhaul/career/garage/property/propertyMortgage",
+  "scopes": [],
+  "policyOnly": true,
+  "modulePolicy": {
+    "privateModules": [
+      "overhaul/career/garage/property/money"
+    ]
+  }
+}

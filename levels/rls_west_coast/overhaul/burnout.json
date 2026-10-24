@@ -1,0 +1,20 @@
+{
+  "sitesFile": "burnout.sites.json",
+  "events": [
+    {
+      "eventId": "burnout_fastAuto",
+      "zoneId": "fastAuto",
+      "zoneName": "burnout_zone",
+      "label": "Fast Automotive Burnout Pad",
+      "types": [
+        "burnout",
+        "freeroam"
+      ],
+      "reward": 200,
+      "scoreGoal": 6000,
+      "driftTargetTime": 60,
+      "bestTime": 60,
+      "triggerName": "rls_burnoutTestZone_fastAuto"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "racing",
+  "order": 40,
+  "label": "Racing & Events",
+  "aliases": {
+    "mud": "mudding",
+    "crawl": "crawling",
+    "apexracing": "roadracing"
+  },
+  "children": [
+    {"id": "rally", "label": "Rally", "skillKey": "careerSkills-offroad", "economyKeys": ["rally"]},
+    {"id": "offroad", "label": "Off-Road", "skillKey": "careerSkills-offroad", "economyKeys": ["offroad"]},
+    {"id": "crawling", "label": "Crawling", "skillKey": "careerSkills-offroad", "economyKeys": ["crawling", "crawl"]},
+    {"id": "mudding", "label": "Mudding", "skillKey": "careerSkills-offroad", "economyKeys": ["mudding", "mud"]},
+    {"id": "trail", "label": "Trail (Legacy)", "skillKey": "careerSkills-offroad", "economyKeys": ["trail"]},
+    {"id": "drag", "label": "Drag", "skillKey": "careerSkills-speed", "economyKeys": ["drag"]},
+    {"id": "landspeed", "label": "Top Speed", "skillKey": "careerSkills-speed", "economyKeys": ["landspeed"]},
+    {"id": "drift", "label": "Drift", "skillKey": "careerSkills-mayhem", "economyKeys": ["drift"]},
+    {"id": "demo", "label": "Demolition Derby", "skillKey": "careerSkills-mayhem", "economyKeys": ["demo"]},
+    {"id": "burnout", "label": "Burnout", "skillKey": "careerSkills-mayhem", "economyKeys": ["burnout", "burnoutComp", "freeroam"]},
+    {"id": "oval", "label": "Oval", "skillKey": "careerSkills-circuitRacing", "economyKeys": ["oval"]},
+    {"id": "roadracing", "label": "Road Racing", "skillKey": "careerSkills-circuitRacing", "economyKeys": ["roadracing", "apexracing"]}
+  ]
+}

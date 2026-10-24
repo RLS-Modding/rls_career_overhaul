@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_integration_services_garageMode",
+  "order": 54,
+  "module": "overhaul/integration/services/garageMode",
+  "scopes": [
+    {
+      "id": "services",
+      "order": 17
+    }
+  ]
+}

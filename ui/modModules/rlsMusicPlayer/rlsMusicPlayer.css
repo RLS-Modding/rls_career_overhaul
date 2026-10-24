@@ -1,3 +1,13 @@
+/*
+ * Map, in reading order:
+ * - .rls-mp-host, .rls-mp: player card root and base layout
+ * - Main row: .rls-mp-row-main, .rls-mp-art*, .rls-mp-main-col, .rls-mp-title*, .rls-mp-time*, .rls-mp-bar*
+ * - Playlist picker: .rls-mp-pl-trigger*, .rls-mp-dropdown-flyout, .rls-mp-dd-item*
+ * - Control row: .rls-mp-row-ctrl, .rls-mp-ctrl-*
+ * - Volume flyout and slider: .rls-mp-volume-flyout*, .rls-mp-volume-slider-wrap, .rls-mp-vslider*, .rls-mp-ico-volume
+ * - Icon buttons and glyphs: .rls-mp-icon*, .rls-mp-icon-play, .rls-mp-ico-* (SVG backgrounds for prev, next, play, pause, shuffle, repeat)
+ * - In-UI app mode: .rls-mp-uiapp* container-size overrides, including the @supports (width: 1cqw) block
+ */
 .rls-mp-host {
   position: relative;
   display: block;
@@ -109,10 +119,12 @@
 }
 
 .rls-mp-bar-fill {
+  width: 100%;
   height: 100%;
+  transform-origin: left;
   border-radius: 0.12rem;
   background: linear-gradient(90deg, rgba(249, 115, 22, 0.9), rgba(251, 191, 36, 0.95));
-  transition: width 0.12s linear;
+  transition: transform 0.12s linear;
 }
 
 .rls-mp-pl-trigger {
@@ -326,7 +338,7 @@
   outline: none;
 }
 
-.rls-mp-vslider:focus-visible {
+.rls-mp-vslider.focus-visible {
   box-shadow: 0 0 0 2px rgba(240, 242, 245, 0.45);
   border-radius: 0.3rem;
 }

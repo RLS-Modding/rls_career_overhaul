@@ -1,0 +1,6 @@
+{
+  "id": "bus",
+  "order": 230,
+  "extension": "overhaul_jobs_bus",
+  "definition": "overhaul/jobs/bus/activity"
+}

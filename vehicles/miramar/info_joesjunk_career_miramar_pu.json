@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":10000,  
+    "Configuration": "Step-Mother Special ( Joe's Junk Career )",
+    "Description": "Special Miramar with a special seat for your favorite step-mother!",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 116,
+    "Torque": 117,
+    "Value": 1950,
+    "Weight": 1010,
+    "Years": {
+      "max": 1968,
+      "min": 1967
+    }  
+}
+
+

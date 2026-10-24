@@ -74,9 +74,9 @@
     "name":"Yellow",
     "roughness":1
   },
-  "defaultPaintName1":"Yellow",
-  "defaultPaintName2":"Yellow",
-  "defaultPaintName3":"Yellow",
+  "defaultPaintName1":"heavy_machinery_yellow",
+  "defaultPaintName2":"heavy_machinery_yellow",
+  "defaultPaintName3":"heavy_machinery_yellow",
   "is_default_config":false,
   "paints":{},
   "pcFilename":"/vehicles/wl40/Montevalle Block Forks Medium.pc",

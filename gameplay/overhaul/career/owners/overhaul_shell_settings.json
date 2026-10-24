@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_shell_settings",
+  "order": 100,
+  "module": "overhaul/shell/settings",
+  "scopes": [
+    {
+      "id": "settings",
+      "order": 1
+    }
+  ]
+}

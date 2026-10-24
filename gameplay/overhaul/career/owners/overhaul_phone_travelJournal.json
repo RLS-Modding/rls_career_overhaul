@@ -1,0 +1,16 @@
+{
+  "id": "overhaul_phone_travelJournal",
+  "order": 93,
+  "module": "overhaul/phone/travelJournal",
+  "scopes": [
+    {
+      "id": "bootManual",
+      "order": 16
+    },
+    {
+      "id": "late",
+      "order": 5
+    }
+  ],
+  "beforeCareerStop": true
+}

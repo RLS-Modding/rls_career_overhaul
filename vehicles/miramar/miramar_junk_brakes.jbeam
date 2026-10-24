@@ -1,0 +1,123 @@
+{
+"miramar_junk_brake_F": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Worn Front Drum Brakes",
+        "value":20,
+    },
+    "slotType" : "miramar_brake_F",
+    "slots": [
+        ["type", "default", "description"],
+        ["brakepad_F","brakepad_F", "Front Brake Shoes", {"coreSlot":true}],
+    ],
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        //brake discs
+        ["miramar_brakedrum_FR", ["wheel_FR","wheelhub_FR"], ["miramar"]],
+        ["miramar_brakedrum_FL", ["wheel_FL","wheelhub_FL"], ["miramar"]],
+    ],
+    "pressureWheels": [
+        ["name","hubGroup","group","node1:","node2:","nodeS","nodeArm:","wheelDir"],
+        //brakes
+        {"brakeTorque":"$=$brakestrength*650"},
+        {"brakeInputSplit":1},
+        {"brakeSplitCoef":1},
+        {"parkingTorque":0},
+        {"brakeSpring":100},
+
+        //brake thermals
+        {"enableBrakeThermals":true},
+        {"brakeDiameter":0.23},
+        {"brakeMass":3.75},
+        {"brakeType":"drum"},
+        {"rotorMaterial":"steel"},
+        {"brakeVentingCoef":0.5},
+        //abs
+        {"absSlipRatioTarget":0.2},
+        //brake sounds
+        {"squealCoefNatural": 4.0, "squealCoefLowSpeed": 3.5}
+    ],
+},
+"miramar_junk_brake_R": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Worn Rear Drum Brakes",
+        "value":15,
+    },
+    "slotType" : "miramar_brake_R",
+    "slots": [
+        ["type", "default", "description"],
+        ["brakepad_R","brakepad_R", "Rear Brake Shoes", {"coreSlot":true}],
+    ],
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        //brake discs
+        ["miramar_brakedrum_RR", ["wheel_RR","wheelhub_RR"], ["miramar"]],
+        ["miramar_brakedrum_RL", ["wheel_RL","wheelhub_RL"], ["miramar"]],
+    ],
+    "pressureWheels": [
+        ["name","hubGroup","group","node1:","node2:","nodeS","nodeArm:","wheelDir"],
+        //brakes
+        {"brakeTorque":"$=$brakestrength*350"},
+        {"brakeInputSplit":0.50},
+        {"brakeSplitCoef":0.25},
+        {"parkingTorque":1000},
+        {"brakeSpring":85},
+
+        //brake thermals
+        {"enableBrakeThermals":true},
+        {"brakeDiameter":0.20},
+        {"brakeMass":2.75},
+        {"brakeType":"drum"},
+        {"rotorMaterial":"steel"},
+        {"brakeVentingCoef":0.3},
+        //abs
+        {"absSlipRatioTarget":0.15},
+        //brake sounds
+        {"squealCoefNatural": 2.9, "squealCoefLowSpeed": 2.5}
+    ],
+},
+"miramar_junk_brake_F_disc": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Worn Front Disc Brakes",
+        "value":25,
+    },
+    "slotType" : "miramar_brake_F",
+    "slots": [
+        ["type", "default", "description"],
+        ["brakepad_F","brakepad_F", "Front Brake Pads", {"coreSlot":true}],
+    ],
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        //brake discs
+        ["brake_hub_4l",                 ["wheel_FR","wheelhub_FR"],      [], {"pos":{"x":-0.625, "y":-1.26, "z":0.35}, "scale":{"x":1.0, "y":1.0,  "z":1.0},  "rot":{"x": 0,   "y":0,   "z":0  }}],
+        ["brake_hub_4l",                 ["wheel_FL","wheelhub_FL"],      [], {"pos":{"x" :0.625, "y":-1.26, "z":0.35}, "scale":{"x":0.8, "y":1.0,  "z":1.0},  "rot":{"x": 0,   "y":0,   "z":180}}],
+        ["brake_disc_plain",             ["wheel_FR","wheelhub_FR"],      [], {"pos":{"x":-0.64,  "y":-1.26, "z":0.35}, "scale":{"x":0.8, "y":0.79, "z":0.79}, "rot":{"x": 0,   "y":0,   "z":0  }}],
+        ["brake_disc_plain",             ["wheel_FL","wheelhub_FL"],      [], {"pos":{"x": 0.64,  "y":-1.26, "z":0.35}, "scale":{"x":0.8, "y":0.79, "z":0.79}, "rot":{"x": 180, "y":0,   "z":0  }}],
+        ["brake_caliper_standard_plain", ["miramar_hub_FR","wheelhub_FR"],[], {"pos":{"x":-0.64,  "y":-1.26, "z":0.35}, "scale":{"x":0.8, "y":0.72, "z":0.72}, "rot":{"x": 0,   "y":0,   "z":0  }}],
+        ["brake_caliper_standard_plain", ["miramar_hub_FL","wheelhub_FL"],[], {"pos":{"x": 0.64,  "y":-1.26, "z":0.35}, "scale":{"x":0.8, "y":0.72, "z":0.72}, "rot":{"x": 0,   "y":180, "z":0  }}],
+    ],
+    "pressureWheels": [
+        ["name","hubGroup","group","node1:","node2:","nodeS","nodeArm:","wheelDir"],
+        //brakes
+        {"brakeTorque":"$=$brakestrength*600"},
+        {"brakeInputSplit":1},
+        {"brakeSplitCoef":1},
+        {"parkingTorque":0},
+        {"brakeSpring":90},
+
+        //brake thermals
+        {"enableBrakeThermals":true},
+        {"brakeDiameter":0.22},
+        {"brakeMass":4.4},
+        {"brakeType":"disc"},
+        {"rotorMaterial":"steel"},
+        {"brakeVentingCoef":0.5},
+        //abs
+        {"absSlipRatioTarget":0.2},
+        //brake sounds
+        {"squealCoefNatural": 3.2, "squealCoefLowSpeed": 3.0}
+    ],
+},
+}

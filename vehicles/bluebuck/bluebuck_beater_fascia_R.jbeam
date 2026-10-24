@@ -1,0 +1,82 @@
+{"bluebuck_beater_fascia_R":,
+{
+    "information":{
+        "authors":"BeamNG",
+        "name":"Damaged Rear Fascia",
+        "value":35,
+    },
+
+    "slotType" : "bluebuck_fascia_R",
+
+    "slots":[
+        ["type","default","description"],
+        ["bluebuck_licenseplate_R","bluebuck_licenseplate_R","Rear License Plate"],
+        ["bluebuck_lettering_fascia_R","bluebuck_lettering_fascia_R","Rear Fascia Lettering"],
+    ],
+
+    "flexbodies": [
+        ["mesh","[group]:","nonFlexMaterials"],
+        ["bluebuck_beater_fascia_R",["bluebuck_body"]],
+        {"deformGroup":"taillight_R_break", "deformMaterialBase":"bluebuck_lights", "deformMaterialDamaged":"bluebuck_lights_dmg"},
+        ["bluebuck_taillight_R", ["bluebuck_body"],[]{"deformSound":"event:>Destruction>Vehicle>Glass>glassbreaksound1", "deformVolume":0.5}],
+        {"deformGroup":"taillight_L_break", "deformMaterialBase":"bluebuck_lights", "deformMaterialDamaged":"bluebuck_lights_dmg"},
+        ["bluebuck_taillight_L", ["bluebuck_body"],[]{"deformSound":"event:>Destruction>Vehicle>Glass>glassbreaksound2", "deformVolume":0.5}],
+        {"deformGroup":"", "deformationTriggerRatio":""},
+    ],
+    "props": [
+        ["func"      , "mesh"              , "idRef:", "idX:", "idY:"            , "baseRotation"        , "rotation"                 , "translation"        , "min", "max", "offset", "multiplier"],
+        {
+            "lightInnerAngle":0,
+            "lightOuterAngle":120,
+            "lightRange":8,
+            "lightColor":{"r":255, "g":50, "b":0, "a":255},
+            "lightAttenuation":{"x":0, "y":0, "z":0},
+            "lightCastShadows":false,
+            "flareName":"vehicleBrakeLightFlare",
+        },
+        //lower
+        ["signal_R" ,         "SPOTLIGHT"        , "tb9rr", "tb9r", "tb5rr", {"x":-10, "y":60, "z":20} , {"x":0, "y":0, "z":0}    , {"x":0, "y":0, "z":0}, 0, 0, 0, 1, {"baseTranslation":{"x":-0.1, "y":0.35, "z":-0.01},"flareScale":0.05,"lightBrightness":0.03,"deformGroup":"taillight_R_break"}],
+        ["signal_L" ,         "SPOTLIGHT"        , "tb9ll", "tb9l", "tb5ll", {"x":190, "y":60, "z":-20} , {"x":0, "y":0, "z":0}    , {"x":0, "y":0, "z":0}, 0, 0, 0, 1, {"baseTranslation":{"x":-0.1, "y":0.35, "z":0.01},"flareScale":0.05,"lightBrightness":0.03,"deformGroup":"taillight_L_break"}],
+        //upper
+        ["brake" ,         "SPOTLIGHT"        , "tb9rr", "tb9r", "tb5rr", {"x":-10, "y":60, "z":20} , {"x":0, "y":0, "z":0}    , {"x":0, "y":0, "z":0}, 0, 0, 0, 1, {"baseTranslation":{"x":-0.08, "y":0.7, "z":-0.01},"flareScale":0.07,"lightBrightness":0.06,"deformGroup":"taillight_R_break"}],
+        ["brake" ,         "SPOTLIGHT"        , "tb9ll", "tb9l", "tb5ll", {"x":190, "y":60, "z":-20} , {"x":0, "y":0, "z":0}    , {"x":0, "y":0, "z":0}, 0, 0, 0, 1, {"baseTranslation":{"x":-0.08, "y":0.7, "z":0.01},"flareScale":0.07,"lightBrightness":0.06,"deformGroup":"taillight_L_break"}],
+        ["lowhighbeam" ,         "SPOTLIGHT"        , "tb9rr", "tb9r", "tb5rr", {"x":-10, "y":60, "z":20} , {"x":0, "y":0, "z":0}    , {"x":0, "y":0, "z":0}, 0, 0, 0, 1, {"baseTranslation":{"x":-0.08, "y":0.7, "z":-0.01},"flareScale":0.05,"lightBrightness":0.03,"lightRange":10,"deformGroup":"taillight_R_break"}],
+        ["lowhighbeam" ,         "SPOTLIGHT"        , "tb9ll", "tb9l", "tb5ll", {"x":190, "y":60, "z":-20} , {"x":0, "y":0, "z":0}    , {"x":0, "y":0, "z":0}, 0, 0, 0, 1, {"baseTranslation":{"x":-0.08, "y":0.7, "z":0.01},"flareScale":0.05,"lightBrightness":0.03,"lightRange":10,"deformGroup":"taillight_L_break"}],
+        //reverse
+        {
+            "lightInnerAngle":0,
+            "lightOuterAngle":120,
+            "lightRange":8,
+            "lightColor":{"r":255, "g":255, "b":200, "a":255},
+            "lightAttenuation":{"x":0, "y":1, "z":1},
+            "lightCastShadows":false,
+            "flareName":"vehicleReverseLightFlare",
+            "cookieName":"art/special/BNG_light_cookie_headlight.dds"
+            "texSize":512,
+            "shadowSoftness":0.5,
+        },
+        //reverse lights
+        ["reverse" ,         "SPOTLIGHT"        , "tb9ll", "tb9l", "tb5ll", {"x":180, "y":-60, "z":20} , {"x":0, "y":0, "z":0}    , {"x":0, "y":0, "z":0}, 0, 0, 0, 1, {"baseTranslation":{"x":-0.1, "y":0.35, "z":-0.01},"flareScale":0.05,"lightBrightness":0.03,"deformGroup":"taillight_L_break"}],
+        ["reverse" ,         "SPOTLIGHT"        , "tb9rr", "tb9r", "tb5rr", {"x":0, "y":-60, "z":-20} , {"x":0, "y":0, "z":0}    , {"x":0, "y":0, "z":0}, 0, 0, 0, 1, {"baseTranslation":{"x":-0.1, "y":0.35, "z":0.01},"flareScale":0.05,"lightBrightness":0.03,"deformGroup":"taillight_R_break"}],
+    ],
+    "nodes": [
+          ["id","posX","posY","posZ"],
+          {"selfCollision":true},
+          {"collision":true},
+          {"frictionCoef":0.5},
+          {"nodeMaterial":"|NM_METAL"},
+          {"nodeWeight":1.573},
+          ////Rear Fascia////
+          {"group":"bluebuck_body"},
+          ["tb5r",-0.4, 2.79, 0.81],
+          ["tb5",0.0, 2.8, 0.81],
+          ["tb5l",0.4, 2.79, 0.81],
+          ["tb9rr",-0.69, 2.82, 0.51],
+          ["tb9r",-0.4, 2.86, 0.51],
+          ["tb9",0.0, 2.89, 0.51],
+          ["tb9l",0.4, 2.86, 0.51],
+          ["tb9ll",0.69, 2.82, 0.51],
+          {"group":"none"},
+        ],
+},
+}

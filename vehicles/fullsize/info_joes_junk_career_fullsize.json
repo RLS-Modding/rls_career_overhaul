@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":13000,  
+    "Configuration": "V8 6.9 ( Joe's Junk Career )",
+    "Description": "Well, Grandpa forgot to maintain his car by the looks of it.",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 247,
+    "Torque": 250,
+    "Value": 2250,
+    "Weight": 1655,
+    "Years": {
+      "max": 1995,
+      "min": 1990
+    }  
+}
+
+

@@ -1,0 +1,5 @@
+{
+  "id": "hiredCab",
+  "order": 0,
+  "definition": "overhaul/integration/taxi/sponsorService"
+}

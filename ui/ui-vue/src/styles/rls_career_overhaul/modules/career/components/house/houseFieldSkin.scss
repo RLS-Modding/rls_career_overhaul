@@ -1,0 +1,122 @@
+// House .stepper / .field look for the game's BngInput (.bng-input root and its inner parts).
+// Used by the number box HouseSlider embeds (BngSlider with-input).
+//   house-bng-input-root:            include in the rule that matches the .bng-input root element.
+//   house-bng-input-parts($root):    include at the scoped component level; $root is the selector of the
+//                                    .bng-input inside the :deep() ("" when the root is this component's root).
+
+@mixin house-bng-input-root {
+  height: 2.35em;
+  font-size: 1em;
+  font-family: "Overpass", var(--fnt-defs, sans-serif);
+  color: #fff;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.1));
+  border-radius: var(--radius-panel, 0.5em);
+  background: rgba(0, 0, 0, 0.3);
+  transition: box-shadow 0.12s;
+
+  &:focus-within,
+  &:has(.focus-visible) {
+    box-shadow: var(--focus, 0 0 0 1.5px rgba(14, 14, 16, 0.95), 0 0 0 3.5px #ff6600);
+  }
+  // the field draws the house ring; hide the game's controller frame on the input inside
+  .focus-visible::before {
+    display: none !important;
+  }
+  &.bng-input-invalid {
+    border-color: rgba(248, 113, 113, 0.6);
+  }
+  &[disabled] {
+    opacity: 0.45;
+  }
+}
+
+@mixin house-bng-input-parts($root: "") {
+  // the field is the frame: inner parts go transparent and lose the white/orange underline
+  :deep(#{$root} .input-container),
+  :deep(#{$root} .prefix),
+  :deep(#{$root} .suffix),
+  :deep(#{$root} .trailing-icon),
+  :deep(#{$root} .leading-icon) {
+    background: transparent;
+    border-radius: 0;
+    &::before {
+      display: none;
+    }
+  }
+  :deep(#{$root} .input-container) {
+    padding: 0.12em 0.6em 0; // Overpass sits high
+  }
+  // no native number spinner (Chromium shows a light up/down box on hover); arrows/wheel still step
+  :deep(#{$root} input::-webkit-inner-spin-button),
+  :deep(#{$root} input::-webkit-outer-spin-button) {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
+  }
+  :deep(#{$root} input) {
+    -moz-appearance: textfield;
+    color: #fff;
+    font-family: inherit;
+    font-size: 1em;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    caret-color: var(--accent, #ff6600);
+  }
+  :deep(#{$root} .prefix),
+  :deep(#{$root} .suffix) {
+    padding: 0.12em 0.6em 0 0;
+    color: var(--faint, rgba(255, 255, 255, 0.55));
+    font-size: 0.85em;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  :deep(#{$root} .prefix) {
+    padding: 0.12em 0 0 0.6em;
+  }
+  :deep(#{$root} .external-label),
+  :deep(#{$root} .floating-label) {
+    color: var(--faint, rgba(255, 255, 255, 0.55));
+    font-family: inherit;
+    font-size: 0.85em;
+    font-weight: 600;
+  }
+  :deep(#{$root} .error-message) {
+    color: var(--bad, #fca5a5);
+    font-size: 0.8em;
+    font-weight: 600;
+  }
+
+  // spinner buttons: the Style Guide .stepper-btns column (always shown, hairline divider)
+  :deep(#{$root} .hover-spinner) {
+    opacity: 1;
+    pointer-events: auto;
+    width: 2.1em;
+    border-left: 1px solid var(--line, rgba(255, 255, 255, 0.1));
+  }
+  :deep(#{$root} .hover-spinner .bng-button) {
+    --bng-bg-enabled: transparent;
+    --bng-bg-enabled-opacity: 0;
+    --bng-bg-hover: #fff;
+    --bng-bg-hover-opacity: 0.1;
+    --bng-bg-active: var(--accent, #ff6600);
+    --bng-bg-active-opacity: 0.22;
+    --bng-bg-border-radius: 0;
+    --bng-icon-color: rgba(255, 255, 255, 0.82);
+    font-size: 0.7em;
+  }
+  :deep(#{$root} .hover-spinner .bng-button + .bng-button) {
+    box-shadow: inset 0 1px 0 var(--line, rgba(255, 255, 255, 0.1));
+  }
+  :deep(#{$root} .input-container:has(> .hover-spinner) > input) {
+    padding-right: 2.1em;
+  }
+  :deep(#{$root} .input-spinner .bng-button) {
+    --bng-bg-enabled: transparent;
+    --bng-bg-enabled-opacity: 0;
+    --bng-bg-hover: #fff;
+    --bng-bg-hover-opacity: 0.08;
+    --bng-bg-border-radius: var(--radius-thumb, 0.35em);
+    --bng-icon-color: var(--muted, rgba(255, 255, 255, 0.72));
+  }
+}

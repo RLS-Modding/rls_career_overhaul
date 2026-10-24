@@ -1,0 +1,43 @@
+/* RLS house palette for the insurance UI.
+   The vanilla file defined a navy/blue palette that every insurance component pulls from; the mod
+   keeps the same variable names (so nothing breaks) but maps them to the house neutrals and the
+   single orange accent: near-black grounds, translucent white panels, no blue. */
+:root {
+  /* former blue accents -> house accent / soft accent */
+  --blue-shade-10: rgba(255, 178, 122, 1); /* --accent-soft */
+  --blue-shade-20: rgba(255, 102, 0, 1); /* --accent */
+  --blue-shade-40: rgba(255, 122, 31, 1); /* --accent-hover */
+  /* former navy grounds -> near-black / translucent panels */
+  --blue-shade-80: rgba(255, 255, 255, 0.1);
+  --blue-shade-100: rgba(21, 21, 23, 0.94);
+
+  --orange-shade-10: rgba(255, 122, 31, 1);
+  --orange-shade-20: rgba(255, 102, 0, 1);
+  --orange-shade-50: rgba(204, 82, 0, 1);
+
+  --blue-200: rgba(255, 255, 255, 0.72); /* was light-blue text -> muted white */
+  --blue-300: rgba(255, 255, 255, 0.14);
+  --blue-400: rgba(255, 255, 255, 0.1);
+  --blue-500: rgba(255, 255, 255, 0.06);
+  --blue-600: rgba(21, 21, 23, 0.94);
+
+  --grey-200: rgba(255, 255, 255, 0.72);
+  --grey-300: rgba(255, 255, 255, 0.1);
+  --grey-400: rgba(255, 255, 255, 0.06);
+
+  --green-300: rgba(134, 239, 172, 1); /* --ok-ink */
+  --green-400: rgba(74, 222, 128, 1); /* --ok */
+  --green-500: rgba(74, 222, 128, 0.12);
+
+  --red-400: rgba(252, 165, 165, 1); /* --bad */
+  --red-500: rgba(185, 28, 28, 1); /* --danger */
+
+  --yellow-400: rgba(253, 230, 138, 1); /* --money */
+  --yellow-500: rgba(251, 191, 36, 1); /* --warn */
+
+  /* premium/signature perks stay distinct but warm instead of purple */
+  --purple-500: rgba(253, 230, 138, 1);
+  --purple-600: rgba(251, 191, 36, 1);
+  --purple-800: rgba(253, 230, 138, 0.14);
+  --purple-900: rgba(253, 230, 138, 0.1);
+}

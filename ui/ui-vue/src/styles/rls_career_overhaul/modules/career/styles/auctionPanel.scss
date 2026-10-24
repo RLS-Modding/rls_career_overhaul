@@ -1,0 +1,174 @@
+// Shared expanded and collapsed auction surfaces. Keep house styling here.
+.ua-panel {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 0.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(8, 10, 14, 0.92);
+  color: #f5f7fa;
+  box-shadow: 0 0.8rem 2.4rem rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+  overflow-x: visible;
+  overflow-y: auto;
+  // Focus and scrollIntoView keep rows clear of the pinned action footer.
+  scroll-padding-bottom: 2.8rem;
+}
+
+.ua-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  user-select: none;
+  cursor: move;
+  touch-action: none;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+}
+
+.ua-header-left {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.ua-title {
+  font-size: 0.88rem;
+  font-weight: 800;
+  letter-spacing: 0.04rem;
+  text-transform: uppercase;
+}
+
+.ua-subtitle {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.ua-phase-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.ua-phase-badge.phase-bidding {
+  background: rgba(245, 122, 30, 0.2);
+  color: #f5a623;
+}
+
+.ua-bid-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.6rem;
+  border-radius: 0.45rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ua-bid-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.ua-bid-amount-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.ua-bid-amount-wrap.waiting {
+  align-items: center;
+}
+
+.ua-bid-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.02rem;
+}
+
+.ua-bid-amount {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.01rem;
+}
+
+.ua-bid-leader-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+}
+
+.ua-bid-waiting-text {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.ua-bid-leader-indicator {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ua-bid-leader-wrap.leader-player .ua-bid-leader-indicator {
+  background: #50c878;
+  box-shadow: 0 0 5px rgba(80, 200, 120, 0.6);
+}
+
+.ua-bid-leader-wrap.leader-player .ua-bid-leader-name {
+  color: #50c878;
+  font-weight: 700;
+}
+
+.ua-bid-leader-wrap.leader-npc .ua-bid-leader-indicator {
+  background: #e85454;
+  box-shadow: 0 0 5px rgba(232, 84, 84, 0.5);
+}
+
+.ua-bid-leader-wrap.leader-npc .ua-bid-leader-name {
+  color: #e8a054;
+}
+
+.ua-timer {
+  position: relative;
+  width: 3.2rem;
+  height: 3.2rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ua-timer-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.ua-timer-text {
+  font-size: 0.82rem;
+  font-weight: 800;
+  position: relative;
+  z-index: 1;
+}
+
+.ua-timer.timer-safe {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.ua-timer.timer-warning {
+  color: #f5c81e;
+}

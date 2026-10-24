@@ -1,0 +1,22 @@
+{
+  "id": "overhaul_career_parts_painting",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 490,
+    "aliases": [
+      "career_modules_painting"
+    ]
+  },
+  "routes": [
+    {
+      "name": "overhaul.computer.painting",
+      "order": 5,
+      "overlay": true,
+      "meta": {
+        "deferAutosave": true
+      }
+    }
+  ]
+}

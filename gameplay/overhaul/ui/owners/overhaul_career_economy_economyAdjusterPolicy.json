@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_career_economy_economyAdjusterPolicy",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 140,
+    "aliases": [
+      "career_modules_economyAdjusterPolicy"
+    ]
+  }
+}

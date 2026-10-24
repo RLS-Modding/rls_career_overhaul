@@ -1,48 +1,36 @@
-angular.module('gaugesScreen', [])
-.controller('GaugesScreenController', function($scope, $window) {
-  var unit = null;
-  $scope.data = {}
-  // overwriting plain javascript function so we can access from within the controller
-  $window.setUnits = (data) => {
-    unit = data.unitType;
+(function () {
+  var fields = null
+
+  function text(value) {
+    return value === undefined || value === null ? '' : String(value)
   }
-  
-  $window.updateData = (data) => {
-    $scope.$evalAsync(function() {
-	
-	$scope.data.speedVal = "Bork"
-	$scope.data.gear = "Bork"
-	$scope.data.ripems = "Bork"
-		
 
-    if (data.gear === -1) {
-		$scope.data.gear = "R";
+  function getFields() {
+    if (!fields) {
+      fields = {
+        speedVal: document.querySelector('#Speed .small-value'),
+        speedUnit: document.querySelector('#Speed .small-unit'),
+        ripems: document.querySelector('#RPMBlock .small-value'),
+        gear: document.querySelector('#SpeedSelector p')
+      }
     }
-    else if (data.gear === -2) {
-		$scope.data.gear = "R2";
-    }
-    else if (data.gear === 0) {
-		$scope.data.gear = "N";
-    }
-    else {
-		$scope.data.gear = data.gear;
-    }
+    return fields
+  }
 
-	$scope.data.ripems = data.ripems;
+  window.setUnits = function () {}
 
-    $scope.data.time = data.time;
+  window.updateData = function (data) {
+    var f = getFields()
+    if (!f.gear) { fields = null; return }
 
-      // checking if metric gauge cluster is being used
-		$scope.data.speedVal = (data.speed * 3.6).toFixed(0);
-        $scope.data.speedUnit = "km/h";
-		
-        $scope.data.oilTempVal = data.oiltemp
-		$scope.data.tempUnit = "C";
-		
-        $scope.data.fuelQty = Math.floor(data.fuel);
-        $scope.data.fuelUnit = "L";
+    var gear = data.gear
+    if (gear === -1) gear = 'R'
+    else if (gear === -2) gear = 'R2'
+    else if (gear === 0) gear = 'N'
 
-    }
-	)
- }
-});    
+    f.gear.textContent = text(gear)
+    f.ripems.textContent = text(data.ripems)
+    f.speedVal.textContent = (data.speed * 3.6).toFixed(0)
+    f.speedUnit.textContent = 'km/h'
+  }
+})()

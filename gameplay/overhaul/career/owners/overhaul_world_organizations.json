@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_world_organizations",
+  "order": 125,
+  "module": "overhaul/world/organizations",
+  "scopes": [
+    {
+      "id": "services",
+      "order": 3
+    }
+  ]
+}

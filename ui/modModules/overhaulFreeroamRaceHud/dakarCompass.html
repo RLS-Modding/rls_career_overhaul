@@ -1,0 +1,27 @@
+<link rel="stylesheet" type="text/css" href="/ui/modModules/overhaulFreeroamRaceHud/dakarCompass.css" />
+
+<div class="dkc-overlay" style="visibility: hidden" ng-style="{visibility: visible ? 'visible' : 'hidden'}">
+  <div class="dkc-card" ng-if="visible" bng-blur="true" ng-style="cardStyle()" ng-mousedown="startDrag($event)">
+    <div class="dkc-accent"></div>
+    <div class="dkc-head">
+      <div class="dkc-pre">Dakar Compass</div>
+      <div class="dkc-current">{{ payload.vehicleHeadingText || '---' }}</div>
+    </div>
+    <div class="dkc-rose">
+      <div class="dkc-tick dkc-n">N</div>
+      <div class="dkc-tick dkc-e">E</div>
+      <div class="dkc-tick dkc-s">S</div>
+      <div class="dkc-tick dkc-w">W</div>
+      <div class="dkc-needle" ng-style="needleStyle()"></div>
+    </div>
+    <div class="dkc-clue">
+      <span>Clue</span>
+      <strong>{{ payload.clueHeadingText || '---' }}</strong>
+    </div>
+    <div class="dkc-route">
+      <span>{{ payload.checkpointIndex || 0 }}/{{ payload.checkpointCount || 0 }}</span>
+      <span>{{ payload.distanceText || '' }}</span>
+    </div>
+    <div class="dkc-name">{{ payload.checkpointName || 'Checkpoint' }}</div>
+  </div>
+</div>

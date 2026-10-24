@@ -1,0 +1,10 @@
+{
+  "id": "overhaul_dev_debug_vehicleShoppingDebug",
+  "order": 100,
+  "exports": {
+    "namespace": false,
+    "aliases": [
+      "career_modules_debug_vehicleShoppingDebug"
+    ]
+  }
+}

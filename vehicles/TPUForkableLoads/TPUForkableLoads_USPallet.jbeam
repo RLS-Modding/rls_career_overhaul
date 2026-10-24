@@ -13,7 +13,7 @@
     "flexbodies":[
          ["mesh", "[group]:", "nonFlexMaterials"],
         {"deformGroup":""},
-        ["woodpallet", ["pallet"]]
+        ["rls_tpu_woodpallet", ["pallet"]]
 	],
     "refNodes":[
        ["ref:", "back:", "left:", "up:", "leftCorner:", "rightCorner:"],	
@@ -261,7 +261,7 @@
     "slotType":"TPUUSPalletLoad",
     "flexbodies":[
         ["mesh", "[group]:", "nonFlexMaterials"],
-        ["crate_cola", ["load"]]
+        ["rls_tpu_crate_cola", ["load"]]
 	],
 	"slots":[
         ["type", "default", "description"],

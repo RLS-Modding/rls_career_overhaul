@@ -1,9 +1,0 @@
-@mixin pulsing-simple {
-  @keyframes pulsing {
-    50% {
-      opacity: 0.5;
-    }
-  }
-
-  animation: pulsing 1s ease-in-out infinite;
-}

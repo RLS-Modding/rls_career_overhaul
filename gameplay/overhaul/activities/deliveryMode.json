@@ -1,0 +1,6 @@
+{
+  "id": "deliveryMode",
+  "order": 400,
+  "extension": "overhaul_career_logistics_general",
+  "definition": "overhaul/career/logistics/general/deliveryActivity"
+}

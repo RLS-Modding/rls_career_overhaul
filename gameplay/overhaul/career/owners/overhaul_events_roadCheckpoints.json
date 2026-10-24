@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_events_roadCheckpoints",
+  "order": 38,
+  "module": "overhaul/events/roadCheckpoints",
+  "scopes": [
+    {
+      "id": "children",
+      "order": 38,
+      "parent": "overhaul_events_host"
+    }
+  ]
+}

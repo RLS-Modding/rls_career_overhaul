@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_events_derby_ui",
+  "order": 23,
+  "module": "overhaul/events/derby/ui",
+  "scopes": [
+    {
+      "id": "children",
+      "order": 23,
+      "parent": "overhaul_events_host"
+    }
+  ]
+}

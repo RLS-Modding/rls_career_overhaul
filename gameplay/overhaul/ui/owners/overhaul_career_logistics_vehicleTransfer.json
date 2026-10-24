@@ -1,0 +1,22 @@
+{
+  "id": "overhaul_career_logistics_vehicleTransfer",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "aliases": []
+  },
+  "acquisitions": [
+    {
+      "id": "career.vehicleTransfer",
+      "order": 150,
+      "modes": {
+        "overhaul": true
+      },
+      "extensions": [
+        "overhaul_career_logistics_vehicleTransfer"
+      ],
+      "release": [],
+      "namespace": true
+    }
+  ]
+}

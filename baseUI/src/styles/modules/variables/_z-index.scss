@@ -1,8 +1,0 @@
-// Three main layers:
-//  - default: 0-100,
-//  - middle: 101-200,
-//  - top: 201-300,
-//  - extra: 9001 - 9999; - be really careful using this as it's not the usual way of handling z-index
-$focus: 201;
-$sliderKnob: $focus + 1;
-$popup: 9001;

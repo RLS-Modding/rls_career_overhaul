@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_ui_routes",
+  "order": 109,
+  "module": "overhaul/ui/routes",
+  "scopes": [
+    {
+      "id": "routes",
+      "order": 1
+    }
+  ]
+}

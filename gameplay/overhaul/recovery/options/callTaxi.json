@@ -1,0 +1,19 @@
+{
+  "id": "callTaxi",
+  "owner": "overhaul_integration_services_taxi",
+  "provider": "overhaul/integration/services/taxi/recoveryOptions",
+  "order": 100,
+  "label": "Call a taxi",
+  "labelFunction": "label",
+  "available": "available",
+  "run": "run",
+  "type": "walk",
+  "requiresLevel": true,
+  "menuTag": "quickTravel",
+  "fadeStartSound": "event:>UI>Missions>Vehicle_Recover",
+  "icon": "car",
+  "fadeActive": false,
+  "confirmationText": "Do you want to call a taxi?",
+  "path": "quickTravel/",
+  "noUniqueID": true
+}

@@ -1,0 +1,193 @@
+{
+"moonhawk_beater_tailcone": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Damaged Facelift Rear Fascia",
+        "value":90,
+    },
+    "slotType" : "moonhawk_tailcone",
+    "slots": [
+        ["type", "default", "description"],
+        ["moonhawk_taillight_R","moonhawk_taillight_R","Right Taillight"],
+        ["moonhawk_taillight_L","moonhawk_taillight_L","Left Taillight"],
+        ["moonhawk_bumper_R","moonhawk_bumper_R", "Rear Bumper"],
+        ["moonhawk_lettering_tailcone","moonhawk_lettering_tailcone","Lettering"],
+     ],
+     "flexbodies": [
+         ["mesh", "[group]:", "nonFlexMaterials"],
+         ["moonhawk_beater_tailcone", ["moonhawk_tailcone"]],
+     ],
+     "nodes": [
+         ["id", "posX", "posY", "posZ"],
+         {"group":"moonhawk_tailcone"},
+         {"selfCollision":true}
+         {"collision":true}
+         {"nodeWeight":0.565},
+         {"frictionCoef":0.5},
+         {"nodeMaterial":"|NM_PLASTIC"},
+         //tail cone
+         ["tc1rr",-0.85, 2.585, 0.82],
+         ["tc1r",-0.45, 2.615, 0.755],
+         ["tc1", 0.0, 2.625, 0.755],
+         ["tc1l", 0.45, 2.615, 0.755],
+         ["tc1ll", 0.85, 2.585, 0.82],
+
+         ["tc2rr",-0.80, 2.585, 0.38],
+         ["tc2r",-0.45, 2.665, 0.55],
+         ["tc2", 0.0, 2.675, 0.55],
+         ["tc2l", 0.45, 2.665, 0.55],
+         ["tc2ll", 0.80, 2.585, 0.38],
+
+         //rigidifiers
+         {"group":""},
+         {"collision":false}
+         {"selfCollision":false}
+         ["tc3r",-0.45, 2.32, 0.67],
+         ["tc3l", 0.45, 2.32, 0.67],
+    ],
+    "beams": [
+          ["id1:", "id2:"],
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1, "beamShortBound":1},
+          {"beamSpring":501000,"beamDamp":50},
+          {"beamDeform":25860,"beamStrength":107500},
+          {"deformationTriggerRatio":0.03},
+          {"deformLimitExpansion":1.2},
+
+          //tail cone main shape widthwise
+          {"deformGroup":"taillight_R_break"},
+          ["tc1rr","tc1r"],
+          ["tc2rr","tc2r"],
+          {"deformGroup":"taillight_L_break"},
+          ["tc1l","tc1ll"],
+          ["tc2l","tc2ll"],
+          {"deformGroup":"","deformationTriggerRatio":""},
+          ["tc1r","tc1"],
+          ["tc1","tc1l"],
+          ["tc2r","tc2"],
+          ["tc2","tc2l"],
+
+          //vertical
+          {"deformationTriggerRatio":0.03},
+          {"deformGroup":"taillight_R_break"},
+          ["tc1rr","tc2rr"],
+          ["tc1r","tc2r"],
+          {"deformGroup":"taillight_L_break"},
+          ["tc1l","tc2l"],
+          ["tc1ll","tc2ll"],
+          {"deformGroup":"","deformationTriggerRatio":""},
+          ["tc1","tc2"],
+
+          //crossing
+          {"deformationTriggerRatio":0.03},
+          {"beamDeform":9955,"beamStrength":107500},
+          {"deformLimitExpansion":""},
+          {"deformGroup":"taillight_R_break"},
+          ["tc1rr","tc2r"],
+          ["tc1r","tc2rr"],
+          {"deformGroup":"taillight_L_break"},
+          ["tc1l","tc2ll"],
+          ["tc1ll","tc2l"],
+          {"deformGroup":"","deformationTriggerRatio":""},
+          ["tc1r","tc2"],
+          ["tc1","tc2r"],
+          ["tc1","tc2l"],
+          ["tc1l","tc2"],
+
+          //rigids
+          {"beamDeform":6768,"beamStrength":66200},
+          ["tc1rr","tc1"],
+          ["tc1r","tc1l"],
+          ["tc1","tc1ll"],
+          ["tc2rr","tc2"],
+          ["tc2r","tc2l"],
+          ["tc2","tc2ll"],
+
+          //rigidifiers
+          {"beamDeform":9576,"beamStrength":116200},
+          ["tc3r","tc3l"],
+
+          ["tc3r","tc1rr"],
+          ["tc3r","tc2rr"],
+          ["tc3l","tc1ll"],
+          ["tc3l","tc2ll"],
+
+          ["tc3r","tc1r"],
+          ["tc3r","tc2r"],
+          ["tc3r","tc1"],
+          ["tc3r","tc2"],
+
+          ["tc3l","tc1l"],
+          ["tc3l","tc2l"],
+          ["tc3l","tc1"],
+          ["tc3l","tc2"],
+
+          //attach
+          {"beamSpring":251000,"beamDamp":50},
+          {"beamDeform":8960,"beamStrength":29800},
+          {"deformGroup":"taillight_R_break"},
+          {"breakGroup":"tailcone_R"},
+          ["tc1rr","q6r"],
+          ["tc1r","q6r"],
+          ["tc2rr","q15r"],
+
+          {"deformGroup":"taillight_L_break"},
+          {"breakGroup":"tailcone_L"},
+          ["tc1ll","q6l"],
+          ["tc1l","q6l"],
+          ["tc2ll","q15l"],
+
+          {"deformGroup":""},
+          {"breakGroup":"tailcone_M"},
+          ["tc1r","tb4r"],
+          ["tc1l","tb4l"],
+          ["tc1","tb4"],
+          ["tc2r","tb5r"],
+          ["tc2l","tb5l"],
+          ["tc2","tb5"],
+
+          {"breakGroup":""},
+
+          //tailcone support beams
+          {"beamType":"|SUPPORT", "beamLongBound":8},
+          {"beamSpring":51000,"beamDamp":50},
+          {"beamLimitSpring":1101000,"beamLimitDamp":110},
+          {"beamDeform":23940,"beamStrength":747000},
+          {"breakGroup":"tailcone_supportBeams"},
+          ["tc1rr","q6r"],
+          ["tc2rr","q15r"],
+          ["tc1ll","q6l"],
+          ["tc2ll","q15l"],
+
+          {"beamDeform":7980,"beamStrength":747000},
+          ["tc1r","tb3r"],
+          ["tc1rr","q5r"],
+          ["tc1rr","q11r"],
+          ["tc2rr","q11r"],
+          ["tc2rr","q14r"],
+          ["tc1l","tb3l"],
+          ["tc1ll","q5l"],
+          ["tc1ll","q11l"],
+          ["tc2ll","q11l"],
+          ["tc2ll","q14l"],
+          {"beamDeform":29925,"beamStrength":747000},
+          ["tc2","b9"],
+          {"breakGroup":""},
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+    ],
+    "triangles": [
+            ["id1:","id2:","id3:"],
+            {"group":"moonhawk_tailcone"},
+            {"dragCoef":5.25},
+            ["tc2rr","tc1rr","tc2r"],
+            ["tc1rr","tc1r","tc2r"],
+            ["tc1r","tc2","tc2r"],
+            ["tc1r","tc1","tc2"],
+            ["tc1l","tc2","tc1"],
+            ["tc1l","tc2l","tc2"],
+            ["tc1ll","tc2l","tc1l"],
+            ["tc1ll","tc2ll","tc2l"],
+            {"dragCoef":0}
+            {"group":""}
+    ],
+},
+}

@@ -1,0 +1,6 @@
+{
+  "id": "overhaul_jobs_quarry_zones",
+  "order": 78,
+  "module": "overhaul/jobs/quarry/zones",
+  "scopes": []
+}

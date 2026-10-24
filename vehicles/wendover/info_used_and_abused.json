@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":9500,  
+    "Configuration": "Used & Abused ( Joe's Junk Career )",
+    "Description": "Beater Wendover 3.8 SC with damaged body panels and misc junk parts.",
+    "Drivetrain": "FWD",
+    "Fuel Type": "Gasoline",
+    "Power": 222,
+    "Torque": 225,
+    "Value": 24100,
+    "Weight": 1756,
+    "Years": {
+      "max": 1991,
+      "min": 1987
+    }  
+}
+
+

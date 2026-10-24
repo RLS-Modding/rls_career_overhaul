@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":12000,  
+    "Configuration": "Used & Abused - Cargo ( Joe's Junk Career )",
+    "Description": "Beater Lansdale Cargo with damaged body panels and misc junk parts.",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 154,
+    "Torque": 156,
+    "Value": 13850,
+    "Weight": 1851,
+    "Years": {
+      "max": 2002,
+      "min": 1996
+    }  
+}
+
+

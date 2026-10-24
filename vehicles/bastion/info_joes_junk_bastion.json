@@ -1,0 +1,18 @@
+{
+  "Config Type":"joesjunkcar",
+  "Population":12000,  
+  "Configuration":"Bastion ( Joe's Junk Career )",
+  "Description":"No idea what happened to the rear end of this car.",
+  "Drivetrain":"RWD",
+  "Fuel Type":"Gasoline",
+  "Induction Type":"NA",
+  "Power":180,
+  "Torque":182,
+  "Transmission":"Automatic",
+  "Value":1500,
+  "Weight":1670,
+  "Years":{
+    "max":2022,
+    "min":2016
+  },
+}

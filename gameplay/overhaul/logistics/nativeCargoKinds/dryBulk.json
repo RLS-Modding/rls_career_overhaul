@@ -1,0 +1,5 @@
+{
+  "id": "dryBulk",
+  "order": 30,
+  "handler": "overhaul/lib/logistics/nativeCargoKinds/dryBulk"
+}

@@ -1,0 +1,155 @@
+{
+  "businessType": "racingTeam",
+  "trees": [
+    {
+      "treeId": "team-operations",
+      "treeName": "Team Ops",
+    "description": "Shop-like operations for the racing team: workflow, staffing, and race prep tools.",
+      "icon": "<path d=\"M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5\"/>",
+      "nodes": [
+        {
+          "id": "laptop",
+          "title": "Laptop",
+          "description": "Access the computer from the vehicle bay",
+          "detailedDescription": "Install a laptop in the garage so you can run the Racing Computer without walking up to the office.\n\n**Effect**\n- Adds a second Racing Computer access point down in the vehicle bay.\n- The bay walking marker and bigmap icon appear once unlocked.",
+          "cost": 10000,
+          "xpCost": 800,
+          "maxLevel": 1,
+          "dependencies": []
+        },
+        {
+        "id": "shop-app",
+        "title": "Shop App",
+        "description": "Unlock phone app access for team management workflows",
+        "detailedDescription": "Manage teams and racing operations from the phone.\n\n**Effect**\n- Monitor team workflow and review tasks remotely.\n- Fast access to team ops controls.",
+        "cost": 50000,
+          "xpCost": 1000,
+        "maxLevel": 1,
+          "dependencies": ["laptop"]
+        },
+        {
+          "id": "pit-fuel",
+          "title": "Pit Fuel",
+          "description": "Refuel fleet vehicles at the shop from the stockpile barrels",
+          "detailedDescription": "Stocked fuel barrels in the bay let you top off a team car right from the business computer — no need to drive out to a station.\n\n**Effect**\n- Adds a **Refuel** button next to Paint on the vehicle toolbar.\n- Fuel is billed to the team account at the current regional average price.\n- No insurance discount applies.",
+          "cost": 15000,
+          "xpCost": 1800,
+          "maxLevel": 1,
+          "dependencies": ["laptop"]
+        },
+        
+        {
+          "id": "manager",
+          "title": "Manager",
+          "description": "Auto-book sanctioned races for idle drivers (L2: pick interval + bracket match)",
+          "detailedDescription": "League 2+ — toggle on Races tab or Racing Team phone.\n\n**L1** — Books idle drivers every **30 min** (real time).\n\n**L2** — Interval **10–60 min**; matches fleet car to offer bracket.\n\n**Shop App** — Lock-screen alert when a booked race is ready to spectate (not when it is booked).",
+          "cost": {
+            "base": 100000,
+            "increment": 75000
+          },
+          "xpCost": 2200,
+          "maxLevel": 2,
+          "dependencies": ["shop-app"]
+        }
+      ]
+    },
+    {
+      "treeId": "qol",
+      "treeName": "QOL",
+      "description": "Quality-of-life: logistics and diagnostics independent of the core ops track.",
+      "icon": "<path d=\"M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z\"/>",
+      "nodes": [
+        {
+          "id": "dyno",
+          "title": "Dyno",
+          "description": "Unlock power and weight diagnostics for team prep",
+          "detailedDescription": "Add race preparation data to tune with confidence.\n\n**Effect**\n- Use live power and weight feedback when evaluating build options.",
+          "cost": 6000,
+          "xpCost": 600,
+          "maxLevel": 1,
+          "dependencies": []
+        },
+        {
+          "id": "garageSlots",
+          "title": "Garage Slots",
+          "description": "+1 team vehicle slot and +1 simultaneous pull-out per level (max 2)",
+          "detailedDescription": "Expand the racing team garage workflow.\n\n**Per level**\n- +1 active team vehicle (For Sale accept / fleet roster), up to the physical garage size\n- +1 vehicle you can have pulled out in the business garage at the same time",
+          "cost": {
+            "base": 15000,
+            "increment": 25000
+          },
+          "xpCost": 1600,
+          "maxLevel": 2,
+          "dependencies": []
+        },
+        {
+          "id": "towing",
+          "title": "Towing",
+          "description": "Unlock towing capability for team logistics",
+          "detailedDescription": "Bring cars to the team garage without manual handling.\n\n**Effect**\n- Retrieve off-grid vehicles directly.",
+          "cost": 18000,
+          "xpCost": 900,
+          "maxLevel": 1,
+          "dependencies": ["dyno"]
+        },
+        {
+          "id": "quick-travel",
+          "title": "Taxi",
+          "description": "Taxi to racing team",
+          "detailedDescription": "Unlock taxi travel to your racing team HQ.\n\n**Requires** Dyno (same tier as Towing).\n\n**Effect**\n- **Taxi** option in the recovery menu (same section as garage taxis).\n- Big map quick travel to the racing team facility (after career quick travel is unlocked).",
+          "cost": 18000,
+          "xpCost": 900,
+          "maxLevel": 1,
+          "dependencies": ["dyno"]
+        }
+      ]
+    },
+    {
+      "treeId": "driver",
+      "treeName": "Driver",
+      "description": "Roster depth and rewards from racing",
+      "icon": "<path d=\"M12 11c1.66 0 3-1.34 3-3S13.66 5 12 5 9 6.34 9 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5z\"/>",
+      "nodes": [
+        {
+          "id": "expanded-roster",
+          "title": "Expanded Roster",
+          "description": "+1 driver slot (League 2+)",
+          "detailedDescription": "Room for another driver on the crew.\n\n**Per Level**\n- +1 driver capacity when in League 2+\n- League 1 remains focused on your solo progression",
+          "cost": {
+            "base": 5000,
+            "increment": 10000
+          },
+          "xpCost": 900,
+          "maxLevel": 3,
+          "dependencies": []
+        },
+        {
+          "id": "cooldown",
+          "title": "Reduced Cooldown",
+          "description": "Shorter recovery after sanctioned proxy races",
+          "detailedDescription": "After a driver finishes a sanctioned proxy race, they need recovery time before taking another.\n\n**Base**\n- 15 minutes (career sim time)\n\n**Per level**\n- Reduces that recovery by 5% of the base (stacks with level, max 5 levels)",
+          "cost": {
+            "base": 2750,
+            "increment": 4000
+          },
+            "xpCost": 1200,
+            "maxLevel": 5,
+            "dependencies": ["expanded-roster"]
+        },
+        {
+          "id": "podium-analytics",
+          "title": "Podium Analytics",
+          "description": "+10% team skill XP and driver XP from sanctioned podiums",
+          "detailedDescription": "Data off every finish line.\n\n**Per Level**\n- +10% XP granted to the team and the driver on proxy sanctioned podiums\n- Stacks with sponsor XP bonuses",
+          "cost": {
+            "base": 10000,
+            "increment": 12000
+          },
+          "xpCost": 2000,
+          "maxLevel": 5,
+          "dependencies": ["expanded-roster"]
+        }
+      ]
+    }
+  ]
+}

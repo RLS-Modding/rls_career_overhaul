@@ -39,6 +39,6 @@
   "Value":1500,
   "Weight":1000,
   "Weight/Power":0,
-  "defaultPaintName1":"Pearl White",
-  "defaultPaintName2":"Jet Black"
+  "defaultPaintName1":"pearl_white",
+  "defaultPaintName2":"jet_black"
 }

@@ -1,0 +1,33 @@
+{
+"etk800_beater_roof_sun": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Damaged Roof (Sunroof)",
+        "value":1250,
+    },
+    "slots": [
+        ["type", "default", "description"],
+        ["etk800_glass_sunroof_wagon","etk800_glass_sunroof_wagon", "Sunroof Glass"],
+        ["etk800_headliner_sedan_sunroof","etk800_headliner_sedan_sunroof", "Headliner", {"coreSlot":true}],
+    ],
+    "slotType" : "etk800_roof",
+    "nodes": [
+         //redefine roof node
+         ["id", "posX", "posY", "posZ"],
+         {"group":"etk800_body"},
+         {"selfCollision":true},
+         {"collision":true},
+         {"nodeWeight":2.0},
+         {"frictionCoef":0.5},
+         {"nodeMaterial":"|NM_METAL"},
+         ["rf2r", -0.56, 0.435, 1.36, {"group":["etk800_body","etk800_roof"]}],
+         ["rf2", 0, 0.40, 1.39, {"nodeWeight":1.5,"group":["etk800_body","etk800_roof"]}],
+         ["rf2l", 0.56, 0.435, 1.36, {"group":["etk800_body","etk800_roof"]}],
+    ],
+    "flexbodies": [
+         ["mesh", "[group]:", "nonFlexMaterials"],
+         //body
+         ["etk800_beater_roof_sedan_sunroof", ["etk800_body"]],
+    ],
+},
+}

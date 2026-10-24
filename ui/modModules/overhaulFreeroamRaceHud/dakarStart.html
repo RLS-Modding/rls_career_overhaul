@@ -1,0 +1,25 @@
+<link rel="stylesheet" type="text/css" href="/ui/modModules/overhaulFreeroamRaceHud/dakarStart.css" />
+
+<div class="dks-overlay" ng-if="visible">
+  <div class="dks-card" overhaul-popup="close()" bng-blur="true" ng-style="cardStyle()" ng-mousedown="startDrag($event)">
+    <div class="dks-accent"></div>
+    <div class="dks-head">
+      <div class="dks-pre">{{ payload.levelName || payload.level || 'Current map' }}</div>
+      <div class="dks-title">{{ payload.title || 'Dakar Start' }}</div>
+    </div>
+    <div class="dks-rows">
+      <div class="dks-row">
+        <span>Class</span>
+        <strong>{{ payload.classLabel || 'Unlimited' }}</strong>
+      </div>
+      <div class="dks-row">
+        <span>Repair Kits</span>
+        <strong>{{ payload.repairsLeft || 0 }}</strong>
+      </div>
+    </div>
+    <div class="dks-actions">
+      <button type="button" class="dks-btn dks-btn-primary" ng-click="startEvent()">Start Event</button>
+      <button type="button" class="dks-btn dks-btn-secondary" bng-scoped-nav-autofocus ng-click="close()">Close</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,7 @@
+{
+  "id": "burnout",
+  "order": 30,
+  "callbacks": [
+    {"id": "onBurnoutTireWearUpdate", "extension": "overhaul_events_burnout", "fn": "onBurnoutTireWearUpdate", "guard": "module"}
+  ]
+}

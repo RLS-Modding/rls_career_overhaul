@@ -1,0 +1,18 @@
+{
+  "Config Type":"joesjunkcar",
+  "Population":10000,  
+  "Configuration":"Legran Wagon ( Joe's Junk Career )",
+  "Description":"Weight reduction package.",
+  "Drivetrain":"FWD",
+  "Fuel Type":"Gasoline",
+  "Induction Type":"NA",
+  "Power":92,
+  "Torque":93,
+  "Transmission":"Manual",
+  "Value":1750,
+  "Weight":1308,
+  "Years":{
+    "max":1988,
+    "min":1984
+  },
+}

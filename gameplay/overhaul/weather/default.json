@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "displayName": "Temperate",
+  "dayLengthMinutes": 60,
+  "conditionWeights": {
+    "clear": 28,
+    "partlyCloudy": 25,
+    "overcast": 20,
+    "drizzle": 10,
+    "rain": 13,
+    "storm": 4
+  },
+  "conditionDurationsMinutes": {
+    "clear": [120, 300],
+    "partlyCloudy": [120, 240],
+    "overcast": [120, 240],
+    "drizzle": [60, 180],
+    "rain": [60, 180],
+    "storm": [30, 90]
+  },
+  "morningFog": {
+    "chance": 0.28,
+    "requireOvernightMoisture": true,
+    "moistureConditions": ["overcast", "drizzle", "rain", "storm"],
+    "overnightWindowEndMinute": 360,
+    "minMoistureMinutes": 90,
+    "preferClearingMorning": false,
+    "startMinute": 180,
+    "peakMinute": 390,
+    "clearMinute": 480,
+    "endMinuteMin": 540,
+    "endMinuteMax": 570,
+    "maxDensity": 0.010,
+    "atmosphereHeight": 190,
+    "fadeInPower": 2
+  },
+  "temperatureCurveC": [
+    [0, 13],
+    [360, 12],
+    [720, 22],
+    [900, 25],
+    [1140, 20],
+    [1440, 13]
+  ],
+  "dailyTemperatureVarianceC": 2.5,
+  "transitionMinutes": 20,
+  "transitionWriteThresholdRelative": 0.005,
+  "wetness": {
+    "drizzlePerMinute": 0.003,
+    "rainPerMinute": 0.008,
+    "stormPerMinute": 0.015,
+    "dryPerMinute": 0.004,
+    "bands": [0.25, 0.60, 0.85],
+    "gripMultipliers": [1.0, 0.98, 0.94, 0.90],
+    "tireCompoundGripMultipliers": {
+      "standard": 1.0,
+      "sport": 0.94,
+      "race": 0.80,
+      "drag": 0.72
+    }
+  },
+  "pavedCollisionTypes": ["ASPHALT", "ASPHALT_WET", "CONCRETE", "RUMBLE_STRIP"],
+  "visualWetMaterialCap": 24
+}

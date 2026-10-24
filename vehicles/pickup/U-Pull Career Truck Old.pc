@@ -139,7 +139,7 @@
     "pickup_roofrack":"",
     "pickup_runningboard":"",
     "pickup_seat_F":"pickup_seat_F",
-    "pickup_shifter":"pickup_shifter_M",
+    "pickup_shifter":"pickup_shifter_A",
     "pickup_shifter_T":"",
     "pickup_shock_R":"pickup_shock_R",
     "pickup_signal_FL_prefacelift":"pickup_signal_FL_prefacelift",

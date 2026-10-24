@@ -1,0 +1,5 @@
+{
+  "id": "performanceIndex",
+  "icon": "raceFlag",
+  "routeTarget": "overhaul.computer.vehiclePerformance"
+}

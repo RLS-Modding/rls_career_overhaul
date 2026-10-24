@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_shell_repositoryDependencies",
+  "order": 99,
+  "module": "overhaul/shell/repositoryDependencies",
+  "scopes": [
+    {
+      "id": "late",
+      "order": 12
+    }
+  ]
+}

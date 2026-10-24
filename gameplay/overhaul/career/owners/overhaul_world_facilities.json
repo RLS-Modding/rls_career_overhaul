@@ -1,0 +1,251 @@
+{
+  "id": "overhaul_world_facilities",
+  "order": 120,
+  "module": "overhaul/world/facilities",
+  "scopes": [
+    {
+      "id": "services",
+      "order": 2
+    }
+  ],
+  "bigMap": {
+    "types": [
+      {
+        "id": "garage",
+        "icon": "garage01"
+      },
+      {
+        "id": "dealership",
+        "icon": "carDealer"
+      },
+      {
+        "id": "computer",
+        "icon": "laptop"
+      },
+      {
+        "id": "dragstrip",
+        "icon": "drag02"
+      },
+      {
+        "id": "logisticsParking",
+        "icon": "boxTruckFast",
+        "tags": [
+          "delivery_dropoff"
+        ]
+      },
+      {
+        "id": "logisticsOffice",
+        "icon": "boxTruckFast",
+        "tags": [
+          "delivery_facility"
+        ]
+      },
+      {
+        "id": "busWork",
+        "icon": "bus",
+        "tags": [
+          "type_roleplay"
+        ]
+      },
+      {
+        "id": "paramedicWork",
+        "icon": "strobeLights",
+        "tags": [
+          "type_roleplay"
+        ]
+      },
+      {
+        "id": "policeWork",
+        "icon": "strobeLights",
+        "tags": [
+          "type_roleplay"
+        ]
+      },
+      {
+        "id": "assignRole",
+        "icon": "strobeLights",
+        "tags": [
+          "type_roleplay"
+        ]
+      },
+      {
+        "id": "tuningShop",
+        "icon": "wrench",
+        "tags": [
+          "type_businesses"
+        ]
+      },
+      {
+        "id": "racingTeam",
+        "icon": "raceFlag",
+        "tags": [
+          "type_businesses"
+        ]
+      },
+      {
+        "id": "engineShop",
+        "icon": "wrench",
+        "tags": [
+          "type_businesses"
+        ]
+      },
+      {
+        "id": "passiveBusiness",
+        "icon": "wrench",
+        "tags": [
+          "type_businesses"
+        ]
+      },
+      {
+        "id": "engineCertification",
+        "icon": "wrench",
+        "tags": [
+          "type_businesses"
+        ]
+      }
+    ],
+    "groups": [
+      {
+        "id": "type_dragstrip",
+        "label": "bigMap.group.type.dragstrip",
+        "icon": "drag02",
+        "placements": {
+          "freeroam": [
+            {
+              "section": "freeroamPois",
+              "order": 4
+            }
+          ],
+          "career": [
+            {
+              "section": "freeroamPois",
+              "order": 5
+            }
+          ]
+        }
+      },
+      {
+        "id": "type_garage",
+        "label": "bigMap.group.type.garage",
+        "icon": "garage01",
+        "placements": {
+          "career": [
+            {
+              "section": "freeroamPois",
+              "order": 3
+            }
+          ]
+        }
+      },
+      {
+        "id": "type_dealership",
+        "label": "bigMap.group.type.dealership",
+        "icon": "carDealer",
+        "placements": {
+          "career": [
+            {
+              "section": "freeroamPois",
+              "order": 2
+            }
+          ]
+        }
+      },
+      {
+        "id": "type_computer",
+        "label": "bigMap.group.type.computer",
+        "icon": "laptop",
+        "placements": {
+          "career": [
+            {
+              "section": "freeroamPois",
+              "order": 7
+            }
+          ]
+        }
+      },
+      {
+        "id": "type_roleplay",
+        "label": "Roleplay",
+        "icon": "strobeLights",
+        "placements": {
+          "freeroam": [
+            {
+              "section": "freeroamPois",
+              "order": 7
+            }
+          ],
+          "career": [
+            {
+              "section": "freeroamPois",
+              "order": 9
+            }
+          ]
+        }
+      },
+      {
+        "id": "type_businesses",
+        "label": "Businesses",
+        "icon": "wrench",
+        "placements": {
+          "freeroam": [
+            {
+              "section": "freeroamPois",
+              "order": 8
+            }
+          ],
+          "career": [
+            {
+              "section": "freeroamPois",
+              "order": 10
+            }
+          ]
+        }
+      },
+      {
+        "id": "delivery_dropoff",
+        "label": "bigMap.group.deliveryDropoff",
+        "modes": [
+          "career"
+        ],
+        "placements": {
+          "career": [
+            {
+              "section": "domain_logistics",
+              "order": 1
+            },
+            {
+              "section": "delivery",
+              "order": 1
+            }
+          ]
+        }
+      },
+      {
+        "id": "delivery_facility",
+        "label": "bigMap.group.deliveryFacility",
+        "modes": [
+          "career"
+        ],
+        "placements": {
+          "career": [
+            {
+              "section": "domain_logistics",
+              "order": 2
+            }
+          ]
+        }
+      }
+    ],
+    "sections": [
+      {
+        "id": "delivery",
+        "title": "bigMap.section.deliveryTasks",
+        "icon": "boxTruckFast",
+        "order": 100,
+        "modes": [
+          "career"
+        ]
+      }
+    ]
+  }
+}

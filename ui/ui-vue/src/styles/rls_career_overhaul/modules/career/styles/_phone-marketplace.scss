@@ -1,0 +1,141 @@
+// Shared chrome for the phone Marketplace screens (browse, sell, vehicle info, negotiate).
+// Colours match the phone's dark app palette: blue accent, green good, amber warning, red bad.
+
+$mkt-accent: #7eb6ff;
+$mkt-accent-soft: #9ec8ff;
+$mkt-good: #29c15a;
+$mkt-good-soft: #6fe094;
+$mkt-warn: #ffad66;
+$mkt-bad: #f44336;
+$mkt-bad-soft: #ff8a80;
+$mkt-card-bg: rgba(23, 28, 37, 0.92);
+$mkt-card-border: rgba(255, 255, 255, 0.09);
+$mkt-bottom-inset: 10px;
+
+/// Scrollbars for the marketplace's own scroll containers.
+/// Deliberately does NOT set `scrollbar-width`: Chromium ignores every
+/// ::-webkit-scrollbar rule as soon as the standard property is present, which is why
+/// these were falling back to the default thin bar.
+@mixin mkt-scrollbar($width: 6px) {
+  &::-webkit-scrollbar {
+    width: $width;
+    height: $width;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+  }
+}
+
+.avatar {
+  flex: none;
+  display: inline-block;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  color: #0d1016;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 34px;
+  text-align: center;
+
+  &--sm {
+    width: 16px;
+    height: 16px;
+    font-size: 8px;
+    line-height: 16px;
+  }
+
+  &--md {
+    width: 30px;
+    height: 30px;
+    font-size: 11px;
+    line-height: 30px;
+  }
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 5px;
+  padding: 3px 7px;
+  border-radius: 7px;
+  font-size: 10px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.65);
+
+  &--good {
+    background: rgba(41, 193, 90, 0.15);
+    color: $mkt-good-soft;
+  }
+
+  &--warn {
+    background: rgba(255, 173, 102, 0.15);
+    color: $mkt-warn;
+  }
+
+  &--neutral {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.65);
+  }
+}
+
+/// Segmented tab button used by the Sell screen (Listings / Offers).
+.mkt-tab {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.55);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+
+  &.active {
+    border-color: rgba(126, 182, 255, 0.4);
+    background: rgba(126, 182, 255, 0.15);
+    color: #c9e0ff;
+  }
+}
+
+.mkt-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: $mkt-bad;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 17px;
+}
+
+.mkt-empty {
+  padding: 34px 16px;
+  text-align: center;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.4);
+}

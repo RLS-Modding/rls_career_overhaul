@@ -1,0 +1,72 @@
+{"miramar_junk_backlight_ute": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Broken Backlight",
+        "value":0,
+    },
+    "slotType" : "miramar_backlight_ute",
+    "flexbodies": [
+         ["mesh", "[group]:", "nonFlexMaterials"],
+         //glass
+         {"deformGroup":"backlight_break", "deformMaterialBase":"miramar_glass", "deformMaterialDamaged":"miramar_glass_dmg"},
+         ["miramar_ute_backlight", ["miramar_body", "miramar_bulkhead_R"],[]{"deformSound":"event:>Destruction>Vehicle>Glass>glassbreaksound9", "deformVolume":0.0}],
+         {"deformGroup":"backlight_break", "deformMaterialBase":"miramar_glass_int", "deformMaterialDamaged":"miramar_glass_dmg"},
+         ["miramar_ute_backlight_int", ["miramar_body", "miramar_bulkhead_R"]],
+         {"deformGroup":""},
+    ],
+    "sounds": {
+        "$+cabinFilterCoef": 0.00
+    },
+    "nodes": [
+         ["id", "posX", "posY", "posZ"],
+         {"selfCollision":true},
+         {"collision":true},
+         {"frictionCoef":0.5},
+         {"group":"miramar_body"},
+         {"nodeMaterial":"|NM_METAL"},
+
+         //--ADD WEIGHT--
+
+         //rear window
+         //roof
+         {"nodeWeight":2.1},
+         ["rf3r", -0.635, 0.4156, 1.41],
+         ["rf3", 0, 0.4093, 1.47],
+         ["rf3l", 0.635, 0.4156, 1.41],
+         //base of rear window/trunk
+         {"nodeWeight":2.0},
+         {"group":"miramar_bulkhead_R"},
+         ["cbu2r", -0.5883, 0.3625, 1.0338],
+         ["cbu2", -0.0000, 0.3625, 1.0338]
+         ["cbu2l", 0.5883, 0.3625, 1.0338],
+         {"group":""},
+
+         //windshield 12kg, rear windshield 10kg, sedan window 3kg, coupe window 4kg
+         //1046
+    ],
+    "beams": [
+          ["id1:", "id2:"],
+          {"beamType":"|NORMAL", "beamPrecompression":1, "beamLongBound":1.0, "beamShortBound":1.0},
+
+          //rear window
+          {"disableMeshBreaking":true,"disableTriangleBreaking":true},
+          {"beamSpring":701000,"beamDamp":5},
+          {"beamDeform":2000,"beamStrength":10},
+          {"deformGroup":"backlight_break", "deformationTriggerRatio":0.001},
+          {"breakGroup":"backlight"},
+          {"deformLimitExpansion":""},
+          ["rf2l", "cbu2"],
+          ["cbu2l", "rf2"],
+          ["rf2", "cbu2r"],
+          ["cbu2", "rf2r"],
+          ["rf2", "cbu2"],
+          ["cbu2l", "rf2r"],
+          ["rf2l", "cbu2r"],
+          {"breakGroup":""},
+          {"deformGroup":"", "deformationTriggerRatio":""},
+          {"disableMeshBreaking":false,"disableTriangleBreaking":false},
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+          {"deformLimitExpansion":1.1},
+    ],
+},
+}

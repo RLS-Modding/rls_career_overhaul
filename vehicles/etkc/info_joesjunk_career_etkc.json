@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":9500,  
+    "Configuration": "Eyesore ( Joe's Junk Career )",
+    "Description": "Not sure if its better to rebuid this car or simply send it to the scrapyard...",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 146,
+    "Torque": 148,
+    "Value": 2950,
+    "Weight": 1226,
+    "Years": {
+      "max": 2021,
+      "min": 2015
+    }  
+}
+
+

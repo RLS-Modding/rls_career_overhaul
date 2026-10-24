@@ -1,0 +1,24 @@
+{
+  "id": "camera",
+  "name": "Camera",
+  "icon": "photo",
+  "iconTile": "camera.png",
+  "route": "/overhaul/phone-camera",
+  "color": "#1a1a2e",
+  "iconColor": "#ffffff",
+  "category": "Media",
+  "storeTagline": "Capture the moment",
+  "storeDescription": "Open the phone camera to snap photos while you play.",
+  "defaultPage": 0,
+  "defaultPosition": 14,
+  "uiRoutes": [
+    {
+      "name": "phone-camera",
+      "path": "phone-camera",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneCamera.vue",
+      "uiOrder": 105,
+      "luaOrder": 28,
+      "backTarget": "phone-main"
+    }
+  ]
+}

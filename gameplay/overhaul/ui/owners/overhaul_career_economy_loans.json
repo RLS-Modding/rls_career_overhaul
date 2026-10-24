@@ -1,0 +1,24 @@
+{
+  "id": "overhaul_career_economy_loans",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 200,
+    "aliases": [
+      "career_modules_loans"
+    ]
+  },
+  "routes": [
+    {
+      "name": "loans-menu",
+      "order": 19,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "play",
+          "title": "Loans"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":4500,  
+    "Configuration": "Good Enough ( Joe's Junk Career )",
+    "Description": "Good enough to start, might be good enough to drive. Maybe.",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 91,
+    "Torque": 92,
+    "Value": 2350,
+    "Weight": 766,
+    "Years": {
+      "max": 1989,
+      "min": 1980
+    }  
+}
+
+

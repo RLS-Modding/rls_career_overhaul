@@ -5,7 +5,7 @@
     "class": "Material",
     "Stages": [
       {
-        "colorMap": "bx_lights_b.color"
+        "colorMap": "/vehicles/bx/bx_lights_b.color.dds"
       },
       {},
       {},

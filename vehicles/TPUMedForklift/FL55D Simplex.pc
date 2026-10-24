@@ -23,7 +23,6 @@
   "WHE_Forklift_FrontAxle":"WHE_Forklift_FrontAxle",
   "soundscape_horn":"soundscape_horn_10",
   "brakepad_F":"brakepad_F",
-  "forklift_flywheel":"forklift_flywheel",
   "MFL_Bacon":"MFL_Bacon",
   "forklift_exhaust":"forklift_exhaust",
   "ForkLift_FrontBrakes":"ForkLift_FrontBrakes",

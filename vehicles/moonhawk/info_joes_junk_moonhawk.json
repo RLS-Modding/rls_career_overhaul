@@ -1,0 +1,18 @@
+{
+  "Config Type":"joesJunk",
+  "Population":6500,  
+  "Configuration":"Moonhawk ( Joe's Junk Career )",
+  "Description":"Its a nice looking car if you look at it from the left side.",
+  "Drivetrain":"RWD",
+  "Fuel Type":"Gasoline",
+  "Induction Type":"NA",
+  "Power":138,
+  "Torque":139,
+  "Transmission":"Automatic",
+  "Value":850,
+  "Weight":1557,
+  "Years":{
+    "max":1975,
+    "min":1973
+  },
+}

@@ -1,0 +1,22 @@
+{
+  "id": "events-job-quarry",
+  "version": 1,
+  "aliases": [
+    {
+      "kind": "quarryZone",
+      "from": "Zone A",
+      "to": "westCoastQuarry::Zone A",
+      "levelId": "rls_west_coast",
+      "facilityId": "westCoastQuarry",
+      "maxSaveVersion": 1
+    },
+    {
+      "kind": "quarryZone",
+      "from": "Zone B",
+      "to": "westCoastQuarry::Zone B",
+      "levelId": "rls_west_coast",
+      "facilityId": "westCoastQuarry",
+      "maxSaveVersion": 1
+    }
+  ]
+}

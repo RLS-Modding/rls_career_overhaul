@@ -1,0 +1,33 @@
+{
+  "auctions": [
+    {
+      "id": "usedCarAuction",
+      "name": "Used Car Auction",
+      "description": "Entrance to the auction vault.",
+      "sitesFile": "auction.sites.json",
+      "entryTrigger": "usedCarAuctionEntry",
+      "exitTrigger": "usedCarAuctionExit",
+      "counterTriggers": [
+        "auctionCounter_1",
+        "auctionCounter_2"
+      ],
+      "filtersFile": "auction.filters.json",
+      "presentation": {
+        "winEmittersGroup": "auctionEmitters",
+        "activeAssetsGroup": "auctionAssetsOn",
+        "musicEmitter": "SFXEmitter_2"
+      },
+      "spotTags": {
+        "playerStart": "auctionPlayerStart",
+        "playerExit": "auctionPlayerExit",
+        "spawn": "auctionSpawn",
+        "block": "auctionBlock",
+        "pathIn": "auctionPathIn",
+        "pathOut": "auctionPathOut",
+        "despawn": "auctionDespawn",
+        "return": "auctionReturn"
+      },
+      "poiId": "usedCarAuctionEntrance"
+    }
+  ]
+}

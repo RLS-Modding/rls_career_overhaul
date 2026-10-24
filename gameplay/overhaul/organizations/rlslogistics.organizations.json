@@ -1,0 +1,4660 @@
+{
+  "shuffleboardLogistics": {
+    "name": "Shuffleboard Logistics",
+    "description": "Owns warehouses in the central industrial area, and a refinery on spearleaf island. You can loan vehicles here.",
+    "icon": "cardboardBox",
+    "loanableVehicles": [
+      {
+        "model": "md_series",
+        "config": "md_career_shuffleboard_pickup",
+        "reputationLvl": -1,
+        "deliveryLvl": 1,
+        "mileage": 241401600
+      },
+      {
+        "model": "md_series",
+        "config": "md_career_shuffleboard_flatbed",
+        "reputationLvl": -1,
+        "deliveryLvl": 2,
+        "mileage": 241401600
+      },
+      {
+        "model": "md_series",
+        "config": "md_career_shuffleboard_dump",
+        "reputationLvl": -1,
+        "deliveryLvl": 1,
+        "mileage": 241401600
+      },
+      {
+        "model": "md_series",
+        "config": "rls_md_career_shuffleboard_cargobox",
+        "reputationLvl": 0,
+        "deliveryLvl": 2,
+        "mileage": 241401600
+      },
+      {
+        "model": "md_series",
+        "config": "rls_md_career_shuffleboard_fifthwheel",
+        "reputationLvl": -1,
+        "deliveryLvl": 2,
+        "mileage": 241401600
+      },
+      {
+        "model": "md_series",
+        "config": "rls_md_career_shuffleboard_tanker",
+        "reputationLvl": -1,
+        "deliveryLvl": 2,
+        "mileage": 241401600
+      },
+      {
+        "model": "tanker",
+        "config": "career_shuffleboard_empty_short",
+        "reputationLvl": -1,
+        "deliveryLvl": 2,
+        "mileage": 241401600
+      },
+      {
+        "model": "us_semi",
+        "config": "tc83s_tanker_shuffleboard",
+        "reputationLvl": 2,
+        "deliveryLvl": 2,
+        "mileage": 241401600
+      },
+      {
+        "model": "us_semi",
+        "config": "t83_base_shuffleboard",
+        "reputationLvl": 2,
+        "deliveryLvl": 2,
+        "mileage": 241401600
+      },
+      {
+        "model": "us_semi",
+        "config": "tc82_base_shuffleboard",
+        "reputationLvl": 2,
+        "deliveryLvl": 2,
+        "mileage": 241401600
+      },
+      {
+        "model": "us_semi",
+        "config": "tc82_career_shuffleboard_cargobox",
+        "reputationLvl": 2,
+        "deliveryLvl": 3,
+        "mileage": 241401600
+      },
+      {
+        "model": "us_semi",
+        "config": "tc82_base_shuffleboard_sleeper",
+        "reputationLvl": 3,
+        "deliveryLvl": 3,
+        "mileage": 241401600
+      }
+    ],
+    "reputationLevels": [
+      {
+        // Level -1
+        "unlocks": [
+          {
+            "icon": "boxPickUp03",
+            "label": "Jank"
+          },
+        ],
+        "loanerCut": {
+          "value": 0.85,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 0
+        "unlocks": [
+          {
+            "icon": "smallTrailer",
+            "label": "Old",
+          }
+        ],
+        "loanerCut": {
+          "value": 0.65,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 1
+        "unlocks": [
+          {
+            "icon": "smallTrailer",
+            "label": "Good",
+          }
+        ],
+        "loanerCut": {
+          "value": 0.5,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 2
+        "unlocks": [
+          {
+            "icon": "smallTrailer",
+            "label": "Better",
+          }
+        ],
+        "loanerCut": {
+          "value": 0.35,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 3
+        "unlocks": [
+          {
+            "icon": "smallTrailer",
+            "label": "Best",
+          }
+        ],
+        "loanerCut": {
+          "value": 0.25,
+          "icon": "boxPickUp03"
+        }
+      }
+    ]
+  },
+  "jerryRiggs": {
+    "name": "Jerry Riggs",
+    "description": "A small garage and mechanic in the industrial area.",
+    "icon": "garage02",
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "belascoAuto": {
+    "name": "Belasco Auto",
+    "description": "A dealership in belasco city.",
+    "icon": "carDealer",
+    "reputationLevels": [
+      {
+        "loans": {
+          "max": 50000,
+          "rate": 0.4
+        },
+        "stock": 5,
+        "range": [
+          0.8,
+          0.95,
+          1.25,
+          1.5
+        ],
+        "fees": 500,
+        "testDrive": {
+          "abandonFees": 600,
+          "timeLimit": 60,
+          "licencePlate": ""
+        },
+        "subFilters": [
+          {
+            "probability": 10,
+            "whiteList": {
+              "Mileage": {
+                "min": 16093.44,
+                "max": 32186880
+              },
+              "Years": {
+                "min": 2018,
+                "max": 2026
+              },
+              "Country": [
+                "United States"
+              ],
+              "Value": {
+                "min": 5000,
+                "max": 46000
+              }
+            }
+          },
+          {
+            "probability": 10,
+            "whiteList": {
+              "Mileage": {
+                "min": 3712113.0275625,
+                "max": 80467200
+              },
+              "Years": {
+                "min": 2005,
+                "max": 2020
+              },
+              "Country": [
+                "United States"
+              ],
+              "Value": {
+                "min": 5000,
+                "max": 50000
+              }
+            }
+          },
+          {
+            "probability": 1,
+            "whiteList": {
+              "Mileage": {
+                "min": 6048719.424,
+                "max": 80467200
+              },
+              "Years": {
+                "min": 1997,
+                "max": 2023
+              },
+              "Country": [
+                "Poland",
+                "Italy",
+                "France",
+                "Germany",
+                "Canada",
+                "Sweden",
+                "United Kingdom",
+                "Great Britain",
+                "Japan",
+                "Soviet Union/Russia",
+                "The Netherlands"
+              ],
+              "Value": {
+                "min": 10000,
+                "max": 70000
+              }
+            }
+          }
+        ]
+      },
+      {
+        "loans": {
+          "max": 50000,
+          "rate": 0.4
+        },
+        "stock": 10,
+        "range": [
+          0.7,
+          0.90,
+          1.20,
+          1.4
+        ],
+        "fees": 500,
+        "testDrive": {
+          "abandonFees": 500,
+          "timeLimit": 90,
+          "licencePlate": ""
+        },
+        "subFilters": [
+          {
+            "probability": 10,
+            "whiteList": {
+              "Mileage": {
+                "min": 16093.44,
+                "max": 32186880
+              },
+              "Years": {
+                "min": 2018,
+                "max": 2026
+              },
+              "Country": [
+                "United States"
+              ],
+              "Value": {
+                "min": 5000,
+                "max": 56000
+              }
+            }
+          },
+          {
+            "probability": 10,
+            "whiteList": {
+              "Mileage": {
+                "min": 3712113.0275625,
+                "max": 80467200
+              },
+              "Years": {
+                "min": 2005,
+                "max": 2020
+              },
+              "Country": [
+                "United States"
+              ],
+              "Value": {
+                "min": 5000,
+                "max": 60000
+              }
+            }
+          },
+          {
+            "probability": 1,
+            "whiteList": {
+              "Mileage": {
+                "min": 6048719.424,
+                "max": 80467200
+              },
+              "Years": {
+                "min": 1997,
+                "max": 2023
+              },
+              "Country": [
+                "Poland",
+                "Italy",
+                "France",
+                "Germany",
+                "Canada",
+                "Sweden",
+                "United Kingdom",
+                "Great Britain",
+                "Japan",
+                "Soviet Union/Russia",
+                "The Netherlands"
+              ],
+              "Value": {
+                "min": 10000,
+                "max": 80000
+              }
+            }
+          }
+        ]
+      },
+      {
+        "loans": {
+          "max": 150000,
+          "rate": 0.4
+        },
+        "stock": 15,
+        "range": [
+          0.6,
+          0.85,
+          1.15,
+          1.3
+        ],
+        "fees": 300,
+        "testDrive": {
+          "abandonFees": 350,
+          "timeLimit": 120,
+          "licencePlate": ""
+        },
+        "subFilters": [
+          {
+            "probability": 10,
+            "whiteList": {
+              "Mileage": {
+                "min": 16093.44,
+                "max": 32186880
+              },
+              "Years": {
+                "min": 2018,
+                "max": 2026
+              },
+              "Country": [
+                "United States"
+              ],
+              "Value": {
+                "min": 5000,
+                "max": 66000
+              }
+            }
+          },
+          {
+            "probability": 10,
+            "whiteList": {
+              "Mileage": {
+                "min": 3712113.0275625,
+                "max": 80467200
+              },
+              "Years": {
+                "min": 2005,
+                "max": 2020
+              },
+              "Country": [
+                "United States"
+              ],
+              "Value": {
+                "min": 5000,
+                "max": 70000
+              }
+            }
+          },
+          {
+            "probability": 1,
+            "whiteList": {
+              "Mileage": {
+                "min": 6048719.424,
+                "max": 80467200
+              },
+              "Years": {
+                "min": 1997,
+                "max": 2023
+              },
+              "Country": [
+                "Poland",
+                "Italy",
+                "France",
+                "Germany",
+                "Canada",
+                "Sweden",
+                "United Kingdom",
+                "Great Britain",
+                "Japan",
+                "Soviet Union/Russia",
+                "The Netherlands"
+              ],
+              "Value": {
+                "min": 10000,
+                "max": 90000
+              }
+            }
+          }
+        ]
+      },
+      {
+        "loans": {
+          "max": 200000,
+          "rate": 0.3
+        },
+        "stock": 20,
+        "range": [
+          0.6,
+          0.80,
+          1.05,
+          1.25
+        ],
+        "fees": 150,
+        "testDrive": {
+          "abandonFees": 250,
+          "timeLimit": 150,
+          "licencePlate": ""
+        },
+        "subFilters": [
+          {
+            "probability": 10,
+            "whiteList": {
+              "Mileage": {
+                "min": 16093.44,
+                "max": 32186880
+              },
+              "Years": {
+                "min": 2018,
+                "max": 2026
+              },
+              "Country": [
+                "United States"
+              ],
+              "Value": {
+                "min": 5000,
+                "max": 86000
+              }
+            }
+          },
+          {
+            "probability": 10,
+            "whiteList": {
+              "Mileage": {
+                "min": 3712113.0275625,
+                "max": 80467200
+              },
+              "Years": {
+                "min": 2005,
+                "max": 2020
+              },
+              "Country": [
+                "United States"
+              ],
+              "Value": {
+                "min": 5000,
+                "max": 90000
+              }
+            }
+          },
+          {
+            "probability": 1,
+            "whiteList": {
+              "Mileage": {
+                "min": 6048719.424,
+                "max": 80467200
+              },
+              "Years": {
+                "min": 1997,
+                "max": 2023
+              },
+              "Country": [
+                "Poland",
+                "Italy",
+                "France",
+                "Germany",
+                "Canada",
+                "Sweden",
+                "United Kingdom",
+                "Great Britain",
+                "Japan",
+                "Soviet Union/Russia",
+                "The Netherlands"
+              ],
+              "Value": {
+                "min": 10000,
+                "max": 100000
+              }
+            }
+          }
+        ]
+      },
+      {
+        "stock": 25,
+        "range": [
+          0.5,
+          0.75,
+          1.05,
+          1.15
+        ],
+        "fees": 0,
+        "testDrive": {
+          "abandonFees": 150,
+          "timeLimit": 180,
+          "licencePlate": ""
+        },
+        "loans": {
+          "max": 25000,
+          "rate": 0.20
+        },
+        "subFilters": [
+          {
+            "probability": 10,
+            "whiteList": {
+              "Mileage": {
+                "min": 16093.44,
+                "max": 32186880
+              },
+              "Years": {
+                "min": 2018,
+                "max": 2026
+              },
+              "Country": [
+                "United States"
+              ],
+              "Value": {
+                "min": 5000,
+                "max": 96000
+              }
+            }
+          },
+          {
+            "probability": 10,
+            "whiteList": {
+              "Mileage": {
+                "min": 3712113.0275625,
+                "max": 80467200
+              },
+              "Years": {
+                "min": 2005,
+                "max": 2020
+              },
+              "Country": [
+                "United States"
+              ],
+              "Value": {
+                "min": 5000,
+                "max": 100000
+              }
+            }
+          },
+          {
+            "probability": 1,
+            "whiteList": {
+              "Mileage": {
+                "min": 6048719.424,
+                "max": 80467200
+              },
+              "Years": {
+                "min": 1997,
+                "max": 2023
+              },
+              "Country": [
+                "Poland",
+                "Italy",
+                "France",
+                "Germany",
+                "Canada",
+                "Sweden",
+                "United Kingdom",
+                "Great Britain",
+                "Japan",
+                "Soviet Union/Russia",
+                "The Netherlands"
+              ],
+              "Value": {
+                "min": 10000,
+                "max": 120000
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "richsMotorCompany": {
+    "name": "Rich's Motor Company",
+    "description": "A high-end dealership in belasco city.",
+    "icon": "carDealer",
+    "reputationLevels": [
+      {
+        "loans": {
+          "max": 150000,
+          "rate": 0.9
+        },
+        "hiddenFromDealerList": true,
+        "stock": 5,
+        "range": [
+          0.9,
+          0.97,
+          1.4,
+          1.7
+        ],
+        "fees": 1000,
+        "testDrive": {
+          "abandonFees": 3000,
+          "timeLimit": 30,
+          "licencePlate": ""
+        },
+        "subFilters": [
+          {
+            "probability": 10,
+            "whiteList": {
+              "Value": {},
+              "Years": {
+                "min": 2000,
+                "max": 2030
+              }
+            }
+          },
+          {
+            "probability": 1,
+            "whiteList": {
+              "Mileage": {
+                "min": 16093440,
+                "max": 104607360
+              },
+              "Years": {
+                "min": 1980,
+                "max": 1999
+              },
+              "Country": [
+                "Italy"
+              ],
+              "Body Style": [
+                "Coupe",
+                "Convertible",
+                "Sedan"
+              ],
+              "Value": {}
+            }
+          },
+          {
+            "probability": 2,
+            "whiteList": {
+              "Mileage": {
+                "min": 12874752,
+                "max": 48280320
+              },
+              "Years": {
+                "min": 1900,
+                "max": 1955
+              },
+              "Value": {}
+            }
+          }
+        ]
+      },
+      {
+        "loans": {
+          "max": 150000,
+          "rate": 0.8
+        },
+        "hiddenFromDealerList": true,
+        "stock": 5,
+        "range": [
+          0.8,
+          0.94,
+          1.35,
+          1.6
+        ],
+        "fees": 1000,
+        "testDrive": {
+          "abandonFees": 2000,
+          "timeLimit": 30,
+          "licencePlate": ""
+        },
+        "subFilters": [
+          {
+            "probability": 10,
+            "whiteList": {
+              "Value": {},
+              "Years": {
+                "min": 2000,
+                "max": 2030
+              }
+            }
+          },
+          {
+            "probability": 1,
+            "whiteList": {
+              "Mileage": {
+                "min": 16093440,
+                "max": 104607360
+              },
+              "Years": {
+                "min": 1980,
+                "max": 1999
+              },
+              "Country": [
+                "Italy"
+              ],
+              "Body Style": [
+                "Coupe",
+                "Convertible",
+                "Sedan"
+              ],
+              "Value": {}
+            }
+          },
+          {
+            "probability": 2,
+            "whiteList": {
+              "Mileage": {
+                "min": 12874752,
+                "max": 48280320
+              },
+              "Years": {
+                "min": 1900,
+                "max": 1955
+              },
+              "Value": {}
+            }
+          }
+        ]
+      },
+      {
+        "loans": {
+          "max": 500000,
+          "rate": 0.4
+        },
+        "stock": 10,
+        "range": [
+          0.8,
+          0.93,
+          1.35,
+          1.6
+        ],
+        "fees": 600,
+        "testDrive": {
+          "abandonFees": 1000,
+          "timeLimit": 60,
+          "licencePlate": ""
+        },
+        "subFilters": [
+          {
+            "probability": 10,
+            "whiteList": {
+              "Value": {},
+              "Years": {
+                "min": 2000,
+                "max": 2030
+              }
+            }
+          },
+          {
+            "probability": 1,
+            "whiteList": {
+              "Mileage": {
+                "min": 16093440,
+                "max": 104607360
+              },
+              "Years": {
+                "min": 1980,
+                "max": 1999
+              },
+              "Country": [
+                "Italy"
+              ],
+              "Body Style": [
+                "Coupe",
+                "Convertible",
+                "Sedan"
+              ],
+              "Value": {}
+            }
+          },
+          {
+            "probability": 2,
+            "whiteList": {
+              "Mileage": {
+                "min": 12874752,
+                "max": 48280320
+              },
+              "Years": {
+                "min": 1900,
+                "max": 1955
+              },
+              "Value": {}
+            }
+          }
+        ]
+      },
+      {
+        "loans": {
+          "max": 1000000,
+          "rate": 0.35
+        },
+        "stock": 20,
+        "range": [
+          0.6,
+          0.85,
+          1.2,
+          1.4
+        ],
+        "fees": 300,
+        "testDrive": {
+          "abandonFees": 500,
+          "timeLimit": 120,
+          "licencePlate": ""
+        },
+        "subFilters": [
+          {
+            "probability": 10,
+            "whiteList": {
+              "Value": {},
+              "Years": {
+                "min": 2000,
+                "max": 2030
+              }
+            }
+          },
+          {
+            "probability": 1,
+            "whiteList": {
+              "Mileage": {
+                "min": 16093440,
+                "max": 104607360
+              },
+              "Years": {
+                "min": 1980,
+                "max": 1999
+              },
+              "Country": [
+                "Italy"
+              ],
+              "Body Style": [
+                "Coupe",
+                "Convertible",
+                "Sedan"
+              ],
+              "Value": {}
+            }
+          },
+          {
+            "probability": 2,
+            "whiteList": {
+              "Mileage": {
+                "min": 12874752,
+                "max": 48280320
+              },
+              "Years": {
+                "min": 1900,
+                "max": 1955
+              },
+              "Value": {}
+            }
+          }
+        ]
+      },
+      {
+        "loans": {
+          "max": 2000000,
+          "rate": 0.2
+        },
+        "stock": 30,
+        "range": [
+          0.5,
+          0.73,
+          1.25,
+          1.4
+        ],
+        "fees": 100,
+        "testDrive": {
+          "abandonFees": 350,
+          "timeLimit": 150,
+          "licencePlate": ""
+        },
+        "subFilters": [
+          {
+            "probability": 10,
+            "whiteList": {
+              "Value": {},
+              "Years": {
+                "min": 2000,
+                "max": 2030
+              }
+            }
+          },
+          {
+            "probability": 1,
+            "whiteList": {
+              "Mileage": {
+                "min": 16093440,
+                "max": 104607360
+              },
+              "Years": {
+                "min": 1980,
+                "max": 1999
+              },
+              "Country": [
+                "Italy"
+              ],
+              "Body Style": [
+                "Coupe",
+                "Convertible",
+                "Sedan"
+              ],
+              "Value": {}
+            }
+          },
+          {
+            "probability": 2,
+            "whiteList": {
+              "Mileage": {
+                "min": 12874752,
+                "max": 48280320
+              },
+              "Years": {
+                "min": 1900,
+                "max": 1955
+              },
+              "Value": {}
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "jeffersonMotors": {
+    "name": "Jefferson Motors",
+    "description": "A high-end dealership in belasco city.",
+    "icon": "carDealer",
+    "reputationLevels": [
+      {
+        "hiddenFromDealerList": true,
+        "stock": 5,
+        "filter": {
+          "blackList": {
+            "model_key": [
+              "pigeon",
+              "wigeon"
+            ]
+          }
+        },
+        "range": [
+          0.8,
+          0.93,
+          1.3,
+          1.5
+        ],
+        "fees": 700,
+        "testDrive": {
+          "abandonFees": 600,
+          "timeLimit": 60,
+          "licencePlate": ""
+        },
+        "subFilters": [
+          {
+            "probability": 8,
+            "whiteList": {
+              "Mileage": {
+                "min": 8046720,
+                "max": 64373760
+              },
+              "Years": {
+                "min": 1970,
+                "max": 1980
+              },
+              "Country": [
+                "United States"
+              ]
+            }
+          },
+          {
+            "probability": 2,
+            "whiteList": {
+              "Mileage": {
+                "min": 8046720,
+                "max": 64373760
+              },
+              "Years": {
+                "min": 1970,
+                "max": 1980
+              },
+              "Country": [
+                "Poland",
+                "Italy",
+                "France",
+                "Germany",
+                "Japan",
+                "Sweden",
+                "Soviet Union/Russia",
+                "United Kingdom",
+                "Great Britain",
+                "Canada"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "hiddenFromDealerList": true,
+        "stock": 10,
+        "filter": {
+          "blackList": {
+            "model_key": [
+              "pigeon",
+              "wigeon"
+            ]
+          }
+        },
+        "range": [
+          0.7,
+          0.9,
+          1.25,
+          1.4
+        ],
+        "fees": 700,
+        "testDrive": {
+          "abandonFees": 500,
+          "timeLimit": 60,
+          "licencePlate": ""
+        },
+        "subFilters": [
+          {
+            "probability": 8,
+            "whiteList": {
+              "Mileage": {
+                "min": 8046720,
+                "max": 64373760
+              },
+              "Years": {
+                "min": 1970,
+                "max": 1980
+              },
+              "Country": [
+                "United States"
+              ]
+            }
+          },
+          {
+            "probability": 2,
+            "whiteList": {
+              "Mileage": {
+                "min": 8046720,
+                "max": 64373760
+              },
+              "Years": {
+                "min": 1970,
+                "max": 1980
+              },
+              "Country": [
+                "Poland",
+                "Italy",
+                "France",
+                "Germany",
+                "Japan",
+                "Sweden",
+                "Soviet Union/Russia",
+                "United Kingdom",
+                "Great Britain",
+                "Canada"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "stock": 15,
+        "filter": {
+          "blackList": {
+            "model_key": [
+              "pigeon",
+              "wigeon"
+            ]
+          }
+        },
+        "range": [
+          0.6,
+          0.85,
+          1.15,
+          1.3
+        ],
+        "fees": 400,
+        "testDrive": {
+          "abandonFees": 350,
+          "timeLimit": 90,
+          "licencePlate": ""
+        },
+        "subFilters": [
+          {
+            "probability": 8,
+            "whiteList": {
+              "Mileage": {
+                "min": 8046720,
+                "max": 64373760
+              },
+              "Years": {
+                "min": 1960,
+                "max": 1980
+              },
+              "Country": [
+                "United States"
+              ]
+            }
+          },
+          {
+            "probability": 2,
+            "whiteList": {
+              "Mileage": {
+                "min": 8046720,
+                "max": 64373760
+              },
+              "Years": {
+                "min": 1960,
+                "max": 1980
+              },
+              "Country": [
+                "Poland",
+                "Italy",
+                "France",
+                "Germany",
+                "Japan",
+                "Sweden",
+                "Soviet Union/Russia",
+                "United Kingdom",
+                "Great Britain",
+                "Canada"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "stock": 20,
+        "filter": {
+          "blackList": {
+            "model_key": [
+              "pigeon",
+              "wigeon"
+            ]
+          }
+        },
+        "range": [
+          0.6,
+          0.85,
+          1.15,
+          1.3
+        ],
+        "fees": 200,
+        "testDrive": {
+          "abandonFees": 250,
+          "timeLimit": 120,
+          "licencePlate": ""
+        },
+        "subFilters": [
+          {
+            "probability": 8,
+            "whiteList": {
+              "Mileage": {
+                "min": 8046720,
+                "max": 64373760
+              },
+              "Years": {
+                "min": 1930,
+                "max": 1980
+              },
+              "Country": [
+                "United States"
+              ]
+            }
+          },
+          {
+            "probability": 2,
+            "whiteList": {
+              "Mileage": {
+                "min": 8046720,
+                "max": 64373760
+              },
+              "Years": {
+                "min": 1930,
+                "max": 1980
+              },
+              "Country": [
+                "Poland",
+                "Italy",
+                "France",
+                "Germany",
+                "Japan",
+                "Sweden",
+                "Soviet Union/Russia",
+                "United Kingdom",
+                "Great Britain",
+                "Canada"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "stock": 30,
+        "filter": {
+          "blackList": {
+            "model_key": [
+              "pigeon",
+              "wigeon"
+            ]
+          }
+        },
+        "range": [
+          0.5,
+          0.75,
+          1.15,
+          1.25
+        ],
+        "fees": 0,
+        "testDrive": {
+          "abandonFees": 150,
+          "timeLimit": 150,
+          "licencePlate": ""
+        },
+        "subFilters": [
+          {
+            "probability": 6,
+            "whiteList": {
+              "Mileage": {
+                "min": 8046720,
+                "max": 64373760
+              },
+              "Years": {
+                "min": 1900,
+                "max": 1980
+              },
+              "Country": [
+                "United States"
+              ]
+            }
+          },
+          {
+            "probability": 2,
+            "whiteList": {
+              "Mileage": {
+                "min": 8046720,
+                "max": 64373760
+              },
+              "Years": {
+                "min": 1900,
+                "max": 1980
+              },
+              "Country": [
+                "Poland",
+                "Italy",
+                "France",
+                "Germany",
+                "Japan",
+                "Sweden",
+                "Soviet Union/Russia",
+                "United Kingdom",
+                "Great Britain",
+                "Canada"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "quarrysideAutoSales": {
+    "name": "Quarryside Auto Sales",
+    "description": "A dealership outside of the city.",
+    "icon": "carDealer",
+    "reputationLevels": [
+      {
+        "stock": 5,
+        "range": [
+          0.8,
+          0.95,
+          1.25,
+          1.5
+        ],
+        "fees": 500,
+        "testDrive": {
+          "abandonFees": 500,
+          "timeLimit": 60,
+          "licencePlate": ""
+        },
+        "subFilters": [
+          {
+            "probability": 5,
+            "whiteList": {
+              "Mileage": {
+                "min": 160934400,
+                "max": 321868800
+              },
+              "Years": {
+                "min": 1980,
+                "max": 1999
+              },
+              "Country": [
+                "United States"
+              ],
+              "Body Style": [
+                "Van",
+                "SUV",
+                "Pickup"
+              ]
+            }
+          },
+          {
+            "probability": 0,
+            "whiteList": {
+              "Mileage": {
+                "min": 160934400,
+                "max": 321868800
+              },
+              "Years": {
+                "min": 1980,
+                "max": 2009
+              },
+              "Country": [
+                "United Kingdom",
+                "Japan",
+                "Canada",
+                "France",
+                "Poland",
+                "Soviet Union/Russia",
+                "Germany",
+                "Great Britain",
+                "Sweden",
+                "Italy",
+                "The Netherlands"
+              ],
+              "Body Style": [
+                "Van",
+                "SUV",
+                "Pickup"
+              ]
+            }
+          },
+          {
+            "probability": 8,
+            "whiteList": {
+              "Mileage": {
+                "min": 160934400,
+                "max": 321868800
+              },
+              "Years": {
+                "min": 1977,
+                "max": 1999
+              },
+              "Country": [
+                "United States"
+              ],
+              "Body Style": [
+                "Coupe",
+                "Convertible",
+                "Hatchback",
+                "Liftback",
+                "Wagon",
+                "Sedan",
+                "Ute",
+                "coupe",
+                "Shooting Brake",
+                "Roadster",
+                "Hardtop Sedan"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "stock": 10,
+        "range": [
+          0.7,
+          0.90,
+          1.20,
+          1.4
+        ],
+        "fees": 500,
+        "testDrive": {
+          "abandonFees": 500,
+          "timeLimit": 90,
+          "licencePlate": ""
+        },
+        "subFilters": [
+          {
+            "probability": 8,
+            "whiteList": {
+              "Mileage": {
+                "min": 160934400,
+                "max": 321868800
+              },
+              "Years": {
+                "min": 1980,
+                "max": 1999
+              },
+              "Country": [
+                "United States"
+              ],
+              "Body Style": [
+                "Van",
+                "SUV",
+                "Pickup"
+              ]
+            }
+          },
+          {
+            "probability": 0,
+            "whiteList": {
+              "Mileage": {
+                "min": 160934400,
+                "max": 321868800
+              },
+              "Years": {
+                "min": 1980,
+                "max": 2009
+              },
+              "Country": [
+                "United Kingdom",
+                "Japan",
+                "Canada",
+                "France",
+                "Poland",
+                "Soviet Union/Russia",
+                "Germany",
+                "Great Britain",
+                "Sweden",
+                "Italy",
+                "The Netherlands"
+              ],
+              "Body Style": [
+                "Van",
+                "SUV",
+                "Pickup"
+              ]
+            }
+          },
+          {
+            "probability": 8,
+            "whiteList": {
+              "Mileage": {
+                "min": 160934400,
+                "max": 321868800
+              },
+              "Years": {
+                "min": 1977,
+                "max": 1999
+              },
+              "Country": [
+                "United States"
+              ],
+              "Body Style": [
+                "Coupe",
+                "Convertible",
+                "Hatchback",
+                "Liftback",
+                "Wagon",
+                "Sedan",
+                "Ute",
+                "coupe",
+                "Shooting Brake",
+                "Roadster",
+                "Hardtop Sedan"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "loans": {
+          "max": 100000,
+          "rate": 0.30
+        },
+        "stock": 15,
+        "range": [
+          0.6,
+          0.85,
+          1.15,
+          1.3
+        ],
+        "fees": 300,
+        "testDrive": {
+          "abandonFees": 350,
+          "timeLimit": 120,
+          "licencePlate": ""
+        },
+        "subFilters": [
+          {
+            "probability": 10,
+            "whiteList": {
+              "Mileage": {
+                "min": 160934400,
+                "max": 321868800
+              },
+              "Years": {
+                "min": 1980,
+                "max": 1999
+              },
+              "Country": [
+                "United States"
+              ],
+              "Body Style": [
+                "Van",
+                "SUV",
+                "Pickup"
+              ]
+            }
+          },
+          {
+            "probability": 1,
+            "whiteList": {
+              "Mileage": {
+                "min": 160934400,
+                "max": 321868800
+              },
+              "Years": {
+                "min": 1980,
+                "max": 2009
+              },
+              "Country": [
+                "United Kingdom",
+                "Japan",
+                "Canada",
+                "France",
+                "Poland",
+                "Soviet Union/Russia",
+                "Germany",
+                "Great Britain",
+                "Sweden",
+                "Italy",
+                "The Netherlands"
+              ],
+              "Body Style": [
+                "Van",
+                "SUV",
+                "Pickup"
+              ]
+            }
+          },
+          {
+            "probability": 8,
+            "whiteList": {
+              "Mileage": {
+                "min": 160934400,
+                "max": 321868800
+              },
+              "Years": {
+                "min": 1977,
+                "max": 1999
+              },
+              "Country": [
+                "United States"
+              ],
+              "Body Style": [
+                "Coupe",
+                "Convertible",
+                "Hatchback",
+                "Liftback",
+                "Wagon",
+                "Sedan",
+                "Ute",
+                "coupe",
+                "Shooting Brake",
+                "Roadster",
+                "Hardtop Sedan"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "loans": {
+          "max": 250000,
+          "rate": 0.25
+        },
+        "stock": 20,
+        "range": [
+          0.6,
+          0.80,
+          1.05,
+          1.25
+        ],
+        "fees": 150,
+        "testDrive": {
+          "abandonFees": 250,
+          "timeLimit": 150,
+          "licencePlate": ""
+        },
+        "subFilters": [
+          {
+            "probability": 10,
+            "whiteList": {
+              "Mileage": {
+                "min": 160934400,
+                "max": 321868800
+              },
+              "Years": {
+                "min": 1980,
+                "max": 1999
+              },
+              "Country": [
+                "United States"
+              ],
+              "Body Style": [
+                "Van",
+                "SUV",
+                "Pickup"
+              ]
+            }
+          },
+          {
+            "probability": 2,
+            "whiteList": {
+              "Mileage": {
+                "min": 160934400,
+                "max": 321868800
+              },
+              "Years": {
+                "min": 1980,
+                "max": 2009
+              },
+              "Country": [
+                "United Kingdom",
+                "Japan",
+                "Canada",
+                "France",
+                "Poland",
+                "Soviet Union/Russia",
+                "Germany",
+                "Great Britain",
+                "Sweden",
+                "Italy",
+                "The Netherlands"
+              ],
+              "Body Style": [
+                "Van",
+                "SUV",
+                "Pickup"
+              ]
+            }
+          },
+          {
+            "probability": 8,
+            "whiteList": {
+              "Mileage": {
+                "min": 160934400,
+                "max": 321868800
+              },
+              "Years": {
+                "min": 1977,
+                "max": 1999
+              },
+              "Country": [
+                "United States"
+              ],
+              "Body Style": [
+                "Coupe",
+                "Convertible",
+                "Hatchback",
+                "Liftback",
+                "Wagon",
+                "Sedan",
+                "Ute",
+                "coupe",
+                "Shooting Brake",
+                "Roadster",
+                "Hardtop Sedan"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "stock": 25,
+        "range": [
+          0.5,
+          0.75,
+          1.05,
+          1.15
+        ],
+        "fees": 0,
+        "testDrive": {
+          "abandonFees": 150,
+          "timeLimit": 180,
+          "licencePlate": ""
+        },
+        "loans": {
+          "max": 300000,
+          "rate": 0.20
+        },
+        "subFilters": [
+          {
+            "probability": 10,
+            "whiteList": {
+              "Mileage": {
+                "min": 160934400,
+                "max": 321868800
+              },
+              "Years": {
+                "min": 1980,
+                "max": 1999
+              },
+              "Country": [
+                "United States"
+              ],
+              "Body Style": [
+                "Van",
+                "SUV",
+                "Pickup"
+              ]
+            }
+          },
+          {
+            "probability": 3,
+            "whiteList": {
+              "Mileage": {
+                "min": 160934400,
+                "max": 321868800
+              },
+              "Years": {
+                "min": 1980,
+                "max": 2009
+              },
+              "Country": [
+                "United Kingdom",
+                "Japan",
+                "Canada",
+                "France",
+                "Poland",
+                "Soviet Union/Russia",
+                "Germany",
+                "Great Britain",
+                "Sweden",
+                "Italy",
+                "The Netherlands"
+              ],
+              "Body Style": [
+                "Van",
+                "SUV",
+                "Pickup"
+              ]
+            }
+          },
+          {
+            "probability": 8,
+            "whiteList": {
+              "Mileage": {
+                "min": 160934400,
+                "max": 321868800
+              },
+              "Years": {
+                "min": 1977,
+                "max": 1999
+              },
+              "Country": [
+                "United States"
+              ],
+              "Body Style": [
+                "Coupe",
+                "Convertible",
+                "Hatchback",
+                "Liftback",
+                "Wagon",
+                "Sedan",
+                "Ute",
+                "coupe",
+                "Shooting Brake",
+                "Roadster",
+                "Hardtop Sedan"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "commercialVehicleSales": {
+    "name": "Commercial Vehicle Sales",
+    "description": "A dealership that offers trucks and trailers.",
+    "icon": "carDealer",
+    "reputationLevels": [
+      {
+        "stock": 5,
+        "hiddenFromDealerList": true,
+        "range": [
+          0.8,
+          0.95,
+          1.25,
+          1.5
+        ],
+        "fees": 750,
+        "testDrive": {
+          "abandonFees": 500,
+          "timeLimit": 60,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 10,
+        "hiddenFromDealerList": true,
+        "range": [
+          0.7,
+          0.90,
+          1.20,
+          1.4
+        ],
+        "fees": 750,
+        "testDrive": {
+          "abandonFees": 500,
+          "timeLimit": 90,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 15,
+        "range": [
+          0.6,
+          0.85,
+          1.15,
+          1.3
+        ],
+        "fees": 450,
+        "testDrive": {
+          "abandonFees": 350,
+          "timeLimit": 120,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 20,
+        "range": [
+          0.6,
+          0.80,
+          1.05,
+          1.25
+        ],
+        "fees": 200,
+        "testDrive": {
+          "abandonFees": 250,
+          "timeLimit": 150,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 25,
+        "range": [
+          0.5,
+          0.75,
+          1.05,
+          1.15
+        ],
+        "fees": 0,
+        "testDrive": {
+          "abandonFees": 150,
+          "timeLimit": 180,
+          "licencePlate": ""
+        },
+      }
+    ]
+  },
+  "belascoCityConstruction": {
+    "name": "Belasco City Construction",
+    "description": "Manages various construction sites inside and outside of belasco city.",
+    "icon": "semiTruckUS",
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "hotRolled": {
+    "name": "Hot Rolled Inc.",
+    "description": "Produces various steel-related products.",
+    "icon": "rocks",
+    "loanableVehicles": [
+      {
+        "model": "us_semi",
+        "config": "us_semi_career_steel_day",
+        "reputationLvl": 0,
+        "deliveryLvl": 3,
+        "mileage": 241401600
+      },
+      {
+        "model": "us_semi",
+        "config": "us_semi_career_steel_cabover",
+        "reputationLvl": 2,
+        "deliveryLvl": 4,
+        "mileage": 241401600
+      },
+      {
+        "model": "md_series",
+        "config": "md_career_5th_wheel",
+        "reputationLvl": -1,
+        "deliveryLvl": 1,
+        "mileage": 241401600
+      },
+      {
+        "model": "boxutility",
+        "config": "trailer_career_cargo",
+        "reputationLvl": -1,
+        "deliveryLvl": 1,
+        "mileage": 241401600
+      },
+      {
+        "model": "boxutility_large",
+        "config": "trailer_career_cargo_large",
+        "reputationLvl": -1,
+        "deliveryLvl": 1,
+        "mileage": 241401600
+      },
+      {
+        "model": "tiltdeck",
+        "config": "22ft_gooseneck_cargo",
+        "reputationLvl": 0,
+        "deliveryLvl": 6,
+        "mileage": 241401600
+      },
+      {
+        "model": "dryvan",
+        "config": "parceldryvantrailer428142",
+        "reputationLvl": 1,
+        "deliveryLvl": 6,
+        "mileage": 241401600
+      }
+    ],
+    "reputationLevels": [
+      {
+        // Level -1
+        "loanerCut": {
+          "value": 0.5,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 0
+        "loanerCut": {
+          "value": 0.4,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 1
+        "loanerCut": {
+          "value": 0.35,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 2
+        "loanerCut": {
+          "value": 0.30,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 3
+        "loanerCut": {
+          "value": 0.25,
+          "icon": "boxPickUp03"
+        }
+      }
+    ]
+  },
+  "lensflareStudios": {
+    "name": "Lens Flare Studios",
+    "description": "A famous movie studio in the belasco suburbs.",
+    "icon": "peopleOutline",
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "spearleafRefinery": {
+    "name": "Spearleaf Refinery",
+    "description": "",
+    "icon": "droplet",
+    "loanableVehicles": [
+      {
+        "model": "md_series",
+        "config": "md_career_spearleaf_tanker",
+        "reputationLvl": -1,
+        "deliveryLvl": 0,
+        "mileage": 241401600
+      },
+      {
+        "model": "md_series",
+        "config": "md_career_spearleaf_fifthwheel",
+        "reputationLvl": -1,
+        "deliveryLvl": 1,
+        "mileage": 241401600
+      },
+      {
+        "model": "tanker",
+        "config": "career_spearleaf_empty_short",
+        "reputationLvl": -1,
+        "deliveryLvl": 1,
+        "mileage": 241401600
+      },
+      {
+        "model": "tanker",
+        "config": "career_spearleaf_empty_long",
+        "reputationLvl": 0,
+        "deliveryLvl": 2,
+        "mileage": 241401600
+      },
+      {
+        "model": "us_semi",
+        "config": "tc83s_career_spearleaf_tanker",
+        "reputationLvl": 0,
+        "deliveryLvl": 2,
+        "mileage": 241401600
+      },
+      {
+        "model": "us_semi",
+        "config": "tc82_base_spearleaf_sleeper",
+        "reputationLvl": 2,
+        "deliveryLvl": 3,
+        "mileage": 241401600
+      }
+    ],
+    "reputationLevels": [
+      {
+        // Level -1
+        "loanerCut": {
+          "value": 0.90,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 0
+        "loanerCut": {
+          "value": 0.75,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 1
+        "loanerCut": {
+          "value": 0.45,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 2
+        "loanerCut": {
+          "value": 0.25,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 3
+        "loanerCut": {
+          "value": 0.15,
+          "icon": "boxPickUp03"
+        }
+      }
+    ]
+  },
+  "spearleafLogistics": {
+    "name": "Spearleaf Marine Logistics",
+    "description": "Owns a large logistics facility on spearleaf island.",
+    "icon": "semiTruckUS",
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "industrialWarehouse": {
+    "name": "Belasco City Warehouse",
+    "description": "A large warehouse near the harbour area of belasco city.",
+    "icon": "semiTruckUS",
+    "loanableVehicles": [],
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "rentabox": {
+    "name": "Rent-A-Box",
+    "description": "A small warehouse in the industrial area outside of belasco city.",
+    "icon": "semiTruckUS",
+    "loanableVehicles": [
+      {
+        "model": "tiltdeck",
+        "config": "22ft_standard",
+        "reputationLvl": -1,
+        "deliveryLvl": 0,
+        "mileage": 241401600
+      },
+      {
+        "model": "tiltdeck",
+        "config": "30ft_pintle",
+        "reputationLvl": -1,
+        "deliveryLvl": 2,
+        "mileage": 241401600
+      },
+      {
+        "model": "tiltdeck",
+        "config": "30ft_gooseneck",
+        "reputationLvl": -1,
+        "deliveryLvl": 2,
+        "mileage": 241401600
+      },
+      {
+        "model": "tiltdeck",
+        "config": "30ft_gooseneck_cargo",
+        "reputationLvl": 2,
+        "deliveryLvl": 2,
+        "mileage": 241401600
+      },
+      {
+        "model": "tiltdeck",
+        "config": "22ft_gooseneck_cargo",
+        "reputationLvl": 0,
+        "deliveryLvl": 1,
+        "mileage": 241401600
+      },
+      {
+        "model": "boxutility",
+        "config": "trailer_career_cargo",
+        "reputationLvl": -1,
+        "deliveryLvl": 1,
+        "mileage": 241401600
+      },
+      {
+        "model": "boxutility_large",
+        "config": "trailer_career_cargo_large",
+        "reputationLvl": -1,
+        "deliveryLvl": 1,
+        "mileage": 241401600
+      },
+      {
+        "model": "cargotrailer",
+        "config": "upull_career",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "mileage": 241401600
+      },
+      {
+        "model": "van",
+        "config": "h25_career_with_cargo",
+        "reputationLvl": -1,
+        "deliveryLvl": 0,
+        "mileage": 241401600
+      }
+    ],
+    "reputationLevels": [
+      {
+        // Level -1
+        "loanerCut": {
+          "value": 0.5,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 0
+        "loanerCut": {
+          "value": 0.4,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 1
+        "loanerCut": {
+          "value": 0.35,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 2
+        "loanerCut": {
+          "value": 0.30,
+          "icon": "boxPickUp03"
+        }
+      },
+      {
+        // Level 3
+        "loanerCut": {
+          "value": 0.25,
+          "icon": "boxPickUp03"
+        }
+      }
+    ]
+  },
+  "belascoCityGarage": {
+    "name": "Belasco City Garage",
+    "description": "Owns garage in the belasco area.",
+    "icon": "garage02",
+    "loanableVehicles": [
+      {
+        "model": "us_semi",
+        "config": "t83s_rollback",
+        "reputationLvl": 2,
+        "deliveryLvl": 1,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 100000000,
+          "2": 1000000,
+          "3": 10000
+        }
+      },
+      {
+        "model": "us_semi",
+        "config": "tc82_career_rls_repo",
+        "reputationLvl": 0,
+        "deliveryLvl": 1,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 100000000,
+          "2": 1000000,
+          "3": 10000
+        }
+      },
+      {
+        "model": "us_semi",
+        "config": "tc82s_rollback",
+        "reputationLvl": 2,
+        "deliveryLvl": 2,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 100000000,
+          "2": 1000000,
+          "3": 10000
+        }
+      },
+      {
+        "model": "pickup",
+        "config": "d45_diesel_rollback_M",
+        "reputationLvl": -1,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 100000000,
+          "2": 1000000,
+          "3": 10000
+        }
+      },
+      {
+        "model": "van",
+        "config": "h45_rollback",
+        "reputationLvl": -1,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 100000000,
+          "2": 1000000,
+          "3": 10000
+        }
+      },
+      {
+        "model": "pickup",
+        "config": "pickup_career_rls_repo",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 100000000,
+          "2": 1000000,
+          "3": 10000
+        }
+      },
+      {
+        "model": "van",
+        "config": "h45_career_rls_repo",
+        "reputationLvl": -1,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 100000000,
+          "2": 1000000,
+          "3": 10000
+        }
+      }
+    ],
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "fastAutomotive": {
+    "name": "Fast Automotive",
+    "description": "A high-end mechanic and garage near the racetrack.",
+    "icon": "garage02",
+    "reputationLevels": [
+      {
+        "stock": 5,
+        "hiddenFromDealerList": true,
+        "range": [
+          0.8,
+          0.95,
+          1.25,
+          1.5
+        ],
+        "fees": 500,
+        "testDrive": {
+          "abandonFees": 500,
+          "timeLimit": 60,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 10,
+        "hiddenFromDealerList": true,
+        "range": [
+          0.7,
+          0.90,
+          1.20,
+          1.4
+        ],
+        "fees": 500,
+        "testDrive": {
+          "abandonFees": 500,
+          "timeLimit": 90,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 15,
+        "range": [
+          0.6,
+          0.85,
+          1.15,
+          1.3
+        ],
+        "fees": 300,
+        "testDrive": {
+          "abandonFees": 350,
+          "timeLimit": 120,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 20,
+        "range": [
+          0.6,
+          0.80,
+          1.05,
+          1.25
+        ],
+        "fees": 150,
+        "testDrive": {
+          "abandonFees": 250,
+          "timeLimit": 150,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 25,
+        "range": [
+          0.5,
+          0.75,
+          1.05,
+          1.15
+        ],
+        "fees": 0,
+        "testDrive": {
+          "abandonFees": 150,
+          "timeLimit": 180,
+          "licencePlate": ""
+        },
+      }
+    ]
+  },
+  "belascoCityExhaust": {
+    "name": "Exhaust Shop",
+    "description": "A small mechanic shop near the city edge.",
+    "icon": "garage02",
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "torresTires": {
+    "name": "Torres Tires",
+    "description": "A small mechanic shop near the city edge.",
+    "icon": "garage02",
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "smashAutoRepairs": {
+    "name": "Smash Auto Repairs",
+    "description": "A small mechanic shop near the city edge.",
+    "icon": "garage02",
+    "reputationLevels": [
+      {
+        "stock": 5,
+        "hiddenFromDealerList": true,
+        "range": [
+          0.8,
+          0.95,
+          1.25,
+          1.5
+        ],
+        "fees": 100,
+        "testDrive": {
+          "abandonFees": 500,
+          "timeLimit": 60,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 7,
+        "hiddenFromDealerList": true,
+        "range": [
+          0.7,
+          0.90,
+          1.20,
+          1.4
+        ],
+        "fees": 100,
+        "testDrive": {
+          "abandonFees": 500,
+          "timeLimit": 90,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 12,
+        "range": [
+          0.6,
+          0.85,
+          1.0,
+          1.1
+        ],
+        "fees": 50,
+        "testDrive": {
+          "abandonFees": 350,
+          "timeLimit": 120,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 17,
+        "range": [
+          0.6,
+          0.80,
+          1.0,
+          1.1
+        ],
+        "fees": 0,
+        "testDrive": {
+          "abandonFees": 250,
+          "timeLimit": 150,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 20,
+        "range": [
+          0.5,
+          0.70,
+          1.0,
+          1.05
+        ],
+        "fees": 0,
+        "testDrive": {
+          "abandonFees": 150,
+          "timeLimit": 180,
+          "licencePlate": ""
+        }
+      }
+    ]
+  },
+  "sealbrik": {
+    "name": "Sealbrik",
+    "description": "Produces various concrete and dry bulk related products, and owns the quarry outside of belasco city.",
+    "icon": "rocks",
+    "loanableVehicles": [
+      {
+        "model": "wl40",
+        "config": "arm_bucket_alt",
+        "reputationLvl": 3,
+        "deliveryLvl": 0,
+        "mileage": 10000
+      },
+      {
+        "model": "wl40",
+        "config": "arm_bucket",
+        "reputationLvl": -1,
+        "deliveryLvl": 0,
+        "mileage": 10000
+      }
+    ],
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "localDeliveryAssociation": {
+    "name": "Local Delivery Association",
+    "description": "A local delivery association that owns a bunch of stores in italy.",
+    "icon": "cardboardBox",
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "moneyGrabLogistics": {
+    "name": "MoneyGrab Bank",
+    "description": "Complete deliveries for MoneyGrab Bank and they may help you out on some quick loans",
+    "icon": "beamCurrency",
+    "loanableVehicles": [
+      {
+        "model": "md_series",
+        "config": "small_money_transport_career",
+        "reputationLvl": -1,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "md_series",
+        "config": "large_money_transport_career",
+        "reputationLvl": 2,
+        "deliveryLvl": 2,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      }
+    ],
+    "reputationLevels": [
+      {
+        // Level -1
+        "loanerCut": {
+          "value": 0.75,
+          "icon": "boxPickUp03"
+        },
+        "loans": {
+          "max": 100000,
+          "rate": 0.50
+        },
+        "requiredValue": -1000,
+        "min": -1000
+      },
+      {
+        // Level 0
+        "loanerCut": {
+          "value": 0.5,
+          "icon": "boxPickUp03"
+        },
+        "loans": {
+          "max": 100000,
+          "rate": 0.25
+        },
+        "requiredValue": 0
+      },
+      {
+        // Level 1
+        "loans": {
+          "max": 350000,
+          "rate": 0.20
+        },
+        "requiredValue": 3900
+      },
+      {
+        // Level 2
+        "loans": {
+          "max": 600000,
+          "rate": 0.15
+        },
+        "requiredValue": 11600
+      },
+      {
+        // Level 3
+        "loans": {
+          "max": 1000000,
+          "rate": 0.10
+        },
+        "requiredValue": 44600,
+        "max": 50000
+      }
+    ]
+  },
+  "moneyGrabBusiness": {
+    "name": "MoneyGrab Business Banking",
+    "description": "Business loans",
+    "icon": "beamCurrency",
+    "reputationLevels": [
+      {
+        "loanerCut": {
+          "value": 0.75,
+          "icon": "boxPickUp03"
+        },
+        "requiredValue": -1000,
+        "min": -1000
+      },
+      {
+        "loanerCut": {
+          "value": 0.5,
+          "icon": "boxPickUp03"
+        },
+        "requiredValue": 0
+      },
+      {
+        "requiredValue": 3900
+      },
+      {
+        "requiredValue": 11600
+      },
+      {
+        "requiredValue": 44600,
+        "max": 50000
+      }
+    ]
+  },
+  "salmonBank": {
+    "name": "Salmon's Private Bank",
+    "description": "Sell your vehicles to the notorious Salmon the Negotiator to earn reputation. He's rolling in cash so you can get some crazy loans.",
+    "icon": "beamCurrency",
+    "reputationLevels": [
+      {
+        // Level -1
+        "requiredValue": -1000,
+        "min": -1000
+      },
+      {
+        // Level 0
+        "requiredValue": 0,
+      },
+      {
+        // Level 1
+        "levelLabel": "Reputation: Level 1",
+        "label": "Desperate, but cool",
+        "loans": {
+          "max": 500000,
+          "rate": 0.20
+        },
+        "requiredValue": 3900
+      },
+      {
+        // Level 2
+        "levelLabel": "Reputation: Level 2",
+        "label": "Respectable",
+        "loans": {
+          "max": 750000,
+          "rate": 0.175
+        },
+        "requiredValue": 11600
+      },
+      {
+        // Level 3
+        "levelLabel": "Reputation: Level 3",
+        "label": "My Man",
+        "loans": {
+          "max": 1000000,
+          "rate": 0.125
+        },
+        "requiredValue": 44600,
+      },
+      {
+        // Level 4
+        "levelLabel": "Reputation: Level 4",
+        "label": "Obsessed",
+        "loans": {
+          "max": 1000000,
+          "rate": 0.10
+        },
+        "requiredValue": 111600,
+        "max": 120000
+      }
+    ]
+  },
+  "policeLoaner": {
+    "name": "Belasco City Police Department",
+    "description": "",
+    "icon": "beamCurrency",
+    "roleplayType": "police",
+    "loanerUnlockMode": "skillLevel",
+    "loanableVehicles": [
+      {
+        "model": "fullsize",
+        "config": "bcpd",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 1,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "fullsize",
+        "config": "police",
+        "reputationLvl": -1,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 1,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 160934400,
+          "2": 160934400,
+          "3": 80467200,
+          "4": 80467200,
+          "5": 40233600
+        }
+      },
+      {
+        "model": "autobello",
+        "config": "carabinieri",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 2,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "covet",
+        "config": "police",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 3,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "fullsize",
+        "config": "unmarked",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 4,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "fullsize",
+        "config": "interceptor",
+        "reputationLvl": 1,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 5,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "lansdale",
+        "config": "33_police_late_A",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 6,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "nine",
+        "config": "nine_police",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 7,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "roamer",
+        "config": "police",
+        "reputationLvl": 1,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 8,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 241401600,
+          "2": 86099904,
+          "3": 86099904,
+          "4": 86099904,
+          "5": 17219980.8
+        }
+      },
+      {
+        "model": "roamer",
+        "config": "sheriff",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 8,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "roamer",
+        "config": "unmarked",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 8,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "midtruck",
+        "config": "4x4_police_petrol",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 9,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "burnside",
+        "config": "4door_late_v8_3A_police",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 12,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "hopper",
+        "config": "carabinieri",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 13,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "hopper",
+        "config": "parkranger",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 13,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "hopper",
+        "config": "sheriff",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 13,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "bluebuck",
+        "config": "interceptor",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 14,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "bluebuck",
+        "config": "police",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 14,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "van",
+        "config": "police",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 15,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "van",
+        "config": "police_passenger",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 15,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "moonhawk",
+        "config": "detective",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 16,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "bastion",
+        "config": "police_v6_awd_A",
+        "reputationLvl": 1,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 17,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 17220
+        }
+      },
+      {
+        "model": "legran",
+        "config": "detective",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 18,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "legran",
+        "config": "police",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 18,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "pickup",
+        "config": "d10_4wd_parkranger",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 19,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "wendover",
+        "config": "interceptor",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 21,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "midsize",
+        "config": "police",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 22,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "midsize",
+        "config": "unmarked",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 22,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "vivace",
+        "config": "tograc_polizia",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 23,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "vivace",
+        "config": "vivace_polizia",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 23,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "vivace",
+        "config": "vivace_S_gendarmerie",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 23,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "bx",
+        "config": "police_A",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 24,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "bx",
+        "config": "police_alt_A",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 24,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "bastion",
+        "config": "police_v8_awd_A",
+        "reputationLvl": 2,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 25,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 177027840,
+          "2": 88513920,
+          "3": 88513920,
+          "4": 17219981,
+          "5": 17220
+        }
+      },
+      {
+        "model": "sunburst2",
+        "config": "gendarmerie",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 26,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "sunburst2",
+        "config": "interceptor",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 26,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "sunburst2",
+        "config": "police",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 26,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "sunburst2",
+        "config": "polizia",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 26,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "etk800",
+        "config": "844_police_A",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 26,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "etk800",
+        "config": "854_police_A",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 26,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "etk800",
+        "config": "854_police_A_alt",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 26,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "bastion",
+        "config": "police_unmarked_v8_awd_A",
+        "reputationLvl": 3,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 30,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 17220
+        }
+      },
+      {
+        "model": "bastion",
+        "config": "police_unmarked_v8_awd_A_Blue",
+        "reputationLvl": 3,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 35,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 41038272,
+          "4": 8207654,
+          "5": 17220
+        }
+      },
+      {
+        "model": "bastion",
+        "config": "police_unmarked_v8_awd_A_Red",
+        "reputationLvl": 3,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 35,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 41038272,
+          "4": 8207654,
+          "5": 17220
+        }
+      },
+      {
+        "model": "bastion",
+        "config": "police_unmarked_v8_awd_A_Silver",
+        "reputationLvl": 3,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 35,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 41038272,
+          "4": 8207654,
+          "5": 17220
+        }
+      },
+      {
+        "model": "bolide",
+        "config": "polizia",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 37,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "bastion",
+        "config": "police_redtail",
+        "reputationLvl": 4,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 45,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 72420480,
+          "3": 36210240,
+          "4": 14484096,
+          "5": 17220
+        }
+      },
+      {
+        "model": "bastion",
+        "config": "undercover_redtail",
+        "reputationLvl": 4,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 45,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 72420480,
+          "3": 36210240,
+          "4": 14484096,
+          "5": 17220
+        }
+      },
+      {
+        "model": "etkc",
+        "config": "kc6x_340_police_highway_A",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 40,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "scintilla",
+        "config": "gts_polizia",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "requiredPoliceLevel": 50,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      }
+    ],
+    "reputationValues": {
+      "returnLoanerDamaged": -300
+    },
+    "reputationLevels": [
+      {
+        // Level -1
+        "label": "Probation",
+        "requiredValue": -1000,
+        "min": -1000,
+        "hiddenFromDealerList": true
+      },
+      {
+        // Level 0
+        "label": "Rookie",
+        "requiredValue": 0,
+        "hiddenFromDealerList": true
+      },
+      {
+        // Level 1
+        "deliveryBonus": {
+          "value": 1.20
+        },
+        "label": "Sergeant",
+        "requiredValue": 3900,
+        "hiddenFromDealerList": true
+      },
+      {
+        // Level 2
+        "deliveryBonus": {
+          "value": 1.45
+        },
+        "label": "Captain",
+        "requiredValue": 11600
+      },
+      {
+        // Level 3
+        "deliveryBonus": {
+          "value": 1.75
+        },
+        "label": "Chief",
+        "requiredValue": 44600
+      },
+      {
+        // Level 4
+        "deliveryBonus": {
+          "value": 3
+        },
+        "requiredValue": 111600,
+        "levelLabel": "Reputation: Level 4",
+        "label": "GSP"
+      },
+      {
+        // Level 5
+        "deliveryBonus": {
+          "value": 10
+        },
+        "requiredValue": 299600,
+        "max": 350000,
+        "levelLabel": "Reputation: Level 5",
+        "label": "FBI"
+      }
+    ]
+  },
+  "trustedAutos": {
+    "name": "Trusted Auto Sales",
+    "description": "Trusted Auto Sales - Discounted cars",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": -300
+    },
+    "reputationLevels": [
+      {
+        "stock": 5,
+        "hiddenFromDealerList": true,
+        "range": [
+          0.8,
+          0.95,
+          1.25,
+          1.5
+        ],
+        "fees": 100,
+        "testDrive": {
+          "abandonFees": 500,
+          "timeLimit": 60,
+          "licencePlate": ""
+        },
+        "subFilters": [
+          {
+            "probability": 6,
+            "whiteList": {
+              "Country": [
+                "United States"
+              ],
+              "Value": {
+                "min": 500,
+                "max": 20000
+              }
+            }
+          },
+          {
+            "probability": 2,
+            "whiteList": {
+              "Country": [
+                "Poland",
+                "Italy",
+                "France",
+                "Germany",
+                "Japan",
+                "Canada",
+                "Great Britain",
+                "Soviet Union/Russia",
+                "United Kingdom",
+                "Sweden"
+              ],
+              "Value": {
+                "min": 500,
+                "max": 20000
+              }
+            }
+          },
+          {
+            "probability": 1,
+            "whiteList": {
+              "Value": {
+                "min": 500,
+                "max": 20000
+              }
+            }
+          }
+        ]
+      },
+      {
+        "stock": 10,
+        "range": [
+          0.7,
+          0.90,
+          1.20,
+          1.4
+        ],
+        "fees": 100,
+        "testDrive": {
+          "abandonFees": 500,
+          "timeLimit": 90,
+          "licencePlate": ""
+        },
+        "subFilters": [
+          {
+            "probability": 6,
+            "whiteList": {
+              "Country": [
+                "United States"
+              ],
+              "Value": {
+                "min": 500,
+                "max": 20000
+              }
+            }
+          },
+          {
+            "probability": 2,
+            "whiteList": {
+              "Country": [
+                "Poland",
+                "Italy",
+                "France",
+                "Germany",
+                "Japan",
+                "Canada",
+                "Great Britain",
+                "Soviet Union/Russia",
+                "United Kingdom",
+                "Sweden"
+              ],
+              "Value": {
+                "min": 500,
+                "max": 20000
+              }
+            }
+          },
+          {
+            "probability": 1,
+            "whiteList": {
+              "Value": {
+                "min": 500,
+                "max": 20000
+              }
+            }
+          }
+        ]
+      },
+      {
+        "stock": 20,
+        "range": [
+          0.6,
+          0.85,
+          1.15,
+          1.3
+        ],
+        "fees": 50,
+        "testDrive": {
+          "abandonFees": 350,
+          "timeLimit": 120,
+          "licencePlate": ""
+        },
+        "subFilters": [
+          {
+            "probability": 6,
+            "whiteList": {
+              "Country": [
+                "United States"
+              ],
+              "Value": {
+                "min": 500,
+                "max": 50000
+              }
+            }
+          },
+          {
+            "probability": 2,
+            "whiteList": {
+              "Country": [
+                "Poland",
+                "Italy",
+                "France",
+                "Germany",
+                "Japan",
+                "Canada",
+                "Great Britain",
+                "Soviet Union/Russia",
+                "United Kingdom",
+                "Sweden"
+              ],
+              "Value": {
+                "min": 500,
+                "max": 50000
+              }
+            }
+          },
+          {
+            "probability": 1,
+            "whiteList": {
+              "Value": {
+                "min": 500,
+                "max": 50000
+              }
+            }
+          }
+        ]
+      },
+      {
+        "stock": 25,
+        "range": [
+          0.6,
+          0.80,
+          1.05,
+          1.25
+        ],
+        "fees": 0,
+        "testDrive": {
+          "abandonFees": 250,
+          "timeLimit": 150,
+          "licencePlate": ""
+        },
+        "subFilters": [
+          {
+            "probability": 6,
+            "whiteList": {
+              "Country": [
+                "United States"
+              ],
+              "Value": {
+                "min": 500,
+                "max": 100000
+              }
+            }
+          },
+          {
+            "probability": 2,
+            "whiteList": {
+              "Country": [
+                "Poland",
+                "Italy",
+                "France",
+                "Germany",
+                "Japan",
+                "Canada",
+                "Great Britain",
+                "Soviet Union/Russia",
+                "United Kingdom",
+                "Sweden"
+              ],
+              "Value": {
+                "min": 500,
+                "max": 100000
+              }
+            }
+          },
+          {
+            "probability": 1,
+            "whiteList": {
+              "Value": {
+                "min": 500,
+                "max": 100000
+              }
+            }
+          }
+        ]
+      },
+      {
+        "stock": 35,
+        "range": [
+          0.5,
+          0.75,
+          1.05,
+          1.15
+        ],
+        "fees": 0,
+        "testDrive": {
+          "abandonFees": 150,
+          "timeLimit": 180,
+          "licencePlate": ""
+        },
+        "subFilters": [
+          {
+            "probability": 6,
+            "whiteList": {
+              "Country": [
+                "United States"
+              ],
+              "Value": {
+                "min": 500,
+                "max": 1000000
+              }
+            }
+          },
+          {
+            "probability": 2,
+            "whiteList": {
+              "Country": [
+                "Poland",
+                "Italy",
+                "France",
+                "Germany",
+                "Japan",
+                "Canada",
+                "Great Britain",
+                "Soviet Union/Russia",
+                "United Kingdom",
+                "Sweden"
+              ],
+              "Value": {
+                "min": 500,
+                "max": 1000000
+              }
+            }
+          },
+          {
+            "probability": 1,
+            "whiteList": {
+              "Value": {
+                "min": 500,
+                "max": 1000000
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "joesJunkDealership": {
+    "name": "Joe's Junk",
+    "description": "Joe's Junk - You think you hate it now , wait till you drive it",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": -300
+    },
+    "reputationLevels": [
+      {
+        "stock": 5,
+        "range": [
+          0.8,
+          0.95,
+          1.25,
+          1.5
+        ],
+        "fees": 0,
+        "testDrive": {
+          "abandonFees": 500,
+          "timeLimit": 60,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 10,
+        "range": [
+          0.7,
+          0.90,
+          1.20,
+          1.4
+        ],
+        "fees": 0,
+        "testDrive": {
+          "abandonFees": 500,
+          "timeLimit": 90,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 15,
+        "range": [
+          0.6,
+          0.85,
+          1.15,
+          1.3
+        ],
+        "fees": 0,
+        "testDrive": {
+          "abandonFees": 350,
+          "timeLimit": 120,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 20,
+        "range": [
+          0.5,
+          0.80,
+          1.05,
+          1.25
+        ],
+        "fees": 0,
+        "testDrive": {
+          "abandonFees": 250,
+          "timeLimit": 150,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 25,
+        "range": [
+          0.4,
+          0.75,
+          1.05,
+          1.15
+        ],
+        "fees": 0,
+        "testDrive": {
+          "abandonFees": 150,
+          "timeLimit": 180,
+          "licencePlate": ""
+        }
+      }
+    ]
+  },
+  "serviceDealership": {
+    "name": "Service Dealership",
+    "description": "Service Dealership - Purchase Service Vehicles here",
+    "icon": "beamCurrency",
+    "loanableVehicles": [
+      {
+        "model": "fullsize",
+        "config": "taxi",
+        "reputationLvl": -1,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "midsize",
+        "config": "taxi",
+        "reputationLvl": -1,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      },
+      {
+        "model": "bastion",
+        "config": "taxi",
+        "reputationLvl": -1,
+        "deliveryLvl": 0,
+        "mileages": {
+          "-1": 241401600,
+          "0": 241401600,
+          "1": 152887680,
+          "2": 76443840,
+          "3": 76443840,
+          "4": 38221920,
+          "5": 38221920
+        }
+      }
+    ],
+    "reputationValues": {
+      "returnLoanerDamaged": -300
+    },
+    "reputationLevels": [
+      {
+        "stock": 5,
+        "range": [
+          0.6,
+          0.95,
+          1.25,
+          1.5
+        ],
+        "fees": 500,
+        "testDrive": {
+          "abandonFees": 500,
+          "timeLimit": 60,
+          "licencePlate": ""
+        },
+        "hiddenFromDealerList": true
+      },
+      {
+        "stock": 10,
+        "range": [
+          0.7,
+          0.90,
+          1.20,
+          1.4
+        ],
+        "fees": 500,
+        "testDrive": {
+          "abandonFees": 500,
+          "timeLimit": 90,
+          "licencePlate": ""
+        },
+        "hiddenFromDealerList": true
+      },
+      {
+        "stock": 15,
+        "range": [
+          0.6,
+          0.85,
+          1.15,
+          1.3
+        ],
+        "fees": 300,
+        "testDrive": {
+          "abandonFees": 350,
+          "timeLimit": 120,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 20,
+        "range": [
+          0.6,
+          0.80,
+          1.05,
+          1.25
+        ],
+        "fees": 150,
+        "testDrive": {
+          "abandonFees": 250,
+          "timeLimit": 150,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 25,
+        "range": [
+          0.5,
+          0.75,
+          1.05,
+          1.15
+        ],
+        "fees": 0,
+        "testDrive": {
+          "abandonFees": 150,
+          "timeLimit": 180,
+          "licencePlate": ""
+        }
+      }
+    ]
+  },
+  "trailerShop": {
+    "name": "Trailer Dealer",
+    "description": "Trailer Sales",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": -300
+    },
+    "reputationLevels": [
+      {
+        "stock": 5,
+        "hiddenFromDealerList": true,
+        "range": [
+          0.8,
+          0.95,
+          1.25,
+          1.5
+        ],
+        "fees": 100,
+        "testDrive": {
+          "abandonFees": 500,
+          "timeLimit": 60,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 10,
+        "hiddenFromDealerList": true,
+        "range": [
+          0.7,
+          0.90,
+          1.20,
+          1.4
+        ],
+        "fees": 100,
+        "testDrive": {
+          "abandonFees": 500,
+          "timeLimit": 90,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 15,
+        "range": [
+          0.6,
+          0.85,
+          1.15,
+          1.3
+        ],
+        "fees": 50,
+        "testDrive": {
+          "abandonFees": 350,
+          "timeLimit": 120,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 20,
+        "range": [
+          0.5,
+          0.80,
+          1.05,
+          1.25
+        ],
+        "fees": 0,
+        "testDrive": {
+          "abandonFees": 250,
+          "timeLimit": 150,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 25,
+        "range": [
+          0.4,
+          0.75,
+          1.05,
+          1.15
+        ],
+        "fees": 0,
+        "testDrive": {
+          "abandonFees": 150,
+          "timeLimit": 180,
+          "licencePlate": ""
+        }
+      }
+    ]
+  },
+  "BruckellDealership": {
+    "name": "Bruckell Factory Store",
+    "description": "Direct factory ordering for new Bruckell vehicles.",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": -300
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "GavrilcarDealership": {
+    "name": "Gavril Certified Trucks",
+    "description": "Certified low-mileage Gavril light-truck donors.",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": -300
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "GavriltruckDealership": {
+    "name": "Gavril Commercial Remanufacturing",
+    "description": "Remanufactured Gavril commercial vehicles.",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": -300
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "CherrierDealership": {
+    "name": "Cherrier Factory Store",
+    "description": "Direct factory ordering for new Cherrier vehicles.",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": -300
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "CivettaDealership": {
+    "name": "Civetta Factory Store",
+    "description": "Direct factory ordering for new Civetta vehicles.",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": -300
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "ETKDealership": {
+    "name": "ETK Factory Store",
+    "description": "Direct factory ordering for new ETK vehicles.",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": -300
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "HirochiDealership": {
+    "name": "Hirochi Factory Store",
+    "description": "Direct factory ordering for new Hirochi vehicles.",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": -300
+    },
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "importDealer": {
+    "name": "Import Dealership",
+    "description": "All thing Imported",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": -300
+    },
+    "reputationLevels": [
+      {
+        "stock": 5,
+        "range": [
+          0.8,
+          0.95,
+          1.25,
+          1.5
+        ],
+        "fees": 3500,
+        "testDrive": {
+          "abandonFees": 500,
+          "timeLimit": 60,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 10,
+        "range": [
+          0.7,
+          0.90,
+          1.20,
+          1.4
+        ],
+        "fees": 3500,
+        "testDrive": {
+          "abandonFees": 500,
+          "timeLimit": 90,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 15,
+        "range": [
+          0.6,
+          0.85,
+          1.15,
+          1.3
+        ],
+        "fees": 2000,
+        "testDrive": {
+          "abandonFees": 350,
+          "timeLimit": 120,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 20,
+        "range": [
+          0.5,
+          0.80,
+          1.05,
+          1.25
+        ],
+        "fees": 750,
+        "testDrive": {
+          "abandonFees": 250,
+          "timeLimit": 150,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 25,
+        "range": [
+          0.4,
+          0.75,
+          1.05,
+          1.15
+        ],
+        "fees": 0,
+        "testDrive": {
+          "abandonFees": 150,
+          "timeLimit": 180,
+          "licencePlate": ""
+        }
+      }
+    ]
+  },
+  "raceTab": {
+    "name": "RaceTab",
+    "description": "Vehicles made by the aftermarket company, RaceTab",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": -300
+    },
+    "reputationLevels": [
+      {
+        "stock": 5,
+        "hiddenFromDealerList": true,
+        "fees": 500,
+        "testDrive": {
+          "abandonFees": 500,
+          "timeLimit": 60,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 7,
+        "hiddenFromDealerList": true,
+        "fees": 500,
+        "testDrive": {
+          "abandonFees": 500,
+          "timeLimit": 90,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 12,
+        "fees": 300,
+        "testDrive": {
+          "abandonFees": 350,
+          "timeLimit": 120,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 15,
+        "fees": 150,
+        "testDrive": {
+          "abandonFees": 250,
+          "timeLimit": 150,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 20,
+        "fees": 0,
+        "testDrive": {
+          "abandonFees": 150,
+          "timeLimit": 180,
+          "licencePlate": ""
+        }
+      }
+    ]
+  },
+  "asotv": {
+    "name": "As Seen On TV",
+    "description": "Unlock memorable vehicles featured in Raceless's YouTube playthroughs by joining the Raceless Channel Membership.",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": -300
+    },
+    "reputationLevels": [
+      {
+        "stock": 5,
+        "hiddenFromDealerList": true,
+        "fees": 500,
+        "testDrive": {
+          "abandonFees": 500,
+          "timeLimit": 60,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 7,
+        "hiddenFromDealerList": true,
+        "fees": 500,
+        "testDrive": {
+          "abandonFees": 500,
+          "timeLimit": 90,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 15,
+        "fees": 300,
+        "testDrive": {
+          "abandonFees": 350,
+          "timeLimit": 120,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 20,
+        "fees": 150,
+        "testDrive": {
+          "abandonFees": 250,
+          "timeLimit": 150,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 30,
+        "fees": 0,
+        "testDrive": {
+          "abandonFees": 150,
+          "timeLimit": 180,
+          "licencePlate": ""
+        }
+      }
+    ]
+  },
+  "slopGearDealership": {
+    "name": "Slop Gear Garage",
+    "description": "A dealership showcasing vehicles from Slop Gear Specials and other questionably engineered, low-budget creations by the trio.",
+    "icon": "beamCurrency",
+    "loanableVehicles": [],
+    "reputationValues": {
+      "returnLoanerDamaged": -300
+    },
+    "reputationLevels": [
+      {
+        "stock": 5,
+        "testDrive": {
+          "abandonFees": 500,
+          "timeLimit": 60,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 7,
+        "testDrive": {
+          "abandonFees": 500,
+          "timeLimit": 90,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 15,
+        "testDrive": {
+          "abandonFees": 350,
+          "timeLimit": 120,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 20,
+        "testDrive": {
+          "abandonFees": 250,
+          "timeLimit": 150,
+          "licencePlate": ""
+        }
+      },
+      {
+        "stock": 30,
+        "testDrive": {
+          "abandonFees": 150,
+          "timeLimit": 180,
+          "licencePlate": ""
+        }
+      }
+    ]
+  }
+  /**
+  "belascoCityHospital": {
+    "name":"Belasco City Hospital",
+    "description":"",
+    "icon":"carChase01",
+    "reputationLevels":[
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "belascoCityPoliceDepartment": {
+    "name":"Belasco City Police Department",
+    "description":"",
+    "icon":"carChase01",
+    "reputationLevels":[
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "belascoCityFireDepartment": {
+    "name":"Belasco City Fire Department",
+    "description":"",
+    "icon":"carChase01",
+    "reputationLevels":[
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "snoozeNews": {
+    "name":"Snooze News",
+    "description":"",
+    "icon":"peopleOutline",
+    "reputationLevels":[
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },*/
+}

@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "accidentCargo": {
+    "shapes": [
+      "/levels/west_coast_usa/art/shapes/objects/s_containers_20_beamng.dae",
+      "/art/shapes/objects/s_box_wood_01.dae"
+    ]
+  }
+}

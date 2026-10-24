@@ -1,0 +1,6 @@
+{
+  "id": "burnout",
+  "order": 90,
+  "extension": "overhaul_events_host",
+  "definition": "overhaul/events/host/hostActivity"
+}

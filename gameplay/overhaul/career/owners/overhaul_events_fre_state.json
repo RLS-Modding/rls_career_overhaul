@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_events_fre_state",
+  "order": 31,
+  "module": "overhaul/events/fre/state",
+  "scopes": [
+    {
+      "id": "children",
+      "order": 31,
+      "parent": "overhaul_events_fre_host"
+    }
+  ]
+}

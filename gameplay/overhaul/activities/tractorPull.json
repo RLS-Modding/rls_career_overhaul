@@ -1,0 +1,6 @@
+{
+  "id": "tractorPull",
+  "order": 80,
+  "extension": "overhaul_events_host",
+  "definition": "overhaul/events/host/hostActivity"
+}

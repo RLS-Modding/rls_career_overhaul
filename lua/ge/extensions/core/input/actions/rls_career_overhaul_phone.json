@@ -1,0 +1,11 @@
+{
+  "openPhone": {
+    "cat": "rlsCareerOverhaul",
+    "order": 257,
+    "ctx": "tlua",
+    "onDown": "if not overhaul_phone_phone then extensions.load('overhaul_phone_phone') end if overhaul_phone_phone then overhaul_phone_phone.togglePhone() end",
+    "title": "Toggle Phone",
+    "desc": "Open or close the career phone and return to your last app",
+    "overhaulGroup": "Phone"
+  }
+}

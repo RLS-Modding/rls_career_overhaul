@@ -25,16 +25,16 @@
     "order_simset": 0,
     "version": 1.5
   },
-  "ut_con_site_addon" : {
-    "name" : "ut_con_site_addon",
-    "mapTo" : "ut_con_site_addon",
+  "rls_tpu_con_site_addon" : {
+    "name" : "rls_tpu_con_site_addon",
+    "mapTo" : "rls_tpu_con_site_addon",
     "class" : "Material",
-    "persistentId" : "491ec2a3-679f-467c-88a5-a446b94194c2",
+    "persistentId" : "709a18fa-54d0-4aa6-bd55-2a58a02b2052",
     "Stages" : [
       {
-        "colorMap" : "levels/Utah/art/shapes/buildings/construction_site_addon_d.dds",
-        "normalMap" : "levels/Utah/art/shapes/buildings/construction_site_addon_n.dds",
-        "specularMap" : "levels/Utah/art/shapes/buildings/construction_site_addon_s.dds",
+        "colorMap" : "/assets/materials/baked_props/ut_con_site_addon/construction_site_addon_d.dds",
+        "normalMap" : "/assets/materials/baked_props/ut_con_site_addon/construction_site_addon_n.dds",
+        "specularMap" : "/assets/materials/baked_props/ut_con_site_addon/construction_site_addon_s.dds",
         "specularPower" : 1,
         "useAnisotropic" : true,
         "vertColor" : true
@@ -79,5 +79,108 @@
     "materialTag1" : "object",
     "translucent" : true,
     "translucentBlendOp" : "None"
+  },
+  "rls_tpu_crate_cola": {
+    "name": "rls_tpu_crate_cola",
+    "mapTo": "rls_tpu_crate_cola",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorMap": "/vehicles/common/loads/crate_cardboard_b.color.png",
+        "normalMap": "/vehicles/common/loads/crate_cola_n.normal.png",
+        "pixelSpecular": true,
+        "roughnessFactor": null,
+        "roughnessMap": "/vehicles/common/loads/crate_cola_r.data.png"
+      },
+      {},
+      {},
+      {}
+    ],
+    "alphaRef": 0,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "translucent": true,
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "rls_tpu_crate_cola.skin.cola": {
+    "name": "rls_tpu_crate_cola.skin.cola",
+    "mapTo": "rls_tpu_crate_cola.skin.cola",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorMap": "/vehicles/common/loads/crate_cola_b.color.png",
+        "normalMap": "/vehicles/common/loads/crate_cola_n.normal.png",
+        "pixelSpecular": true,
+        "roughnessFactor": null,
+        "roughnessMap": "/vehicles/common/loads/crate_cola_r.data.png"
+      },
+      {},
+      {},
+      {}
+    ],
+    "alphaRef": 0,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "translucent": true,
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "rls_tpu_pipes": {
+    "name": "rls_tpu_pipes",
+    "mapTo": "rls_tpu_pipes",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorMap": "/vehicles/common/loads/pipes_b.color.png",
+        "metallicFactor": 1,
+        "metallicMap": "/vehicles/common/loads/pipes_m.data.png",
+        "normalMap": "/vehicles/common/loads/pipes_n.normal.png",
+        "pixelSpecular": true,
+        "roughnessMap": "/vehicles/common/loads/pipes_r.data.png"
+      },
+      {},
+      {},
+      {}
+    ],
+    "alphaRef": 0,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "translucent": true,
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "rls_tpu_pallet_wood": {
+    "name": "rls_tpu_pallet_wood",
+    "mapTo": "rls_tpu_pallet_wood",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/assets/materials/tileable/wood/ut_bld_wood_new/t_ut_bld_wood_new_ao.data.png",
+        "baseColorMap": "/assets/materials/tileable/wood/ut_bld_wood_new/t_ut_bld_wood_new_b.color.png",
+        "normalMap": "/assets/materials/tileable/wood/ut_bld_wood_new/t_ut_bld_wood_new_nm.normal.png",
+        "roughnessMap": "/assets/materials/tileable/wood/ut_bld_wood_new/t_ut_bld_wood_new_r.data.png",
+        "vertColor": true
+      },
+      {
+        "vertColor": null
+      },
+      {
+        "vertColor": null
+      },
+      {
+        "vertColor": null
+      }
+    ],
+    "annotation": "OBSTACLES",
+    "groundType": "WOOD",
+    "materialTag0": "beamng",
+    "materialTag1": "building",
+    "materialTag2": "utah",
+    "translucentBlendOp": "None",
+    "version": 1.5
   }
 }

@@ -1,0 +1,34 @@
+{
+  "id": "overhaul_jobs_facilityWork",
+  "order": 71,
+  "module": "overhaul/jobs/facilityWork",
+  "scopes": [
+    {
+      "id": "bootManual",
+      "order": 18
+    }
+  ],
+  "bigMap": {
+    "types": [
+      {
+        "id": "facilityWork",
+        "icon": "boxTruck"
+      }
+    ],
+    "groups": [
+      {
+        "id": "type_facilityWork",
+        "label": "Facility Work",
+        "icon": "boxTruck",
+        "placements": {
+          "career": [
+            {
+              "section": "freeroamPois",
+              "order": 14
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "domElement": "<overhaul-top-left-apps></overhaul-top-left-apps>",
+  "name": "Top Left Apps (Overhaul)",
+  "types": [
+    "ui.apps.categories.utility"
+  ],
+  "css": {
+    "right": "10px",
+    "height": "300px",
+    "width": "370px",
+    "top": "100px",
+    "position": "absolute"
+  },
+  "description": "Tasks, messages and job actions for the Career Overhaul game mode.",
+  "author": "RLS",
+  "version": "0.1",
+  "directive": "overhaulTopLeftApps",
+  "vue": true,
+  "category": "Gameplay",
+  "isAuxiliary": true,
+  "interactive": "no"
+}

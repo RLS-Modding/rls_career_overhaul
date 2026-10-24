@@ -1,0 +1,25 @@
+{
+  "id": "quarry",
+  "name": "Quarry",
+  "icon": "cogs",
+  "iconTile": "quarry.png",
+  "route": "/overhaul/phone-quarry",
+  "color": "#8B4513",
+  "iconColor": "#ffffff",
+  "category": "Jobs",
+  "storeTagline": "Quarry operations",
+  "storeDescription": "Check quarry jobs, haul status, and site work without heading back to the yard office.",
+  "defaultPage": 0,
+  "defaultPosition": 6,
+  "uiRoutes": [
+    {
+      "name": "phone-quarry",
+      "path": "phone-quarry",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneQuarry.vue",
+      "uiOrder": 83,
+      "luaOrder": 55,
+      "backTarget": "phone-main",
+      "title": "Loading"
+    }
+  ]
+}

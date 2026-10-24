@@ -1,0 +1,6 @@
+{
+  "id": "overhaul_jobs_cardGames_blackjack",
+  "order": 67,
+  "module": "overhaul/jobs/cardGames/blackjack",
+  "scopes": []
+}

@@ -1,0 +1,61 @@
+{
+  "garages": [
+    {
+      "neighborhood": "West Coast",
+      "id": "wcusaDinoCafeGarage",
+      "name": "Dino Cafe Garage",
+      "description": "Included with ownership of Dino Cafe. Purchase the business to unlock this garage.",
+      "capacity": 4,
+      "defaultPrice": 0,
+      "notPurchasable": true,
+      "sitesFile": "facilities.sites.json",
+      "parkingSpotNames": [
+        "dinoCafeGarageSpot1",
+        "dinoCafeGarageSpot2",
+        "dinoCafeGarageSpot3",
+        "dinoCafeGarageSpot4"
+      ],
+      "zoneNames": [
+        "dinoGarageZone"
+      ],
+      "icon": "poi_garage_2_round"
+    }
+  ],
+  "computers": [
+    {
+      "id": "dinoCafeGarageComputer",
+      "name": "Dino Cafe Garage",
+      "garageId": "wcusaDinoCafeGarage",
+      "description": "Dino Cafe owner garage",
+      "doors": [
+        [
+          "dinoCafeGarage_area",
+          "dinoCafeGarage_icon"
+        ]
+      ],
+      "functions": {
+        "insurances":true,
+        "painting":true,
+        "partInventory":true,
+        "partShop":true,
+        "playerAbstract":true,
+        "sleep":true,
+        "tuning":true,
+        "vehicleInventory":true,
+        "vehicleShop":true
+      },
+      "icon": "poi_laptop_round",
+      "iconLift": 0.24,
+      "iconOffsetHeight": 0.24,
+      "screens": [],
+      "activityAcceptProps": [
+        {
+          "keyLabel": "Vehicle & Parts Management"
+        },
+        {
+          "keyLabel": "Included with Dino Cafe ownership"
+        }
+      ]
+    }
+  ]
+}

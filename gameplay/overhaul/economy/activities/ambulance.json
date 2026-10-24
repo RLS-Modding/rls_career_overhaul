@@ -1,0 +1,23 @@
+{
+  "id": "ambulance",
+  "order": 60,
+  "branch": "civilService",
+  "label": "Paramedic",
+  "npcJobsPerDay": 3.0,
+  "branchLabel": "Civil Service",
+  "branchOrder": 10,
+  "marketOrder": 30,
+  "availability": [
+    "overhaul_jobs_ambulance"
+  ],
+  "earningTags": [
+    "ambulance",
+    "paramedic"
+  ],
+  "earningOrder": 50,
+  "source": "ambulance_module",
+  "keys": ["ambulance"],
+  "extension": "overhaul_jobs_ambulance",
+  "activity": "ambulance",
+  "whenLoaded": true
+}

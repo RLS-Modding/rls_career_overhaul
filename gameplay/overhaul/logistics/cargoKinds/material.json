@@ -1,0 +1,6 @@
+{
+  "id": "material",
+  "order": 20,
+  "handler": "overhaul/career/logistics/broker/kinds/material",
+  "levelBonus": false
+}

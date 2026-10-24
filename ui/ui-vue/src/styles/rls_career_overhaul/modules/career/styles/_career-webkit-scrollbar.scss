@@ -1,0 +1,52 @@
+@function career-scrollbar-width-keyword($width) {
+  @if $width == none or $width == auto or $width == thin {
+    @return $width;
+  }
+  @if type-of($width) == number {
+    @if $width <= 0 {
+      @return none;
+    }
+    @if $width <= 6px {
+      @return thin;
+    }
+    @return auto;
+  }
+  @return thin;
+}
+
+@mixin career-webkit-scrollbar(
+  $width: 8px,
+  $track: rgba(0, 0, 0, 0.2),
+  $thumb: rgba(255, 255, 255, 0.1),
+  $thumb-hover: rgba(255, 255, 255, 0.15)
+) {
+  scrollbar-width: career-scrollbar-width-keyword($width);
+  scrollbar-color: $thumb $track;
+
+  &::-webkit-scrollbar {
+    width: $width;
+    height: $width;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: $track;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $thumb;
+    border-radius: 4px;
+
+    &:hover {
+      background: $thumb-hover;
+    }
+  }
+}
+
+@mixin career-webkit-scrollbar-tree($width: 8px) {
+  @include career-webkit-scrollbar($width);
+
+  * {
+    @include career-webkit-scrollbar($width);
+  }
+}

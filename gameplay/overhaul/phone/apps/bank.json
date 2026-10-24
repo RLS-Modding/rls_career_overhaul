@@ -1,0 +1,44 @@
+{
+  "id": "bank",
+  "name": "Bank",
+  "icon": "beamCurrency",
+  "iconTile": "bank.png",
+  "route": "/overhaul/phone-bank",
+  "color": "#10b981",
+  "iconColor": "#ffffff",
+  "category": "Finance",
+  "storeTagline": "Accounts and transfers",
+  "storeDescription": "Check balances, move money, and manage your career finances from your phone.",
+  "defaultPage": 0,
+  "defaultPosition": 1,
+  "uiRoutes": [
+    {
+      "name": "phone-bank",
+      "path": "phone-bank",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneBank.vue",
+      "uiOrder": 78,
+      "luaOrder": 22,
+      "backTarget": "phone-main"
+    },
+    {
+      "name": "phone-bank-account",
+      "path": "phone-bank/:accountId",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneBankAccount.vue",
+      "uiOrder": 79,
+      "luaOrder": 23,
+      "backTarget": "phone-bank",
+      "props": true,
+      "title": "Account"
+    },
+    {
+      "name": "phone-bank-rename",
+      "path": "phone-bank/:accountId/rename",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneBankRename.vue",
+      "uiOrder": 80,
+      "luaOrder": 24,
+      "backTarget": "phone-bank-account",
+      "props": true,
+      "title": "Rename Account"
+    }
+  ]
+}

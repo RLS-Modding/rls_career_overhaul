@@ -1,0 +1,33 @@
+{
+  "id": "overhaul_career_challengeModes",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "aliases": []
+  },
+  "acquisitions": [
+    {
+      "id": "profiles.challengeModes",
+      "order": 170,
+      "modes": {
+        "overhaul": true
+      },
+      "extensions": [
+        "overhaul_career_challengeModes"
+      ],
+      "release": [],
+      "namespace": true
+    }
+  ],
+  "routes": [
+    {
+      "name": "challenge-completed",
+      "order": 14,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "play"
+        }
+      }
+    }
+  ]
+}

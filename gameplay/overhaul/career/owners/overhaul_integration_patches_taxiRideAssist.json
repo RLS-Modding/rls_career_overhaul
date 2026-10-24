@@ -1,0 +1,15 @@
+{
+  "id": "overhaul_integration_patches_taxiRideAssist",
+  "order": 50,
+  "module": "overhaul/integration/patches/taxiRideAssist",
+  "scopes": [
+    {
+      "id": "bootManual",
+      "order": 14
+    },
+    {
+      "id": "late",
+      "order": 9
+    }
+  ]
+}

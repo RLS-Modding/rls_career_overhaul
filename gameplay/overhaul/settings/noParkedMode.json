@@ -1,0 +1,16 @@
+{
+  "id": "noParkedMode",
+  "key": "noParkedMode",
+  "order": 200,
+  "type": "boolean",
+  "default": false,
+  "section": "developer",
+  "validateSingle": false,
+  "validateLoaded": false,
+  "ui": {
+    "label": "ui.overhaulManager.settings.noParkedMode.label",
+    "description": "ui.overhaulManager.settings.noParkedMode.description",
+    "section": "world",
+    "icon": "car"
+  }
+}

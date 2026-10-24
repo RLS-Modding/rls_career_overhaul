@@ -1,0 +1,148 @@
+{
+"lansdale_beater_fascia_F_early_A": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Damaged Early Black Front Grille",
+        "value":30,
+    },
+
+    "slotType" : "lansdale_fascia_F_early",
+
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["lansdale_beater_pre_grille_A", ["lansdale_grille"]],
+        ["lansdale_badge_pre_grille", ["lansdale_grille"]],
+    ],
+    "nodes": [
+        ["id", "posX", "posY", "posZ"],
+        {"nodeMaterial":"|NM_PLASTIC"},
+        {"frictionCoef":0.8},
+        //--GRILLE--
+        {"collision":true},
+        {"selfCollision":true},
+        {"nodeWeight":0.7},
+        {"group":"lansdale_grille"},
+        ["fa1r", -0.376,-2.365,0.501],
+        ["fa1", 0.0,-2.41,0.495],
+        ["fa1l",0.376,-2.365,0.501],
+
+        ["fa2r", -0.478,-2.224,0.684],
+        ["fa2", 0.0,-2.285,0.693],
+        ["fa2l", 0.478,-2.224,0.684],
+
+        ["fa3", 0.0,-2.206,0.572, {"collision":false,"selfCollision":false}],
+        {"group":""},
+    ],
+    "beams": [
+          ["id1:", "id2:"],
+          //--GRILLE--
+          {"beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+          {"beamSpring":701000,"beamDamp":40},
+          {"beamDeform":16000,"beamStrength":78100},
+          //grille main shape
+          {"deformLimitExpansion":1.1},
+          ["fa1r", "fa1"],
+          ["fa1", "fa1l"],
+          ["fa1l", "fa2l"],
+          ["fa2l", "fa2"],
+          ["fa2", "fa2r"],
+          ["fa2r", "fa1r"],
+          ["fa1", "fa2"],
+
+          //crossing
+          {"deformLimitExpansion":""},
+          {"beamDeform":10000,"beamStrength":78100},
+          ["fa1r", "fa2"],
+          ["fa2r", "fa1"],
+          ["fa1", "fa2l"],
+          ["fa1l", "fa2"],
+
+          //rigids
+          {"beamDeform":4000,"beamStrength":120680},
+          ["fa1r", "fa1l"],
+          ["fa2r", "fa2l"],
+
+          //rigidifier
+          {"beamSpring":501000,"beamDamp":60},
+          {"beamDeform":3000,"beamStrength":120680},
+          ["fa3", "fa2"],
+          ["fa3", "fa1"],
+          ["fa3", "fa2r"],
+          ["fa3", "fa2l"],
+          ["fa3", "fa1r"],
+          ["fa3", "fa1l"],
+
+          //attach
+          {"beamSpring":501000,"beamDamp":60},
+          {"beamDeform":7215,"beamStrength":20680},
+          //right
+          {"deformGroup":"flasher_special_break","deformationTriggerRatio":0.01}
+          {"breakGroup":"grille_FR_a"},
+          ["f13rr", "fa1r"],
+          ["f13rr", "fa2r"],
+          ["fa2r", "f15r"],
+          ["fa2r", "f15"],
+          ["fa1r", "f11"],
+          ["fa1", "f11rr"],
+          ["fa2", "f11rr"],
+          ["fa1", "f15r"],
+          ["fa2", "f15r"],
+          //left
+          {"breakGroup":"grille_FL_a"},
+          ["f13ll", "fa1l"],
+          ["fa2l", "f15l"],
+          ["fa2l", "f13ll"],
+          ["fa2l", "f15"],
+          ["fa1l", "f11"],
+          ["fa1", "f11ll"],
+          ["fa2", "f11ll"],
+          ["fa1", "f15l"],
+          ["fa2", "f15l"],
+          {"deformGroup":"", "deformationTriggerRatio":""}
+          {"breakGroup":"fascia_supportBeams"},
+
+          //grille support beams
+          {"beamType":"|SUPPORT", "beamLongBound":12},
+          {"beamSpring":701000,"beamDamp":10},
+          {"beamDeform":5000,"beamStrength":190000},
+          //body
+          ["fa1r", "f13rr"],
+          ["fa1r", "f11rr"],
+          ["fa1r", "f11"],
+          ["fa2r", "f15r"],
+          ["fa2r", "f13rr"],
+          ["fa2r", "f15"],
+
+          ["fa1l", "f13ll"],
+          ["fa1l", "f11ll"],
+          ["fa1l", "f11"],
+          ["fa2l", "f15l"],
+          ["fa2l", "f13ll"],
+          ["fa2l", "f15"],
+
+          //fender
+          {"optional":true},
+          {"beamType":"|SUPPORT", "beamLongBound":1},
+          {"breakGroup":["fascia_supportBeams","bumper_F_supportBeams"],"breakGroupType":1},
+          //bumper
+          ["fa1r", "fb3r"],
+          ["fa1", "fb3"],
+          ["fa1l", "fb3l"],
+          {"optional":false},
+          {"breakGroup":"","breakGroupType":0},
+          {"beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+          {"deformLimitExpansion":1.1},
+    ],
+    "triangles": [
+            ["id1:","id2:","id3:"],
+            //grille
+            {"groundModel":"plastic"},
+            {"group":"lansdale_grille"},
+            {"dragCoef":8.25},
+            ["fa2r", "fa1r", "fa1"],
+            ["fa1", "fa2", "fa2r"],
+            ["fa2", "fa1", "fa1l"],
+            ["fa1l", "fa2l", "fa2"],
+    ],
+},
+}

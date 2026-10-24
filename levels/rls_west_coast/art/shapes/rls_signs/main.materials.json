@@ -1,0 +1,96 @@
+{
+  "rlstunnelsign": {
+    "name": "rlstunnelsign",
+    "mapTo": "rlstunnelsign",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorMap": "/levels/rls_west_coast/art/shapes/rls_signs/sign1.color.png",
+        "emissiveFactor": [
+          1,
+          0.988545001,
+          0.988545001
+        ],
+        "emissiveMap": "/levels/rls_west_coast/art/shapes/rls_signs/sign1.color.png"
+      },
+      {
+        "emissiveFactor": null
+      },
+      {
+        "emissiveFactor": null
+      },
+      {
+        "emissiveFactor": null
+      }
+    ],
+    "dynamicCubemap": true,
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "rlstunnelsign2": {
+    "name": "rlstunnelsign2",
+    "mapTo": "rlstunnelsign2",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorMap": "/levels/rls_west_coast/art/shapes/rls_signs/sign2d.color.png",
+        "roughnessMap": "/levels/rls_west_coast/art/shapes/rls_signs/sign2d_r.data.png",
+        "detailBaseColorMapStrength": 0.340000004,
+        "detailMap": "/levels/rls_west_coast/art/shapes/rls_signs/sign2d_base_detail.color.png",
+        "detailScale": [
+          1,
+          1
+        ],
+        "metallicFactor": 0.342999995,
+        "metallicMap": "/levels/rls_west_coast/art/shapes/rls_signs/sign2d_m.data.png",
+        "opacityMap": "/levels/rls_west_coast/art/shapes/rls_signs/sign2d_opacity.data.png"
+      },
+      {
+        "detailBaseColorMapStrength": null,
+        "detailScale": null,
+        "metallicFactor": null
+      },
+      {
+        "detailBaseColorMapStrength": null,
+        "detailScale": null,
+        "metallicFactor": null
+      },
+      {
+        "detailBaseColorMapStrength": null,
+        "detailScale": null,
+        "metallicFactor": null
+      }
+    ],
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "mve_rntl_sn": {
+    "name": "mve_rntl_sn",
+    "mapTo": "mve_rntl_sn",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorMap": "/levels/rls_west_coast/art/shapes/rls_signs/moo_rntl_sign_b.color.png",
+        "metallicFactor": 0.135000005,
+        "roughnessMap": "/levels/rls_west_coast/art/shapes/rls_signs/sign2d_r.data.png",
+        "vertColor": true
+      },
+      {
+        "metallicFactor": null,
+        "vertColor": null
+      },
+      {
+        "metallicFactor": null,
+        "vertColor": null
+      },
+      {
+        "metallicFactor": null,
+        "vertColor": null
+      }
+    ],
+    "groundType": "METAL",
+    "materialTag1": "building",
+    "translucentBlendOp": "None",
+    "version": 1.5
+  }
+}

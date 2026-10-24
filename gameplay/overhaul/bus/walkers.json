@@ -1,0 +1,31 @@
+{
+  "_comment": "Walking bus passengers (jobs/bus/paxWalkers.lua): visual only, never changes fares, counts or timings.",
+  "enabled": true,
+  "backend": "static",
+  "_backend": "static: the character as static shapes (default). vehicle: pooled stock unicycles driven along the same paths, only for comparing the cost.",
+  "maxWalkers": 12,
+  "shapes": {
+    "body": "/art/shapes/overhaul/bus_passenger/passenger_body.dae",
+    "ball": "/art/shapes/overhaul/bus_passenger/passenger_ball.dae",
+    "ballRadius": 0.307
+  },
+  "walk": {"speed": 1.3, "speedJitter": 0.15, "maxSpeed": 2.0, "turnRateDeg": 360, "bobHeightM": 0.02, "bobHz": 2},
+  "waiting": {"min": 2, "max": 8, "approachM": 120, "hideM": 150, "stripLengthM": 8, "spacingM": 0.8,
+    "jitterM": 0.3, "curbOffsetM": [1.0, 2.0], "depthJitterM": 0.6, "stripForward": 0.35, "faceJitterDeg": 10,
+    "faceApproach": 0.35, "depthM": 1.6, "levelToleranceM": 0.3, "clearanceM": 1.8, "shelterMarginM": 0.35, "candidates": 8,
+    "_spots": "Spots are random over the strip (stripLengthM along the curb, depthM back from it), on ground within levelToleranceM of the stop level, outside the shelter box plus shelterMarginM, with nothing static below clearanceM; up to candidates tries per person. People face the road, turned toward the approaching bus by faceApproach."},
+  "door": {"approachM": 0.9, "stepM": 0.2, "arriveEarlyS": 0.3},
+  "alight": {"outM": 1.5, "dispersalM": [4, 10]},
+  "finalStop": {"maxWalkers": 8, "staggerS": 0.3},
+  "shelters": {"radiusM": 20, "shapes": ["s_busstop_wcu.dae", "s_sign_busstop.dae"], "cluster": 3},
+  "road": {"searchM": 20},
+  "ground": {"_comment": "Walkers stay on the stop's ground level: ground is looked for within bandM of it; road edges and shelters more than levelM off it are another level (overpass, underpass).", "bandM": 1.5, "levelM": 3.0},
+  "sideByLevel": {"default": "right"},
+  "vehicle": {
+    "_comment": "Vehicle backend: stock unicycle playerController walking speed 1.8 m/s, sprint 5.0 (unicycle.jbeam $moveSpeedNormal/$moveSpeedSprint). Re-aimed at most every steerIntervalS, only when the heading changes by headingDeg or the speed by speedStep.",
+    "meshPart": "unicycle_character",
+    "faceSkins": ["unicycle_skin_eyes", "unicycle_skin_eyes_alt", "unicycle_skin_eyebrows", "unicycle_skin_glasses", "unicycle_skin_sunglasses", "unicycle_skin_smile"],
+    "walkSpeed": 1.8, "sprintSpeed": 5.0, "steerIntervalS": 0.25, "lookAheadM": 0.8, "headingDeg": 8, "speedStep": 0.1,
+    "catchUpGain": 1.0, "doorGapM": 0.45, "spawnSpacingM": 1.5, "spawnLiftM": 0.3
+  }
+}

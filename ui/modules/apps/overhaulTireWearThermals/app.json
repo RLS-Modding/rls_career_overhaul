@@ -1,0 +1,23 @@
+{
+  "domElement": "<rls-tire-wear-thermals></rls-tire-wear-thermals>",
+  "name": "RLS Tire Wear and Thermals",
+  "types": [
+    "ui.apps.categories.vehicle_info",
+    "ui.apps.categories.info",
+    "ui.apps.categories.racing"
+  ],
+  "description": "Live tire temperature and tread wear. Basic view shows overall tire health; toggle for inside/center/outside detail. Supports multi-axle layouts.",
+  "css": {
+    "left": "0px",
+    "height": "320px",
+    "width": "260px",
+    "min-width": "180px",
+    "min-height": "160px",
+    "top": "0px",
+    "border-radius": "12px"
+  },
+  "author": "RLS / ZestyMaple98",
+  "version": "1.1.0",
+  "directive": "rlsTireWearThermals",
+  "interactive": "yes"
+}

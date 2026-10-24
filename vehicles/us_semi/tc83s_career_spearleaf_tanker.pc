@@ -113,7 +113,7 @@
     "us_semi_conventional_roofbeacons":"us_semi_conventional_roofbeacons",
     "us_semi_conventional_seat_L":"us_semi_conventional_seat_L",
     "us_semi_conventional_seat_R":"us_semi_conventional_seat_R",
-    "us_semi_conventional_shifter":"us_semi_conventional_shifter_twin",
+    "us_semi_conventional_shifter":"us_semi_conventional_shifter_A",
     "us_semi_conventional_singal_FL":"us_semi_conventional_singal_FL",
     "us_semi_conventional_singal_FR":"us_semi_conventional_singal_FR",
     "us_semi_conventional_steer":"us_semi_conventional_steer",

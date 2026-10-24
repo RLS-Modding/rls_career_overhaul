@@ -1,0 +1,15 @@
+{
+  "Body Style": "Dump Truck",
+  "Config Type": "Loaner",
+  "Configuration": "Small Dump Truck",
+  "Description": "A medium-duty dump truck with dynamic dry-bulk cargo storage.",
+  "Name": "MD-Series Small Dump Truck",
+  "loanerName": "MD-Series Small Dump Truck",
+  "capacity": [
+    {"amount": 4800, "type": "dryBulk"}
+  ],
+  "defaultPaintName1": "White",
+  "defaultPaintName2": "Black",
+  "defaultPaintName3": "White",
+  "isAuxiliary": false
+}

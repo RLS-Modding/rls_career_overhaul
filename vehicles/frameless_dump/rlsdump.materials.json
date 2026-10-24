@@ -1,7 +1,7 @@
 {
-  "rls_leather": {
-    "name": "rls_leather",
-    "mapTo": "rls_leather",
+  "rls_frameless_dump_leather": {
+    "name": "rls_frameless_dump_leather",
+    "mapTo": "rls_frameless_dump_leather",
     "class": "Material",
     "Stages": [
       {
@@ -13,11 +13,11 @@
         ],
         "clearCoatFactor": 1,
         "metallicFactor": 0.579999983,
-        "normalMap": "/vehicles/frameless_dump/RaceTab_leather_N.png",
+        "normalMap": "/vehicles/common/rls_dump_cover/RaceTab_leather_N.png",
         "normalMapStrength": 2,
         "opacityMapUseUV": 1,
         "roughnessFactor": 0.600000024,
-        "roughnessMap": "/vehicles/frameless_dump/RaceTab_leather_R.png"
+        "roughnessMap": "/vehicles/common/rls_dump_cover/RaceTab_leather_R.png"
       },
       {
         "baseColorFactor": null,

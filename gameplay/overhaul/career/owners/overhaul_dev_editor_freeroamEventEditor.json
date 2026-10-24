@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_dev_editor_freeroamEventEditor",
+  "order": 14,
+  "module": "overhaul/dev/editor/freeroamEventEditor",
+  "beforeUnload": "prepareForUnload",
+  "scopes": [
+    {
+      "id": "editor",
+      "order": 22
+    }
+  ]
+}

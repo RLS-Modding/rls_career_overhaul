@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":15000,  
+    "Configuration": "BX Coupe ( Joe's Junk Career )",
+    "Description": "Wow such a beautiful car! I wonder how it drives...",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 131,
+    "Torque": 132,
+    "Value": 1950,
+    "Weight": 1139,
+    "Years": {
+      "max": 1994,
+      "min": 1990
+    }  
+}
+
+

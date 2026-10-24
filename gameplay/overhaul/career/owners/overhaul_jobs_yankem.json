@@ -1,0 +1,21 @@
+{
+  "id": "overhaul_jobs_yankem",
+  "order": 82,
+  "module": "overhaul/jobs/yankem",
+  "scopes": [
+    {
+      "id": "owned",
+      "order": 3
+    }
+  ],
+  "inputActions": {
+    "order": 2,
+    "path": "/lua/ge/extensions/core/input/actions/rls_yankem.json",
+    "actions": [
+      "rlsYankemToggle",
+      "rlsYankemReelIn",
+      "rlsYankemReelOut",
+      "rlsYankemSelect"
+    ]
+  }
+}

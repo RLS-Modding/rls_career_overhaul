@@ -114,7 +114,7 @@
     "covet_seat_FL":"covet_seat_FL",
     "covet_seat_FR":"",
     "covet_seats_R":"covet_seats_R",
-    "covet_shifter_lhd":"covet_shifter_A_lhd",
+    "covet_shifter_lhd":"covet_shifter_M_lhd",
     "covet_sideskirts":"",
     "covet_skidplate":"",
     "covet_spoiler":"",

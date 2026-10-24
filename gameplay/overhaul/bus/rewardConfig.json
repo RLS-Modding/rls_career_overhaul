@@ -1,0 +1,17 @@
+{
+  "skill": {
+    "attributeKey": "careerSkills-passenger",
+    "rewardLaneIndex": 1,
+    "rewardLaneCount": 2,
+    "basePayMultiplier": 0.5625,
+    "milestonePayBonusPerTier": 0.05625,
+    "milestoneInterval": 5,
+    "xpReward": {
+      "mode": "reputationScale",
+      "divisor": 300,
+      "multiplier": 3.0,
+      "minimum": 1,
+      "rounding": "floor"
+    }
+  }
+}

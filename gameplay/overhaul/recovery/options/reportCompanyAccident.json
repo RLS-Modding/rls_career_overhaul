@@ -1,0 +1,13 @@
+{
+  "id": "reportCompanyAccident",
+  "owner": "overhaul_career_work_employment",
+  "available": "isRecoveryReportAccidentAvailable",
+  "run": "runRecoveryReportAccident",
+  "label": "Report accident",
+  "type": "vehicle",
+  "order": 6,
+  "startSlot": 5,
+  "fadeActive": false,
+  "icon": "caution",
+  "confirmationText": "Report this as a company accident? This vehicle will be written off and replaced."
+}

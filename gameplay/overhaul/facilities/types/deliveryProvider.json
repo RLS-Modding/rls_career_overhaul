@@ -1,0 +1,6 @@
+{
+  "id": "deliveryProvider",
+  "order": 600,
+  "listName": "deliveryProviders",
+  "uiLabel": "ui.facilities.type.deliveryProvider"
+}

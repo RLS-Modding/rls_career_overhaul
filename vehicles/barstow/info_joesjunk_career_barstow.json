@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":8500,  
+    "Configuration": "Floppy Jalopy ( Joe's Junk Career )",
+    "Description": "There is a lot of 'floppy' things on this one...",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 267,
+    "Torque": 270,
+    "Value": 1484,
+    "Weight": 3000,
+    "Years": {
+      "max": 1971,
+      "min": 1969
+    }  
+}
+
+

@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":11000,  
+    "Configuration": "Used & Abused ( Joe's Junk Career )",
+    "Description": "Beater Pessima Mk1 with damaged body panels and misc junk parts.",
+    "Drivetrain": "FWD",
+    "Fuel Type": "Gasoline",
+    "Power": 141,
+    "Torque": 142,
+    "Value": 13500,
+    "Weight": 1324,
+    "Years": {
+      "max": 1991,
+      "min": 1988
+    }  
+}
+
+

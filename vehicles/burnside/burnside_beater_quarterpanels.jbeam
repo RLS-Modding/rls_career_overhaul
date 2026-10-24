@@ -1,0 +1,43 @@
+{
+"burnside_beater_quarterpanels": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Damaged Quarter Panels",
+        "value":550,
+    },
+    "slotType" : "burnside_quarterpanels",
+    "slots": [
+        ["type", "default", "description"],
+        ["burnside_wheelskirts_R","", "Rear Wheel Skirts"],
+        ["burnside_deck_accessory","", "Rear Deck Accessory"],
+        ["burnside_taillight","burnside_taillight", "Taillights"],
+        ["burnside_trunk","burnside_trunk", "Trunk"],
+        ["burnside_licenseplate_R","burnside_licenseplate_R", "Rear License Plate"],
+    ],
+    "flexbodies": [
+         ["mesh", "[group]:", "nonFlexMaterials"],
+         ["burnside_beater_quarterpanel_a", ["burnside_body","burnside_floor","burnside_roof"]],
+    ],
+},
+
+"burnside_beater_quarterpanels_coupe": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Damaged Quarter Panels",
+        "value":450,
+    },
+    "slotType" : "burnside_quarterpanels_coupe",
+    "slots": [
+        ["type", "default", "description"],
+        ["burnside_wheelskirts_R","", "Rear Wheel Skirts"],
+        ["burnside_deck_accessory","", "Rear Deck Accessory"],
+        ["burnside_taillight","burnside_taillight", "Taillights"],
+        ["burnside_trunk","burnside_trunk", "Trunk"],
+        ["burnside_licenseplate_R","burnside_licenseplate_R", "Rear License Plate"],
+    ],
+    "flexbodies": [
+         ["mesh", "[group]:", "nonFlexMaterials"],
+         ["burnside_beater_body_coupe_quarters_a", ["burnside_body","burnside_floor","burnside_roof"]],
+    ],
+},
+}

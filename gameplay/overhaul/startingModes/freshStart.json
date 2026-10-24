@@ -1,0 +1,5 @@
+{
+  "id": "freshStart",
+  "order": 200,
+  "module": "/lua/ge/extensions/overhaul/career/startingModes/freshStart.lua"
+}

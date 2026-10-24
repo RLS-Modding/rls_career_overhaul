@@ -1,0 +1,6 @@
+{
+  "id": "parcel",
+  "order": 10,
+  "handler": "overhaul/career/logistics/broker/kinds/parcel",
+  "levelBonus": true
+}

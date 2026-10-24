@@ -1,0 +1,24 @@
+{
+  "id": "facility-work",
+  "name": "Facility Work",
+  "icon": "cogs",
+  "iconTile": "facility-work.png",
+  "route": "/overhaul/phone-facility-work",
+  "color": "#2d5a27",
+  "iconColor": "#ffffff",
+  "category": "Jobs",
+  "storeTagline": "On-site facility jobs",
+  "storeDescription": "Browse facility work opportunities and manage assignments while you are out in the world.",
+  "defaultPage": 0,
+  "defaultPosition": 12,
+  "uiRoutes": [
+    {
+      "name": "phone-facility-work",
+      "path": "phone-facility-work",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneFacilityWork.vue",
+      "uiOrder": 86,
+      "luaOrder": 32,
+      "backTarget": "phone-main"
+    }
+  ]
+}

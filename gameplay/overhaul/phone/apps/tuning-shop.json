@@ -1,0 +1,63 @@
+{
+  "id": "tuning-shop",
+  "name": "Tuning Shop",
+  "icon": "cars",
+  "iconTile": "tuning-shop.png",
+  "route": "/overhaul/phone-tuning-shop",
+  "color": "#F54900",
+  "iconColor": "#ffffff",
+  "category": "Business",
+  "storeTagline": "Jobs and shop operations",
+  "storeDescription": "Run your tuning shop on the go — view jobs, vehicles, and shop status from your phone.",
+  "defaultPage": 0,
+  "defaultPosition": 8,
+  "notifications": [
+    {
+      "key": "tuningShop.jobCompleted",
+      "label": "Job Complete",
+      "default": true,
+      "description": "Tech finished automation job",
+      "order": 0
+    },
+    {
+      "key": "tuningShop.jobFailed",
+      "label": "Job Failed",
+      "default": true,
+      "description": "Tech failed automation job",
+      "order": 1
+    },
+    {
+      "key": "tuningShop.jobAvailable",
+      "label": "Job Available",
+      "default": true,
+      "description": "New job matches your list",
+      "order": 2
+    }
+  ],
+  "showInStoreWhenLocked": true,
+  "lockedMessage": "Unlock Shop App in Quality Of Life on your tuning shop's Skill Trees.",
+  "unlock": {
+    "type": "businessSkillNode",
+    "business": "tuningShop",
+    "tree": "quality-of-life",
+    "node": "shop-app"
+  },
+  "notificationSources": [
+    "tuning shop"
+  ],
+  "onInstall": {
+    "extension": "overhaul_career_business_tuningShop_tuningShop",
+    "call": "notifyOnPhoneAppInstalled",
+    "loadOnlyInCareer": true
+  },
+  "uiRoutes": [
+    {
+      "name": "phone-tuning-shop",
+      "path": "phone-tuning-shop",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneTuningShop.vue",
+      "uiOrder": 81,
+      "luaOrder": 65,
+      "backTarget": "phone-main"
+    }
+  ]
+}

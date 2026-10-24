@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_avatar_unicycleCamera",
+  "order": 1,
+  "module": "overhaul/avatar/unicycleCamera",
+  "scopes": [
+    {
+      "id": "services",
+      "order": 11
+    }
+  ]
+}

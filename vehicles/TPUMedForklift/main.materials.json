@@ -403,11 +403,11 @@
     "persistentId": "7b498d7e-2d9f-4ec0-95e7-6f96be3f989c",
     "Stages": [
       {
-        "colorMap": "vehicles/TPUMedForklift/gavril_v8_d.color.png",
-        "normalMap": "vehicles/TPUMedForklift/gavril_v8_n.normal.png",
+        "colorMap": "vehicles/common/gavril_v8_d.color.png",
+        "normalMap": "vehicles/common/gavril_v8_n.normal.png",
         "pixelSpecular": true,
-        "reflectivityMap": "vehicles/TPUMedForklift/gavril_v8_r.color.png",
-        "specularMap": "vehicles/TPUMedForklift/gavril_v8_s.color.png",
+        "reflectivityMap": "vehicles/common/gavril_v8_r.color.png",
+        "specularMap": "vehicles/common/gavril_v8_s.color.png",
         "specularPower": 19,
         "useAnisotropic": true
       },
@@ -457,86 +457,6 @@
     "materialTag0": "beamng",
     "materialTag1": "vehicle",
     "translucentBlendOp": "None"
-  },
-  "fork_lightbar": {
-    "name": "fork_lightbar",
-    "mapTo": "fork_lightbar",
-    "class": "Material",
-    "persistentId": "1b9fecae-55b1-41eb-b883-805dd48d59fd",
-    "Stages": [
-      {
-        "colorMap": "vehicles/common/null.dds",
-        "normalMap": "vehicles/common/lightbars/eur_lightbar_n.dds",
-        "pixelSpecular": true,
-        "specularMap": "vehicles/common/null.dds",
-        "specularPower": 128,
-        "useAnisotropic": true
-      },
-      {
-        "colorMap": "vehicles/TPUMedForklift/beacon_d.png",
-        "diffuseColor": [
-          0.600000024,
-          0.600000024,
-          0.600000024,
-          1
-        ],
-        "normalMap": "vehicles/common/lightbars/eur_lightbar_n.dds",
-        "pixelSpecular": true,
-        "specularMap": "vehicles/common/lightbars/eur_lightbar_s.dds",
-        "specularPower": 32,
-        "useAnisotropic": true
-      },
-      {},
-      {}
-    ],
-    "alphaRef": 0,
-    "dynamicCubemap": true,
-    "materialTag0": "beamng",
-    "materialTag1": "vehicle",
-    "translucentBlendOp": "None"
-  },
-  "fork_lightbar_blueglass_l": {
-    "name": "fork_lightbar_blueglass_l",
-    "mapTo": "fork_lightbar_blueglass_l",
-    "class": "Material",
-    "persistentId": "dcf1718f-c124-40aa-a732-7f9411415be5",
-    "Stages": [
-      {
-        "colorMap": "vehicles/common/null.dds",
-        "diffuseColor": [
-          0.674221992,
-          0.674215019,
-          0.674215019,
-          0.600181997
-        ],
-        "normalMap": "vehicles/common/lightbars/eur_lightbar_n.dds",
-        "pixelSpecular": true,
-        "specularMap": "vehicles/common/null.dds",
-        "specularPower": 128,
-        "useAnisotropic": true
-      },
-      {
-        "colorMap": "vehicles/TPUMedForklift/beacon_d.png",
-        "diffuseColor": [
-          1.5,
-          1.5,
-          1.5,
-          0.550000012
-        ],
-        "normalMap": "vehicles/common/lightbars/eur_lightbar_n.dds",
-        "pixelSpecular": true,
-        "specularMap": "vehicles/common/lightbars/eur_lightbar_s.dds",
-        "specularPower": 32,
-        "useAnisotropic": true
-      },
-      {},
-      {}
-    ],
-    "alphaRef": 0,
-    "dynamicCubemap": true,
-    "materialTag0": "beamng",
-    "materialTag1": "vehicle",
-    "translucent": true
   },
   "fork_lightbar_blueglass_l": {
     "name": "fork_lightbar_blueglass_l",
@@ -640,58 +560,6 @@
     "materialTag0": "beamng",
     "materialTag1": "vehicle",
     "translucent": true
-  },
-  "fork_lightbar_on": {
-    "name": "fork_lightbar_on",
-    "mapTo": "fork_lightbar_on",
-    "class": "Material",
-    "persistentId": "8b5d7ad8-5345-41a9-848c-ea9f78af6af4",
-    "Stages": [
-      {
-        "colorMap": "vehicles/common/null.dds",
-        "normalMap": "vehicles/common/lightbars/eur_lightbar_n.dds",
-        "pixelSpecular": true,
-        "specularMap": "vehicles/common/null.dds",
-        "specularPower": 128,
-        "useAnisotropic": true
-      },
-      {
-        "colorMap": "vehicles/TPUMedForklift/beacon_d.png",
-        "diffuseColor": [
-          1.5,
-          1.5,
-          1.5,
-          1
-        ],
-        "emissive": true,
-        "glow": true,
-        "normalMap": "vehicles/common/lightbars/eur_lightbar_n.dds",
-        "pixelSpecular": true,
-        "specularMap": "vehicles/common/lightbars/eur_lightbar_s.dds",
-        "specularPower": 32,
-        "useAnisotropic": true
-      },
-      {
-        "colorMap": "vehicles/TPUMedForklift/beacon_d.png",
-        "diffuseColor": [
-          1.5,
-          1.5,
-          1.5,
-          0.300000011920929
-        ],
-        "emissive": true,
-        "glow": true,
-        "normalMap": "vehicles/common/lightbars/eur_lightbar_n.dds",
-        "specularMap": "vehicles/common/lightbars/eur_lightbar_s.dds",
-        "useAnisotropic": true
-      },
-      {}
-    ],
-    "alphaRef": 0,
-    "dynamicCubemap": true,
-    "materialTag0": "beamng",
-    "materialTag1": "vehicle",
-    "translucentBlendOp": "None"
   },
   "fork_lightbar_on": {
     "name": "fork_lightbar_on",

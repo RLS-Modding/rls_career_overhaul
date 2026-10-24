@@ -1,0 +1,860 @@
+{
+  "name": "Passenger",
+  "description": "Transport passengers safely and efficiently.",
+  "order": 60,
+  "isSkill": true,
+  "attributeKey": "careerSkills-passenger",
+  "icon": "person",
+  "levels": [
+    {
+      "requiredValue": 0,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 1",
+        "description": "Reach Passenger level 1."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "person",
+          "heading": "Base Activities Available",
+          "description": "All base Passenger activities are available. Reward-lane bonuses begin at level 2."
+        }
+      ]
+    },
+    {
+      "requiredValue": 200,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 2",
+        "description": "Reach Passenger level 2."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Bus Bonus +8%",
+          "description": "Adds 8% money payout to the Bus reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 500,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 3",
+        "description": "Reach Passenger level 3."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Taxi Bonus +8%",
+          "description": "Adds 8% money payout to the Taxi reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 900,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 4",
+        "description": "Reach Passenger level 4."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Bus Bonus +8%",
+          "description": "Adds 8% money payout to the Bus reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 1400,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 5",
+        "description": "Reach Passenger level 5."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Taxi Bonus +8%",
+          "description": "Adds 8% money payout to the Taxi reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 1900,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 6",
+        "description": "Reach Passenger level 6."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Bus Bonus +8%",
+          "description": "Adds 8% money payout to the Bus reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 2600,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 7",
+        "description": "Reach Passenger level 7."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Taxi Bonus +8%",
+          "description": "Adds 8% money payout to the Taxi reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 3400,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 8",
+        "description": "Reach Passenger level 8."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Bus Bonus +8%",
+          "description": "Adds 8% money payout to the Bus reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 4300,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 9",
+        "description": "Reach Passenger level 9."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Taxi Bonus +8%",
+          "description": "Adds 8% money payout to the Taxi reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 5300,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 10",
+        "description": "Reach Passenger level 10."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Bus Bonus +8%",
+          "description": "Adds 8% money payout to the Bus reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 6500,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 11",
+        "description": "Reach Passenger level 11."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Taxi Bonus +8%",
+          "description": "Adds 8% money payout to the Taxi reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 7900,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 12",
+        "description": "Reach Passenger level 12."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Bus Bonus +8%",
+          "description": "Adds 8% money payout to the Bus reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 9400,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 13",
+        "description": "Reach Passenger level 13."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Taxi Bonus +8%",
+          "description": "Adds 8% money payout to the Taxi reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 11000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 14",
+        "description": "Reach Passenger level 14."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Bus Bonus +8%",
+          "description": "Adds 8% money payout to the Bus reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 13000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 15",
+        "description": "Reach Passenger level 15."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Taxi Bonus +8%",
+          "description": "Adds 8% money payout to the Taxi reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 15000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 16",
+        "description": "Reach Passenger level 16."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Bus Bonus +8%",
+          "description": "Adds 8% money payout to the Bus reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 17500,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 17",
+        "description": "Reach Passenger level 17."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Taxi Bonus +8%",
+          "description": "Adds 8% money payout to the Taxi reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 20000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 18",
+        "description": "Reach Passenger level 18."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Bus Bonus +8%",
+          "description": "Adds 8% money payout to the Bus reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 23000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 19",
+        "description": "Reach Passenger level 19."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Taxi Bonus +8%",
+          "description": "Adds 8% money payout to the Taxi reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 26000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 20",
+        "description": "Reach Passenger level 20."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Bus Bonus +8%",
+          "description": "Adds 8% money payout to the Bus reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 29000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 21",
+        "description": "Reach Passenger level 21."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Taxi Bonus +8%",
+          "description": "Adds 8% money payout to the Taxi reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 33000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 22",
+        "description": "Reach Passenger level 22."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Bus Bonus +8%",
+          "description": "Adds 8% money payout to the Bus reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 37000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 23",
+        "description": "Reach Passenger level 23."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Taxi Bonus +8%",
+          "description": "Adds 8% money payout to the Taxi reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 41000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 24",
+        "description": "Reach Passenger level 24."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Bus Bonus +8%",
+          "description": "Adds 8% money payout to the Bus reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 46000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 25",
+        "description": "Reach Passenger level 25."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Taxi Bonus +8%",
+          "description": "Adds 8% money payout to the Taxi reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 51000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 26",
+        "description": "Reach Passenger level 26."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Bus Bonus +8%",
+          "description": "Adds 8% money payout to the Bus reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 56000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 27",
+        "description": "Reach Passenger level 27."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Taxi Bonus +8%",
+          "description": "Adds 8% money payout to the Taxi reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 62000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 28",
+        "description": "Reach Passenger level 28."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Bus Bonus +8%",
+          "description": "Adds 8% money payout to the Bus reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 68000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 29",
+        "description": "Reach Passenger level 29."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Taxi Bonus +8%",
+          "description": "Adds 8% money payout to the Taxi reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 74000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 30",
+        "description": "Reach Passenger level 30."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Bus Bonus +8%",
+          "description": "Adds 8% money payout to the Bus reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 81000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 31",
+        "description": "Reach Passenger level 31."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Taxi Bonus +8%",
+          "description": "Adds 8% money payout to the Taxi reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 88000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 32",
+        "description": "Reach Passenger level 32."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Bus Bonus +8%",
+          "description": "Adds 8% money payout to the Bus reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 96000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 33",
+        "description": "Reach Passenger level 33."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Taxi Bonus +8%",
+          "description": "Adds 8% money payout to the Taxi reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 104000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 34",
+        "description": "Reach Passenger level 34."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Bus Bonus +8%",
+          "description": "Adds 8% money payout to the Bus reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 113000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 35",
+        "description": "Reach Passenger level 35."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Taxi Bonus +8%",
+          "description": "Adds 8% money payout to the Taxi reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 122000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 36",
+        "description": "Reach Passenger level 36."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Bus Bonus +8%",
+          "description": "Adds 8% money payout to the Bus reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 131000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 37",
+        "description": "Reach Passenger level 37."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Taxi Bonus +8%",
+          "description": "Adds 8% money payout to the Taxi reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 141000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 38",
+        "description": "Reach Passenger level 38."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Bus Bonus +8%",
+          "description": "Adds 8% money payout to the Bus reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 151000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 39",
+        "description": "Reach Passenger level 39."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Taxi Bonus +8%",
+          "description": "Adds 8% money payout to the Taxi reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 162000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 40",
+        "description": "Reach Passenger level 40."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Bus Bonus +8%",
+          "description": "Adds 8% money payout to the Bus reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 174000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 41",
+        "description": "Reach Passenger level 41."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Taxi Bonus +8%",
+          "description": "Adds 8% money payout to the Taxi reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 186000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 42",
+        "description": "Reach Passenger level 42."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Bus Bonus +8%",
+          "description": "Adds 8% money payout to the Bus reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 198000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 43",
+        "description": "Reach Passenger level 43."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Taxi Bonus +8%",
+          "description": "Adds 8% money payout to the Taxi reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 211000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 44",
+        "description": "Reach Passenger level 44."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Bus Bonus +8%",
+          "description": "Adds 8% money payout to the Bus reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 225000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 45",
+        "description": "Reach Passenger level 45."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Taxi Bonus +8%",
+          "description": "Adds 8% money payout to the Taxi reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 239000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 46",
+        "description": "Reach Passenger level 46."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Bus Bonus +8%",
+          "description": "Adds 8% money payout to the Bus reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 254000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 47",
+        "description": "Reach Passenger level 47."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Taxi Bonus +8%",
+          "description": "Adds 8% money payout to the Taxi reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 269000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 48",
+        "description": "Reach Passenger level 48."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Bus Bonus +8%",
+          "description": "Adds 8% money payout to the Bus reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 285000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 49",
+        "description": "Reach Passenger level 49."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Taxi Bonus +8%",
+          "description": "Adds 8% money payout to the Taxi reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 301000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 50",
+        "description": "Reach Passenger level 50."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "All Reward Lanes Maxed",
+          "description": "Every reward lane has reached its +200% maximum money bonus."
+        }
+      ]
+    }
+  ]
+}

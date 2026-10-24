@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":15000,  
+    "Configuration": "3.3 ( Joe's Junk Career )",
+    "Description": "Minivan with mega problems",
+    "Drivetrain": "FWD",
+    "Fuel Type": "Gasoline",
+    "Power": 154,
+    "Torque": 156,
+    "Value": 1250,
+    "Weight": 1638,
+    "Years": {
+      "max": 2002,
+      "min": 1996
+    }  
+}
+
+

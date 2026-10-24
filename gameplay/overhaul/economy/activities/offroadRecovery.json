@@ -1,0 +1,23 @@
+{
+  "id": "offroadRecovery",
+  "order": 30,
+  "challengeDisplay": [
+    {
+      "order": 75,
+      "name": "Off-Road Recovery",
+      "category": "Transport",
+      "key": "offroadRecovery"
+    },
+    {
+      "order": 80,
+      "name": "Offroad Racing",
+      "category": "Racing",
+      "prefix": "offroad"
+    }
+  ],
+  "source": "offroad_recovery_module",
+  "keys": ["offroadRecovery"],
+  "extension": "overhaul_jobs_recovery",
+  "activity": "offroadRecovery",
+  "whenLoaded": true
+}

@@ -1,0 +1,37 @@
+{
+  "id": "parcel",
+  "order": 10,
+  "activity": "employmentShift.parcel",
+  "economyKey": "delivery_parcel",
+  "policy": {
+    "parcels": true
+  },
+  "equipment": [],
+  "vehicleRoles": [],
+  "cargoKinds": [],
+  "payModel": {
+    "heldWages": true
+  },
+  "handlers": {
+    "targetLoad": {
+      "module": "overhaul/career/work/employment/kinds/parcel",
+      "fn": "targetLoad"
+    },
+    "surgeLeaf": {
+      "module": "overhaul/career/work/employment/kinds/parcel",
+      "fn": "surgeLeaf"
+    },
+    "rejectSpawn": {
+      "module": "overhaul/career/work/employment/kinds/assignmentLoad",
+      "fn": "rejectSpawn"
+    },
+    "presentationReady": {
+      "module": "overhaul/career/work/employment/kinds/assignmentLoad",
+      "fn": "presentationReady"
+    },
+    "activate": {
+      "module": "overhaul/career/work/employment/kinds/assignmentParcel",
+      "fn": "activate"
+    }
+  }
+}

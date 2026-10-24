@@ -1,0 +1,21 @@
+<link rel="stylesheet" type="text/css" href="/ui/modModules/overhaulFreeroamRaceHud/roadAuthorityClear.css" />
+
+<div class="rac-overlay" ng-if="visible">
+  <div class="rac-card" overhaul-popup="close()" bng-blur="true" ng-style="cardStyle()" ng-mousedown="startDrag($event)">
+    <div class="rac-accent"></div>
+    <div class="rac-head">
+      <div class="rac-pre">{{ payload.levelName || payload.level || 'Current map' }}</div>
+      <div class="rac-title">{{ payload.title || 'Road Authority' }}</div>
+    </div>
+    <div class="rac-rows">
+      <div class="rac-row">
+        <span>Report</span>
+        <strong>{{ payload.reportName || 'Cleanup Report' }}</strong>
+      </div>
+    </div>
+    <div class="rac-actions">
+      <button type="button" class="rac-btn rac-btn-primary" ng-click="clearDebris()">Clear Debris</button>
+      <button type="button" class="rac-btn rac-btn-secondary" bng-scoped-nav-autofocus ng-click="close()">Close</button>
+    </div>
+  </div>
+</div>

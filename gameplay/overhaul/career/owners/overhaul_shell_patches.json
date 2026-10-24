@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_shell_patches",
+  "order": 98,
+  "module": "overhaul/shell/patches",
+  "scopes": [
+    {
+      "id": "shell",
+      "order": 1
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+<link rel="stylesheet" type="text/css" href="/ui/modModules/overhaulFreeroamRaceHud/fastTravel.css" />
+
+<div class="scft-overlay" ng-if="visible">
+  <div class="scft-card" overhaul-popup="close()" bng-blur="true" ng-style="cardStyle()" ng-mousedown="startDrag($event)">
+    <div class="scft-accent"></div>
+    <div class="scft-head">
+      <div class="scft-pre">{{ payload.subtitle || 'Fast Travel' }}</div>
+      <div class="scft-title">{{ payload.title || 'Fast Travel' }}</div>
+    </div>
+
+    <div class="scft-origin">
+      <span>Departing</span>
+      <strong>{{ payload.originLabel || 'Current Stop' }}</strong>
+    </div>
+
+    <div class="scft-list">
+      <button
+        type="button"
+        class="scft-destination"
+        ng-repeat="destination in payload.destinations track by destination.id"
+        ng-class="{ 'scft-disabled': destination.canPay === false }"
+        ng-disabled="destination.canPay === false"
+        ng-click="travelTo(destination)"
+      >
+        <span class="scft-destination-main">
+          <span class="scft-destination-name">{{ destination.label }}</span>
+          <span class="scft-destination-mode">{{ destination.mode === 'vehicle' ? 'Vehicle transfer' : 'Walking transfer' }}</span>
+        </span>
+        <span class="scft-price">{{ money(destination.price) }}</span>
+      </button>
+    </div>
+
+    <div class="scft-actions">
+      <button type="button" class="scft-btn scft-btn-secondary" bng-scoped-nav-autofocus ng-click="close()">Close</button>
+    </div>
+  </div>
+</div>

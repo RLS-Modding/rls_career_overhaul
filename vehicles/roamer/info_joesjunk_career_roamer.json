@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":13000,  
+    "Configuration": "Probably Fine ( Joe's Junk Career )",
+    "Description": "Its going to be fine... Well, i hope for you!",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 157,
+    "Torque": 159,
+    "Value": 2650,
+    "Weight": 2000,
+    "Years": {
+      "max": 1998,
+      "min": 1992
+    }  
+}
+
+

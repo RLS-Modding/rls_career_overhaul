@@ -1,0 +1,51 @@
+{
+  "id": "passiveBusiness",
+  "order": 4,
+  "tabs": [
+    {
+      "id": "dashboard",
+      "label": "Dashboard",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/businessComputer/types/passiveBusiness/PassiveBusinessDashboard.vue",
+      "componentName": "PassiveBusinessDashboard",
+      "order": 1,
+      "componentOrder": 15
+    }
+  ],
+  "sourceComponent": "PassiveBusinessDashboard",
+  "sections": [
+    {
+      "id": "dashboard",
+      "label": "Dashboard",
+      "order": 1
+    },
+    {
+      "id": "stock",
+      "label": "Stock & Supplies",
+      "order": 2,
+      "icon": "<path d=\"M21 8l-9-5-9 5 9 5 9-5z\"/><path d=\"M3 8v8l9 5 9-5V8\"/><path d=\"M12 13v8\"/>"
+    },
+    {
+      "id": "finances",
+      "label": "Finances",
+      "order": 3,
+      "icon": "<rect x=\"2\" y=\"6\" width=\"20\" height=\"12\" rx=\"2\"/><circle cx=\"12\" cy=\"12\" r=\"2.5\"/><path d=\"M6 12h.01M18 12h.01\"/>"
+    },
+    {
+      "id": "upgrades",
+      "label": "Upgrades",
+      "order": 4,
+      "icon": "<path d=\"M12 19V5\"/><path d=\"M5 12l7-7 7 7\"/>"
+    }
+  ],
+  "module": "overhaul_career_business_passive",
+  "capabilities": {
+    "bankAccount": false,
+    "skillTrees": false,
+    "inventory": false,
+    "personalVehicle": false,
+    "finances": false,
+    "xpSystem": false,
+    "operatingCosts": false,
+    "passiveIncome": true
+  }
+}

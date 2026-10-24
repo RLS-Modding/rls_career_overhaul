@@ -1,0 +1,782 @@
+{
+"etki_junk_engine_2.4": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Junk 2.4L I6 Engine",
+        "value":750,
+    },
+    "slotType" : "etki_engine",
+    "slots": [
+        ["type", "default", "description"],
+        ["etki_enginemounts","etki_enginemounts", "Engine Mounts", {"coreSlot":true}],
+        ["etki_oilpan","etki_oilpan", "Oil Pan", {"coreSlot":true}],
+        ["etki_intake","etki_intake", "Intake", {"coreSlot":true}],
+        ["etki_engine_ecu","etki_engine_ecu", "Engine Management", {"coreSlot":true}],
+        ["n2o_system","", "Nitrous Oxide System"],
+        ["etki_engine_internals","etki_engine_internals", "Engine Long Block", {"coreSlot":true}],
+        ["etki_transmission","etki_transmission_5M", "Transmission"],
+    ],
+    "powertrain": [
+        ["type", "name", "inputName", "inputIndex"],
+        ["combustionEngine", "mainEngine", "dummy", 0],
+    ],
+    "mainEngine": {
+        "torque":[
+            ["rpm", "torque"],
+            [0, 0],
+            [500, 97],
+            [1000, 170],
+            [2000, 208],
+            [3000, 219],
+            [4000, 224],
+            [5000, 212],
+            [6000, 180],
+            [7000, 140],
+            [8000, 90],
+        ],
+        "idleRPM":1050,
+		"idleRPMRoughness":850,
+        //max rpm physically capable of
+        "maxRPM":6500,
+        "inertia":0.30,
+        "friction":30,
+        "dynamicFriction":0.045,
+        "engineBrakeTorque":60,
+        //"burnEfficiency":0.01
+        "burnEfficiency":[
+            [0, 0.10],
+            [0.05, 0.24],
+            [0.4, 0.39],
+            [0.7, 0.45],
+            [1, 0.30],
+        ],
+        //fuel system
+        "energyStorage": ["mainTank","auxTank"],
+        "requiredEnergyType":"gasoline",
+
+        //exhaust
+        "instantAfterFireSound": "event:>Vehicle>Afterfire>i6_01>single",
+        "sustainedAfterFireSound": "event:>Vehicle>Afterfire>i6_01>multi",
+        "shiftAfterFireSound": "event:>Vehicle>Afterfire>i6_01>shift",
+        "particulates":2.95,
+        "afterFireAudibleThresholdInstant": 500000,
+        "instantAfterFireCoef": 0.5,
+        "instantAfterFireVolumeCoef": 0.8,
+        "afterFireAudibleThresholdShift": 150000,
+        "shiftAfterFireVolumeCoef": 0.7,
+        "afterFireAudibleThresholdSustained": 40000,
+        "sustainedAfterFireCoef": 0.5,
+        "sustainedAfterFireTime": 0.8,
+        "sustainedAfterFireVolumeCoef": 0.5,
+
+        //cooling and oil system
+        "thermalsEnabled":true,
+        "engineBlockMaterial":"aluminum",
+        "oilVolume":3.0,
+        "engineBlockAirCoolingEfficiency":60,
+
+        //engine durability
+        "cylinderWallTemperatureDamageThreshold":140,
+        "headGasketDamageThreshold":500000,
+        "pistonRingDamageThreshold":500000,
+        "connectingRodDamageThreshold":500000,
+        "maxTorqueRating": 390,
+        "maxOverTorqueDamage": 400,
+
+        //node beam interface
+        "torqueReactionNodes:":["e1l","e2l","e4r"],
+        "waterDamage": {"[engineGroup]:":["engine_intake"]},
+        "radiator": {"[engineGroup]:":["radiator"]},
+        "engineBlock": {"[engineGroup]:":["engine_block"]},
+        "breakTriggerBeam":"engine",
+        "uiName":"Engine",
+        "soundConfig": "soundConfig",
+        "soundConfigExhaust": "soundConfigExhaust",
+
+        //starter motor
+        "starterSample":"event:>Engine>Starter>i6_2007_eng",
+        "starterSampleExhaust":"event:>Engine>Starter>i6_2007_exh",
+        "shutOffSampleEngine":"event:>Engine>Shutoff>i6_2007_eng",
+        "shutOffSampleExhaust":"event:>Engine>Shutoff>i6_2007_exh",
+        "starterVolume":2.50,
+        "starterVolumeExhaust":0.76,
+        "shutOffVolumeEngine":0.76,
+        "shutOffVolumeExhaust":0.76,
+		"starterThrottleKillTime":2.75,
+        "idleRPMStartRate":2.00,
+        "idleRPMStartCoef":2.00,
+
+        //engine deform groups
+        "deformGroups":["mainEngine", "mainEngine_intake", "mainEngine_accessories"]
+        "deformGroups_oilPan":["oilpan_damage"]
+    },
+    "soundConfig": {
+        "sampleName": "I6_2_engine",
+        "intakeMuffling": 1,
+
+        "mainGain": -6,
+        "onLoadGain":1,
+        "offLoadGain":0.6,
+
+        "maxLoadMix": 0.67,
+        "minLoadMix": 0.05,
+
+        "lowShelfGain":-3,
+        "lowShelfFreq":180,
+
+        "highShelfGain":4,
+        "highShelfFreq":6000,
+
+        "eqLowGain": 0,
+        "eqLowFreq": 450,
+        "eqLowWidth": 0.2,
+
+        "eqHighGain": -8,
+        "eqHighFreq": 1500,
+        "eqHighWidth": 0.2,
+
+        "fundamentalFrequencyCylinderCount":6,
+        "eqFundamentalGain": -5,
+    },
+    "soundConfigExhaust": {
+        "sampleName": "I6_2_exhaust",
+
+        "mainGain": 2,
+        "onLoadGain":1,
+        "offLoadGain":0.5,
+
+        "maxLoadMix": 0.67,
+        "minLoadMix": 0.05,
+
+        "lowShelfGain":-5,
+        "lowShelfFreq":300,
+
+        "highShelfGain":-10,
+        "highShelfFreq":4000,
+
+        "eqLowGain": -6,
+        "eqLowFreq": 1200,
+        "eqLowWidth": 0.2,
+
+        "eqHighGain": -3,
+        "eqHighFreq": 3000,
+        "eqHighWidth": 0.2,
+
+        "fundamentalFrequencyCylinderCount":6,
+        "eqFundamentalGain": -4,
+    },
+    "vehicleController": {
+        "clutchLaunchStartRPM":1500,
+        "clutchLaunchTargetRPM":2000,
+        //**highShiftDown can be overwritten by automatic transmissions**
+        "highShiftDownRPM":[0,0,0,2200,3400,3900,4100,4200],
+        //**highShiftUp can be overwritten by intake modifications**
+        "highShiftUpRPM":6000,
+    },
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["etki_engine_i6", ["etki_engine"],[]],
+    ],
+    "props": [
+        ["func", "mesh", "idRef:", "idX:", "idY:", "baseRotation", "rotation", "translation", "min", "max", "offset", "multiplier"],
+        ["rpmspin", "etki_engine_i6_pulley_a", "e2r","e2l","e4r", {"x":-3, "y":0, "z":0}, {"x":0, "y":1, "z":0}, {"x":0, "y":0, "z":0}, -360, 360, 0, 1],
+        ["rpmspin", "etki_engine_i6_pulley_b", "e2r","e2l","e4r", {"x":-3, "y":0, "z":0}, {"x":0, "y":1, "z":0}, {"x":0, "y":0, "z":0}, -720, 720, 0, 1.5],
+        ["rpmspin", "etki_engine_i6_pulley_c", "e2r","e2l","e4r", {"x":-3, "y":0, "z":0}, {"x":0, "y":2, "z":0}, {"x":0, "y":0, "z":0}, -540, 540, 0, 1.0],
+        ["rpmspin", "etki_engine_fan",         "e2r","e2l","e4r", {"x":-3, "y":0, "z":0}, {"x":0, "y":1, "z":0}, {"x":0, "y":0, "z":0}, -540, 540, 0, 1.5],
+    ],
+    "nodes": [
+         ["id", "posX", "posY", "posZ"],
+         {"frictionCoef":0.5},
+         {"nodeMaterial":"|NM_METAL"},
+         {"selfCollision":false},
+         {"collision":true},
+         {"group":"etki_engine"},
+         {"nodeWeight":22},
+         {"engineGroup":"engine_block"},
+         {"chemEnergy":2000,"burnRate":0.39,"flashPoint":800,"specHeat": 0.2,"selfIgnitionCoef":false,"smokePoint":600,"baseTemp":500,"conductionRadius":0.15},
+         ["e1r", -0.11, -1.0, 0.22],
+         ["e1l", 0.16, -1.0, 0.22],
+         ["e2r", -0.11, -1.59, 0.22],
+         ["e2l", 0.16, -1.59, 0.22],
+         {"engineGroup":["engine_block","engine_intake"]},
+         ["e3r", -0.24, -1.0, 0.69],
+         ["e3l", 0.09, -1.0, 0.75],
+         ["e4r", -0.24, -1.59, 0.69, {"isExhaust":"mainEngine"}],
+         ["e4l", 0.09, -1.59, 0.75],
+         {"chemEnergy":false,"burnRate":false,"flashPoint":false, "specHeat": false,"selfIgnitionCoef":false,"smokePoint":false,"baseTemp":false,"conductionRadius":false},
+         {"engineGroup":""},
+         {"group":""},
+         //engine mount nodes
+         ["em1r", -0.22, -1.47, 0.42, {"nodeWeight":3}],
+         ["em1l", 0.22, -1.47, 0.42, {"nodeWeight":3}],
+    ],
+    "beams": [
+          ["id1:", "id2:"],
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1, "beamShortBound":1},
+          {"beamSpring":20001000,"beamDamp":500},
+          {"beamDeform":250000,"beamStrength":"FLT_MAX"},
+          //engine
+          {"deformGroup":"mainEngine", "deformationTriggerRatio":0.001}
+          ["e1r","e1l"],
+          ["e2r","e2l"],
+          ["e3r","e3l"],
+          ["e4r","e4l"],
+
+          ["e1r","e2r"],
+          ["e1l","e2l"],
+          ["e3r","e4r"],
+          ["e3l","e4l"],
+
+          ["e1r","e3r"],
+          ["e1l","e3l"],
+          ["e2r","e4r"],
+          ["e2l","e4l"],
+
+          ["e2r","e3r"],
+          ["e2l","e3l"],
+          ["e2r","e3l"],
+          ["e2l","e3r"],
+
+          ["e1r","e4r", {"isExhaust":"mainEngine"}],
+          ["e1l","e4l"],
+          ["e1r","e4l"],
+          ["e1l","e4r"],
+
+          ["e1r","e2l"],
+          ["e1l","e2r"],
+          ["e3r","e4l"],
+          ["e3l","e4r"],
+
+          //engine mount nodes
+          {"beamSpring":100,"beamDamp":10},
+          {"beamDeform":90000,"beamStrength":"FLT_MAX"},
+          ["em1r","e3l"],
+          ["em1r","e3r"],
+          ["em1r","e4l"],
+          ["em1r","e4r"],
+          ["em1r", "e1r"],
+          ["em1r", "e1l"],
+          ["em1r", "e2l"],
+          ["em1r", "e2r"],
+
+          ["em1l","e3l"],
+          ["em1l","e3r"],
+          ["em1l","e4l"],
+          ["em1l","e4r"],
+          ["em1l", "e1r"],
+          ["em1l", "e1l"],
+          ["em1l", "e2l"],
+          ["em1l", "e2r"],
+          {"deformGroup":"",  "deformationTriggerRatio":""},
+
+          {"beamSpring":100,"beamDamp":50},
+          {"beamDeform":2000,"beamStrength":3500},
+          //rad tube beams
+          {"breakGroup":"radtube"},
+          ["e4r","f15l"],
+          ["e4r","f15"],
+          ["e4l","f15r"],
+          ["e4l","f15"],
+          ["e2r","f11l"],
+          ["e2r","f11"],
+          ["e2l","f11r"],
+          ["e2l","f11"],
+          {"breakGroup":""},
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+    ],
+    "triangles": [
+            ["id1:","id2:","id3:"],
+            {"groundModel":"metal"},
+            /*
+            ["e5l", "e1l", "e3l"],
+            ["e4r", "e3r", "e2r"],
+            ["e3r", "e1r", "e2r"],
+            ["e1r", "e1l", "e2r"],
+            ["e2r", "e1l", "e2l"],
+            ["e3l", "e1l", "e3r"],
+            ["e3r", "e1l", "e1r"],
+            ["e4r", "e4l", "e3l"],
+            ["e4r", "e3l", "e3r"],
+            ["e4r", "e2r", "e4l"],
+            ["e4l", "e2r", "e2l"],
+            ["e4l", "e2l", "e6l"],
+            ["e6l", "e3l", "e4l"],
+            ["e6l", "e2l", "e5l"],
+            ["e6l", "e5l", "e3l"],
+            ["e2l", "e1l", "e5l"],
+            */
+            {"triangleType":"NONCOLLIDABLE"},
+            ["e2l", "e2r", "e1r"],
+            ["e1r", "e1l", "e2l"],
+            {"triangleType":"NORMALTYPE"},
+    ],
+},
+"etki_junk_engine_3.0": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Junk 3.0L I6 Engine",
+        "value":1500,
+    },
+    "slotType" : "etki_engine",
+    "slots": [
+        ["type", "default", "description"],
+        ["etki_enginemounts","etki_enginemounts", "Engine Mounts", {"coreSlot":true}],
+        ["etki_oilpan","etki_oilpan", "Oil Pan", {"coreSlot":true}],
+        ["etki_intake","etki_intake", "Intake", {"coreSlot":true}],
+        ["etki_engine_ecu","etki_engine_ecu", "Engine Management", {"coreSlot":true}],
+        ["n2o_system","", "Nitrous Oxide System"],
+        ["etki_engine_internals","etki_engine_internals", "Engine Long Block", {"coreSlot":true}],
+        ["etki_transmission","etki_transmission_5M", "Transmission"],
+    ],
+    "powertrain": [
+        ["type", "name", "inputName", "inputIndex"],
+        ["combustionEngine", "mainEngine", "dummy", 0],
+    ],
+    "mainEngine": {
+        "torque":[
+            ["rpm", "torque"],
+            [0, 0],
+            [500, 110],
+            [1000, 205],
+            [2000, 260],
+            [2500, 272],
+            [3000, 280],
+            [4000, 289],
+            [5000, 286],
+            [6000, 243],
+            [7000, 146],
+            [8000, 120],
+        ],
+
+        "idleRPM":750,,
+		"idleRPMRoughness":1000,
+        "maxRPM":6000,
+        "inertia":0.180,
+        "friction":35,
+        "dynamicFriction":0.040,
+        "engineBrakeTorque":65,
+        //"burnEfficiency":0.001
+        "burnEfficiency":[
+            [0, 0.10],
+            [0.05, 0.21],
+            [0.4, 0.38],
+            [0.7, 0.44],
+            [1, 0.30],
+        ],
+        //fuel system
+        "energyStorage": ["mainTank","auxTank"],
+        "requiredEnergyType":"gasoline",
+
+        //exhaust
+        "instantAfterFireSound": "event:>Vehicle>Afterfire>i6_01>single",
+        "sustainedAfterFireSound": "event:>Vehicle>Afterfire>i6_01>multi",
+        "shiftAfterFireSound": "event:>Vehicle>Afterfire>i6_01>shift",
+        "particulates":3.25,
+        "afterFireAudibleThresholdInstant": 500000,
+        "instantAfterFireCoef": 0.6,
+        "instantAfterFireVolumeCoef": 0.9,
+        "afterFireAudibleThresholdShift": 150000,
+        "shiftAfterFireVolumeCoef": 0.8,
+        "afterFireAudibleThresholdSustained": 40000,
+        "sustainedAfterFireCoef": 0.5,
+        "sustainedAfterFireTime": 0.8,
+        "sustainedAfterFireVolumeCoef": 0.5,
+
+        //cooling and oil system
+        "thermalsEnabled":true,
+        "engineBlockMaterial":"aluminum",
+        "oilVolume":3.5,
+        "engineBlockAirCoolingEfficiency":75,
+
+        //engine durability
+        "cylinderWallTemperatureDamageThreshold":140,
+        "headGasketDamageThreshold":500000,
+        "pistonRingDamageThreshold":500000,
+        "connectingRodDamageThreshold":500000,
+        "maxTorqueRating": 440,
+        "maxOverTorqueDamage": 350,
+
+        //node beam interface
+        "torqueReactionNodes:":["e1l","e2l","e4r"],
+        "waterDamage": {"[engineGroup]:":["engine_intake"]},
+        "radiator": {"[engineGroup]:":["radiator"]},
+        "engineBlock": {"[engineGroup]:":["engine_block"]},
+        "breakTriggerBeam":"engine",
+        "uiName":"Engine",
+        "soundConfig": "soundConfig",
+        "soundConfigExhaust": "soundConfigExhaust",
+
+        //starter motor
+        "starterSample":"event:>Engine>Starter>i6_2007_eng",
+        "starterSampleExhaust":"event:>Engine>Starter>i6_2007_exh",
+        "shutOffSampleEngine":"event:>Engine>Shutoff>i6_2007_eng",
+        "shutOffSampleExhaust":"event:>Engine>Shutoff>i6_2007_exh",
+        "starterVolume":3.45,
+        "starterVolumeExhaust":0.76,
+        "shutOffVolumeEngine":0.76,
+        "shutOffVolumeExhaust":0.76,
+		"starterThrottleKillTime":2.15,
+        "idleRPMStartRate":0.5,
+        "idleRPMStartCoef":0.5,
+
+        //engine deform groups
+        "deformGroups":["mainEngine", "mainEngine_intake", "mainEngine_accessories"]
+        "deformGroups_oilPan":["oilpan_damage"]
+    },
+    "soundConfig": {
+        "sampleName": "I6_2_engine",
+        "intakeMuffling": 1,
+
+        "mainGain": -5.5,
+        "onLoadGain":1,
+        "offLoadGain":0.60,
+
+        "maxLoadMix": 0.75,
+        "minLoadMix": 0.1,
+
+        "lowShelfGain":-3,
+        "lowShelfFreq":180,
+
+        "highShelfGain":4,
+        "highShelfFreq":6000,
+
+        "eqLowGain": 0,
+        "eqLowFreq": 450,
+        "eqLowWidth": 0.2,
+
+        "eqHighGain": -8,
+        "eqHighFreq": 1500,
+        "eqHighWidth": 0.2,
+
+        "fundamentalFrequencyCylinderCount":6,
+        "eqFundamentalGain": -5,
+    },
+    "soundConfigExhaust": {
+        "sampleName": "I6_2_exhaust",
+
+        "mainGain": 2.5,
+        "onLoadGain":1,
+        "offLoadGain":0.50,
+
+        "maxLoadMix": 0.75,
+        "minLoadMix": 0.1,
+
+        "lowShelfGain":-2,
+        "lowShelfFreq":300,
+
+        "highShelfGain":-8,
+        "highShelfFreq":4000,
+
+        "eqLowGain": -6,
+        "eqLowFreq": 1200,
+        "eqLowWidth": 0.2,
+
+        "eqHighGain": -3,
+        "eqHighFreq": 3000,
+        "eqHighWidth": 0.2,
+
+        "fundamentalFrequencyCylinderCount":6,
+        "eqFundamentalGain": -2,
+    },
+    "vehicleController": {
+        "clutchLaunchStartRPM":1500,
+        "clutchLaunchTargetRPM":2000,
+        //**highShiftDown can be overwritten by automatic transmissions**
+        "highShiftDownRPM":[0,0,0,2200,3400,3900,4100,4200],
+        //**highShiftUp can be overwritten by intake modifications**
+        "highShiftUpRPM":6000,
+    },
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["etki_engine_i6", ["etki_engine"],[]],
+    ],
+    "props": [
+        ["func", "mesh", "idRef:", "idX:", "idY:", "baseRotation", "rotation", "translation", "min", "max", "offset", "multiplier"],
+        ["rpmspin", "etki_engine_i6_pulley_a", "e2r","e2l","e4r", {"x":-3, "y":0, "z":0}, {"x":0, "y":1, "z":0}, {"x":0, "y":0, "z":0}, -360, 360, 0, 1],
+        ["rpmspin", "etki_engine_i6_pulley_b", "e2r","e2l","e4r", {"x":-3, "y":0, "z":0}, {"x":0, "y":1, "z":0}, {"x":0, "y":0, "z":0}, -720, 720, 0, 1.5],
+        ["rpmspin", "etki_engine_i6_pulley_c", "e2r","e2l","e4r", {"x":-3, "y":0, "z":0}, {"x":0, "y":2, "z":0}, {"x":0, "y":0, "z":0}, -540, 540, 0, 1.0],
+        ["rpmspin", "etki_engine_fan",         "e2r","e2l","e4r", {"x":-3, "y":0, "z":0}, {"x":0, "y":1, "z":0}, {"x":0, "y":0, "z":0}, -540, 540, 0, 1.5],
+    ],
+    "nodes": [
+         ["id", "posX", "posY", "posZ"],
+         {"frictionCoef":0.5},
+         {"nodeMaterial":"|NM_METAL"},
+         {"selfCollision":false},
+         {"collision":true},
+         {"group":"etki_engine"},
+         {"nodeWeight":24},
+         {"engineGroup":"engine_block"},
+         {"chemEnergy":2000,"burnRate":0.39,"flashPoint":800,"specHeat": 0.2,"selfIgnitionCoef":false,"smokePoint":600,"baseTemp":500,"conductionRadius":0.15},
+         ["e1r", -0.11, -1.0, 0.22],
+         ["e1l", 0.16, -1.0, 0.22],
+         ["e2r", -0.11, -1.59, 0.22],
+         ["e2l", 0.16, -1.59, 0.22],
+         {"engineGroup":["engine_block","engine_intake"]},
+         ["e3r", -0.24, -1.0, 0.69],
+         ["e3l", 0.09, -1.0, 0.75],
+         ["e4r", -0.24, -1.59, 0.69, {"isExhaust":"mainEngine"}],
+         ["e4l", 0.09, -1.59, 0.75],
+         {"chemEnergy":false,"burnRate":false,"flashPoint":false, "specHeat": false,"selfIgnitionCoef":false,"smokePoint":false,"baseTemp":false,"conductionRadius":false},
+         {"engineGroup":""},
+         {"group":""},
+         //engine mount nodes
+         ["em1r", -0.22, -1.47, 0.42, {"nodeWeight":3}],
+         ["em1l", 0.22, -1.47, 0.42, {"nodeWeight":3}],
+    ],
+    "beams": [
+          ["id1:", "id2:"],
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1, "beamShortBound":1},
+          {"beamSpring":20001000,"beamDamp":500},
+          {"beamDeform":250000,"beamStrength":"FLT_MAX"},
+          //engine
+          {"deformGroup":"mainEngine", "deformationTriggerRatio":0.001}
+          ["e1r","e1l"],
+          ["e2r","e2l"],
+          ["e3r","e3l"],
+          ["e4r","e4l"],
+
+          ["e1r","e2r"],
+          ["e1l","e2l"],
+          ["e3r","e4r"],
+          ["e3l","e4l"],
+
+          ["e1r","e3r"],
+          ["e1l","e3l"],
+          ["e2r","e4r"],
+          ["e2l","e4l"],
+
+          ["e2r","e3r"],
+          ["e2l","e3l"],
+          ["e2r","e3l"],
+          ["e2l","e3r"],
+
+          ["e1r","e4r", {"isExhaust":"mainEngine"}],
+          ["e1l","e4l"],
+          ["e1r","e4l"],
+          ["e1l","e4r"],
+
+          ["e1r","e2l"],
+          ["e1l","e2r"],
+          ["e3r","e4l"],
+          ["e3l","e4r"],
+
+          //engine mount nodes
+          {"beamSpring":100,"beamDamp":10},
+          {"beamDeform":90000,"beamStrength":"FLT_MAX"},
+          ["em1r","e3l"],
+          ["em1r","e3r"],
+          ["em1r","e4l"],
+          ["em1r","e4r"],
+          ["em1r", "e1r"],
+          ["em1r", "e1l"],
+          ["em1r", "e2l"],
+          ["em1r", "e2r"],
+
+          ["em1l","e3l"],
+          ["em1l","e3r"],
+          ["em1l","e4l"],
+          ["em1l","e4r"],
+          ["em1l", "e1r"],
+          ["em1l", "e1l"],
+          ["em1l", "e2l"],
+          ["em1l", "e2r"],
+          {"deformGroup":"",  "deformationTriggerRatio":""},
+
+          {"beamSpring":100,"beamDamp":50},
+          {"beamDeform":2000,"beamStrength":3500},
+          //rad tube beams
+          {"breakGroup":"radtube"},
+          ["e4r","f15l"],
+          ["e4r","f15"],
+          ["e4l","f15r"],
+          ["e4l","f15"],
+          ["e2r","f11l"],
+          ["e2r","f11"],
+          ["e2l","f11r"],
+          ["e2l","f11"],
+          {"breakGroup":""},
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+    ],
+    "triangles": [
+            ["id1:","id2:","id3:"],
+            {"groundModel":"metal"},
+            /*
+            ["e5l", "e1l", "e3l"],
+            ["e4r", "e3r", "e2r"],
+            ["e3r", "e1r", "e2r"],
+            ["e1r", "e1l", "e2r"],
+            ["e2r", "e1l", "e2l"],
+            ["e3l", "e1l", "e3r"],
+            ["e3r", "e1l", "e1r"],
+            ["e4r", "e4l", "e3l"],
+            ["e4r", "e3l", "e3r"],
+            ["e4r", "e2r", "e4l"],
+            ["e4l", "e2r", "e2l"],
+            ["e4l", "e2l", "e6l"],
+            ["e6l", "e3l", "e4l"],
+            ["e6l", "e2l", "e5l"],
+            ["e6l", "e5l", "e3l"],
+            ["e2l", "e1l", "e5l"],
+            */
+            {"triangleType":"NONCOLLIDABLE"},
+            ["e2l", "e2r", "e1r"],
+            ["e1r", "e1l", "e2l"],
+            {"triangleType":"NORMALTYPE"},
+    ],
+},
+"etki_junk_oilpan": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Junk Oil Pan",
+        "value":15,
+    },
+    "slotType" : "etki_oilpan",
+    "mainEngine": {
+        //cooling and oil system
+        "oilVolume":3.5,
+
+        //engine durability
+        "oilpanMaximumSafeG": 0.8
+
+        //node beam interface
+        "oilpanNodes:":["oilpan","oilref"],
+
+        //engine deform groups
+        "deformGroups_oilPan":["oilpan_damage"]
+    },
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["$=$components.oilPanType.awdOilPan == true and 'etki_engine_oilpan_awd' or 'etki_engine_oilpan'", ["etki_engine"],[]],
+    ],
+    "nodes": [
+         ["id", "posX", "posY", "posZ"],
+         {"selfCollision":false},
+         {"collision":true},
+         {"frictionCoef":0.5},
+         {"nodeMaterial":"|NM_METAL"},
+
+         //oil pan node
+         {"group":""},
+         {"nodeWeight":2},
+         ["oilpan", 0.0, -1.09, 0.2],
+         ["oilref", 0.0, -1.09, 0.7, {"nodeWeight":1, "collision":false}],
+    ],
+    "beams": [
+          ["id1:", "id2:"],
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+
+          //oilpan node
+          {"beamSpring":1501000,"beamDamp":250},
+          {"beamDeform":8000,"beamStrength":"FLT_MAX"},
+          {"deformGroup":"oilpan_damage","deformationTriggerRatio":0.005},
+          ["oilpan", "e1r"],
+          ["oilpan", "e1l"],
+          ["oilpan", "e2r"],
+          ["oilpan", "e2l"],
+          ["oilpan", "e3r"],
+          ["oilpan", "e3l"],
+          ["oilpan", "e4r"],
+          ["oilpan", "e4l"],
+          {"deformGroup":"",  "deformationTriggerRatio":""},
+
+          //oil ref
+          {"beamSpring":1001000,"beamDamp":150},
+          {"beamDeform":25000,"beamStrength":"FLT_MAX"},
+          ["oilref", "e1r"],
+          ["oilref", "e1l"],
+          ["oilref", "e2r"],
+          ["oilref", "e2l"],
+          ["oilref", "e3r"],
+          ["oilref", "e3l"],
+          ["oilref", "e4r"],
+          ["oilref", "e4l"],
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+    ],
+},
+"etki_junk_engine_ecu": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Defective Stock ECU",
+        "value":50,
+    },
+    "slotType" : "etki_engine_ecu",
+    "mainEngine":{
+        "revLimiterRPM":6500,
+        "revLimiterType":"timeBased",
+        "revLimiterCutTime":0.01,
+    },
+},
+"etki_junk_intake": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Junk & Clogged Intake",
+        "value":25,
+    },
+    "slotType" : "etki_intake",
+    "mainEngine": {
+        "torqueModIntake":[
+            ["rpm", "torque"],
+            [0,     0],
+			[1000,  -2],
+			[2000,  -4],
+			[3000,  -6],
+			[4000,  -8],
+			[5000, -10],
+            [6000,  -2],
+            [7000,  -8],
+            [7500, -14],
+            [8000, -25],
+        ],
+    },
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        ["etki_header", ["etki_engine"],[]],
+        ["etki_intake", ["etki_engine"],[]],
+        ["etki_airbox_na", ["etki_engine", "etki_airbox"],[]],
+    ],
+    "soundConfig": {
+        "$+intakeMuffling": -0.0,
+        "$+mainGain": -1.5,
+        "$+maxLoadMix": 0.0,
+        "$+minLoadMix": 0.0,
+        "$+eqLowGain": 0,
+        "$+eqFundamentalGain": 0,
+    },
+    "soundConfigExhaust": {
+        "$+maxLoadMix": 0.0,
+        "$+minLoadMix": 0.0,
+        "$+mainGain": -1.5,
+        "$+offLoadGain": 0.00,
+    },
+    "nodes": [
+         ["id", "posX", "posY", "posZ"],
+         {"selfCollision":false},
+         {"collision":true},
+         {"nodeMaterial":"|NM_METAL"},
+         {"frictionCoef":0.5},
+         {"group":"etki_airbox"},
+         {"engineGroup":"engine_intake"},
+         {"nodeWeight":2},
+         ["airb", 0.40, -1.8, 0.71],
+         {"engineGroup":""},
+         {"group":""},
+    ],
+    "beams": [
+          ["id1:", "id2:"],
+          {"beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+          {"beamSpring":100600,"beamDamp":150},
+          {"beamDeform":12000,"beamStrength":36000},
+          {"deformGroup":"mainEngine_intake", "deformationTriggerRatio":0.01}
+          ["airb","e1r"],
+          ["airb","e2r"],
+          ["airb","e3r"],
+          ["airb","e4r"],
+          ["airb","e1l"],
+          ["airb","e2l"],
+          ["airb","e3l"],
+          ["airb","e4l"],
+          {"deformGroup":"",  "deformationTriggerRatio":""}
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+    ],
+},
+}

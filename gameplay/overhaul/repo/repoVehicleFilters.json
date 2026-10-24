@@ -1,0 +1,268 @@
+{
+  "joesJunkVehFilter": {
+    "type": "vehicle",
+    "unlockTag": "joesJunkVeh",
+    "filterName": "Joe's Junk Car",
+    "tierLabel": "Joe's Junk Repo",
+    "skillUnlockFlag": "repoJunkerVeh",
+    "skillUnlockLevel": 1,
+    "payMultiplier": 0.75,
+    "baseXp": 120,
+    "priority": 15,
+    "filter": {
+      "whiteList": {
+        "Value": {
+          "min": 500,
+          "max": 25000
+        },
+        "Type": [
+          "Car"
+        ],
+        "Config Type": [
+          "joesjunkcar"
+        ]
+      },
+      "blackList": {
+        "model_key": [
+          "atv",
+          "wl40",
+          "frameless_dump"
+        ]
+      }
+    },
+    "subFilters": []
+  },
+  "junkerVehFilter": {
+    "type": "vehicle",
+    "unlockTag": "junkerVeh",
+    "filterName": "Cheap Car",
+    "tierLabel": "Low Value Repo",
+    "skillUnlockFlag": "repoJunkerVeh",
+    "skillUnlockLevel": 1,
+    "payMultiplier": 1.0,
+    "baseXp": 300,
+    "priority": 10,
+    "filter": {
+      "whiteList": {
+        "Value": {
+          "min": 1000,
+          "max": 25000
+        },
+        "Type": [
+          "Car"
+        ],
+        "Brand": [
+          "Autobello",
+          "Bruckell",
+          "Gavril",
+          "Ibishu",
+          "Soliad"
+        ],
+        "Config Type": [
+          "Factory"
+        ]
+      },
+      "blackList": {
+        "model_key": [
+          "atv",
+          "wl40",
+          "frameless_dump"
+        ]
+      }
+    },
+    "subFilters": []
+  },
+  "smallVehFilter": {
+    "type": "vehicle",
+    "unlockTag": "smallVeh",
+    "filterName": "Budget Car",
+    "tierLabel": "Budget Repo",
+    "skillUnlockFlag": "repoSmallVeh",
+    "skillUnlockLevel": 5,
+    "payMultiplier": 1.0,
+    "baseXp": 250,
+    "priority": 20,
+    "filter": {
+      "whiteList": {
+        "Value": {
+          "min": 25000,
+          "max": 50000
+        },
+        "Type": [
+          "Car"
+        ],
+        "Brand": [
+          "Autobello",
+          "Bruckell",
+          "Cherrier",
+          "Gavril",
+          "Ibishu",
+          "Soliad"
+        ],
+        "Config Type": [
+          "Factory"
+        ]
+      },
+      "blackList": {
+        "model_key": [
+          "atv",
+          "wl40",
+          "frameless_dump"
+        ]
+      }
+    },
+    "subFilters": []
+  },
+  "fleetVehFilter": {
+    "type": "vehicle",
+    "unlockTag": "fleetVeh",
+    "filterName": "Medium Car",
+    "tierLabel": "Standard Repo",
+    "skillUnlockFlag": "repoFleetVeh",
+    "skillUnlockLevel": 10,
+    "payMultiplier": 1.15,
+    "baseXp": 500,
+    "priority": 30,
+    "filter": {
+      "whiteList": {
+        "Value": {
+          "min": 40000,
+          "max": 100000
+        },
+        "Type": [
+          "Car"
+        ],
+        "Brand": [
+          "Bruckell",
+          "Cherrier",
+          "ETK",
+          "Gavril",
+          "Hirochi",
+          "Ibishu",
+          "Soliad"
+        ],
+        "Config Type": [
+          "Factory"
+        ]
+      },
+      "blackList": {
+        "model_key": [
+          "atv",
+          "wl40",
+          "frameless_dump"
+        ]
+      }
+    },
+    "subFilters": []
+  },
+  "highEndVehFilter": {
+    "type": "vehicle",
+    "unlockTag": "highEndVeh",
+    "filterName": "High End Car",
+    "tierLabel": "Luxury Repo",
+    "skillUnlockFlag": "repoHighEndVeh",
+    "skillUnlockLevel": 15,
+    "payMultiplier": 1.35,
+    "baseXp": 900,
+    "priority": 40,
+    "filter": {
+      "whiteList": {
+        "Value": {
+          "min": 100000,
+          "max": 200000
+        },
+        "Type": [
+          "Car"
+        ],
+        "Brand": [
+          "Bruckell",
+          "Civetta",
+          "ETK",
+          "Gavril",
+          "Hirochi"
+        ],
+        "Config Type": [
+          "Factory"
+        ]
+      },
+      "blackList": {
+        "model_key": [
+          "atv",
+          "wl40",
+          "frameless_dump"
+        ]
+      }
+    },
+    "subFilters": []
+  },
+  "exoticVehFilter": {
+    "type": "vehicle",
+    "unlockTag": "exoticVeh",
+    "filterName": "Exotic Car",
+    "tierLabel": "Exotic Repo",
+    "skillUnlockFlag": "repoExoticVeh",
+    "skillUnlockLevel": 20,
+    "payMultiplier": 1.6,
+    "baseXp": 1400,
+    "priority": 50,
+    "filter": {
+      "whiteList": {
+        "Value": {
+          "min": 200000
+        },
+        "Type": [
+          "Car"
+        ],
+        "Brand": [
+          "Civetta",
+          "ETK",
+          "Hirochi"
+        ],
+        "Config Type": [
+          "Factory"
+        ]
+      },
+      "blackList": {
+        "model_key": [
+          "atv",
+          "wl40",
+          "frameless_dump"
+        ]
+      }
+    },
+    "subFilters": []
+  },
+  "heavyVehFilter": {
+    "type": "vehicle",
+    "unlockTag": "heavyVeh",
+    "filterName": "Heavy Vehicle",
+    "tierLabel": "Heavy Repo",
+    "skillUnlockFlag": "repoHeavyVeh",
+    "skillUnlockLevel": 25,
+    "payMultiplier": 1.8,
+    "baseXp": 1800,
+    "priority": 60,
+    "filter": {
+      "whiteList": {
+        "model_key": [
+          "us_semi",
+          "citybus",
+          "md_series",
+          "midtruck"
+        ],
+        "Type": [
+          "Truck",
+          "Bus"
+        ]
+      },
+      "blackList": {
+        "model_key": [
+          "atv",
+          "wl40",
+          "frameless_dump"
+        ]
+      }
+    },
+    "subFilters": []
+  }
+}

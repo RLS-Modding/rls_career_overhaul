@@ -1,0 +1,60 @@
+{
+  "id": "paramedic",
+  "order": 90,
+  "activity": "employmentShift.paramedic",
+  "economyKey": "ambulance",
+  "roleplayPoi": {"type": "paramedicWork", "icon": "poi_fast_delivery_round", "cardIcon": "strobeLights"},
+  "policy": {
+    "roleplay": true,
+    "openEnded": true,
+    "emergency": true,
+    "passengerService": true
+  },
+  "equipment": [],
+  "vehicleRoles": [],
+  "cargoKinds": [],
+  "payModel": {
+    "heldWages": true
+  },
+  "handlers": {
+    "beginAssignment": {
+      "module": "overhaul/career/work/employment/kinds/assignmentRoleplay",
+      "fn": "beginAssignment"
+    },
+    "shiftState": {
+      "module": "overhaul/career/work/employment/kinds/assignmentRoleplay",
+      "fn": "shiftState"
+    },
+    "allowsPersonalVehicle": {
+      "module": "overhaul/jobs/ambulance/employmentKind",
+      "fn": "allowsPersonalVehicle"
+    },
+    "finalAssignment": {
+      "module": "overhaul/jobs/ambulance/employmentKind",
+      "fn": "finalAssignment"
+    },
+    "requestEndShift": {
+      "module": "overhaul/jobs/ambulance/employmentKind",
+      "fn": "requestEndShift"
+    },
+    "guidance": {
+      "module": "overhaul/jobs/ambulance/employmentKind",
+      "fn": "guidance"
+    },
+    "presentation": {
+      "module": "overhaul/jobs/ambulance/employmentKind",
+      "fn": "presentation"
+    },
+    "cancelAssignment": {
+      "module": "overhaul/jobs/ambulance/employmentKind",
+      "fn": "cancelAssignment"
+    },
+    "finishShift": {
+      "module": "overhaul/jobs/ambulance/employmentKind",
+      "fn": "finishShift"
+    }
+  },
+  "skillLabel": "Paramedic Skill",
+  "workLabel": "paramedic calls",
+  "endShiftMessage": "Deliver your patient to the hospital to collect pay and end the day."
+}

@@ -1,0 +1,142 @@
+.rls-ttw {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  color: #f2f2f2;
+  font-family: "Lucida Console", monospace;
+  background: transparent;
+  overflow: hidden;
+}
+
+.rls-ttw-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.2rem 0.35rem 0.15rem;
+  flex: 0 0 auto;
+  min-height: 1.9rem;
+}
+
+.rls-ttw-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 0;
+  background: rgba(255, 255, 255, 0.08);
+  color: #f2f2f2;
+  border-radius: 0.35rem;
+  padding: 0.2rem 0.35rem;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.rls-ttw-toggle:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.rls-ttw-wrench {
+  width: 0.95rem;
+  height: 0.95rem;
+  display: inline-block;
+  position: relative;
+}
+
+.rls-ttw-wrench::before,
+.rls-ttw-wrench::after {
+  content: "";
+  position: absolute;
+  background: #f2f2f2;
+}
+
+.rls-ttw-wrench::before {
+  width: 0.42rem;
+  height: 0.42rem;
+  border: 0.12rem solid #f2f2f2;
+  border-radius: 0.1rem;
+  background: transparent;
+  left: 0;
+  top: 0;
+  box-sizing: border-box;
+}
+
+.rls-ttw-wrench::after {
+  width: 0.14rem;
+  height: 0.72rem;
+  border-radius: 0.08rem;
+  left: 0.34rem;
+  top: 0.22rem;
+  transform: rotate(-40deg);
+  transform-origin: top center;
+}
+
+.rls-ttw-switch {
+  width: 1.55rem;
+  height: 0.85rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  position: relative;
+  transition: background 0.15s ease;
+}
+
+.rls-ttw-switch::after {
+  content: "";
+  position: absolute;
+  top: 0.1rem;
+  left: 0.1rem;
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 50%;
+  background: #f2f2f2;
+  transition: transform 0.15s ease;
+}
+
+.rls-ttw-switch.on {
+  background: #ff8a2a;
+}
+
+.rls-ttw-switch.on::after {
+  transform: translateX(0.68rem);
+}
+
+.rls-ttw-meta {
+  min-width: 0;
+  flex: 1 1 auto;
+  line-height: 1.1;
+}
+
+.rls-ttw-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rls-ttw-provider {
+  font-size: 0.58rem;
+  color: #9ad1ff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rls-ttw-provider.warn {
+  color: #ffb347;
+}
+
+.rls-ttw-mode {
+  font-size: 0.58rem;
+  opacity: 0.75;
+  padding-right: 0.2rem;
+  flex: 0 0 auto;
+}
+
+.rls-ttw-canvas {
+  display: block;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+}

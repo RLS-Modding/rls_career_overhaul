@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_career_progression_skills",
+  "order": 9,
+  "module": "overhaul/career/progression/skills",
+  "scopes": [
+    {
+      "id": "careerCore",
+      "order": 1
+    }
+  ],
+  "unload": false
+}

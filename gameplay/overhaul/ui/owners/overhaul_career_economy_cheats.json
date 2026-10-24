@@ -1,0 +1,10 @@
+{
+  "id": "overhaul_career_economy_cheats",
+  "order": 100,
+  "exports": {
+    "namespace": false,
+    "aliases": [
+      "career_modules_cheats"
+    ]
+  }
+}

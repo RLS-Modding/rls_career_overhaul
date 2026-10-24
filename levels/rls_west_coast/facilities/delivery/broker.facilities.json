@@ -1,0 +1,17 @@
+{
+  "deliveryProviders": [{
+    "id":"brokerCommercialDepot",
+    "broker":{"enabled":true,"commercial":true,"defaultDepot":true,"order":0},
+    "name":"Commercial Vehicle Sales Depot",
+    "description":"Independent truck and trailer rentals. Collect and return equipment here.",
+    "associatedOrganization":"commercialVehicleSales",
+    "sitesFile":["broker.sites.json","facilities.sites.json"],
+    "logisticTypesProvided":[],
+    "logisticTypesReceived":[],
+    "logisticGenerators":[],
+    "manualAccessPoints":[
+      {"psName":"brokerDepotDesk","isInspectSpot":true,"logisticTypesProvided":[],"logisticTypesReceived":[]},
+      {"psName":"truckShop1","isInspectSpot":false,"loanerNonTrailerPriority":1,"loanerTrailerPriority":1,"logisticTypesProvided":[],"logisticTypesReceived":[]}
+    ]
+  }]
+}

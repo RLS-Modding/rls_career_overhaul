@@ -1,0 +1,29 @@
+{
+  "engineRetailers": [
+    {
+      "id": "belascoEngineExchange",
+      "name": "Belasco Engine Exchange",
+      "description": "Factory engines and inspected donor packages for most compatible vehicles.",
+      "mapId": "rls_west_coast",
+      "sitesFile": "engineShop.sites.json",
+      "serviceSpotName": "belascoEngineExchangeService",
+      "pickupSpotName": "belascoEngineExchangePickup",
+      "stockSize": 8,
+      "catalogMode": "all",
+      "locationSetup": "placeholder"
+    },
+    {
+      "id": "javiMotors",
+      "name": "Javi Motor Parts",
+      "description": "Specialist donor and factory packages from Javi engine families.",
+      "mapId": "rls_west_coast",
+      "sitesFile": "engineShop.sites.json",
+      "serviceSpotName": "javiMotorsService",
+      "pickupSpotName": "javiMotorsPickup",
+      "stockSize": 8,
+      "catalogMode": "filtered",
+      "catalogTokens": ["javi", "ceep", "ceeps", "bx", "remake"],
+      "locationSetup": "placeholder"
+    }
+  ]
+}

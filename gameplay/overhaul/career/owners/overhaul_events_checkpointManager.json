@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_events_checkpointManager",
+  "order": 19,
+  "module": "overhaul/events/checkpointManager",
+  "scopes": [
+    {
+      "id": "children",
+      "order": 19,
+      "parent": "overhaul_events_host"
+    }
+  ]
+}

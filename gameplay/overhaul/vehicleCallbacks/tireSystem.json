@@ -1,0 +1,8 @@
+{
+  "id": "tireSystem",
+  "order": 90,
+  "callbacks": [
+    {"id": "receiveVehicleState", "extension": "overhaul_career_maintenance_tireSystem", "fn": "receiveVehicleState", "guard": "module"},
+    {"id": "sendContextForVehicle", "extension": "overhaul_career_maintenance_tireSystem", "fn": "sendContextForVehicle", "guard": "module"}
+  ]
+}

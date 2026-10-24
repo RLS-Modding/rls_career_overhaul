@@ -1,0 +1,6 @@
+{
+  "id": "offroadRecovery",
+  "order": 130,
+  "extension": "overhaul_jobs_recovery",
+  "definition": "overhaul/jobs/recovery/activity"
+}

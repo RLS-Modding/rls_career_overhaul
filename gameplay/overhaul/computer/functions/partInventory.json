@@ -1,0 +1,5 @@
+{
+  "id": "partInventory",
+  "icon": "engine",
+  "routeTarget": "overhaul.computer.partInventory"
+}

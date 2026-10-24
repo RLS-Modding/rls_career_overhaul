@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_shell_gameMode",
+  "order": 95,
+  "module": "overhaul/shell/gameMode",
+  "scopes": [
+    {
+      "id": "shell",
+      "order": 4
+    }
+  ]
+}

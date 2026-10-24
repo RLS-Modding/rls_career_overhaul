@@ -1,0 +1,6 @@
+{
+  "id": "eventSession",
+  "order": 410,
+  "extension": "overhaul_events_session",
+  "definition": "overhaul/events/session/activity"
+}

@@ -1,0 +1,40 @@
+{
+  "id": "taxi",
+  "order": 10,
+  "branch": "gigWork",
+  "label": "Taxi",
+  "npcJobsPerDay": 8.0,
+  "branchLabel": "Gig Work",
+  "branchOrder": 30,
+  "marketOrder": 10,
+  "availability": [
+    "overhaul_integration_services_taxi",
+    "overhaul_jobs_taxi_taxi"
+  ],
+  "earningTags": [
+    "taxi"
+  ],
+  "earningOrder": 10,
+  "typeFamilyPrefix": "taxi_",
+  "challengeDisplay": [
+    {
+      "order": 10,
+      "name": "Taxi Service",
+      "category": "Transport",
+      "key": "taxi"
+    },
+    {
+      "order": 20,
+      "name": "Taxi - ",
+      "category": "Transport",
+      "prefix": "taxi",
+      "suffixStart": 6
+    }
+  ],
+  "source": "taxi_module",
+  "keys": ["taxi"],
+  "extension": "overhaul_jobs_taxi_taxi",
+  "activity": "taxi",
+  "whenLoaded": true,
+  "passengerTypes": true
+}

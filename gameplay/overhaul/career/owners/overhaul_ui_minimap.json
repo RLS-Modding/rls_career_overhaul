@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_ui_minimap",
+  "order": 103,
+  "module": "overhaul/ui/minimap",
+  "scopes": [
+    {
+      "id": "services",
+      "order": 10
+    }
+  ]
+}

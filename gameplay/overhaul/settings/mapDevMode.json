@@ -1,0 +1,16 @@
+{
+  "id": "mapDevMode",
+  "key": "mapDevMode",
+  "order": 100,
+  "type": "boolean",
+  "default": false,
+  "section": "developer",
+  "validateSingle": false,
+  "validateLoaded": false,
+  "ui": {
+    "label": "ui.overhaulManager.settings.mapDevMode.label",
+    "description": "ui.overhaulManager.settings.mapDevMode.description",
+    "section": "world",
+    "icon": "mapWithEmitter"
+  }
+}

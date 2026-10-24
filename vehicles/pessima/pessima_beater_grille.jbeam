@@ -1,0 +1,167 @@
+{
+"pessima_beater_grille": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Damaged Grille",
+        "value":10,
+    },
+    "slotType" : "pessima_grille",
+    "slots": [
+        ["type", "default", "description"],
+        ["pessima_logo_F_grille","pessima_logo_F_grille", "Grille Badge"],
+    ],
+     "flexbodies": [
+         ["mesh", "[group]:", "nonFlexMaterials"],
+         ["pessima_beater_grille", ["pessima_grille"]],
+     ],
+     "nodes": [
+         ["id", "posX", "posY", "posZ"],
+         {"frictionCoef":0.5},
+         {"nodeMaterial":"|NM_METAL"},
+         {"collision":true},
+         {"selfCollision":true},
+         //grille
+         {"nodeWeight":0.7},
+         {"group":"pessima_grille"},
+         ["g1r",-0.40, -2.07, 0.68],
+         ["g1", 0.0, -2.09, 0.68],
+         ["g1l", 0.40, -2.07, 0.68],
+         ["g2r",-0.39, -2.11, 0.59],
+         ["g2", 0.0, -2.13, 0.59],
+         ["g2l", 0.39, -2.11, 0.59],
+         //rigidifier
+         ["g3",0.0, -2.05, 0.65, {"selfCollision":false}],
+         {"group":""},
+    ],
+    "beams": [
+          ["id1:", "id2:"],
+          {"breakGroupType":0},
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1, "beamShortBound":1},
+          {"beamDeform":40500,"beamStrength":175000},
+          {"beamSpring":801000,"beamDamp":100},
+          //{"deformationTriggerRatio":0.03},
+          //main shape
+          {"deformLimitExpansion":1.1},
+          ["g1r","g1"],
+          ["g2r","g2"],
+          ["g1l","g1"],
+          ["g2l","g2"],
+
+          {"beamDeform":40500,"beamStrength":"FLT_MAX"},
+          //vert
+          ["g1r","g2r"],
+          ["g1l","g2l"],
+          ["g1","g2"],
+
+          //surficial crossing
+          {"deformLimitExpansion":""},
+          {"beamDeform":13972.5,"beamStrength":175000},
+          ["g1","g2r"],
+          ["g1","g2l"],
+          ["g2","g1r"],
+          ["g2","g1l"],
+
+          //rigids
+          {"beamDeform":9922.5,"beamStrength":175000},
+          ["g2r","g2l"],
+          ["g1r","g1l"],
+
+          //rigidifier
+          {"beamDeform":6682.5,"beamStrength":175000},
+          ["g1l","g3"],
+          ["g1","g3"],
+          ["g1r","g3"],
+          ["g2l","g3"],
+          ["g2","g3"],
+          ["g2r","g3"],
+
+          //attach
+          {"disableTriangleBreaking":true},
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1, "beamShortBound":1},
+          {"beamSpring":115830,"beamDamp":100},
+          {"beamDeform":9611,"beamStrength":13420},
+          {"breakGroup":"grille_a_R"},
+          ["g1r","f13rr"],
+          ["g2r","f13rr"],
+          ["g1","f13rr"],
+          ["g2","f13rr"],
+          ["g3","f13rr"],
+
+          ["g1r","f15rr"],
+          ["g2r","f15rr"],
+          ["g1","f15rr"],
+          ["g2","f15rr"],
+          ["g3","f15rr"],
+          {"breakGroup":"grille_a_L"},
+          ["g1l","f13ll"],
+          ["g2l","f13ll"],
+          ["g1","f13ll"],
+          ["g2","f13ll"],
+          ["g3","f13ll"],
+
+          ["g1l","f15ll"],
+          ["g2l","f15ll"],
+          ["g1","f15ll"],
+          ["g2","f15ll"],
+          ["g3","f15ll"],
+
+          {"breakGroup":"grille_M"},
+          //["g1","f13"],
+          //["g2","f13"],
+          //["g1l","f13"],
+          //["g2l","f13"],
+          //["g1r","f13"],
+          //["g2r","f13"],
+          //["g3","f13"],
+
+          ["g1","f15"],
+          ["g2","f15"],
+          ["g1l","f15"],
+          ["g2l","f15"],
+          ["g1r","f15"],
+          ["g2r","f15"],
+          ["g3","f15"],
+          {"breakGroup":"grille_supportBeams"},
+
+          //support beams
+          {"beamType":"|SUPPORT", "beamLongBound":4},
+          {"beamSpring":830830,"beamDamp":100.8},
+          {"beamDeform":10125,"beamStrength":630000},
+          //hood
+          {"optional":true},
+          //["g1","h4"],
+          //["g1r","h4r"],
+          //["g1l","h4l"],
+          //headlight
+          ["g2r","he4r"],
+          ["g2l","he4l"],
+          ["g1r","he2r"],
+          ["g1l","he2l"],
+          {"optional":false},
+          {"breakGroup":""},
+          {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
+          {"deformLimitExpansion":1.1},
+    ],
+    "triangles": [
+            ["id1:","id2:","id3:"],
+            {"group":"pessima_grille"},
+            {"groundModel":"plastic"},
+            {"dragCoef":14.8},
+            ["g1r","g2r","g2"],
+            ["g1r","g2","g1"],
+            ["g2l","g1l","g2"],
+            ["g1l","g1","g2"],
+            {"group":""},
+            //gap
+            {"dragCoef":0},
+            //{"optional":true}
+            //{"breakGroup":["grille_body","hood_body"]}
+            //["h4r","g1r","g1"],
+            //["h4r","g1","h4"],
+            //["h4l","g1","g1l"],
+            //["h4","g1","h4l"],
+            //{"optional":false}
+            {"breakGroup":""},
+    ],
+},
+}

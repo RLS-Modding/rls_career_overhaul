@@ -1,0 +1,15 @@
+{
+  "Body Style": "Van",
+  "Config Type": "Loaner",
+  "Configuration": "Cargo Service Van",
+  "Description": "A compact commercial van fitted with parcel cargo storage for local delivery work.",
+  "Name": "H-Series Cargo Service Van",
+  "loanerName": "H-Series Cargo Service Van",
+  "capacity": [
+    {"amount": 256, "type": "parcel"}
+  ],
+  "defaultPaintName1": "White",
+  "defaultPaintName2": "White",
+  "defaultPaintName3": "White",
+  "isAuxiliary": false
+}

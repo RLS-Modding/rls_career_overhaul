@@ -1,0 +1,15 @@
+{
+  "id": "overhaul_vehicles_adjustableWastegate",
+  "order": 111,
+  "module": "overhaul/vehicles/adjustableWastegate",
+  "scopes": [
+    {
+      "id": "bootManual",
+      "order": 30
+    },
+    {
+      "id": "vehicleTools",
+      "order": 1
+    }
+  ]
+}

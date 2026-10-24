@@ -1,0 +1,33 @@
+{
+  "rls_hubdyno": {
+    "name": "rls_hubdyno",
+    "mapTo": "rls_hubdyno",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/vehicles/common/rls_dyno/rls_hubdyno_ao.data.png",
+        "baseColorMap": "/vehicles/common/rls_dyno/rls_hubdyno_b.color.png",
+        "metallicFactor": 1,
+        "metallicMap": "/vehicles/common/rls_dyno/rls_hubdyno_m.data.png",
+        "normalMap": "/vehicles/common/rls_dyno/rls_hubdyno_nm.normal.png",
+        "opacityMap": "/vehicles/common/rls_dyno/rls_hubdyno_o.data.png",
+        "roughnessMap": "/vehicles/common/rls_dyno/rls_hubdyno_r.data.png"
+      },
+      {
+        "metallicFactor": null
+      },
+      {
+        "metallicFactor": null
+      },
+      {
+        "metallicFactor": null
+      }
+    ],
+    "alphaRef": 180,
+    "alphaTest": true,
+    "doubleSided": true,
+    "dynamicCubemap": true,
+    "translucentBlendOp": "None",
+    "version": 1.5
+  }
+}

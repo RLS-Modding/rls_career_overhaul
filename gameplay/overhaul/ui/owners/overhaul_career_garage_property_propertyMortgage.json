@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_career_garage_property_propertyMortgage",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 250,
+    "aliases": [
+      "career_modules_propertyMortgage"
+    ]
+  }
+}

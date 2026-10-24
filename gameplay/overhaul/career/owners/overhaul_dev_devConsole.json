@@ -1,0 +1,10 @@
+{
+  "id": "overhaul_dev_devConsole",
+  "order": 1000,
+  "module": "overhaul/dev/devConsole",
+  "scopes": [],
+  "policyOnly": true,
+  "modulePolicy": {
+    "career": true
+  }
+}

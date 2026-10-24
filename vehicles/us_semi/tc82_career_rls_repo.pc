@@ -58,7 +58,7 @@
     "cabover_interior_liftaxlePanel":"",
     "cabover_interior_pto":"",
     "cabover_lowAirWarning":"cabover_lowAirWigWag",
-    "cabover_shifter":"cabover_shifter",
+    "cabover_shifter":"cabover_shifter_A",
     "licenseplate_design_2_1":"",
     "lightbar_color_halogen":"lightbar_color_halogen_amber",
     "load_seat_FR":"",

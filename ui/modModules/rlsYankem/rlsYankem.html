@@ -1,0 +1,55 @@
+<div class="rls-yankem-overlay" ng-if="visible">
+  <section class="rls-yankem-panel" ng-mousedown="$event.stopPropagation()" bng-blur="true">
+    <header class="rls-yankem-header" ng-mousedown="startDrag($event)" title="Drag to move">
+      <div>
+        <div class="rls-yankem-eyebrow">PROJECT YANKEM</div>
+        <div class="rls-yankem-title">Universal Winch</div>
+      </div>
+      <span class="rls-yankem-status-dot"
+            ng-class="{'is-ready': state.ready, 'is-taut': state.taut, 'is-reeling': state.reelDirection !== 0}"></span>
+    </header>
+
+    <div class="rls-yankem-instruction">{{state.instruction}}</div>
+
+    <div class="rls-yankem-endpoints" ng-if="state.endpointA || state.endpointB">
+      <div><span>A</span>{{endpointText(state.endpointA)}}</div>
+      <div><span>B</span>{{endpointText(state.endpointB)}}</div>
+    </div>
+
+    <div class="rls-yankem-readouts" ng-if="state.state === 'connected'">
+      <div><small>CABLE</small><strong>{{lengthText(state.currentLength)}}</strong></div>
+      <div><small>TARGET</small><strong>{{lengthText(state.targetLength)}}</strong></div>
+      <div><small>LOAD</small><strong>{{tensionText()}}</strong></div>
+    </div>
+
+    <div class="rls-yankem-reel-controls" ng-if="state.state === 'connected'">
+      <button type="button"
+              ng-disabled="!state.ready"
+              ng-class="{'is-active': state.reelDirection < 0}"
+              ng-mousedown="startReel(-1, $event)"
+              ng-mouseup="stopReel($event)"
+              ng-mouseleave="stopReel($event)">
+        REEL IN
+      </button>
+      <button type="button"
+              ng-disabled="!state.ready"
+              ng-class="{'is-active': state.reelDirection > 0}"
+              ng-mousedown="startReel(1, $event)"
+              ng-mouseup="stopReel($event)"
+              ng-mouseleave="stopReel($event)">
+        REEL OUT
+      </button>
+    </div>
+
+    <button type="button" class="rls-yankem-toggle" ng-mousedown="toggleWinch($event)">
+      {{state.state === 'connected' ? 'DISCONNECT' : 'CANCEL'}}
+    </button>
+
+    <footer>
+      <span><binding action="rlsYankemToggle"></binding> Toggle</span>
+      <span><binding action="rlsYankemReelIn"></binding> In</span>
+      <span><binding action="rlsYankemReelOut"></binding> Out</span>
+      <span><binding action="rlsYankemSelect"></binding> Select</span>
+    </footer>
+  </section>
+</div>

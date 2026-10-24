@@ -1,0 +1,25 @@
+{
+  "id": "overhaul_phone_apps_time",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "aliases": []
+  },
+  "acquisitions": [
+    {
+      "id": "phone.time",
+      "order": 30,
+      "modes": {
+        "overhaul": true,
+        "freeroam": true
+      },
+      "extensions": [
+        "overhaul_phone_apps_time"
+      ],
+      "release": [
+        "overhaul_phone_apps_time"
+      ],
+      "namespace": true
+    }
+  ]
+}

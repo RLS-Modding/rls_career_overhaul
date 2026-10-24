@@ -1,0 +1,90 @@
+{
+  "_comment": "Older maps whose service yards predate roleplayType metadata. A yard listed here gets its service fleet resolved from the named source instead of the generic defaults. Maps that declare roleplayType on the facility never need an entry.",
+  "legacyBusYards": [
+    {
+      "mapId": "pepper_valley",
+      "facilityId": "remotePitMainBus",
+      "associatedOrganization": "localDeliveryAssociation",
+      "fleetOrganizationFile": "/gameplay/organizations/pepper.organizations.json",
+      "fleetOrganizationId": "localDeliveryAssociation"
+    }
+  ],
+  "legacyPoliceYards": [
+    {
+      "mapId": "pepper_valley",
+      "facilityId": "policePepperLoaner",
+      "associatedOrganization": "policePepperLoaner"
+    },
+    {
+      "mapId": "italy",
+      "facilityId": "policeItalyLoaner",
+      "associatedOrganization": "poliziaAuto"
+    }
+  ],
+  "facilityRoles": [
+    {
+      "mapId": "pepper_valley",
+      "facilityId": "policePepperLoaner",
+      "roleplayType": "police"
+    },
+    {
+      "mapId": "italy",
+      "facilityId": "policeItalyLoaner",
+      "roleplayType": "police"
+    },
+    {
+      "mapId": "utah",
+      "facilityId": "policeUtahLoaner",
+      "roleplayType": "police"
+    },
+    {
+      "mapId": "rls_west_coast",
+      "facilityId": "policeLoaner",
+      "roleplayType": "police"
+    },
+    {
+      "mapId": "rls_west_coast",
+      "facilityId": "busWork",
+      "roleplayType": "bus"
+    },
+    {
+      "mapId": "rls_west_coast",
+      "facilityId": "wcuParamedicWork",
+      "roleplayType": "paramedic"
+    },
+    {
+      "mapId": "pepper_valley",
+      "facilityId": "remotePitMainBus",
+      "roleplayType": "bus"
+    },
+    {
+      "facilityId": "frmc",
+      "roleplayType": "paramedic"
+    }
+  ],
+  "organizationRoles": [
+    {
+      "organizationId": "policeWork",
+      "roleplayType": "police"
+    },
+    {
+      "mapId": "pepper_valley",
+      "organizationId": "policePepperLoaner",
+      "roleplayType": "police"
+    },
+    {
+      "mapId": "italy",
+      "organizationId": "poliziaAuto",
+      "roleplayType": "police"
+    },
+    {
+      "mapId": "utah",
+      "organizationId": "policeLoaner",
+      "roleplayType": "police"
+    },
+    {
+      "organizationId": "policeLoaner",
+      "roleplayType": "police"
+    }
+  ]
+}

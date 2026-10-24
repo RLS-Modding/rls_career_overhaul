@@ -1,0 +1,6 @@
+{
+  "id": "overhaul_phone_apps_freeroamEvents",
+  "order": 84,
+  "module": "overhaul/phone/apps/freeroamEvents",
+  "scopes": []
+}

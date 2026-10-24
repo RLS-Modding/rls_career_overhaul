@@ -1,0 +1,70 @@
+{
+  "id": "rentals",
+  "name": "Rentals",
+  "icon": "doorFrontCoins",
+  "iconTile": "rentals.png",
+  "route": "/overhaul/phone-rentals",
+  "color": "#3b82f6",
+  "iconColor": "#ffffff",
+  "category": "Property",
+  "storeTagline": "Rental income",
+  "storeDescription": "Manage rental properties, tenants, and payouts from one place.",
+  "defaultPage": 0,
+  "defaultPosition": 10,
+  "notifications": [
+    {
+      "key": "rentals.rentDue",
+      "label": "Rent Due",
+      "default": true,
+      "description": "Missed rent, late warnings",
+      "order": 0
+    },
+    {
+      "key": "rentals.eviction",
+      "label": "Eviction",
+      "default": true,
+      "description": "Evicted, deposit forfeited",
+      "order": 1,
+      "pending": "perEntity"
+    },
+    {
+      "key": "rentals.leaseSigned",
+      "label": "Lease Signed",
+      "default": true,
+      "description": "New lease started",
+      "order": 2
+    },
+    {
+      "key": "rentals.leaseComplete",
+      "label": "Lease Complete",
+      "default": true,
+      "description": "Lease ended, deposit returned",
+      "order": 3,
+      "pending": "perEntity"
+    },
+    {
+      "key": "rentals.leaseTerminated",
+      "label": "Lease Terminated",
+      "default": true,
+      "description": "Early exit, penalty",
+      "order": 4,
+      "pending": "perEntity"
+    }
+  ],
+  "unlock": {
+    "type": "careerActive"
+  },
+  "notificationSources": [
+    "rentals"
+  ],
+  "uiRoutes": [
+    {
+      "name": "phone-rentals",
+      "path": "phone-rentals",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneRentals.vue",
+      "uiOrder": 90,
+      "luaOrder": 58,
+      "backTarget": "phone-main"
+    }
+  ]
+}

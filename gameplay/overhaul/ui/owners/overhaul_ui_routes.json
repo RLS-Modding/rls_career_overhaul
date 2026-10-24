@@ -1,0 +1,63 @@
+{
+  "id": "overhaul_ui_routes",
+  "order": 100,
+  "exports": {
+    "namespace": false,
+    "aliases": [],
+    "prefixes": [
+      {
+        "to": "overhaul_career_",
+        "from": "career_"
+      }
+    ]
+  },
+  "routes": [
+    {
+      "name": "overhaul.profiles",
+      "order": 1,
+      "overlay": true,
+      "meta": {
+        "handlesOwnReady": true
+      }
+    },
+    {
+      "name": "overhaul.profiles.saves",
+      "order": 2,
+      "overlay": true,
+      "meta": {
+        "handlesOwnReady": true
+      }
+    },
+    {
+      "name": "overhaul.profiles.saveAs",
+      "order": 3,
+      "overlay": true,
+      "meta": {
+        "handlesOwnReady": true
+      }
+    },
+    {
+      "name": "overhaul.styleGuide",
+      "order": 31,
+      "meta": {
+        "luaRoute": {
+          "title": "Style guide",
+          "backTarget": "play"
+        }
+      }
+    },
+    {
+      "name": "menu.overhaulManager",
+      "order": 100000,
+      "meta": {
+        "uiTypes": [
+          "angular"
+        ],
+        "uiTypesFilter": "only",
+        "luaRoute": {
+          "backTarget": "menu"
+        }
+      }
+    }
+  ]
+}

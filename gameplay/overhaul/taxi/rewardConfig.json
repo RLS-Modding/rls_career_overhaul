@@ -1,0 +1,33 @@
+{
+  "globalRewardMultiplier": 1.0,
+  "skill": {
+    "attributeKey": "careerSkills-passenger",
+    "rewardLaneIndex": 2,
+    "rewardLaneCount": 2,
+    "moneyPercentPerLevel": 0.02,
+    "xpReward": {
+      "mode": "distance",
+      "base": 150,
+      "perPaidKm": 25,
+      "maximum": 250
+    }
+  },
+  "fare": {
+    "pickupFee": 125,
+    "paidKmRate": 110,
+    "approachKmRate": 50,
+    "randomVariation": 0.1,
+    "streakBonusPerFare": 0.05,
+    "maxStreakBonus": 0.25,
+    "maxTipPercent": 0.3,
+    "serviceMultipliers": {
+      "STANDARD": 1.0,
+      "TOURIST": 1.0,
+      "STUDENT": 0.9,
+      "COMMUTER": 0.95,
+      "BUSINESS": 1.1,
+      "LUXURY": 1.25,
+      "EXECUTIVE": 1.35
+    }
+  }
+}

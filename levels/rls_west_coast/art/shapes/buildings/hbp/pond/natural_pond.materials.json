@@ -1,0 +1,311 @@
+{
+  "hbp_np_stone": {
+    "name": "hbp_np_stone",
+    "mapTo": "hbp_np_stone",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/assets/materials/tileable/brick/stone_brick_irregular/t_stone_brick_irregular_ao.data.png",
+        "baseColorMap": "/assets/materials/tileable/brick/stone_brick_irregular/t_stone_brick_irregular_b.color.png",
+        "detailBaseColorMapStrength": null,
+        "detailNormalMap": "/assets/materials/breakup/curbs/t_asphalt_detail_04.normal.png",
+        "detailNormalMapStrength": 0.5,
+        "detailScale": null,
+        "normalMap": "/assets/materials/tileable/brick/stone_brick_irregular/t_stone_brick_irregular_nm.normal.png",
+        "opacityFactor": null,
+        "pixelSpecular": true,
+        "roughnessMap": "/assets/materials/tileable/brick/stone_brick_irregular/t_stone_brick_irregular_r.data.png",
+        "vertColor": true
+      },
+      {
+        "detailBaseColorMapStrength": 10,
+        "detailNormalMapStrength": null,
+        "detailScale": [
+          0.100000001,
+          0.100000001
+        ],
+        "opacityFactor": 0.5,
+        "pixelSpecular": null,
+        "vertColor": null
+      },
+      {
+        "detailBaseColorMapStrength": null,
+        "detailNormalMapStrength": null,
+        "detailScale": null,
+        "opacityFactor": null,
+        "pixelSpecular": null,
+        "vertColor": null
+      },
+      {
+        "detailBaseColorMapStrength": null,
+        "detailNormalMapStrength": null,
+        "detailScale": null,
+        "opacityFactor": null,
+        "pixelSpecular": null,
+        "vertColor": null
+      }
+    ],
+    "alphaRef": 0,
+    "annotation": "BUILDINGS",
+    "materialTag0": "beamng",
+    "materialTag1": "building",
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "hbp_np_coping": {
+    "name": "hbp_np_coping",
+    "mapTo": "hbp_np_coping",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/assets/materials/tileable/concrete/concrete_precast1/t_concrete_precast_01_ao.data.png",
+        "baseColorMap": "/assets/materials/tileable/concrete/concrete_precast1/t_concrete_precast_01_b.color.png",
+        "normalMap": "/assets/materials/tileable/concrete/concrete_precast1/t_concrete_precast_01_nm.normal.png",
+        "pixelSpecular": true,
+        "roughnessMap": "/assets/materials/tileable/concrete/concrete_precast1/t_concrete_precast_01_r.data.png",
+        "vertColor": true,
+        "baseColorFactor": [
+          0.42,
+          0.45,
+          0.43,
+          1
+        ]
+      },
+      {
+        "pixelSpecular": null,
+        "vertColor": null
+      },
+      {
+        "pixelSpecular": null,
+        "vertColor": null
+      },
+      {
+        "pixelSpecular": null,
+        "vertColor": null
+      }
+    ],
+    "alphaRef": 0,
+    "annotation": "BUILDINGS",
+    "materialTag0": "beamng",
+    "materialTag1": "building",
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "hbp_np_rock": {
+    "name": "hbp_np_rock",
+    "mapTo": "hbp_np_rock",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/levels/west_coast_usa/art/shapes/rocks/t_rocks_eca_ao.data.png",
+        "baseColorFactor": [
+          1,
+          0.948472023,
+          0.896924973,
+          1
+        ],
+        "baseColorMap": "/levels/west_coast_usa/art/shapes/rocks/t_rocks_eca_b.color.png",
+        "detailMap": "/levels/west_coast_usa/art/shapes/rocks/t_rocks_eca_detail_b.data.png",
+        "detailNormalMap": "/levels/west_coast_usa/art/shapes/rocks/t_rocks_eca_detail_nm.normal.png",
+        "detailNormalMapStrength": 0.300000012,
+        "detailScale": [
+          24,
+          24
+        ],
+        "normalMap": "/levels/west_coast_usa/art/shapes/rocks/t_rocks_eca_nm.normal.png",
+        "roughnessMap": "/levels/west_coast_usa/art/shapes/rocks/t_rocks_eca_r.data.png"
+      },
+      {},
+      {},
+      {}
+    ],
+    "annotation": "ROCK",
+    "doubleSided": false,
+    "groundType": "ROCK",
+    "materialTag0": "beamng",
+    "materialTag1": "rock",
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "hbp_np_grass": {
+    "name": "hbp_np_grass",
+    "mapTo": "hbp_np_grass",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/assets/materials/foliage/grass/t_wcusa_grasses/t_grass_01_ao.data.png",
+        "baseColorFactor": [
+          0.996078014,
+          0.996078014,
+          0.996078014,
+          1
+        ],
+        "baseColorMap": "/assets/materials/foliage/grass/t_wcusa_grasses/t_grass_01_b.color.png",
+        "normalMap": "/assets/materials/foliage/grass/t_wcusa_grasses/t_grass_01_nm.normal.png",
+        "opacityMap": "/assets/materials/foliage/grass/t_wcusa_grasses/t_grass_01_o.data.png",
+        "pixelSpecular": true,
+        "roughnessFactor": 0.621950269,
+        "roughnessMap": "/assets/materials/foliage/grass/t_wcusa_grasses/t_grass_01_r.data.png",
+        "specular": [
+          0.992156982,
+          0.992156982,
+          0.992156982,
+          1
+        ]
+      },
+      {
+        "baseColorFactor": null,
+        "pixelSpecular": null,
+        "roughnessFactor": null,
+        "specular": null
+      },
+      {
+        "baseColorFactor": null,
+        "pixelSpecular": null,
+        "roughnessFactor": null,
+        "specular": null
+      },
+      {
+        "baseColorFactor": null,
+        "pixelSpecular": null,
+        "roughnessFactor": null,
+        "specular": null
+      }
+    ],
+    "alphaRef": 90,
+    "alphaTest": true,
+    "annotation": "NATURE",
+    "doubleSided": true,
+    "invertBackFaceNormals": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vegetation",
+    "materialTag2": "Natural",
+    "materialTag3": "vegetation",
+    "subSurface": true,
+    "subSurfaceIntensity": 1,
+    "version": 1.5
+  },
+  "hbp_np_pebbles": {
+    "name": "hbp_np_pebbles",
+    "mapTo": "hbp_np_pebbles",
+    "class": "Material",
+    "version": 1.5,
+    "Stages": [
+      {
+        "baseColorMap": "/assets/materials/terrain/rock/t_pebbles/t_pebbles_b.png",
+        "normalMap": "/assets/materials/terrain/rock/t_pebbles/t_pebbles_nm.png",
+        "roughnessMap": "/assets/materials/terrain/rock/t_pebbles/t_pebbles_r.png",
+        "roughnessFactor": 0.85
+      },
+      {},
+      {},
+      {}
+    ],
+    "groundType": "GRAVEL"
+  },
+  "hbp_np_fern": {
+    "name": "hbp_np_fern",
+    "mapTo": "hbp_np_fern",
+    "class": "Material",
+    "version": 1.5,
+    "Stages": [
+      {
+        "baseColorFactor": [
+          0.028,
+          0.08,
+          0.012,
+          1
+        ],
+        "roughnessFactor": 0.8
+      },
+      {},
+      {},
+      {}
+    ],
+    "doubleSided": true
+  },
+  "hbp_np_koi": {
+    "name": "hbp_np_koi",
+    "mapTo": "hbp_np_koi",
+    "class": "Material",
+    "version": 1.5,
+    "Stages": [
+      {
+        "baseColorMap": "/levels/rls_west_coast/art/shapes/buildings/hbp/pond/np_koi.color.png",
+        "roughnessFactor": 0.36
+      },
+      {},
+      {},
+      {}
+    ],
+    "doubleSided": true
+  },
+  "hbp_np_koi_blue": {
+    "name": "hbp_np_koi_blue",
+    "mapTo": "hbp_np_koi_blue",
+    "class": "Material",
+    "version": 1.5,
+    "Stages": [
+      {
+        "baseColorMap": "/levels/rls_west_coast/art/shapes/buildings/hbp/pond/np_koi_blue.color.png",
+        "roughnessFactor": 0.36
+      },
+      {},
+      {},
+      {}
+    ],
+    "doubleSided": true
+  },
+  "hbp_np_user_block": {
+    "name": "hbp_np_user_block",
+    "mapTo": "hbp_np_user_block",
+    "class": "Material",
+    "version": 1.5,
+    "Stages": [
+      {
+        "baseColorFactor": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "metallicFactor": 0,
+        "roughnessFactor": 1,
+        "baseColorMap": "/levels/rls_west_coast/art/shapes/buildings/hbp/pond/t_stone_brick_regular_b.color.png",
+        "normalMap": "/levels/rls_west_coast/art/shapes/buildings/hbp/pond/t_stone_brick_regular_nm.normal.png",
+        "roughnessMap": "/levels/rls_west_coast/art/shapes/buildings/hbp/pond/t_stone_brick_regular_r.data.png",
+        "ambientOcclusionMap": "/levels/rls_west_coast/art/shapes/buildings/hbp/pond/t_stone_brick_regular_ao.data.png"
+      },
+      {},
+      {},
+      {}
+    ],
+    "groundType": "CONCRETE"
+  },
+  "hbp_np_user_stucco": {
+    "name": "hbp_np_user_stucco",
+    "mapTo": "hbp_np_user_stucco",
+    "class": "Material",
+    "version": 1.5,
+    "Stages": [
+      {
+        "baseColorFactor": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "metallicFactor": 0,
+        "roughnessFactor": 1,
+        "baseColorMap": "/levels/rls_west_coast/art/shapes/buildings/hbp/pond/t_stucco1_white_b.color.png",
+        "normalMap": "/levels/rls_west_coast/art/shapes/buildings/hbp/pond/t_stucco1_white_nm.normal.png",
+        "roughnessMap": "/levels/rls_west_coast/art/shapes/buildings/hbp/pond/t_stucco1_white_r.data.png",
+        "ambientOcclusionMap": "/levels/rls_west_coast/art/shapes/buildings/hbp/pond/t_stucco1_white_ao.data.png"
+      },
+      {},
+      {},
+      {}
+    ],
+    "groundType": "CONCRETE"
+  }
+}

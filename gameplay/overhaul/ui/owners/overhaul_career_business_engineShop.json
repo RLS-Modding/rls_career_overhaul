@@ -1,0 +1,21 @@
+{
+  "id": "overhaul_career_business_engineShop",
+  "order": 100,
+  "exports": {
+    "namespace": false,
+    "aliases": [
+      "career_modules_business_engineShop"
+    ]
+  },
+  "routes": [
+    {
+      "name": "overhaul.engineShopSupplyPickup",
+      "order": 9,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "play"
+        }
+      }
+    }
+  ]
+}

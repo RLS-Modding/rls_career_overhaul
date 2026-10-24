@@ -1,0 +1,108 @@
+<link rel="stylesheet" type="text/css" href="/ui/modModules/overhaulFreeroamRaceHud/demoStaging.css" />
+
+<div class="dms-overlay" ng-if="dmsVisible" ng-class="{ 'dms-overlay--intro': phase === 'intro' }">
+  <div class="dms-card" overhaul-popup="cancelStaging()" bng-blur="true" ng-class="{ 'dms-card--intro': phase === 'intro' }">
+    <div class="dms-accent"></div>
+
+    <div ng-if="phase === 'intro'">
+      <div class="dms-headline">
+        <div class="dms-title dms-title--intro">{{ introTitle || eventLabel || 'Demolition Derby' }}</div>
+        <div class="dms-subtitle" ng-if="introSubtitle">{{ introSubtitle }}</div>
+      </div>
+      <div class="dms-intro-body" ng-if="introBody">{{ introBody }}</div>
+      <ul class="dms-intro-features" ng-if="introFeatures.length">
+        <li ng-repeat="item in introFeatures track by $index">{{ item }}</li>
+      </ul>
+      <label class="dms-intro-skip">
+        <input type="checkbox" ng-model="intro.dontShowAgain" />
+        <span>Don't show again</span>
+      </label>
+      <div class="dms-actions dms-actions--intro">
+        <button type="button" class="dms-btn dms-btn-secondary" bng-scoped-nav-autofocus ng-click="cancelStaging()">Cancel</button>
+        <button type="button" class="dms-btn dms-btn-primary" ng-click="continueIntro()">
+          {{ introContinueLabel || 'Continue' }}
+        </button>
+      </div>
+    </div>
+
+    <div ng-if="phase !== 'intro'">
+      <div class="dms-headline">
+        <div class="dms-title">{{ eventLabel || 'Demolition Derby' }}</div>
+        <div class="dms-subtitle" ng-if="phase !== 'ready'">Pre-race setup</div>
+        <div class="dms-subtitle" ng-if="phase === 'ready'">Grid staged</div>
+      </div>
+
+      <div class="dms-section" ng-if="phase !== 'ready' && modeOptions.length">
+        <div class="dms-label">Entry</div>
+        <div class="dms-mode-selector">
+          <button type="button" class="dms-mode-btn"
+                  ng-repeat="mode in modeOptions track by mode.key"
+                  ng-class="{ active: selectedMode === mode.key }"
+                  ng-click="setMode(mode.key)">
+            <span class="dms-mode-title">{{ mode.label }}</span>
+            <span class="dms-mode-meta" ng-if="mode.entryFee > 0">${{ mode.entryFee | number:0 }} fee</span>
+            <span class="dms-mode-meta" ng-if="mode.entryFee <= 0">No entry fee</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="dms-section" ng-if="phase !== 'ready'">
+        <div class="dms-label">AI Opponents</div>
+        <div class="dms-ai-selector">
+          <button type="button" class="dms-ai-btn"
+                  ng-repeat="n in aiOptions track by $index"
+                  ng-class="{ active: aiCount === n }"
+                  ng-click="setAiCount(n)">{{ n }}</button>
+        </div>
+      </div>
+
+      <div class="dms-repair-insurance"
+           ng-if="phase !== 'ready' && winnerRepairInsuranceAvailable">
+        <div class="dms-repair-insurance-row">
+          <button type="button"
+                  class="dms-toggle"
+                  ng-class="{ 'dms-toggle--on': winnerRepairInsuranceSelected }"
+                  ng-click="toggleWinnerRepairInsurance()"
+                  aria-label="Winner repair insurance"
+                  aria-pressed="{{ winnerRepairInsuranceSelected }}">
+            <span class="dms-toggle-knob"></span>
+          </button>
+          <div class="dms-repair-insurance-copy">
+            <div class="dms-repair-insurance-label">Instant repair on win</div>
+            <div class="dms-repair-insurance-desc">
+              If selected, {{ winnerRepairInsurancePercent }}% of winnings will be deducted.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dms-payout" ng-if="phase !== 'ready'">
+        <div class="dms-payout-row">
+          <span>Entry fee</span>
+          <strong>${{ entryFee | number:0 }}</strong>
+        </div>
+        <div class="dms-payout-row">
+          <span>Prize preview</span>
+          <strong>${{ rewardPreview | number:0 }}</strong>
+        </div>
+        <div class="dms-payout-row" ng-if="repairCutPreview > 0">
+          <span>Repair insurance</span>
+          <strong>-${{ repairCutPreview | number:0 }}</strong>
+        </div>
+        <div class="dms-payout-row" ng-if="repairCutPreview > 0">
+          <span>Net prize</span>
+          <strong>${{ netRewardPreview | number:0 }}</strong>
+        </div>
+      </div>
+
+      <div class="dms-actions">
+        <button type="button" class="dms-btn dms-btn-secondary" bng-scoped-nav-autofocus ng-click="cancelStaging()">Cancel</button>
+        <button type="button" class="dms-btn dms-btn-primary" ng-click="startEvent()" ng-disabled="!startEnabled">
+          <span ng-if="phase !== 'ready'">Stage Event</span>
+          <span ng-if="phase === 'ready'">Start</span>
+        </button>
+      </div>
+      <div class="dms-error-text" ng-if="!startEnabled && startDisabledReason">{{ startDisabledReason }}</div>
+    </div>
+  </div>
+</div>

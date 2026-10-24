@@ -1,0 +1,23 @@
+{
+  "id": "overhaul_jobs_facilityWork",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "aliases": []
+  },
+  "acquisitions": [
+    {
+      "id": "activity.facilityWork",
+      "order": 120,
+      "modes": {
+        "overhaul": true,
+        "freeroam": true
+      },
+      "extensions": [
+        "overhaul_jobs_facilityWork"
+      ],
+      "release": [],
+      "namespace": true
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "displayName": "West Coast USA",
+  "dayLengthMinutes": 60,
+  "conditionWeights": {
+    "clear": 30,
+    "partlyCloudy": 25,
+    "overcast": 20,
+    "drizzle": 10,
+    "rain": 10,
+    "storm": 5
+  },
+  "morningFog": {
+      "_comment": [
+    "Time values are minutes after midnight.",
+    "0 = midnight",
+    "60 = 1:00 AM",
+    "360 = 6:00 AM",
+    "720 = noon",
+    "1080 = 6:00 PM",
+    "1439 = 11:59 PM",
+    "1440 = next midnight"
+  ],
+    "chance": 0.30,
+    "startMinute": 270,
+    "peakMinute": 360,
+    "clearMinute": 450,
+    "endMinuteMin": 510,
+    "endMinuteMax": 540,
+    "maxDensity": 0.020,
+    "atmosphereHeight": 47
+  },
+  "temperatureCurveC": [
+    [0, 15.6],
+    [360, 14.4],
+    [720, 23.3],
+    [900, 26.1],
+    [1140, 21.1],
+    [1440, 15.6]
+  ]
+}

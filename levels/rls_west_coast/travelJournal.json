@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 1,
+  "id": "rls_west_coast",
+  "name": "West Coast USA",
+  "order": 1,
+  "expectedLocationCount": 5,
+  "stampLabel": "West Coast Wanderer",
+  "locations": [
+    {
+      "id": "skyline_overlook",
+      "name": "Skyline Overlook",
+      "description": "A high turnout where Belasco City opens beneath the mountain road.",
+      "zoneName": "tj_skyline_overlook_zone",
+      "parkingSpotName": "tj_skyline_overlook_parking",
+      "scene": {
+        "timeOfDay": 0.74305558204651,
+        "play": false,
+        "year": 2026,
+        "month": 6,
+        "day": 20,
+        "utcOffset": -7,
+        "dstRule": "us",
+        "windSpeed": 0.7,
+        "cloudWindDirection": {
+          "x": 1,
+          "y": 0
+        },
+        "cloudCover": 1.28,
+        "fogDensity": 50,
+        "fogAtmosphereHeight": 37,
+        "groundWind": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      }
+    },
+    {
+      "id": "island_lighthouse",
+      "name": "Island Lighthouse",
+      "description": "A weathered beacon at the end of the island road.",
+      "zoneName": "tj_island_lighthouse_zone",
+      "parkingSpotName": "tj_island_lighthouse_parking",
+      "scene": {
+        "timeOfDay": 0.34166666865349,
+        "play": false,
+        "year": 2026,
+        "month": 6,
+        "day": 20,
+        "utcOffset": -7,
+        "dstRule": "us",
+        "windSpeed": 0.7,
+        "cloudWindDirection": {
+          "x": 1,
+          "y": 0
+        },
+        "cloudCover": 2.06,
+        "fogDensity": 0.62,
+        "fogAtmosphereHeight": 192.78999328613,
+        "groundWind": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      }
+    },
+    {
+      "id": "oceanfront_pier",
+      "name": "Oceanfront Pier",
+      "description": "The long industrial pier where the city finally meets open water.",
+      "zoneName": "tj_oceanfront_pier_zone",
+      "parkingSpotName": "tj_oceanfront_pier_parking",
+      "scene": {
+        "timeOfDay": 0.78472220897675,
+        "play": false,
+        "year": 2026,
+        "month": 6,
+        "day": 20,
+        "utcOffset": -7,
+        "dstRule": "us",
+        "windSpeed": 0.7,
+        "cloudWindDirection": {
+          "x": 1,
+          "y": 0
+        },
+        "cloudCover": 2.03,
+        "fogDensity": 4.74,
+        "fogAtmosphereHeight": 66.5,
+        "groundWind": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      }
+    },
+    {
+      "id": "belasco_beach",
+      "name": "Belasco City Beach",
+      "description": "A sunlit sweep of sand where Belasco's busy streets give way to palms, surf, and an open Pacific horizon.",
+      "zoneName": "beachfront_zone",
+      "parkingSpotName": "beachfront_parking",
+      "scene": {
+        "timeOfDay": 0.75694441795349,
+        "play": false,
+        "year": 2026,
+        "month": 6,
+        "day": 20,
+        "utcOffset": -7,
+        "dstRule": "us",
+        "windSpeed": 0.7,
+        "cloudWindDirection": {
+          "x": 1,
+          "y": 0
+        },
+        "cloudCover": 1.69,
+        "fogDensity": 6.5,
+        "fogAtmosphereHeight": 37,
+        "groundWind": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      }
+    },
+    {
+      "id": "belasco_city_pier",
+      "name": "Belasco City Pier",
+      "description": "A weathered pier reaching beyond the beachfront, with the city skyline rising behind the rolling Pacific.",
+      "zoneName": "pier_zone",
+      "parkingSpotName": "pier_parking",
+      "scene": {
+        "timeOfDay": 0.50694441795349,
+        "play": false,
+        "year": 2026,
+        "month": 6,
+        "day": 20,
+        "utcOffset": -7,
+        "dstRule": "us",
+        "windSpeed": 0.7,
+        "cloudWindDirection": {
+          "x": 1,
+          "y": 0
+        },
+        "cloudCover": 1.81,
+        "fogDensity": 1.8,
+        "fogAtmosphereHeight": 37,
+        "groundWind": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "offroad-recovery",
+  "name": "Off-Road Recovery",
+  "icon": "tow",
+  "iconTile": "offroad-recovery.png",
+  "route": "/overhaul/phone-offroad-recovery",
+  "color": "#805329",
+  "iconColor": "#ffffff",
+  "category": "Jobs",
+  "storeTagline": "Remote vehicle recovery",
+  "storeDescription": "Extract stranded vehicles from difficult terrain and return them to your Recovery Yard.",
+  "defaultPage": 0,
+  "defaultPosition": 5,
+  "uiRoutes": [
+    {
+      "name": "phone-offroad-recovery",
+      "path": "phone-offroad-recovery",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneOffroadRecovery.vue",
+      "uiOrder": 71,
+      "luaOrder": 53,
+      "backTarget": "phone-main"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":11000,  
+    "Configuration": "Minor Problems ( Joe's Junk Career )",
+    "Description": "Trust me, it just needs a new battery and that's it!",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 270,
+    "Torque": 273,
+    "Value": 4250,
+    "Weight": 1371,
+    "Years": {
+      "max": 2021,
+      "min": 2015
+    }  
+}
+
+

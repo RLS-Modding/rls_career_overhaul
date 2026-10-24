@@ -1,0 +1,8 @@
+{
+  "id": "maintenanceBridge",
+  "order": 60,
+  "callbacks": [
+    {"id": "onVehicleMaintenanceStateChanged", "extension": "overhaul_vehicles_maintenanceBridge", "fn": "onVehicleMaintenanceStateChanged", "guard": "function"},
+    {"id": "applyMaintenancePartConditions", "extension": "overhaul_vehicles_maintenanceBridge", "fn": "applyMaintenancePartConditions", "guard": "function"}
+  ]
+}

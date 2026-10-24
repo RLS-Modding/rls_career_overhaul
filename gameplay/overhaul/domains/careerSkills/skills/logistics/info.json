@@ -1,0 +1,1098 @@
+{
+  "name": "Logistics",
+  "description": "Deliver cargo and food orders. Cargo Logistics and BeamEats feed one shared Logistics skill with separate money reward lanes.",
+  "order": 90,
+  "isSkill": true,
+  "attributeKey": "logistics-delivery",
+  "icon": "deliveryTruck",
+  "levels": [
+    {
+      "requiredValue": 0,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 1",
+        "description": "Reach level 1 to unlock new Logistics rewards."
+      },
+      "unlockFlags": [
+        "smallPackagesDelivery",
+        "junkerVeh",
+        "smallTrailersDelivery"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "boxPickUp03",
+          "heading": "1–16 Slot Parcels",
+          "description": "Deliver parcels up to 16 slots per box."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "boxPickUp03",
+          "heading": "Entry Car Jockey",
+          "description": "Deliver entry-tier vehicles."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "boxPickUp03",
+          "heading": "Small Trailers",
+          "description": "Deliver small trailers."
+        }
+      ]
+    },
+    {
+      "requiredValue": 200,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 2",
+        "description": "Reach level 2 to continue progressing your Logistics mastery."
+      },
+      "unlockFlags": [
+        "smallVeh"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "boxPickUp03",
+          "heading": "Low Car Jockey",
+          "description": "Deliver low-tier vehicles."
+        }
+      ]
+    },
+    {
+      "requiredValue": 500,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 3",
+        "description": "Reach level 3 to unlock new Logistics rewards."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "BeamEats Bonus +8%",
+          "description": "Adds 8% money payout to the BeamEats reward lane."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "boxPickUp03",
+          "heading": "32 Slot Parcels",
+          "description": "Deliver 32-slot boxes."
+        }
+      ],
+      "unlockFlags": [
+        "logisticsParcel32Slots"
+      ]
+    },
+    {
+      "requiredValue": 900,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 4",
+        "description": "Reach level 4 to continue progressing your Logistics mastery."
+      },
+      "unlockFlags": [
+        "logisticsTrailerMedium"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "boxPickUp03",
+          "heading": "Medium Trailers",
+          "description": "Deliver medium and bumper-pull tiltdeck trailers."
+        }
+      ]
+    },
+    {
+      "requiredValue": 1400,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 5",
+        "description": "Reach level 5 to unlock new Logistics rewards."
+      },
+      "unlockFlags": [
+        "beamEatsDriverBronze",
+        "logisticsParcel64Slots",
+        "largePackagesDelivery"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "BeamEats Bonus +8%",
+          "description": "Adds 8% money payout to the BeamEats reward lane."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "fastFood",
+          "heading": "Bronze Courier",
+          "description": "Legacy promotion flag retained for save compatibility. It grants no XP multiplier; payout progression comes from the BeamEats reward lane."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "boxPickUp03",
+          "heading": "64 Slot Parcels",
+          "description": "Deliver 64-slot boxes."
+        }
+      ]
+    },
+    {
+      "requiredValue": 1900,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 6",
+        "description": "Reach level 6 to unlock new Logistics rewards."
+      },
+      "unlockFlags": [
+        "logisticsTrailerHeavyHitch"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "boxPickUp03",
+          "heading": "Gooseneck and Pintle Trailers",
+          "description": "Deliver gooseneck and pintle trailers."
+        }
+      ]
+    },
+    {
+      "requiredValue": 2600,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 7",
+        "description": "Reach level 7 to unlock new Logistics rewards."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "BeamEats Bonus +8%",
+          "description": "Adds 8% money payout to the BeamEats reward lane."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "boxPickUp03",
+          "heading": "128 Slot Parcels",
+          "description": "Deliver 128-slot boxes."
+        }
+      ],
+      "unlockFlags": [
+        "logisticsParcel128Slots"
+      ]
+    },
+    {
+      "requiredValue": 3400,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 8",
+        "description": "Reach level 8 to continue progressing your Logistics mastery."
+      },
+      "unlockFlags": [
+        "logisticsCashDelivery"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "boxPickUp03",
+          "heading": "Cash Deliveries",
+          "description": "Deliver secure cash, coin, and gold loads."
+        }
+      ]
+    },
+    {
+      "requiredValue": 4300,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 9",
+        "description": "Reach level 9 to continue progressing your Logistics mastery."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "BeamEats Bonus +8%",
+          "description": "Adds 8% money payout to the BeamEats reward lane."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "boxPickUp03",
+          "heading": "Mid Car Jockey",
+          "description": "Deliver mid-tier vehicles."
+        }
+      ],
+      "unlockFlags": [
+        "fleetVeh"
+      ]
+    },
+    {
+      "requiredValue": 5300,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 10",
+        "description": "Reach level 10 to unlock new Logistics rewards."
+      },
+      "unlockFlags": [
+        "beamEatsDriverSilver",
+        "logisticsTrailerDolly",
+        "logisticsTrailerDryvan"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "fastFood",
+          "heading": "Silver Courier",
+          "description": "Legacy promotion flag retained for save compatibility. It grants no XP multiplier; payout progression comes from the BeamEats reward lane."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "boxPickUp03",
+          "heading": "Dolly and Dry Van Trailers",
+          "description": "Deliver dollies and dry-van trailers."
+        }
+      ]
+    },
+    {
+      "requiredValue": 6500,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 11",
+        "description": "Reach level 11 to continue progressing your Logistics mastery."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "BeamEats Bonus +8%",
+          "description": "Adds 8% money payout to the BeamEats reward lane."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "boxPickUp03",
+          "heading": "Cement Deliveries",
+          "description": "Deliver ready-mix concrete."
+        }
+      ],
+      "unlockFlags": [
+        "logisticsCementDelivery"
+      ]
+    },
+    {
+      "requiredValue": 7900,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 12",
+        "description": "Reach level 12 to unlock new Logistics rewards."
+      }
+    },
+    {
+      "requiredValue": 9400,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 13",
+        "description": "Reach level 13 to continue progressing your Logistics mastery."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "BeamEats Bonus +8%",
+          "description": "Adds 8% money payout to the BeamEats reward lane."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "boxPickUp03",
+          "heading": "Flatbed Trailers",
+          "description": "Deliver flatbed trailers."
+        }
+      ],
+      "unlockFlags": [
+        "logisticsTrailerFlatbed"
+      ]
+    },
+    {
+      "requiredValue": 11000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 14",
+        "description": "Reach level 14 to unlock new Logistics rewards."
+      },
+      "unlockFlags": [
+        "logisticsCarHauling"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "boxPickUp03",
+          "heading": "Car Hauling",
+          "description": "Take employed car-hauling assignments paid per vehicle."
+        }
+      ]
+    },
+    {
+      "requiredValue": 13000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 15",
+        "description": "Reach level 15 to unlock new Logistics rewards."
+      },
+      "unlockFlags": [
+        "beamEatsDriverGold",
+        "highEndVeh"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "BeamEats Bonus +8%",
+          "description": "Adds 8% money payout to the BeamEats reward lane."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "fastFood",
+          "heading": "Gold Courier",
+          "description": "Legacy promotion flag retained for save compatibility. It grants no XP multiplier; payout progression comes from the BeamEats reward lane."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "boxPickUp03",
+          "heading": "Higher Car Jockey",
+          "description": "Deliver higher-tier vehicles."
+        }
+      ]
+    },
+    {
+      "requiredValue": 15000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 16",
+        "description": "Reach level 16 to continue progressing your Logistics mastery."
+      },
+      "unlockFlags": [
+        "logisticsTrailerFramelessDump",
+        "logisticsAggregateDelivery"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "boxPickUp03",
+          "heading": "Frameless Dump Trailers",
+          "description": "Deliver frameless dump trailers."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "boxPickUp03",
+          "heading": "Aggregate Deliveries",
+          "description": "Deliver dry-bulk material loads."
+        }
+      ]
+    },
+    {
+      "requiredValue": 17500,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 17",
+        "description": "Reach level 17 to continue progressing your Logistics mastery."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "BeamEats Bonus +8%",
+          "description": "Adds 8% money payout to the BeamEats reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 20000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 18",
+        "description": "Reach level 18 to continue progressing your Logistics mastery."
+      }
+    },
+    {
+      "requiredValue": 23000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 19",
+        "description": "Reach level 19 to continue progressing your Logistics mastery."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "BeamEats Bonus +8%",
+          "description": "Adds 8% money payout to the BeamEats reward lane."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "boxPickUp03",
+          "heading": "Tanker Trailers",
+          "description": "Deliver tanker trailers."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "boxPickUp03",
+          "heading": "Fluid Deliveries",
+          "description": "Deliver fluid loads."
+        }
+      ],
+      "unlockFlags": [
+        "logisticsTrailerTanker",
+        "logisticsFluidDelivery",
+        "hazardousMaterialsDelivery"
+      ]
+    },
+    {
+      "requiredValue": 26000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 20",
+        "description": "Reach level 20 to unlock new Logistics rewards."
+      },
+      "unlockFlags": [
+        "beamEatsDriverPlatinum"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "fastFood",
+          "heading": "Platinum Courier",
+          "description": "Legacy promotion flag retained for save compatibility. It grants no XP multiplier; payout progression comes from the BeamEats reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 29000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 21",
+        "description": "Reach level 21 to continue progressing your Logistics mastery."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "BeamEats Bonus +8%",
+          "description": "Adds 8% money payout to the BeamEats reward lane."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "boxPickUp03",
+          "heading": "Highest Regular Car Jockey",
+          "description": "Deliver the highest regular car tier."
+        }
+      ],
+      "unlockFlags": [
+        "exoticVeh"
+      ]
+    },
+    {
+      "requiredValue": 33000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 22",
+        "description": "Reach level 22 to unlock new Logistics rewards."
+      },
+      "unlockFlags": [
+        "logisticsTrailerContainer"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "boxPickUp03",
+          "heading": "Container Trailers",
+          "description": "Deliver container trailers."
+        }
+      ]
+    },
+    {
+      "requiredValue": 37000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 23",
+        "description": "Reach level 23 to continue progressing your Logistics mastery."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "BeamEats Bonus +8%",
+          "description": "Adds 8% money payout to the BeamEats reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 41000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 24",
+        "description": "Reach level 24 to continue progressing your Logistics mastery."
+      }
+    },
+    {
+      "requiredValue": 46000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 25",
+        "description": "Reach level 25 to unlock new Logistics rewards."
+      },
+      "unlockFlags": [
+        "beamEatsDriverElite",
+        "logisticsTrailerLog"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "BeamEats Bonus +8%",
+          "description": "Adds 8% money payout to the BeamEats reward lane."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "roadblockL",
+          "heading": "Contracts Small (Coming Soon)",
+          "description": "Small contracts are planned but not implemented yet."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "fastFood",
+          "heading": "Elite Courier",
+          "description": "Legacy promotion flag retained for save compatibility. It grants no XP multiplier; payout progression comes from the BeamEats reward lane."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "boxPickUp03",
+          "heading": "Log Trailers",
+          "description": "Deliver log trailers."
+        }
+      ]
+    },
+    {
+      "requiredValue": 51000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 26",
+        "description": "Reach level 26 to continue progressing your Logistics mastery."
+      },
+      "unlockFlags": [
+        "heavyVeh"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "boxPickUp03",
+          "heading": "Heavy-Vehicle Car Jockey",
+          "description": "Deliver trucks and buses."
+        }
+      ]
+    },
+    {
+      "requiredValue": 56000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 27",
+        "description": "Reach level 27 to unlock new Logistics rewards."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "BeamEats Bonus +8%",
+          "description": "Adds 8% money payout to the BeamEats reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 62000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 28",
+        "description": "Reach level 28 to continue progressing your Logistics mastery."
+      }
+    },
+    {
+      "requiredValue": 68000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 29",
+        "description": "Reach level 29 to continue progressing your Logistics mastery."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "BeamEats Bonus +8%",
+          "description": "Adds 8% money payout to the BeamEats reward lane."
+        }
+      ]
+    },
+    {
+      "requiredValue": 74000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 30",
+        "description": "Reach level 30 to unlock new Logistics rewards."
+      },
+      "unlockFlags": [
+        "largeTrailersDelivery",
+        "logisticsOwnerOp"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "boxPickUp03",
+          "heading": "Owner-Operator",
+          "description": "Use your own equipment for independent cargo and contracts."
+        }
+      ]
+    },
+    {
+      "requiredValue": 81000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 31",
+        "description": "Reach level 31 to continue progressing your Logistics mastery."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "BeamEats Bonus +8%",
+          "description": "Adds 8% money payout to the BeamEats reward lane."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Cargo Pay Bonus +5%",
+          "description": "Adds 5% to Cargo Logistics base pay. Level 50 pays twice the base amount."
+        }
+      ]
+    },
+    {
+      "requiredValue": 88000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 32",
+        "description": "Reach level 32 to unlock new Logistics rewards."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Cargo Pay Bonus +10%",
+          "description": "Adds 10% to Cargo Logistics base pay. Level 50 pays twice the base amount."
+        }
+      ]
+    },
+    {
+      "requiredValue": 96000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 33",
+        "description": "Reach level 33 to continue progressing your Logistics mastery."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "BeamEats Bonus +8%",
+          "description": "Adds 8% money payout to the BeamEats reward lane."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Cargo Pay Bonus +15%",
+          "description": "Adds 15% to Cargo Logistics base pay. Level 50 pays twice the base amount."
+        }
+      ]
+    },
+    {
+      "requiredValue": 104000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 34",
+        "description": "Reach level 34 to continue progressing your Logistics mastery."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Cargo Pay Bonus +20%",
+          "description": "Adds 20% to Cargo Logistics base pay. Level 50 pays twice the base amount."
+        }
+      ]
+    },
+    {
+      "requiredValue": 113000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 35",
+        "description": "Reach level 35 to unlock new Logistics rewards."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "BeamEats Bonus +8%",
+          "description": "Adds 8% money payout to the BeamEats reward lane."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Cargo Pay Bonus +25%",
+          "description": "Adds 25% to Cargo Logistics base pay. Level 50 pays twice the base amount."
+        }
+      ]
+    },
+    {
+      "requiredValue": 122000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 36",
+        "description": "Reach level 36 to continue progressing your Logistics mastery."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Cargo Pay Bonus +30%",
+          "description": "Adds 30% to Cargo Logistics base pay. Level 50 pays twice the base amount."
+        }
+      ]
+    },
+    {
+      "requiredValue": 131000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 37",
+        "description": "Reach level 37 to unlock new Logistics rewards."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "BeamEats Bonus +8%",
+          "description": "Adds 8% money payout to the BeamEats reward lane."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "roadblockL",
+          "heading": "Contracts Med (Coming Soon)",
+          "description": "Medium contracts are planned but not implemented yet."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Cargo Pay Bonus +35%",
+          "description": "Adds 35% to Cargo Logistics base pay. Level 50 pays twice the base amount."
+        }
+      ]
+    },
+    {
+      "requiredValue": 141000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 38",
+        "description": "Reach level 38 to continue progressing your Logistics mastery."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Cargo Pay Bonus +40%",
+          "description": "Adds 40% to Cargo Logistics base pay. Level 50 pays twice the base amount."
+        }
+      ]
+    },
+    {
+      "requiredValue": 151000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 39",
+        "description": "Reach level 39 to continue progressing your Logistics mastery."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "BeamEats Bonus +8%",
+          "description": "Adds 8% money payout to the BeamEats reward lane."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Cargo Pay Bonus +45%",
+          "description": "Adds 45% to Cargo Logistics base pay. Level 50 pays twice the base amount."
+        }
+      ]
+    },
+    {
+      "requiredValue": 162000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 40",
+        "description": "Reach level 40 to unlock new Logistics rewards."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Cargo Pay Bonus +50%",
+          "description": "Adds 50% to Cargo Logistics base pay. Level 50 pays twice the base amount."
+        }
+      ]
+    },
+    {
+      "requiredValue": 174000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 41",
+        "description": "Reach level 41 to continue progressing your Logistics mastery."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "BeamEats Bonus +8%",
+          "description": "Adds 8% money payout to the BeamEats reward lane."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Cargo Pay Bonus +55%",
+          "description": "Adds 55% to Cargo Logistics base pay. Level 50 pays twice the base amount."
+        }
+      ]
+    },
+    {
+      "requiredValue": 186000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 42",
+        "description": "Reach level 42 to unlock new Logistics rewards."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "roadblockL",
+          "heading": "Specialized Trailer (Coming Soon)",
+          "description": "Specialized trailer tier is planned but not implemented yet."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Cargo Pay Bonus +60%",
+          "description": "Adds 60% to Cargo Logistics base pay. Level 50 pays twice the base amount."
+        }
+      ]
+    },
+    {
+      "requiredValue": 198000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 43",
+        "description": "Reach level 43 to unlock new Logistics rewards."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "BeamEats Bonus +8%",
+          "description": "Adds 8% money payout to the BeamEats reward lane."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Cargo Pay Bonus +65%",
+          "description": "Adds 65% to Cargo Logistics base pay. Level 50 pays twice the base amount."
+        }
+      ]
+    },
+    {
+      "requiredValue": 211000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 44",
+        "description": "Reach level 44 to continue progressing your Logistics mastery."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Cargo Pay Bonus +70%",
+          "description": "Adds 70% to Cargo Logistics base pay. Level 50 pays twice the base amount."
+        }
+      ]
+    },
+    {
+      "requiredValue": 225000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 45",
+        "description": "Reach level 45 to unlock new Logistics rewards."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "BeamEats Bonus +8%",
+          "description": "Adds 8% money payout to the BeamEats reward lane."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Cargo Pay Bonus +75%",
+          "description": "Adds 75% to Cargo Logistics base pay. Level 50 pays twice the base amount."
+        }
+      ]
+    },
+    {
+      "requiredValue": 239000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 46",
+        "description": "Reach level 46 to continue progressing your Logistics mastery."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Cargo Pay Bonus +80%",
+          "description": "Adds 80% to Cargo Logistics base pay. Level 50 pays twice the base amount."
+        }
+      ]
+    },
+    {
+      "requiredValue": 254000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 47",
+        "description": "Reach level 47 to continue progressing your Logistics mastery."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "BeamEats Bonus +8%",
+          "description": "Adds 8% money payout to the BeamEats reward lane."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Cargo Pay Bonus +85%",
+          "description": "Adds 85% to Cargo Logistics base pay. Level 50 pays twice the base amount."
+        }
+      ]
+    },
+    {
+      "requiredValue": 269000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 48",
+        "description": "Reach level 48 to continue progressing your Logistics mastery."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Cargo Pay Bonus +90%",
+          "description": "Adds 90% to Cargo Logistics base pay. Level 50 pays twice the base amount."
+        }
+      ]
+    },
+    {
+      "requiredValue": 285000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 49",
+        "description": "Reach level 49 to continue progressing your Logistics mastery."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "BeamEats Bonus +8%",
+          "description": "Adds 8% money payout to the BeamEats reward lane."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Cargo Pay Bonus +95%",
+          "description": "Adds 95% to Cargo Logistics base pay. Level 50 pays twice the base amount."
+        }
+      ]
+    },
+    {
+      "requiredValue": 301000,
+      "description": {
+        "type": "unlockCard",
+        "icon": "info",
+        "heading": "Level 50",
+        "description": "Reach level 50 to unlock new Logistics rewards."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "roadblockL",
+          "heading": "Contracts Large (Coming Soon)",
+          "description": "Large contracts are planned but not implemented yet."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Cargo Pay Bonus +100%",
+          "description": "Adds 100% to Cargo Logistics base pay. Level 50 pays twice the base amount."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "id": "vehicle_repo_bundle",
+  "order": 40,
+  "activity": "employmentShift.vehicle_repo_bundle",
+  "economyKey": "delivery_vehicle",
+  "policy": {
+    "bundledAssignments": true
+  },
+  "equipment": [],
+  "vehicleRoles": [],
+  "cargoKinds": [],
+  "payModel": {
+    "heldWages": true
+  },
+  "handlers": {
+    "surgeLeaf": {
+      "module": "overhaul/career/work/employment/kinds/vehicle",
+      "fn": "surgeLeaf"
+    },
+    "beginAssignment": {
+      "module": "overhaul/career/work/employment/kinds/assignmentBundle",
+      "fn": "beginAssignment"
+    },
+    "shiftState": {
+      "module": "overhaul/career/work/employment/kinds/assignmentBundle",
+      "fn": "shiftState"
+    }
+  }
+}

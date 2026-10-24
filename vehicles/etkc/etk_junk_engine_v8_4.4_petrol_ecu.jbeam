@@ -1,0 +1,62 @@
+{
+"etk_junk_engine_v8_4.4_petrol_ecu_ttSport_470": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Defective ttSport ECU (NA)",
+        "value":450,
+    },
+    "slotType" : "etk_engine_v8_4.4_petrol_ecu",
+    "slots": [
+        ["type", "default", "description"],
+        ["etk_engine_ecu_speedlimit","etk_engine_ecu_speedlimit_290", "Speed Limiter", {"coreSlot":true}],
+    ],
+    "mainEngine":{
+        "revLimiterRPM":4350,
+        "revLimiterType":"timeBased",
+        "revLimiterCutTime":0.1,
+    },
+},
+"etk_junk_engine_v8_4.4_petrol_ecu_ttSport_550": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Defective ttSport ECU (Turbo) ",
+        "value":650,
+    },
+    "slotType" : "etk_engine_v8_4.4_petrol_ecu",
+    "slots": [
+        ["type", "default", "description"],
+        ["etk_engine_ecu_speedlimit","etk_engine_ecu_speedlimit_310", "Speed Limiter", {"coreSlot":true}],
+    ],
+    "mainEngine":{
+        "revLimiterRPM":4750,
+        "revLimiterType":"timeBased",
+        "revLimiterCutTime":0.1,
+    },
+    "turbocharger": {
+        "wastegateStart":20,
+        "engineDef":[
+            //engineRPM, efficiency, exhaustFactor
+            [0,     0.0,    0.2],
+            [650,   0.65,   0.2],
+            [1000,   1.0,   0.45],
+            [1500,  1.0,   0.8],
+            [2000,  0.8,    1.0],
+            [2500,  0.69,    1.0],
+            [3000,  0.6,    1.0],
+            [3500,  0.53,    1.0],
+            [4000,  0.52,    1.0],
+            [4500,  0.53,    1.0],
+            [5000,  0.53,    1.0],
+            [5500,  0.505,    1.0],
+            [6000,  0.46,    1.0],
+            [6500,  0.37,    1.0],
+            [7000,  0.285,    1.0],
+            [7500,  0.15,    1.0],
+            [8000,  0.04,    1.0],
+            [8500,  0.01,    1.0],
+            [9000,  0.00,    1.0],
+            [10000,  0.00,    1.0],
+        ],
+    }
+},
+}

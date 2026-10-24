@@ -1,0 +1,48 @@
+{
+  "id": "racing-team",
+  "name": "Racing Team",
+  "icon": "cars",
+  "route": "/overhaul/phone-racing-team",
+  "color": "#F54900",
+  "iconColor": "#ffffff",
+  "category": "Business",
+  "storeTagline": "Drivers, races, and sponsors",
+  "storeDescription": "Manage your racing team from the road — schedule races, assign drivers, and get alerts when a team race is ready.",
+  "defaultPage": 0,
+  "defaultPosition": 9,
+  "showInStoreWhenLocked": true,
+  "lockedMessage": "Unlock Shop App in Team Ops on your racing team's Skill Trees.",
+  "notifications": [
+    {
+      "key": "racingTeam.raceReady",
+      "label": "Race Ready",
+      "default": true,
+      "description": "Scheduled team race ready"
+    }
+  ],
+  "unlock": {
+    "type": "businessSkillNode",
+    "business": "racingTeam",
+    "tree": "team-operations",
+    "node": "shop-app",
+    "scope": "career.racingTeam"
+  },
+  "notificationSources": [
+    "racing team"
+  ],
+  "onInstall": {
+    "extension": "overhaul_career_business_racingTeam_racingTeam",
+    "call": "notifyOnPhoneAppInstalled",
+    "loadOnlyInCareer": true
+  },
+  "uiRoutes": [
+    {
+      "name": "phone-racing-team",
+      "path": "phone-racing-team",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneRacingTeam.vue",
+      "uiOrder": 82,
+      "luaOrder": 56,
+      "backTarget": "phone-main"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "id": "overhaul_phone_apps_freContracts",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "aliases": []
+  },
+  "acquisitions": [
+    {
+      "id": "phone.freContracts",
+      "order": 70,
+      "modes": {
+        "overhaul": true,
+        "freeroam": true
+      },
+      "extensions": [
+        "overhaul_phone_apps_freContracts"
+      ],
+      "release": [],
+      "namespace": true
+    }
+  ]
+}

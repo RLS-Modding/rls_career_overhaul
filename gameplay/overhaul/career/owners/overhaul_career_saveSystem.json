@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_career_saveSystem",
+  "order": 12,
+  "module": "overhaul/career/saveSystem",
+  "scopes": [
+    {
+      "id": "careerCore",
+      "order": 2
+    }
+  ],
+  "unload": false
+}

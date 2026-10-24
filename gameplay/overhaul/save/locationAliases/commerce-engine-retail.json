@@ -1,0 +1,20 @@
+{
+  "id": "commerce-engine-retail",
+  "version": 1,
+  "aliases": [
+    {
+      "kind": "engineRetailOwnerMap",
+      "from": "belascoEngineExchange",
+      "to": "rls_west_coast",
+      "facilityId": "belascoEngineExchange",
+      "maxSaveVersion": 1
+    },
+    {
+      "kind": "engineRetailOwnerMap",
+      "from": "javiMotors",
+      "to": "rls_west_coast",
+      "facilityId": "javiMotors",
+      "maxSaveVersion": 1
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_career_business_racingTeam_racingTeam",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 70,
+    "aliases": [
+      "career_modules_business_racingTeam"
+    ]
+  }
+}

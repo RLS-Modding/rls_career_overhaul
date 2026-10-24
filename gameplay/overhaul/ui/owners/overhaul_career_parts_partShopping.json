@@ -1,0 +1,29 @@
+{
+  "id": "overhaul_career_parts_partShopping",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 510,
+    "aliases": [
+      "career_modules_partShopping"
+    ]
+  },
+  "backHandlers": [
+    {
+      "id": "overhaulPartShoppingExitHandler",
+      "method": "requestExit",
+      "alias": "partShoppingExitHandler"
+    }
+  ],
+  "routes": [
+    {
+      "name": "overhaul.computer.partShopping",
+      "order": 4,
+      "overlay": true,
+      "meta": {
+        "deferAutosave": true
+      }
+    }
+  ]
+}

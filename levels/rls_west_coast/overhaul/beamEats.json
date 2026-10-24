@@ -1,0 +1,148 @@
+{
+  "version": 1,
+  "deliverySites": [
+    {
+      "sitesFile": "asotv.sites.json",
+      "allParkingSpots": true,
+      "zoneName": "Asotv"
+    },
+    {
+      "sitesFile": "auction.sites.json",
+      "allParkingSpots": true,
+      "zoneName": "Auction"
+    },
+    {
+      "sitesFile": "burnout.sites.json",
+      "allParkingSpots": true,
+      "zoneName": "Burnout"
+    },
+    {
+      "sitesFile": "businesses.sites.json",
+      "allParkingSpots": true,
+      "zoneName": "Businesses"
+    },
+    {
+      "sitesFile": "carmeet.sites.json",
+      "allParkingSpots": true,
+      "zoneName": "Carmeet"
+    },
+    {
+      "sitesFile": "city.sites.json",
+      "allParkingSpots": true
+    },
+    {
+      "sitesFile": "cleanup.sites.json",
+      "allParkingSpots": true,
+      "zoneName": "Cleanup"
+    },
+    {
+      "sitesFile": "competitiveRaceAI.sites.json",
+      "allParkingSpots": true,
+      "zoneName": "CompetitiveRaceAI"
+    },
+    {
+      "sitesFile": "demolition.sites.json",
+      "allParkingSpots": true,
+      "zoneName": "Demolition"
+    },
+    {
+      "sitesFile": "dynoSession.sites.json",
+      "allParkingSpots": true,
+      "zoneName": "DynoSession"
+    },
+    {
+      "sitesFile": "engineShop.sites.json",
+      "allParkingSpots": true,
+      "zoneName": "EngineShop"
+    },
+    {
+      "sitesFile": "facilities/delivery/broker.sites.json",
+      "allParkingSpots": true,
+      "zoneName": "Broker"
+    },
+    {
+      "sitesFile": "facilities/delivery/mechanics.sites.json",
+      "allParkingSpots": true,
+      "zoneName": "Mechanics"
+    },
+    {
+      "sitesFile": "facilities/delivery/mixed.sites.json",
+      "allParkingSpots": true,
+      "zoneName": "Mixed"
+    },
+    {
+      "sitesFile": "facilities/delivery/rls.sites.json",
+      "allParkingSpots": true,
+      "zoneName": "Rls"
+    },
+    {
+      "sitesFile": "facilities/delivery/rlsLoaners.sites.json",
+      "allParkingSpots": true,
+      "zoneName": "RlsLoaners"
+    },
+    {
+      "sitesFile": "facilities/delivery/roleplay.sites.json",
+      "allParkingSpots": true,
+      "zoneName": "Roleplay"
+    },
+    {
+      "sitesFile": "facilities/delivery/warehouses.sites.json",
+      "allParkingSpots": true,
+      "zoneName": "Warehouses"
+    },
+    {
+      "sitesFile": "facilities.sites.json",
+      "allParkingSpots": true
+    },
+    {
+      "sitesFile": "joesJunk.sites.json",
+      "allParkingSpots": true,
+      "zoneName": "JoesJunk"
+    },
+    {
+      "sitesFile": "offroadRecovery.sites.json",
+      "allParkingSpots": true,
+      "zoneName": "OffroadRecovery"
+    },
+    {
+      "sitesFile": "pulling.sites.json",
+      "allParkingSpots": true,
+      "zoneName": "Pulling"
+    },
+    {
+      "sitesFile": "quarry.sites.json",
+      "allParkingSpots": true,
+      "zoneName": "Quarry"
+    },
+    {
+      "sitesFile": "raceTab.sites.json",
+      "allParkingSpots": true,
+      "zoneName": "RaceTab"
+    },
+    {
+      "sitesFile": "racingTeam.sites.json",
+      "allParkingSpots": true,
+      "zoneName": "RacingTeam"
+    },
+    {
+      "sitesFile": "temp.sites.json",
+      "allParkingSpots": true,
+      "zoneName": "Temp"
+    },
+    {
+      "sitesFile": "travel.sites.json",
+      "allParkingSpots": true,
+      "zoneName": "Travel"
+    },
+    {
+      "sitesFile": "travelJournal.sites.json",
+      "allParkingSpots": true,
+      "zoneName": "TravelJournal"
+    },
+    {
+      "sitesFile": "tuningShops.sites.json",
+      "allParkingSpots": true,
+      "zoneName": "TuningShops"
+    }
+  ]
+}

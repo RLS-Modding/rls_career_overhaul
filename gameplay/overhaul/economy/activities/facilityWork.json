@@ -1,0 +1,22 @@
+{
+  "id": "facilityWork",
+  "order": 70,
+  "branch": "logistics",
+  "label": "Facility Work",
+  "npcJobsPerDay": 3.5,
+  "branchLabel": "Logistics",
+  "branchOrder": 20,
+  "marketOrder": 80,
+  "availability": [
+    "overhaul_jobs_facilityWork"
+  ],
+  "earningTags": [
+    "facilityWork"
+  ],
+  "earningOrder": 60,
+  "source": "facilityWork_module",
+  "keys": ["facilityWork"],
+  "extension": "overhaul_jobs_facilityWork",
+  "activity": "facilityWork",
+  "whenLoaded": true
+}

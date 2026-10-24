@@ -1,0 +1,18 @@
+{
+  "id": "overhaul_career_business_tuningShop_tuningShop",
+  "order": 1000,
+  "module": "overhaul/career/business/tuningShop/tuningShop",
+  "scopes": [],
+  "policyOnly": true,
+  "modulePolicy": {
+    "privateFolders": [
+      "overhaul/career/business/tuningShop/shop/",
+      "overhaul/career/business/tuningShop/kitsParts/",
+      "overhaul/career/business/tuningShop/techsParts/"
+    ],
+    "privateModules": [
+      "overhaul/career/business/tuningShop/activity",
+      "overhaul/career/business/tuningShop/techs"
+    ]
+  }
+}

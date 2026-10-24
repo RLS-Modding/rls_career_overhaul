@@ -1,0 +1,2 @@
+{"name":"wcusaEngineWorks_area","class":"BeamNGGameplayArea","__parent":"engineShopBusiness","position":[-790.891663,52.4489441,118.724861],"rotationMatrix":[0.710080028,0.704120934,0,-0.704120934,0.710080028,0,0,0,1],"scale":[1.63808203,4.88499784,5]}
+{"name":"wcusaEngineWorks_icon","class":"BeamNGPointOfInterest","__parent":"engineShopBusiness","position":[-789.809753,51.7093353,119.089432]}

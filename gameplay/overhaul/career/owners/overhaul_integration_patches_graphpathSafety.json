@@ -1,0 +1,15 @@
+{
+  "id": "overhaul_integration_patches_graphpathSafety",
+  "order": 46,
+  "module": "overhaul/integration/patches/graphpathSafety",
+  "scopes": [
+    {
+      "id": "bootManual",
+      "order": 29
+    },
+    {
+      "id": "late",
+      "order": 3
+    }
+  ]
+}

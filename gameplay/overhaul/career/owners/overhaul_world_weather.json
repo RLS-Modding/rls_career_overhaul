@@ -1,0 +1,14 @@
+{
+  "id": "overhaul_world_weather",
+  "order": 126,
+  "module": "overhaul/world/weather",
+  "scopes": [
+    {
+      "id": "world",
+      "order": 1
+    }
+  ],
+  "modulePolicy": {
+    "career": true
+  }
+}

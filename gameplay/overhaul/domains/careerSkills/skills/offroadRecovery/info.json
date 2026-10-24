@@ -1,0 +1,653 @@
+{
+  "name": "Off-Road Recovery",
+  "description": "Unlock harder targets and bigger payouts. Keep recovered vehicles at level 10.",
+  "order": 73,
+    "isSkill": false,
+  "attributeKey": "careerSkills-offroadRecovery",
+  "icon": "tow",
+  "levels": [
+    {
+      "requiredValue": 0,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 1",
+        "description": "Reach level 1 to unlock new Off-Road Recovery rewards."
+      },
+      "unlockFlags": [
+        "offroadRecoveryJunkerVeh"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Passive Recovery Bonus",
+          "description": "Recovery payouts grow progressively faster, reaching a +200% cash bonus at level 50."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "tow",
+          "heading": "Trail Recovery",
+          "description": "Factory cars $1k–25k."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "car",
+          "heading": "Keep Recovered Vehicles",
+          "description": "Unlocks at level 10."
+        }
+      ]
+    },
+    {
+      "requiredValue": 246,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 2",
+        "description": "Reach level 2 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 550,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 3",
+        "description": "Reach level 3 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 924,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 4",
+        "description": "Reach level 4 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 1380,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 5",
+        "description": "Reach level 5 to unlock new Off-Road Recovery rewards."
+      },
+      "unlockFlags": [
+        "offroadRecoverySmallVeh"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "tow",
+          "heading": "Backcountry Recovery",
+          "description": "Factory cars $25k–50k."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Recovery Payout Bonus +0%",
+          "description": "Total cash payout bonus from Off-Road Recovery skill is now approximately +0%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 1930,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 6",
+        "description": "Reach level 6 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 2586,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 7",
+        "description": "Reach level 7 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 3360,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 8",
+        "description": "Reach level 8 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 4264,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 9",
+        "description": "Reach level 9 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 5310,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 10",
+        "description": "Reach level 10 to unlock new Off-Road Recovery rewards."
+      },
+      "unlockFlags": [
+        "offroadRecoveryFleetVeh"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "tow",
+          "heading": "Technical Recovery",
+          "description": "Factory cars $40k–100k and Trailers."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "car",
+          "heading": "Keep Recovered Vehicles",
+          "description": "Some jobs award the vehicle."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Recovery Payout Bonus +2%",
+          "description": "Total cash payout bonus from Off-Road Recovery skill is now approximately +2%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 6510,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 11",
+        "description": "Reach level 11 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 7876,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 12",
+        "description": "Reach level 12 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 9420,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 13",
+        "description": "Reach level 13 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 11154,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 14",
+        "description": "Reach level 14 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 13090,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 15",
+        "description": "Reach level 15 to unlock new Off-Road Recovery rewards."
+      },
+      "unlockFlags": [
+        "offroadRecoveryHighEndVeh"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "tow",
+          "heading": "Specialist Recovery",
+          "description": "Factory cars $100k–200k."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Recovery Payout Bonus +10%",
+          "description": "Total cash payout bonus from Off-Road Recovery skill is now approximately +10%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 15240,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 16",
+        "description": "Reach level 16 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 17616,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 17",
+        "description": "Reach level 17 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 20230,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 18",
+        "description": "Reach level 18 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 23094,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 19",
+        "description": "Reach level 19 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 26220,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 20",
+        "description": "Reach level 20 to unlock new Off-Road Recovery rewards."
+      },
+      "unlockFlags": [
+        "offroadRecoveryExoticVeh"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "tow",
+          "heading": "Extreme Recovery",
+          "description": "Factory cars $200k+."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Recovery Payout Bonus +20%",
+          "description": "Total cash payout bonus from Off-Road Recovery skill is now approximately +20%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 29620,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 21",
+        "description": "Reach level 21 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 33306,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 22",
+        "description": "Reach level 22 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 37290,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 23",
+        "description": "Reach level 23 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 41584,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 24",
+        "description": "Reach level 24 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 46200,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 25",
+        "description": "Reach level 25 to unlock new Off-Road Recovery rewards."
+      },
+      "unlockFlags": [
+        "offroadRecoveryHeavyVeh"
+      ],
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "tow",
+          "heading": "Heavy Recovery",
+          "description": "Factory T-Series, citybus, MD Series, and midtruck."
+        },
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Recovery Payout Bonus +41%",
+          "description": "Total cash payout bonus from Off-Road Recovery skill is now approximately +41%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 51150,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 26",
+        "description": "Reach level 26 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 56446,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 27",
+        "description": "Reach level 27 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 62100,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 28",
+        "description": "Reach level 28 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 68124,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 29",
+        "description": "Reach level 29 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 74530,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 30",
+        "description": "Reach level 30 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Recovery Payout Bonus +60%",
+          "description": "Total cash payout bonus from Off-Road Recovery skill is now approximately +60%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 81330,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 31",
+        "description": "Reach level 31 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 88536,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 32",
+        "description": "Reach level 32 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 96160,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 33",
+        "description": "Reach level 33 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 104214,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 34",
+        "description": "Reach level 34 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 112710,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 35",
+        "description": "Reach level 35 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Recovery Payout Bonus +93%",
+          "description": "Total cash payout bonus from Off-Road Recovery skill is now approximately +93%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 121660,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 36",
+        "description": "Reach level 36 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 131076,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 37",
+        "description": "Reach level 37 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 140970,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 38",
+        "description": "Reach level 38 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 151354,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 39",
+        "description": "Reach level 39 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 162240,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 40",
+        "description": "Reach level 40 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Recovery Payout Bonus +119%",
+          "description": "Total cash payout bonus from Off-Road Recovery skill is now approximately +119%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 173640,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 41",
+        "description": "Reach level 41 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 185566,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 42",
+        "description": "Reach level 42 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 198030,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 43",
+        "description": "Reach level 43 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 211044,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 44",
+        "description": "Reach level 44 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 224620,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 45",
+        "description": "Reach level 45 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Recovery Payout Bonus +165%",
+          "description": "Total cash payout bonus from Off-Road Recovery skill is now approximately +165%."
+        }
+      ]
+    },
+    {
+      "requiredValue": 238770,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 46",
+        "description": "Reach level 46 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 253506,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 47",
+        "description": "Reach level 47 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 268840,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 48",
+        "description": "Reach level 48 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 284784,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 49",
+        "description": "Reach level 49 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": []
+    },
+    {
+      "requiredValue": 301350,
+      "description": {
+        "type": "unlockCard",
+        "icon": "tow",
+        "heading": "Level 50",
+        "description": "Reach level 50 to continue progressing your Off-Road Recovery skill."
+      },
+      "unlocks": [
+        {
+          "type": "unlockCard",
+          "icon": "beamCurrency",
+          "heading": "Recovery Payout Bonus +200%",
+          "description": "Total cash payout bonus from Off-Road Recovery skill is now +200%."
+        }
+      ]
+    }
+  ]
+}

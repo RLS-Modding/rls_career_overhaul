@@ -1,0 +1,8 @@
+.panel {
+  padding: var(--inset);
+  border-radius: var(--radius-panel);
+  background: var(--panel);
+  display: grid;
+  gap: var(--space-2);
+}
+

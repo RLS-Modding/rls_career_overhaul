@@ -1,0 +1,5 @@
+{
+  "id": "overhaul_career_permissions",
+  "order": 1200,
+  "module": "overhaul/career/permissions"
+}

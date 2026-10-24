@@ -1,0 +1,5 @@
+{
+  "id": "playerAbstract",
+  "icon": "personSolid",
+  "routeTarget": "overhaul.computer.playerAbstract"
+}

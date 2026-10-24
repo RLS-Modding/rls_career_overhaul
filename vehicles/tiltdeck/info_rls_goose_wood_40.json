@@ -3,8 +3,8 @@
     "Description": "40ft Hydraulic tilt gooseneck trailer with heavy duty suspension, loaded with 14000kg of wood planks",
     "Value": 26000,
     "Weight": 17800,
-    "defaultPaintName1": "Deep Plum",
-    "defaultPaintName2": "Deep Plum",
+    "defaultPaintName1": "deep_plum",
+    "defaultPaintName2": "deep_plum",
     "theLoad": "40planks",
     "hasLoad": true
 }

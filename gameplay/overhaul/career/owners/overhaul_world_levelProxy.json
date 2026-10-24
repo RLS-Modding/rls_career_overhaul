@@ -1,0 +1,34 @@
+{
+  "id": "overhaul_world_levelProxy",
+  "order": 123,
+  "module": "overhaul/world/levelProxy",
+  "scopes": [
+    {
+      "id": "late",
+      "order": 15
+    }
+  ],
+  "bigMap": {
+    "types": [
+      {
+        "id": "spawnPoint",
+        "icon": "fastTravel"
+      }
+    ],
+    "groups": [
+      {
+        "id": "type_spawnPoint",
+        "label": "bigMap.group.type.spawnPoint",
+        "icon": "fastTravel",
+        "placements": {
+          "freeroam": [
+            {
+              "section": "freeroamPois",
+              "order": 1
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

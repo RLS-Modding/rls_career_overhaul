@@ -1,0 +1,32 @@
+{
+  "id": "overhaul_career_logistics_general",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 380,
+    "aliases": [
+      "career_modules_delivery_general"
+    ]
+  },
+  "pauseActions": [
+    {
+      "id": "careerCargoMap",
+      "order": 1,
+      "available": {
+        "owner": "overhaul_career_logistics_general",
+        "method": "isDeliveryModeActive"
+      },
+      "execute": {
+        "owner": "overhaul_career_logistics_cargoScreen",
+        "method": "enterMyCargo",
+        "optional": true
+      },
+      "button": {
+        "id": "careerCargoMap",
+        "label": "Map (My Cargo)",
+        "icon": "map"
+      }
+    }
+  ]
+}

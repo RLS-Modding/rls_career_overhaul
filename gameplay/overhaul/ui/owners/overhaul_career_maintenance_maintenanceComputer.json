@@ -1,0 +1,24 @@
+{
+  "id": "overhaul_career_maintenance_maintenanceComputer",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 210,
+    "aliases": [
+      "career_modules_maintenanceComputer"
+    ]
+  },
+  "routes": [
+    {
+      "name": "maintenance",
+      "order": 20,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "play",
+          "title": "Maintenance"
+        }
+      }
+    }
+  ]
+}

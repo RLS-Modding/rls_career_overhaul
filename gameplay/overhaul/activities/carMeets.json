@@ -1,0 +1,6 @@
+{
+  "id": "carMeets",
+  "order": 170,
+  "extension": "overhaul_career_carmeets_carmeets",
+  "definition": "overhaul/career/carmeets/carmeets/activity"
+}

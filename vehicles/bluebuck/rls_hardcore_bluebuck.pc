@@ -141,7 +141,7 @@
     "load_seat_FR":"cargo_load_box_M_seat_load_FR",
     "n2o_system":"",
     "paint_design":"bluebuck_skin_old",
-    "skin_interior":"bluebuck_skin_interior",
+    "skin_interior":"bluebuck_skin_interior_black",
     "soundscape_horn":"soundscape_horn_11",
     "tire_F_14x6":"tire_F_695_14",
     "tire_R_14x6":"tire_R_695_14",

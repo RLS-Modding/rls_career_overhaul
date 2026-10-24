@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":10000,  
+    "Configuration": "Used & Abused - Sedan ( Joe's Junk Career )",
+    "Description": "Beater Legran with damaged body panels and misc junk parts.",
+    "Drivetrain": "FWD",
+    "Fuel Type": "Gasoline",
+    "Power": 136,
+    "Torque": 137,
+    "Value": 9500,
+    "Weight": 1564,
+    "Years": {
+      "max": 1988,
+      "min": 1984
+    }  
+}
+
+

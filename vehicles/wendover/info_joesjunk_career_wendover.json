@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":13000,  
+    "Configuration": "4.4 (A) ( Joe's Junk Career )",
+    "Description": "Dont know what happened to the front end of this car but hey, it still runs and its cheap.",
+    "Drivetrain": "FWD",
+    "Fuel Type": "Gasoline",
+    "Power": 160,
+    "Torque": 162,
+    "Value": 2350,
+    "Weight": 1572,
+    "Years": {
+      "max": 1991,
+      "min": 1987
+    }  
+}
+
+

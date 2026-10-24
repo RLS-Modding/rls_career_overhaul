@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" rx="8" fill="#222225"/>
+  <circle cx="64" cy="57" r="35" fill="#171719" stroke="#49494e"/>
+  <circle cx="64" cy="57" r="23" fill="none" stroke="#38383d"/>
+  <circle cx="64" cy="57" r="11" fill="#76767e"/>
+  <circle cx="64" cy="57" r="3" fill="#171719"/>
+  <text x="64" y="110" text-anchor="middle" fill="#b8b8bf" font-family="sans-serif" font-size="10" letter-spacing="2">RLS MUSIC</text>
+</svg>

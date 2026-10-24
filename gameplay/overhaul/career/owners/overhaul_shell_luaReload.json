@@ -1,0 +1,18 @@
+{
+  "id": "overhaul_shell_luaReload",
+  "order": 97,
+  "module": "overhaul/shell/luaReload",
+  "scopes": [
+    {
+      "id": "services",
+      "order": 13
+    }
+  ],
+  "inputActions": {
+    "order": 3,
+    "path": "/lua/ge/extensions/core/input/actions/rls_career_overhaul.json",
+    "actions": [
+      "overhaulLuaReload"
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+<link rel="stylesheet" type="text/css" href="/ui/modModules/overhaulFreeroamRaceHud/cleanupClubPrompt.css" />
+
+<div class="cuc-overlay" ng-if="visible">
+  <div class="cuc-card" overhaul-popup="close()" bng-blur="true" ng-style="cardStyle()" ng-mousedown="startDrag($event)">
+    <div class="cuc-accent"></div>
+    <div class="cuc-head">
+      <div class="cuc-pre">Found Cleanup</div>
+      <div class="cuc-title">{{ payload.title || 'Clean Up Club' }}</div>
+    </div>
+    <div class="cuc-actions">
+      <button type="button" class="cuc-btn cuc-btn-primary" ng-click="complete()">{{ payload.actionLabel || 'Clear Debris' }}</button>
+      <button type="button" class="cuc-btn cuc-btn-secondary" bng-scoped-nav-autofocus ng-click="close()">Close</button>
+    </div>
+  </div>
+</div>

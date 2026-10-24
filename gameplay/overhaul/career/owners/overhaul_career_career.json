@@ -1,0 +1,18 @@
+{
+  "id": "overhaul_career_career",
+  "order": 4,
+  "module": "overhaul/career/career",
+  "scopes": [
+    {
+      "id": "careerCore",
+      "order": 3
+    }
+  ],
+  "unload": false,
+  "modulePolicy": {
+    "privateFolders": [
+      "overhaul/career/start/",
+      "overhaul/career/startingModes/"
+    ]
+  }
+}

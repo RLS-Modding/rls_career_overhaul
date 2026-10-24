@@ -1,0 +1,6 @@
+{
+  "id": "drag",
+  "order": 100,
+  "extension": "overhaul_events_host",
+  "definition": "overhaul/events/host/hostActivity"
+}

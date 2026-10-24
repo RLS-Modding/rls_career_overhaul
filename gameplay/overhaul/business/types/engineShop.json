@@ -1,0 +1,117 @@
+{
+  "id": "engineShop",
+  "order": 3,
+  "tabs": [
+    {
+      "id": "dashboard",
+      "label": "Dashboard",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/businessComputer/types/engineShop/EngineShopTab.vue",
+      "componentName": "EngineShopTab",
+      "order": 1,
+      "data": {
+        "view": "dashboard"
+      },
+      "componentOrder": 16
+    },
+    {
+      "id": "engines",
+      "label": "Engines",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/businessComputer/types/engineShop/EngineShopTab.vue",
+      "componentName": "EngineShopTab",
+      "order": 2,
+      "data": {
+        "view": "engines"
+      },
+      "componentOrder": 16
+    },
+    {
+      "id": "myParts",
+      "label": "My Parts",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/businessComputer/types/engineShop/EngineShopTab.vue",
+      "componentName": "EngineShopTab",
+      "order": 3,
+      "data": {
+        "view": "myParts"
+      },
+      "componentOrder": 16
+    },
+    {
+      "id": "production",
+      "label": "Production",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/businessComputer/types/engineShop/EngineShopTab.vue",
+      "componentName": "EngineShopTab",
+      "order": 4,
+      "data": {
+        "view": "production"
+      },
+      "componentOrder": 16
+    },
+    {
+      "id": "warehouse",
+      "label": "Warehouse",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/businessComputer/types/engineShop/EngineShopTab.vue",
+      "componentName": "EngineShopTab",
+      "order": 5,
+      "data": {
+        "view": "warehouse"
+      },
+      "componentOrder": 16
+    },
+    {
+      "id": "sales",
+      "label": "Sales",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/businessComputer/types/engineShop/EngineShopTab.vue",
+      "componentName": "EngineShopTab",
+      "order": 6,
+      "data": {
+        "view": "sales"
+      },
+      "componentOrder": 16
+    },
+    {
+      "id": "upgrades",
+      "label": "Upgrades",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/businessComputer/types/engineShop/EngineShopTab.vue",
+      "componentName": "EngineShopTab",
+      "order": 7,
+      "data": {
+        "view": "upgrades"
+      },
+      "componentOrder": 16
+    },
+    {
+      "id": "finances",
+      "label": "Finances",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/businessComputer/types/engineShop/EngineShopTab.vue",
+      "componentName": "EngineShopTab",
+      "order": 8,
+      "data": {
+        "view": "finances"
+      },
+      "componentOrder": 16
+    },
+    {
+      "id": "overview",
+      "label": "Overview",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/businessComputer/types/engineShop/EngineShopTab.vue",
+      "componentName": "EngineShopTab",
+      "order": 9,
+      "data": {
+        "view": "overview"
+      },
+      "componentOrder": 16
+    }
+  ],
+  "module": "overhaul_career_business_engineShop",
+  "capabilities": {
+    "bankAccount": true,
+    "inventory": false,
+    "finances": true,
+    "skillTrees": false,
+    "personalVehicle": true,
+    "xpSystem": false,
+    "operatingCosts": false,
+    "engineProduction": true,
+    "fullscreenComputer": true
+  }
+}

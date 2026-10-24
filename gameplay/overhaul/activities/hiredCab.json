@@ -1,0 +1,6 @@
+{
+  "id": "hiredCab",
+  "order": 40,
+  "extension": "overhaul_integration_services_taxi",
+  "definition": "overhaul/integration/services/taxi/activity"
+}

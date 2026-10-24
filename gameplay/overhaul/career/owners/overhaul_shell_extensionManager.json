@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_shell_extensionManager",
+  "order": 94,
+  "module": "overhaul/shell/extensionManager",
+  "scopes": [
+    {
+      "id": "owned",
+      "order": 2
+    }
+  ]
+}

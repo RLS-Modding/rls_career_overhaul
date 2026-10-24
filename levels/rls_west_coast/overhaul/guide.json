@@ -1,0 +1,180 @@
+{
+  "version": 1,
+  "topics": [
+    {
+      "id": "tuning-shop",
+      "sections": [
+        {
+          "id": "how-to-start",
+          "title": "How to start",
+          "steps": [
+            "The {facility.name} is at Fast Auto on {map.label}, next to the racetrack. Walk up to the facility marker to purchase the property and use the business computer.",
+            "New customer jobs appear on the \"Jobs\" tab over time. You start with two active job slots — accept one, \"Pull Out\" the customer car in the garage, and work it on a lift.",
+            "With a car on a lift, use the workshop \"Parts\" and \"Tuning\" views to build the job, then drive to the race named in the goal (drag strip, Short Track, Track, and similar).",
+            "Beat the target time on the job card (\"Goal\" vs \"Current\"), return to the computer, and tap \"Complete\" to collect payout into the shop account."
+          ]
+        },
+        {
+          "id": "hq-computer-and-phone",
+          "title": "HQ, computer, and phone",
+          "body": [
+            "The facility is the business: garage lifts, customer fleet storage, shop bank account, and the computer upstairs.",
+            "Computer tabs are \"Home\", \"Jobs\", \"Kits\", \"Inventory\", \"Techs\", \"Finances\", and \"Skill Trees\". Accepting jobs, installing parts, saving kits, hiring techs, and spending upgrade XP all happen here.",
+            "With a vehicle on a lift, the left sidebar shows \"WORKSHOP\" with \"Parts\" and \"Tuning\". Install work bills the shop account, not your personal wallet.",
+            "The \"Tuning Shop\" phone app is optional — not the hub. Unlock it with the \"Shop App\" skill in Quality Of Life on \"Skill Trees\". Until then the app is locked and names that skill.",
+            "Phone tabs cover a subset: \"Home\" (active jobs, idle techs, balance), \"Jobs\" (accept, complete, or abandon remotely), \"Techs\", and \"Finances\". You cannot install parts or tune from the phone."
+          ]
+        },
+        {
+          "id": "the-job-loop",
+          "title": "The job loop",
+          "body": [
+            "Jobs list a goal like \"45 s Short Track\" — a target lap or run time at a specific West Coast race. \"Current\" shows the best time logged for that job car at that event.",
+            "Flow: accept from \"New Jobs\" → \"Pull Out\" on \"Active Jobs\" (one car per lift; extra lifts come from shop upgrades) → modify the build → drive to the event and run it → \"Complete\" when Current meets or beats Goal.",
+            "New offers generate on a timer (about two minutes between rolls by default; \"Marketing\" speeds this up). Unaccepted jobs expire after about five minutes.",
+            "Completion locks to the build that set the time. If you change parts after a good run, the card may say \"Build changed — re-run the event to complete\" until you run again with the current setup.",
+            "Keep the customer car intact — heavy damage can lock the job (\"Vehicle Damaged\") until you \"Abandon\" it. \"That'll Buff Out\" raises the damage tolerance. Abandoning costs half the job payout from the shop account (\"No Hard Feelings\" and \"I Give Up\" reduce or remove that fee).",
+            "Use \"Filters\" on the \"Jobs\" tab to manage blacklists, job notifications, and (with a Manager) which offers auto-assign to techs."
+          ]
+        }
+      ],
+      "facility": {
+        "type": "tuningShop",
+        "id": "fastAutoTuningShop"
+      }
+    },
+    {
+      "id": "logistics",
+      "sections": [
+        {
+          "id": "contract-types",
+          "title": "Contract types",
+          "body": [
+            "Hub contracts fill or distribute from that yard. A→B contracts send you from an origin to a destination.",
+            "Parcel strings are multi-stop hub runs. Pay stays pending until the last stop is done.",
+            "Car-haul contracts at distributor yards (for example {references.distributor.name}) move new cars to dealerships. Accept, then use \"Plan trip\" to pick which cars to stage this run. Each car goes to the dealer matching its tier. Rent distributor gear if you need a truck and trailer.",
+            "Finish an active owner-operator contract before taking walk-up \"Inspect Cargo\" jobs — those per-diem offers stay blocked until the contract is done."
+          ]
+        }
+      ],
+      "references": {
+        "distributor": {
+          "type": "deliveryProvider",
+          "id": "finkIndustries"
+        }
+      }
+    },
+    {
+      "id": "employment",
+      "sections": [
+        {
+          "id": "company-vs-freelance",
+          "title": "Company work vs freelance",
+          "body": [
+            "Freelance logistics is owner-operator work: browse \"Places\" in the \"Logistics\" app for walk-up facility offers, take contracts on the \"Contracts\" tab, or pick one-off parcels, trailers, materials, and vehicle moves from a facility \"Inspect Cargo\" board, in your own (or rented) equipment.",
+            "Employment puts you on one company's payroll at one home yard. The company chooses the job, issues the truck, and takes a share of the pay. You keep the rest as today's held wages until you end the day.",
+            "A company can have more than one yard. {references.garage.name}, {references.cityYard.name}, and {references.islandYard.name} are separate jobs even though they share a company.",
+            "Company work can let you haul some cargo types a few logistics levels earlier than freelance. Listings only show yards with work you can actually be issued today, plus locked yards that tell you what to unlock next."
+          ]
+        }
+      ],
+      "references": {
+        "garage": {
+          "type": "deliveryProvider",
+          "id": "shuffleboardGarage"
+        },
+        "cityYard": {
+          "type": "deliveryProvider",
+          "id": "shuffleboardLogistics"
+        },
+        "islandYard": {
+          "type": "deliveryProvider",
+          "id": "refinery_logistics"
+        }
+      }
+    },
+    {
+      "id": "racing-team",
+      "sections": [
+        {
+          "id": "how-to-start",
+          "title": "How to start",
+          "steps": [
+            "{facility.name} is at Belasco Motorsports Paddock on {map.label}. Buy the property from the business map, then use the Racing Computer upstairs — that is where you run the team.",
+            "You start in League 1, {league.league1}. Open the \"Goals\" tab on the computer and work through goals one at a time; only the current goal is active.",
+            "Early League 1 is solo: buy a team car on the \"Vehicles\" tab (team account, not personal cash), pull it out in the garage bay, and drive your own laps and races.",
+            "Finish goal \"Short Track Laps\" — 5 consecutive Short Track laps — to unlock the sanctioned race board on the \"Race\" tab. Until then, \"Available Races\" stays empty.",
+            "Complete every goal in a league to earn a league invite. Accept from the splash or later on \"Goals\" — registration is paid from the team account."
+          ]
+        },
+        {
+          "id": "hq-computer-and-phone",
+          "title": "HQ, computer, and phone",
+          "body": [
+            "The paddock is the business: office computer upstairs, vehicle bay downstairs, team bank account, fleet garage, and sanctioned races tied to the facility.",
+            "Computer tabs are \"Home\", \"Goals\", \"Vehicles\", \"Inventory\", \"Race\", \"Drivers\", and \"Finances\". Goals, skill trees, parts work, and full race booking live on the computer.",
+            "The \"Racing Team\" phone app is optional — not the hub. Unlock it with the \"Shop App\" skill in Team Ops (after \"Laptop\"). Until then the app is locked and names that skill.",
+            "Phone tabs cover a subset: \"Home\" (scheduled races, sponsorship, finances widgets), \"Races\", \"Drivers\", and \"Vehicles\". Handy for a quick check or to spectate away from the desk; most management stays on the computer.",
+            "\"Laptop\" adds a second Racing Computer in the vehicle bay. \"Pit Fuel\" lets you refuel fleet cars from the shop and bill the team account."
+          ]
+        },
+        {
+          "id": "leagues-and-goals",
+          "title": "Leagues and goals",
+          "body": [
+            "Four leagues run in order: {league.league1}, then {league.league2} ({racing.league2InviteAcronym}), {league.league3} ({racing.league3InviteAcronym}), and {league.league4} ({racing.league4InviteAcronym}).",
+            "Each league is a chain of goals — buy cars, set lap times, earn money, win races, build class, hire drivers, hit team value targets, and more. Check \"Goals\" for the current target and progress.",
+            "League 1 keeps you in the seat: no driver hires yet. Finishing League 1 unlocks the {racing.league2InviteAcronym} invite. League 2 adds drivers, proxy races, and sponsors.",
+            "Later leagues ask for more drivers, stronger cars (Stock through Modified and Super), more race volume, and larger financial milestones. Completing all League 4 goals finishes the racing-team arc."
+          ]
+        },
+        {
+          "id": "fleet-class-and-brackets",
+          "title": "Fleet, class, and brackets",
+          "body": [
+            "Fleet cars are bought on the \"Vehicles\" tab and stored in the paddock garage. Factory configs only; purchases debit the team account.",
+            "Sanctioned class follows effective power-to-weight: Stock, Modified, Super, and Open. Installed parts matter — a factory build can stay Stock even if raw numbers look higher.",
+            "Race offers on the board use hp/kg brackets (for example Modified club low or mid). Your car must fit the bracket; overpowered builds are blocked.",
+            "The board refreshes over time and rolls races that match your fleet plus aspirational classes above it. Keep cars in repair — heavy damage can lock a fleet car out of use.",
+            "\"Garage Slots\" (QOL skill) adds roster capacity and lets you pull more than one team car out at once, up to the physical bay size."
+          ]
+        },
+        {
+          "id": "league-1-racing",
+          "title": "League 1 racing",
+          "body": [
+            "Before {racing.league2InviteAcronym}, you are the overhaulDriver. Pick an offer from \"Available Races\", choose a fleet car, pay the entry fee from the team account, and go to the grid yourself.",
+            "Sanctioned races pay into team finances and count toward goals. Entry fees scale with class and league tier.",
+            "Goal races include lap challenges on Short Track and Track, podium targets, win counts, and pushing a car into Modified class. Read each goal on the \"Goals\" tab so you are working on the right activity."
+          ]
+        },
+        {
+          "id": "proxy-races-and-drivers",
+          "title": "Proxy races and drivers",
+          "body": [
+            "From {racing.league2InviteAcronym} onward you can hire drivers on the \"Drivers\" tab — \"Hire Driver\", assign a fleet car, and book sanctioned races they run while you spectate.",
+            "On \"Available Races\", pick an offer and \"Assign driver\" (or \"Race myself\" to drive yourself for a reduced team payout). Entry fee bills the team account; the offer moves to \"Scheduled Races\".",
+            "After a short countdown the race is ready. Open \"Scheduled Races\" and tap \"Spectate\" to watch your driver's proxy run, or \"Drop out\" to cancel the booking.",
+            "Drivers need a matching fleet car, idle status, and no recovery cooldown. After a race, fleet cars and drivers cool down before the next booking — \"Reduced Cooldown\" skill shortens that.",
+            "\"Manager\" automation (Team Ops skill, League 2+) toggles \"Auto-assign sanctioned offers\" on the \"Race\" tab to book idle drivers on a timer. Level 2 Manager picks interval and matches car bracket. \"Shop App\" enables lock-screen alerts when a booked race is ready to spectate."
+          ]
+        },
+        {
+          "id": "sponsors-finances-and-skills",
+          "title": "Sponsors, finances, and skills",
+          "body": [
+            "Team money is separate from your wallet. Race payouts, entry fees, driver cuts, operating costs, paint, fuel, and league registration all flow through the team account on \"Finances\".",
+            "Sponsor contracts unlock in League 2. \"Home\" shows active deals and available offers — money and XP bonuses with a stacking cap. Slots are limited; contracts expire if you wait too long.",
+            "Drivers take a cut of gross race payout based on experience tier. Operating costs tick on a schedule — bays, drivers, manager, dyno overhead — so keep an eye on the ledger.",
+            "Spend team skill XP in three trees: Team Ops (laptop, phone app, pit fuel, manager), QOL (dyno, garage slots, towing, taxi to HQ), and Driver (roster size, cooldown reduction, podium XP bonus).",
+            "Proxy race results feed team and driver XP. \"Podium Analytics\" boosts XP when your drivers podium."
+          ]
+        }
+      ],
+      "facility": {
+        "type": "racingTeam",
+        "id": "rlsRacingComputer"
+      }
+    }
+  ]
+}

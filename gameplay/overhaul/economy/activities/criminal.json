@@ -1,0 +1,17 @@
+{
+  "id": "criminal",
+  "order": 130,
+  "excludedEarningTags": [
+    "criminal"
+  ],
+  "challengeDisplay": [
+    {
+      "order": 120,
+      "name": "Criminal Work",
+      "category": "Activity",
+      "key": "criminal"
+    }
+  ],
+  "source": "criminal_module",
+  "keys": ["criminal"]
+}

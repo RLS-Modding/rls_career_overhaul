@@ -1,0 +1,9 @@
+{
+  "id": "overhaul_career_business_computer",
+  "order": 140,
+  "module": "overhaul/career/business/computer",
+  "scopes": [],
+  "demandLoad": true,
+  "capability": "businessComputer",
+  "demandRoutes": ["business-computer"]
+}

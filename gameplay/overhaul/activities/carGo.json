@@ -1,0 +1,6 @@
+{
+  "id": "carGo",
+  "order": 260,
+  "extension": "overhaul_career_logistics_vehicleTransfer",
+  "definition": "overhaul/career/logistics/vehicleTransfer/activity"
+}

@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":13500,  
+    "Configuration": "Exorcist ( Joe's Junk Career )",
+    "Description": "Some people says that this car is haunted... Some other people says that its a piece or crap. Both of them are probably right.",
+    "Drivetrain": "FWD",
+    "Fuel Type": "Gasoline",
+    "Power": 123,
+    "Torque": 124,
+    "Value": 2250,
+    "Weight": 1249,
+    "Years": {
+      "max": 1991,
+      "min": 1988
+    }  
+}
+
+

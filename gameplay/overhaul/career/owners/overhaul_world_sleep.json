@@ -1,0 +1,10 @@
+{
+  "id": "overhaul_world_sleep",
+  "order": 1000,
+  "module": "overhaul/world/sleep",
+  "scopes": [],
+  "policyOnly": true,
+  "modulePolicy": {
+    "career": true
+  }
+}

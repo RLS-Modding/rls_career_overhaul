@@ -1,0 +1,33 @@
+{
+  "id": "materials",
+  "order": 20,
+  "activity": "employmentShift.materials",
+  "economyKey": "delivery_fluid",
+  "policy": {
+    "materialContract": true
+  },
+  "equipment": [],
+  "vehicleRoles": [],
+  "cargoKinds": [],
+  "payModel": {
+    "heldWages": true
+  },
+  "handlers": {
+    "surgeLeaf": {
+      "module": "overhaul/career/work/employment/kinds/materials",
+      "fn": "surgeLeaf"
+    },
+    "rejectSpawn": {
+      "module": "overhaul/career/work/employment/kinds/assignmentLoad",
+      "fn": "rejectSpawn"
+    },
+    "presentationReady": {
+      "module": "overhaul/career/work/employment/kinds/assignmentLoad",
+      "fn": "presentationReady"
+    },
+    "issueLoaners": {
+      "module": "overhaul/career/work/employment/kinds/assignmentMaterials",
+      "fn": "issueLoaners"
+    }
+  }
+}

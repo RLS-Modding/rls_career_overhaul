@@ -1,0 +1,52 @@
+{
+  "id": "weather",
+  "name": "Weather",
+  "icon": "weather",
+  "route": "/overhaul/phone-weather",
+  "color": "#2563a9",
+  "iconColor": "#ffffff",
+  "category": "Tools",
+  "storeTagline": "Live conditions and forecast",
+  "storeDescription": "Check current road and air conditions, hourly changes, the seven-day outlook, and weather preferences.",
+  "defaultPage": 0,
+  "defaultPosition": 3,
+  "notifications": [
+    {
+      "key": "weather.rainSoon",
+      "label": "Rain Approaching",
+      "default": true,
+      "description": "Warn one in-game hour before rain",
+      "order": 0,
+      "pending": "drop"
+    },
+    {
+      "key": "weather.stormSoon",
+      "label": "Storm Approaching",
+      "default": true,
+      "description": "Warn one in-game hour before a storm",
+      "order": 1,
+      "pending": "drop"
+    },
+    {
+      "key": "weather.fogSoon",
+      "label": "Fog Forming",
+      "default": true,
+      "description": "Warn one in-game hour before morning fog",
+      "order": 2,
+      "pending": "drop"
+    }
+  ],
+  "defaultHome": {
+    "slot": 3
+  },
+  "uiRoutes": [
+    {
+      "name": "phone-weather",
+      "path": "phone-weather",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneWeather.vue",
+      "uiOrder": 102,
+      "luaOrder": 67,
+      "backTarget": "phone-main"
+    }
+  ]
+}

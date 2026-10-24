@@ -1,0 +1,122 @@
+{
+  "rlsMiningLoad": {
+    "cat": "rlsCareerOverhaul",
+    "order": 1300,
+    "ctx": "tlua",
+    "actionMap": "VehicleCommon",
+    "onDown": "if overhaul_jobs_miningHaul then overhaul_jobs_miningHaul.loadTruck() end",
+    "title": "Load mining ore",
+    "desc": "Load mining ore",
+    "overhaulGroup": "Mining"
+  },
+  "rlsMiningProcess": {
+    "cat": "rlsCareerOverhaul",
+    "order": 1301,
+    "ctx": "tlua",
+    "actionMap": "VehicleCommon",
+    "onDown": "if overhaul_jobs_miningHaul then overhaul_jobs_miningHaul.processOre() end",
+    "title": "Process mining ore",
+    "desc": "Process mining ore",
+    "overhaulGroup": "Mining"
+  },
+  "rlsMiningEnd": {
+    "cat": "rlsCareerOverhaul",
+    "order": 1302,
+    "ctx": "tlua",
+    "actionMap": "VehicleCommon",
+    "onDown": "if overhaul_jobs_miningHaul then overhaul_jobs_miningHaul.endShift() end",
+    "title": "End mining shift",
+    "desc": "End mining shift",
+    "overhaulGroup": "Mining"
+  },
+  "rlsTractorAbandon": {
+    "cat": "rlsCareerOverhaul",
+    "order": 1303,
+    "ctx": "tlua",
+    "actionMap": "VehicleCommon",
+    "onDown": "if overhaul_events_tractorPull and overhaul_events_tractorPull.getState().phase == \"waiting\" then overhaul_events_tractorPull.cancel() end",
+    "title": "Abandon tractor pull",
+    "desc": "Abandon tractor pull",
+    "overhaulGroup": "Tractor pull"
+  },
+  "rlsDynoControls": {
+    "cat": "rlsCareerOverhaul",
+    "order": 1304,
+    "ctx": "tlua",
+    "actionMap": "VehicleCommon",
+    "onDown": "guihooks.trigger('OverhaulDynoControls')",
+    "title": "Open dyno controls",
+    "desc": "Open dyno controls",
+    "overhaulGroup": "Dyno"
+  },
+  "rlsDynoArm": {
+    "cat": "rlsCareerOverhaul",
+    "order": 1305,
+    "ctx": "tlua",
+    "actionMap": "VehicleCommon",
+    "onDown": "if overhaul_career_parts_dyno_dynoSession then overhaul_career_parts_dyno_dynoSession.startPull() end",
+    "title": "Arm dyno pull",
+    "desc": "Arm dyno pull",
+    "overhaulGroup": "Dyno"
+  },
+  "rlsSpawnVehicle": {
+    "cat": "rlsCareerOverhaul",
+    "order": 1306,
+    "ctx": "tlua",
+    "actionMap": "VehicleCommon",
+    "onDown": "guihooks.trigger('OverhaulSpawnVehicle')",
+    "title": "Spawn job vehicle",
+    "desc": "Spawn job vehicle",
+    "overhaulGroup": "Jobs"
+  },
+  "rlsMusicNext": {
+    "cat": "rlsCareerOverhaul",
+    "order": 1307,
+    "ctx": "tlua",
+    "actionMap": "VehicleCommon",
+    "onDown": "if overhaul_phone_musicPlayer then overhaul_phone_musicPlayer.uiNext() end",
+    "title": "Next music track",
+    "desc": "Next music track",
+    "overhaulGroup": "Music"
+  },
+  "rlsMusicPrevious": {
+    "cat": "rlsCareerOverhaul",
+    "order": 1308,
+    "ctx": "tlua",
+    "actionMap": "VehicleCommon",
+    "onDown": "if overhaul_phone_musicPlayer then overhaul_phone_musicPlayer.uiPrevious() end",
+    "title": "Previous music track",
+    "desc": "Previous music track",
+    "overhaulGroup": "Music"
+  },
+  "rlsMusicToggle": {
+    "cat": "rlsCareerOverhaul",
+    "order": 1309,
+    "ctx": "tlua",
+    "actionMap": "VehicleCommon",
+    "onDown": "if overhaul_phone_musicPlayer then if overhaul_phone_musicPlayer.getUiState().isPlaying then overhaul_phone_musicPlayer.uiStop() else overhaul_phone_musicPlayer.uiPlay() end end",
+    "title": "Play or stop music",
+    "desc": "Play or stop music",
+    "overhaulGroup": "Music"
+  },
+  "rlsNotificationOpen": {
+    "cat": "rlsCareerOverhaul",
+    "order": 1310,
+    "ctx": "tlua",
+    "actionMap": "VehicleCommon",
+    "onDown": "guihooks.trigger('OverhaulNotificationOpen')",
+    "title": "Open newest phone notification",
+    "desc": "Open newest phone notification",
+    "overhaulGroup": "Phone"
+  },
+  "rlsNotificationDismiss": {
+    "cat": "rlsCareerOverhaul",
+    "order": 1311,
+    "ctx": "tlua",
+    "actionMap": "VehicleCommon",
+    "onDown": "guihooks.trigger('OverhaulNotificationDismiss')",
+    "title": "Dismiss newest phone notification",
+    "desc": "Dismiss newest phone notification",
+    "overhaulGroup": "Phone"
+  }
+}

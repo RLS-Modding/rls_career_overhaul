@@ -1,0 +1,33 @@
+{
+  "id": "obd-scanner",
+  "name": "OBD Scanner",
+  "iconImage": "/ui/entrypoints/main/rls_career_overhaul/tiles/rls-obd-scanner.svg",
+  "iconImageFit": "contain",
+  "route": "/overhaul/phone-obd-scanner",
+  "color": "#101923",
+  "iconColor": "#50e3a4",
+  "category": "Tools",
+  "storeTagline": "Live vehicle diagnostics and maintenance data",
+  "storeDescription": "View engine, thermal, drivetrain and service information from the current vehicle, with low engine oil alerts while driving.",
+  "notifications": [
+    {
+      "key": "obdScanner.lowOil",
+      "label": "Low engine oil",
+      "description": "Warn when engine oil is low and when it reaches a critical level.",
+      "default": true,
+      "pending": "drop"
+    }
+  ],
+  "defaultPage": 0,
+  "defaultPosition": 16,
+  "uiRoutes": [
+    {
+      "name": "phone-obd-scanner",
+      "path": "phone-obd-scanner",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneObdScanner.vue",
+      "uiOrder": 101,
+      "luaOrder": 52,
+      "backTarget": "phone-main"
+    }
+  ]
+}

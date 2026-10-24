@@ -4,7 +4,7 @@
 <div class="rls-mp">
   <div class="rls-mp-row-main">
     <div class="rls-mp-art">
-      <img ng-if="vm.state.currentCover" ng-src="{{ vm.state.currentCover }}" alt="" />
+      <img ng-if="vm.state.currentCover" ng-src="{{ vm.state.currentCover }}" alt="" onerror="if(!this.src.endsWith('/cover-placeholder.svg'))this.src='/ui/modModules/rlsMusicPlayer/cover-placeholder.svg'" />
       <div class="rls-mp-art-ph" ng-if="!vm.state.currentCover"></div>
     </div>
     <div class="rls-mp-main-col">
@@ -25,7 +25,7 @@
       <div class="rls-mp-time-row">
         <span class="rls-mp-time">{{ vm.fmt(vm.state.positionSec) }}</span>
         <div class="rls-mp-bar">
-          <div class="rls-mp-bar-fill" ng-style="{ width: (vm.pct() + '%') }"></div>
+          <div class="rls-mp-bar-fill" ng-style="{ transform: 'scaleX(' + (vm.pct() / 100) + ')' }"></div>
         </div>
         <span class="rls-mp-time">{{ vm.fmt(vm.state.durationSec) }}</span>
       </div>

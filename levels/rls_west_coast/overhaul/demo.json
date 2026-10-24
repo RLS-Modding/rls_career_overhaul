@@ -1,0 +1,150 @@
+{
+  "_comment": "Demolition Derby configuration. Spatial data lives in demolition.sites.json. Vehicle eligibility is controlled by info_*.json config groups such as rlsDerby100 and rlsDerby100.",
+  "sitesFile": "demolition.sites.json",
+  "arenaBarriersGroup": "Derby Barriers",
+  "defaults": {
+    "maxOpponents": 9,
+    "noContactTimeoutSeconds": 60,
+    "noContactWarningSeconds": 10,
+    "timeLimitSeconds": 300,
+    "removeTraffic": true,
+    "startEngineOnSpawn": true,
+    "label": "Demolition Derby",
+    "type": [
+      "demo"
+    ],
+    "reward": 500,
+    "entryModes": {
+      "loaner": {
+        "label": "Register as Driver",
+        "description": "Pay an entry fee and run a supplied derby car.",
+        "entryFee": 1000,
+        "loaner": true,
+        "playerPool": "rlsDerby100",
+        "aiPool": "rlsDerby100",
+        "rewardBase": 750,
+        "rewardPerAi": 250
+      },
+      "ownCar": {
+        "label": "Enter Own Car",
+        "description": "Bring an uninsured personal car. Damage persists.",
+        "entryFee": 0,
+        "loaner": false,
+        "requireUninsured": true,
+        "persistDamage": true,
+        "aiPool": "rlsDerby100",
+        "rewardBase": 5000,
+        "rewardPerAi": 1500
+      }
+    },
+    "_ai_comment": "AI behavior settings",
+    "aiAggression": 1.2,
+    "aiRetargetInterval": 8,
+    "aiPlayerTargetWeight": 0.4,
+    "aiAvoidCars": "off",
+    "aiActivationDelay": 2.0,
+    "aiPersonalityProfiles": {
+      "aggressor": {
+        "weight": 0.4,
+        "playerTargetWeightBonus": 0.22,
+        "aggressionMultiplier": 1.2,
+        "retargetIntervalMultiplier": 0.8,
+        "dangerMargin": 8,
+        "safeMargin": 12,
+        "preferReverseChance": 0.2
+      },
+      "opportunist": {
+        "weight": 0.35,
+        "playerTargetWeightBonus": 0,
+        "aggressionMultiplier": 1,
+        "retargetIntervalMultiplier": 1,
+        "dangerMargin": 10,
+        "safeMargin": 14,
+        "preferReverseChance": 0.35
+      },
+      "survivor": {
+        "weight": 0.25,
+        "playerTargetWeightBonus": -0.18,
+        "aggressionMultiplier": 0.82,
+        "retargetIntervalMultiplier": 1.35,
+        "dangerMargin": 13,
+        "safeMargin": 18,
+        "preferReverseChance": 0.7
+      }
+    },
+    "maxDamageForDisplayAi": 50000,
+    "maxDamageForDisplayPlayer": 50000,
+    "winnerRepairInsurance": {
+      "enabled": true,
+      "defaultSelected": false,
+      "rewardCutPercent": 50
+    }
+  },
+  "events": {
+    "demo_dirt": {
+      "label": "Dirt Oval Derby",
+      "introSplash": {
+        "title": "Dirt Oval Derby",
+        "subtitle": "West Coast Speedway infield",
+        "body": "Smash the competition until you're the last car running. Configure your field on the next screen, then stage on the grid.",
+        "features": [
+          "5-minute limit: eliminate all rivals or outscore any survivors",
+          "Win to earn cash and XP — rewards scale with more opponents",
+          "Keep fighting: 60 seconds without hitting rivals eliminates you",
+          "Keep moving: sitting still for 30 seconds = elimination"
+        ],
+        "continueLabel": "Continue"
+      },
+      "maxOpponents": 9,
+      "reward": 500,
+      "type": [
+        "demo"
+      ],
+      "spawnPrefix": "Spawn",
+      "startSpotName": "start_demo_dirt",
+      "playZone": "DemoPlayZone",
+      "eliminationZones": [
+        "EliminationZone"
+      ],
+      "timeLimitSeconds": 300,
+      "removeTraffic": true,
+      "startEngineOnSpawn": true,
+      "maxDamageForDisplayAi": 50000,
+      "maxDamageForDisplayPlayer": 100000,
+      "aiAggression": 2,
+      "aiRetargetInterval": 25,
+      "aiPlayerTargetWeight": 0.35,
+      "aiAvoidCars": "off",
+      "aiActivationDelay": 1.0,
+      "aiPersonalityProfiles": {
+        "aggressor": {
+          "weight": 0.5,
+          "playerTargetWeightBonus": 0.25,
+          "aggressionMultiplier": 1.25,
+          "retargetIntervalMultiplier": 0.75,
+          "dangerMargin": 8,
+          "safeMargin": 12,
+          "preferReverseChance": 0.2
+        },
+        "opportunist": {
+          "weight": 0.3,
+          "playerTargetWeightBonus": 0,
+          "aggressionMultiplier": 1,
+          "retargetIntervalMultiplier": 1,
+          "dangerMargin": 10,
+          "safeMargin": 14,
+          "preferReverseChance": 0.35
+        },
+        "survivor": {
+          "weight": 0.2,
+          "playerTargetWeightBonus": -0.18,
+          "aggressionMultiplier": 0.82,
+          "retargetIntervalMultiplier": 1.35,
+          "dangerMargin": 13,
+          "safeMargin": 18,
+          "preferReverseChance": 0.7
+        }
+      }
+    }
+  }
+}

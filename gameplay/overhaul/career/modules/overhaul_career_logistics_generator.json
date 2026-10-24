@@ -1,0 +1,5 @@
+{
+  "id": "overhaul_career_logistics_generator",
+  "order": 890,
+  "module": "overhaul/career/logistics/generator"
+}

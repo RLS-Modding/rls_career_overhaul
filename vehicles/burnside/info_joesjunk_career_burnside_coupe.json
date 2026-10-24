@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":6000,  
+    "Configuration": "Vintage Crap ( Joe's Junk Career )",
+    "Description": "No way this one have some value.",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 250,
+    "Torque": 253,
+    "Value": 2450,
+    "Weight": 1646,
+    "Years": {
+      "max": 1953,
+      "min": 1952
+    }  
+}
+
+

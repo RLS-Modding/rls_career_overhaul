@@ -1,0 +1,25 @@
+{
+  "id": "vehicle",
+  "order": 50,
+  "activity": "employmentShift.vehicle",
+  "economyKey": "delivery_vehicle",
+  "policy": {
+    "vehicleDelivery": true
+  },
+  "equipment": [],
+  "vehicleRoles": [],
+  "cargoKinds": [],
+  "payModel": {
+    "heldWages": true
+  },
+  "handlers": {
+    "surgeLeaf": {
+      "module": "overhaul/career/work/employment/kinds/vehicle",
+      "fn": "surgeLeaf"
+    },
+    "beginAssignment": {
+      "module": "overhaul/career/work/employment/kinds/assignmentVehicle",
+      "fn": "beginAssignment"
+    }
+  }
+}

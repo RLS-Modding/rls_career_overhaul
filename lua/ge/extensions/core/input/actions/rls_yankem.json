@@ -1,0 +1,74 @@
+{
+  "rlsYankemToggle": {
+    "cat": "rlsCareerOverhaul",
+    "order": 1280,
+    "ctx": "tlua",
+    "actionMap": "VehicleCommon",
+    "onDown": "if not extensions.overhaul_jobs_yankem then extensions.load('overhaul_jobs_yankem') end; if extensions.overhaul_jobs_yankem then extensions.overhaul_jobs_yankem.toggleWinch() end",
+    "title": "Project Yankem: Winch / Cancel / Disconnect",
+    "desc": "Enter winch selection, cancel selection, or disconnect the active Yankem cable",
+    "overhaulGroup": "Yankem"
+  },
+  "rlsYankemReelIn": {
+    "cat": "rlsCareerOverhaul",
+    "order": 1281,
+    "ctx": "tlua",
+    "actionMap": "VehicleCommon",
+    "onDown": "if extensions.overhaul_jobs_yankem then extensions.overhaul_jobs_yankem.setReelInput(-1, true) end",
+    "onUp": "if extensions.overhaul_jobs_yankem then extensions.overhaul_jobs_yankem.setReelInput(-1, false) end",
+    "title": "Project Yankem: Reel In",
+    "desc": "Retract the active Yankem cable while held",
+    "overhaulGroup": "Yankem"
+  },
+  "rlsYankemReelOut": {
+    "cat": "rlsCareerOverhaul",
+    "order": 1282,
+    "ctx": "tlua",
+    "actionMap": "VehicleCommon",
+    "onDown": "if extensions.overhaul_jobs_yankem then extensions.overhaul_jobs_yankem.setReelInput(1, true) end",
+    "onUp": "if extensions.overhaul_jobs_yankem then extensions.overhaul_jobs_yankem.setReelInput(1, false) end",
+    "title": "Project Yankem: Reel Out",
+    "desc": "Pay out the active Yankem cable while held",
+    "overhaulGroup": "Yankem"
+  },
+  "rlsYankemSelect": {
+    "cat": "rlsCareerOverhaul",
+    "order": 1283,
+    "ctx": "tlua",
+    "actionMap": "VehicleCommon",
+    "onDown": "if extensions.overhaul_jobs_yankem then extensions.overhaul_jobs_yankem.selectAtCursor() end",
+    "title": "Project Yankem: Select Winch Point",
+    "desc": "Select the hovered Yankem attachment point while Winch Mode is active",
+    "overhaulGroup": "Yankem"
+  },
+  "rlsYankemNext": {
+    "cat": "rlsCareerOverhaul",
+    "order": 1288,
+    "ctx": "tlua",
+    "actionMap": "VehicleCommon",
+    "onDown": "if extensions.overhaul_jobs_yankem then extensions.overhaul_jobs_yankem.cyclePoint(1) end",
+    "title": "Next winch point",
+    "desc": "Next winch point",
+    "overhaulGroup": "Yankem"
+  },
+  "rlsYankemPrevious": {
+    "cat": "rlsCareerOverhaul",
+    "order": 1289,
+    "ctx": "tlua",
+    "actionMap": "VehicleCommon",
+    "onDown": "if extensions.overhaul_jobs_yankem then extensions.overhaul_jobs_yankem.cyclePoint(-1) end",
+    "title": "Previous winch point",
+    "desc": "Previous winch point",
+    "overhaulGroup": "Yankem"
+  },
+  "rlsYankemConfirm": {
+    "cat": "rlsCareerOverhaul",
+    "order": 1290,
+    "ctx": "tlua",
+    "actionMap": "VehicleCommon",
+    "onDown": "if extensions.overhaul_jobs_yankem then extensions.overhaul_jobs_yankem.selectControllerPoint() end",
+    "title": "Attach selected winch point",
+    "desc": "Attach selected winch point",
+    "overhaulGroup": "Yankem"
+  }
+}

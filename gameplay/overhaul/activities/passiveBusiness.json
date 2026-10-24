@@ -1,0 +1,6 @@
+{
+  "id": "passiveBusiness",
+  "order": 340,
+  "extension": "overhaul_career_business_passive",
+  "definition": "overhaul/career/business/passive/activity"
+}

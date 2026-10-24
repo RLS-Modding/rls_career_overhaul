@@ -1,0 +1,48 @@
+{
+  "id": "road-authority",
+  "name": "Road Authority",
+  "icon": [
+    "road",
+    "warning",
+    "location",
+    "cars"
+  ],
+  "route": "/overhaul/phone-road-authority",
+  "color": "#476b43",
+  "iconColor": "#ffffff",
+  "category": "Tools",
+  "storeTagline": "Cleanup reports",
+  "storeDescription": "View Road Authority cleanup assignments and track debris clearances on Skeleton Coast.",
+  "defaultPage": 0,
+  "defaultPosition": 5,
+  "unlock": {
+    "type": "optionalFeature",
+    "feature": "roadAuthority"
+  },
+  "notifications": [
+    {
+      "key": "roadAuthority.newReport",
+      "label": "New Report",
+      "default": true,
+      "description": "Cleanup location assigned",
+      "order": 0
+    },
+    {
+      "key": "roadAuthority.reportsAvailable",
+      "label": "Reports Available",
+      "default": true,
+      "description": "Intro complete, reports live",
+      "order": 1
+    }
+  ],
+  "uiRoutes": [
+    {
+      "name": "phone-road-authority",
+      "path": "phone-road-authority",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneRoadAuthority.vue",
+      "uiOrder": 65,
+      "luaOrder": 60,
+      "backTarget": "phone-main"
+    }
+  ]
+}

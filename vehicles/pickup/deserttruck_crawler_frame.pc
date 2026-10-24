@@ -136,8 +136,6 @@
     "race_seat_FR":"",
     "skin_glass":"",
     "skin_interior":"",
-    "skin_race_seat_FL":"",
-    "skin_race_seat_FR":"",
     "soundscape_horn":"",
     "tire_F_17x9_offroad":"",
     "tire_R_17x9_offroad":"",

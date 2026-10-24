@@ -1,0 +1,13 @@
+{
+  "id": "jobs",
+  "order": 30,
+  "label": "Passenger, Operator & Recovery",
+  "children": [
+    {"id": "bus", "label": "Bus", "skillKey": "careerSkills-passenger", "economyKeys": ["bus"]},
+    {"id": "taxi", "label": "Taxi", "skillKey": "careerSkills-passenger", "economyKeys": ["taxi"]},
+    {"id": "facilityWork", "label": "Forklift Work", "skillKey": "careerSkills-operator", "economyKeys": ["facilityWork"]},
+    {"id": "miningHaul", "label": "Skeleton Coast Mining Haul", "skillKey": "careerSkills-operator", "economyKeys": ["miningHaul"]},
+    {"id": "repo", "label": "Repo", "skillKey": "careerSkills-recovery", "economyKeys": ["repo"]},
+    {"id": "offroadRecovery", "label": "Off-Road Recovery", "skillKey": "careerSkills-recovery", "economyKeys": ["offroadRecovery"]}
+  ]
+}

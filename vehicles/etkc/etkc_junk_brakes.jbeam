@@ -1,0 +1,178 @@
+{
+"etkc_junk_brake_F": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Worn Front Disc Brakes",
+        "value":150,
+    },
+    "slotType" : "etkc_brake_F",
+    "slots": [
+        ["type", "default", "description"],
+        ["brakepad_F","brakepad_F_sport", "Front Brake Pads", {"coreSlot":true}],
+    ],
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        //brake discs
+        ["brake_hub_5l", ["wheel_FR","wheelhub_FR"], [], {"pos":{"x":-0.76,"y":-1.295, "z":0.351}, "scale":{"x":1.0,"y":1.0,"z":1.0}, "rot":{"x":0,"y":0,"z":0}}],
+        ["brake_hub_5l", ["wheel_FL","wheelhub_FL"], [], {"pos":{"x":0.76,"y":-1.295, "z":0.351}, "scale":{"x":1.0,"y":1.0,"z":1.0}, "rot":{"x":0,"y":0,"z":180}}],
+        ["brake_disc_plain", ["wheel_FR","wheelhub_FR"], [], {"pos":{"x":-0.76,"y":-1.295, "z":0.351}, "scale":{"x":1.3,"y":1.125,"z":1.125}, "rot":{"x":0,"y":0,"z":0}}],
+        ["brake_disc_plain", ["wheel_FL","wheelhub_FL"], [], {"pos":{"x":0.76,"y":-1.295, "z":0.351}, "scale":{"x":1.3,"y":1.125,"z":1.125}, "rot":{"x":180,"y":0,"z":0}}],
+        ["brake_caliper_4pot_plain", ["etkc_hub_F","wheelhub_FR"], [], {"pos":{"x":-0.76,"y":-1.295, "z":0.351}, "scale":{"x":1.3,"y":1.0,"z":1.0}, "rot":{"x":-180,"y":0,"z":0}}],
+        ["brake_caliper_4pot_plain", ["etkc_hub_F","wheelhub_FL"], [], {"pos":{"x":0.76,"y":-1.295, "z":0.351}, "scale":{"x":1.3,"y":1.0,"z":1.0}, "rot":{"x":180,"y":180,"z":0}}],
+    ],
+    "pressureWheels": [
+        ["name","hubGroup","group","node1:","node2:","nodeS","nodeArm:","wheelDir"],
+        //brakes
+
+        {"brakeTorque":"$=$brakestrength*1250"},
+        {"brakeInputSplit":1},
+        {"brakeSplitCoef":1},
+        {"parkingTorque":0},
+        {"brakeSpring":150},
+
+        //brake thermals
+        {"enableBrakeThermals":true},
+        {"brakeDiameter":0.312},
+        {"brakeMass":8.5},
+        {"brakeType":"vented-disc"},
+        {"rotorMaterial":"steel"},
+        {"brakeVentingCoef":0.2},
+        //abs
+        {"absSlipRatioTarget":0.2},
+        //brake sounds
+        {"squealCoefNatural": 3.5, "squealCoefLowSpeed": 3.0}
+    ],
+},
+"etkc_junk_brake_R": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Worn Rear Disc Brakes",
+        "value":100,
+    },
+    "slotType" : "etkc_brake_R",
+    "slots": [
+        ["type", "default", "description"],
+        ["brakepad_R","brakepad_R_sport", "Rear Brake Pads", {"coreSlot":true}],
+    ],
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        //brake discs
+        ["brake_hub_5l", ["wheel_RR","wheelhub_RR"], [], {"pos":{"x":-0.76,"y":1.2936, "z":0.35}, "scale":{"x":1.0,"y":1.0,"z":1.0}, "rot":{"x":0,"y":0,"z":0}}],
+        ["brake_hub_5l", ["wheel_RL","wheelhub_RL"], [], {"pos":{"x":0.76,"y":1.2936, "z":0.35}, "scale":{"x":1.0,"y":1.0,"z":1.0}, "rot":{"x":0,"y":0,"z":180}}],
+        ["brake_disc_plain", ["wheel_RR","wheelhub_RR"], [], {"pos":{"x":-0.76,"y":1.2936, "z":0.35}, "scale":{"x":1.3,"y":1.09,"z":1.09}, "rot":{"x":0,"y":0,"z":0}}],
+        ["brake_disc_plain", ["wheel_RL","wheelhub_RL"], [], {"pos":{"x":0.76,"y":1.2936, "z":0.35}, "scale":{"x":1.3,"y":1.09,"z":1.09}, "rot":{"x":180,"y":0,"z":0}}],
+        ["brake_caliper_standard_plain", ["etkc_hub_R","wheelhub_RR"], [], {"pos":{"x":-0.76,"y":1.2936, "z":0.35}, "scale":{"x":1.3,"y":0.96,"z":0.96}, "rot":{"x":-180,"y":0,"z":0}}],
+        ["brake_caliper_standard_plain", ["etkc_hub_R","wheelhub_RL"], [], {"pos":{"x":0.76,"y":1.2936, "z":0.35}, "scale":{"x":1.3,"y":0.96,"z":0.96}, "rot":{"x":180,"y":180,"z":0}}],
+    ],
+    "pressureWheels": [
+        ["name","hubGroup","group","node1:","node2:","nodeS","nodeArm:","wheelDir"],
+        //brakes
+
+        {"brakeTorque":"$=$brakestrength*750"},
+        {"brakeInputSplit":0.5},
+        {"brakeSplitCoef":0.6},
+        {"parkingTorque":850},
+        {"brakeSpring":75},
+
+        //brake thermals
+        {"enableBrakeThermals":true},
+        {"brakeDiameter":0.300},
+        {"brakeMass":4.6},
+        {"brakeType":"vented-disc"},
+        {"rotorMaterial":"steel"},
+        {"brakeVentingCoef":0.1},
+        //abs
+        {"absSlipRatioTarget":0.13},
+        //brake sounds
+        {"squealCoefNatural": 3.0, "squealCoefLowSpeed": 2.5}
+    ],
+},
+"etkc_junk_brake_F_carbon": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Worn Carbon-Ceramic Front Disc Brakes",
+        "value":750,
+    },
+    "slotType" : "etkc_brake_F",
+    "slots": [
+        ["type", "default", "description"],
+        ["brakepad_F_carbon","brakepad_F_carbon", "Front Brake Pads", {"coreSlot":true}],
+    ],
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        //brake discs
+        ["brake_hub_5l", ["wheel_FR","wheelhub_FR"], [], {"pos":{"x":-0.76,"y":-1.295, "z":0.351}, "scale":{"x":1.0,"y":1.0,"z":1.0}, "rot":{"x":0,"y":0,"z":0}}],
+        ["brake_hub_5l", ["wheel_FL","wheelhub_FL"], [], {"pos":{"x":0.76,"y":-1.295, "z":0.351}, "scale":{"x":1.0,"y":1.0,"z":1.0}, "rot":{"x":0,"y":0,"z":180}}],
+        ["etk_brakedisc_F_carbon", ["wheel_FR","wheelhub_FR"], [], {"pos":{"x":-0.76,"y":-1.295, "z":0.351}, "scale":{"x":1,"y":1,"z":1}, "rot":{"x":0,"y":180,"z":0}}],
+        ["etk_brakedisc_F_carbon", ["wheel_FL","wheelhub_FL"], [], {"pos":{"x":0.76,"y":-1.295, "z":0.351}, "scale":{"x":1,"y":1,"z":1}, "rot":{"x":180,"y":180,"z":0}}],
+        ["etk_caliper_F_ttsport", ["etkc_hub_F","wheelhub_FR"], [], {"pos":{"x":-0.76,"y":-1.295, "z":0.351}, "scale":{"x":1,"y":1,"z":1}, "rot":{"x":-180,"y":0,"z":0}}],
+        ["etk_caliper_F_ttsport", ["etkc_hub_F","wheelhub_FL"], [], {"pos":{"x":0.76,"y":-1.295, "z":0.351}, "scale":{"x":1,"y":1,"z":1}, "rot":{"x":180,"y":180,"z":0}}],
+    ],
+    "pressureWheels": [
+        ["name","hubGroup","group","node1:","node2:","nodeS","nodeArm:","wheelDir"],
+        //brakes
+        {"brakeTorque":"$=$brakestrength*1250"},
+        {"brakeInputSplit":1},
+        {"brakeSplitCoef":1},
+        {"parkingTorque":0},
+        {"brakeSpring":130},
+        {"padMaterial":"carbon-ceramic", "padGlazingSusceptibility":3.0},
+
+        //brake thermals
+        {"enableBrakeThermals":true},
+        {"brakeDiameter":0.37},
+        {"brakeMass":4.8},
+        {"brakeType":"carbon-ceramic-vented-disc"},
+        {"rotorMaterial":"carbon-ceramic"},
+        {"brakeVentingCoef":0.5},
+        //abs
+        {"absSlipRatioTarget":0.18},
+        //brake sounds
+        {"squealCoefNatural": 4.0, "squealCoefLowSpeed": 3.5}
+    ],
+},
+"etkc_junk_brake_R_carbon": {
+    "information":{
+        "authors":"BeamNG",
+        "name":"Worn Carbon-Ceramic Rear Disc Brakes",
+        "value":500,
+    },
+    "slotType" : "etkc_brake_R",
+    "slots": [
+        ["type", "default", "description"],
+        ["brakepad_R_carbon","brakepad_R_carbon", "Rear Brake Pads", {"coreSlot":true}],
+    ],
+    "flexbodies": [
+        ["mesh", "[group]:", "nonFlexMaterials"],
+        //brake discs
+        ["brake_hub_5l", ["wheel_RR","wheelhub_RR"], [], {"pos":{"x":-0.76,"y":1.2936, "z":0.35}, "scale":{"x":1.0,"y":1.0,"z":1.0}, "rot":{"x":0,"y":0,"z":0}}],
+        ["brake_hub_5l", ["wheel_RL","wheelhub_RL"], [], {"pos":{"x":0.76,"y":1.2936, "z":0.35}, "scale":{"x":1.0,"y":1.0,"z":1.0}, "rot":{"x":0,"y":0,"z":180}}],
+        ["etk_brakedisc_R_carbon", ["wheel_RR","wheelhub_RR"], [], {"pos":{"x":-0.77,"y":1.2936, "z":0.35}, "scale":{"x":1,"y":1,"z":1}, "rot":{"x":0,"y":0,"z":0}}],
+        ["etk_brakedisc_R_carbon", ["wheel_RL","wheelhub_RL"], [], {"pos":{"x":0.77,"y":1.2936, "z":0.35}, "scale":{"x":1,"y":1,"z":1}, "rot":{"x":180,"y":0,"z":0}}],
+        ["etk_caliper_R_ttsport", ["etkc_hub_R","wheelhub_RR"], [], {"pos":{"x":-0.77,"y":1.2936, "z":0.35}, "scale":{"x":1,"y":1,"z":1}, "rot":{"x":-180,"y":0,"z":0}}],
+        ["etk_caliper_R_ttsport", ["etkc_hub_R","wheelhub_RL"], [], {"pos":{"x":0.77,"y":1.2936, "z":0.35}, "scale":{"x":1,"y":1,"z":1}, "rot":{"x":180,"y":180,"z":0}}],
+    ],
+    "pressureWheels": [
+        ["name","hubGroup","group","node1:","node2:","nodeS","nodeArm:","wheelDir"],
+        //brakes
+        {"brakeTorque":"$=$brakestrength*750"},
+        {"brakeInputSplit":0.5},
+        {"brakeSplitCoef":0.6},
+        {"parkingTorque":800},
+        {"brakeSpring":80},
+        {"padMaterial":"carbon-ceramic", "padGlazingSusceptibility":0.0},
+
+        //brake thermals
+        {"enableBrakeThermals":true},
+        {"brakeDiameter":0.345},
+        {"brakeMass":2.6},
+        {"brakeType":"carbon-ceramic-vented-disc"},
+        {"rotorMaterial":"carbon-ceramic"},
+        {"brakeVentingCoef":0.3},
+        //abs
+        {"absSlipRatioTarget":0.13},
+        //brake sounds
+        {"squealCoefNatural": 4.0, "squealCoefLowSpeed": 4.0}
+    ],
+},
+}

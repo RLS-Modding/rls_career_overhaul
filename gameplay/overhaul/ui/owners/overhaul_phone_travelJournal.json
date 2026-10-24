@@ -1,0 +1,34 @@
+{
+  "id": "overhaul_phone_travelJournal",
+  "order": 100,
+  "exports": {
+    "namespace": false,
+    "aliases": []
+  },
+  "acquisitions": [
+    {
+      "id": "phone.travelJournal",
+      "order": 90,
+      "modes": {
+        "overhaul": true,
+        "freeroam": true
+      },
+      "extensions": [
+        "overhaul_phone_travelJournal"
+      ],
+      "release": [],
+      "namespace": false
+    }
+  ],
+  "routes": [
+    {
+      "name": "travel-journal",
+      "order": 75,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "play"
+        }
+      }
+    }
+  ]
+}

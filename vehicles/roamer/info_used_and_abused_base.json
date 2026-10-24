@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":10000,  
+    "Configuration": "Used & Abused - Base ( Joe's Junk Career )",
+    "Description": "Beater Roamer with damaged body panels and misc junk parts.",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 184,
+    "Torque": 186,
+    "Value": 24000,
+    "Weight": 2036,
+    "Years": {
+      "max": 1998,
+      "min": 1992
+    }  
+}
+
+

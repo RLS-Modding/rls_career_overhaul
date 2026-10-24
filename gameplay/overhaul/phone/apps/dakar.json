@@ -1,0 +1,47 @@
+{
+  "id": "dakar",
+  "name": "Dakar",
+  "icon": [
+    "raceFlag",
+    "road",
+    "cars"
+  ],
+  "route": "/overhaul/phone-dakar",
+  "color": "#6f5a24",
+  "iconColor": "#ffffff",
+  "category": "Events",
+  "storeTagline": "Skeleton Coast rally",
+  "storeDescription": "Track checkpoints, use repair kits, and manage your active Dakar run from your phone.",
+  "defaultPage": 0,
+  "defaultPosition": 4,
+  "unlock": {
+    "type": "optionalFeature",
+    "feature": "dakar"
+  },
+  "notifications": [
+    {
+      "key": "dakar.signedUp",
+      "label": "Signed Up",
+      "default": true,
+      "description": "Drive to the starting line",
+      "order": 0
+    },
+    {
+      "key": "dakar.checkpoint",
+      "label": "Next Checkpoint",
+      "default": true,
+      "description": "Clue and checkpoint updates",
+      "order": 1
+    }
+  ],
+  "uiRoutes": [
+    {
+      "name": "phone-dakar",
+      "path": "phone-dakar",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneDakar.vue",
+      "uiOrder": 64,
+      "luaOrder": 30,
+      "backTarget": "phone-main"
+    }
+  ]
+}

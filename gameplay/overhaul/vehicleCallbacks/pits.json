@@ -1,0 +1,7 @@
+{
+  "id": "pits",
+  "order": 170,
+  "callbacks": [
+    {"id": "pitsThrottleInput", "extension": "overhaul_events_pits", "fn": "receiveThrottleInput", "guard": "none"}
+  ]
+}

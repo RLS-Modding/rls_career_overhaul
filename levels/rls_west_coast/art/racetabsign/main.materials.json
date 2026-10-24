@@ -1,0 +1,73 @@
+{
+  "rtbsign": {
+    "name": "rtbsign",
+    "mapTo": "rtbsign",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorMap": "/levels/rls_west_coast/art/racetabsign/racetabautov1.color.png",
+        "emissiveFactor": [
+          1,
+          1,
+          1
+        ],
+        "emissiveMap": "/levels/rls_west_coast/art/racetabsign/racetabautov1.color.png"
+      },
+      {
+        "emissiveFactor": null
+      },
+      {
+        "emissiveFactor": null
+      },
+      {
+        "emissiveFactor": null
+      }
+    ],
+    "translucentBlendOp": "None",
+    "version": 1.5
+  },
+  "rtbsign_frame1": {
+    "name": "rtbsign_frame1",
+    "mapTo": "rtbsign_frame1",
+    "class": "Material",
+    "Stages": [
+      {
+        "baseColorFactor": null,
+        "baseColorMap": "/vehicles/common/racinginterior/rollcage_b.color.png",
+        "clearCoatRoughnessFactor": null,
+        "metallicFactor": 0.356000006,
+        "normalMap": "/vehicles/common/racinginterior/rollcage_nm.normal.png",
+        "roughnessMap": "/vehicles/common/racinginterior/rollcage_r.data.png"
+      },
+      {
+        "baseColorFactor": [
+          9.99999997e-07,
+          9.99999997e-07,
+          9.99999997e-07,
+          1
+        ],
+        "baseColorMap": "/vehicles/common/racinginterior/rollcage_b.color.png",
+        "clearCoatRoughnessFactor": 0,
+        "metallicFactor": null,
+        "normalMap": "/vehicles/common/racinginterior/rollcage_nm.normal.png",
+        "opacityMap": "/vehicles/common/racinginterior/rollcage_c.data.png",
+        "roughnessMap": "/vehicles/common/racinginterior/rollcage_r.data.png"
+      },
+      {
+        "baseColorFactor": null,
+        "clearCoatRoughnessFactor": null,
+        "metallicFactor": null
+      },
+      {
+        "baseColorFactor": null,
+        "clearCoatRoughnessFactor": null,
+        "metallicFactor": null
+      }
+    ],
+    "activeLayers": 2,
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "version": 1.5
+  }
+}

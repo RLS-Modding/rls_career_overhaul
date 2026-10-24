@@ -1,0 +1,25 @@
+{
+  "id": "wallet",
+  "name": "Wallet",
+  "icon": "banknotes",
+  "iconTile": "wallet.svg",
+  "route": "/overhaul/phone-wallet",
+  "color": "#1f6f43",
+  "iconColor": "#ffffff",
+  "category": "Finance",
+  "opensFromBalance": true,
+  "storeTagline": "See where your money goes",
+  "storeDescription": "Your balance and every payment, added up per vehicle, per type of work and per category. Sort by date, amount or name.",
+  "defaultPage": 0,
+  "defaultPosition": 2,
+  "uiRoutes": [
+    {
+      "name": "phone-wallet",
+      "path": "phone-wallet",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneWallet.vue",
+      "uiOrder": 108,
+      "luaOrder": 68,
+      "backTarget": "phone-main"
+    }
+  ]
+}

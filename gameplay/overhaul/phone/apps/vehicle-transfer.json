@@ -1,0 +1,35 @@
+{
+  "id": "vehicle-transfer",
+  "name": "CarGo",
+  "iconTile": "rls-vehicle-transfer-icon.png",
+  "route": "/overhaul/phone-vehicle-transfer",
+  "color": "#0b5fff",
+  "iconColor": "#ffffff",
+  "category": "Jobs",
+  "storeTagline": "Car Jockey",
+  "storeDescription": "Car Jockey gigs anytime. Pay settles on each drop-off — no Employment hire required.",
+  "defaultPage": 0,
+  "defaultPosition": 8,
+  "notifications": [
+    {
+      "key": "vehicleTransfer.newJob",
+      "label": "New Transfer",
+      "default": true,
+      "description": "New transfer assignments",
+      "order": 0
+    }
+  ],
+  "defaultHome": {
+    "slot": 2
+  },
+  "uiRoutes": [
+    {
+      "name": "phone-vehicle-transfer",
+      "path": "phone-vehicle-transfer",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneVehicleTransfer.vue",
+      "uiOrder": 85,
+      "luaOrder": 27,
+      "backTarget": "phone-main"
+    }
+  ]
+}

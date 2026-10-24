@@ -1,0 +1,8 @@
+{
+  "id": "partCustomization",
+  "order": 210,
+  "callbacks": [
+    {"id": "partCustomizationPowerWeight", "extension": "overhaul_career_business_partCustomization", "fn": "onPowerWeightReceived", "guard": "none"},
+    {"id": "businessBuildVehicleCommand", "extension": "overhaul_career_business_partCustomization", "fn": "onBuildVehicleCommandResult", "guard": "function"}
+  ]
+}

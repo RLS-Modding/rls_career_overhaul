@@ -59,7 +59,7 @@
     "pickup_engine_v8_internals":"pickup_engine_v8_internals",
     "pickup_enginemounts":"pickup_enginemounts",
     "pickup_oilpan_v8":"pickup_oilpan_v8",
-    "pickup_receiver_attachment":"pickup_receiver_ball",
+    "towhitch_receiver_attachment":"tow_hitch_straight",
     "pickup_reversewarn":"",
     "pickup_sparetire":"pickup_sparetire_6l",
     "pickup_towhitch":"pickup_towhitch",

@@ -1,0 +1,7 @@
+{
+  "id": "raceDataCollection",
+  "order": 160,
+  "callbacks": [
+    {"id": "raceDataVehicleModel", "extension": "overhaul_dev_raceDataCollection", "fn": "onVehicleModelReceived", "guard": "none"}
+  ]
+}

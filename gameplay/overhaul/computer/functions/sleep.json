@@ -1,0 +1,5 @@
+{
+  "id": "sleep",
+  "icon": "night",
+  "routeTarget": "sleep-menu"
+}

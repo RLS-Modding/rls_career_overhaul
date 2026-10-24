@@ -1,0 +1,37 @@
+{
+  "id": "beam-eats",
+  "name": "BeamEats",
+  "icon": "cityOutline",
+  "iconTile": "beam-eats.png",
+  "route": "/overhaul/phone-beam-eats",
+  "color": "#ff4757",
+  "iconColor": "#ffffff",
+  "category": "Jobs",
+  "storeTagline": "Food delivery gigs",
+  "storeDescription": "Pick up BeamEats orders, deliver on time, and stack tips from your delivery runs.",
+  "defaultPage": 0,
+  "defaultPosition": 7,
+  "notifications": [
+    {
+      "key": "beamEats.newOrder",
+      "label": "New Order",
+      "default": true,
+      "description": "New delivery orders",
+      "order": 0
+    }
+  ],
+  "notificationSources": [
+    "beameats",
+    "beam eats"
+  ],
+  "uiRoutes": [
+    {
+      "name": "phone-beam-eats",
+      "path": "phone-beam-eats",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneBeamEats.vue",
+      "uiOrder": 84,
+      "luaOrder": 26,
+      "backTarget": "phone-main"
+    }
+  ]
+}

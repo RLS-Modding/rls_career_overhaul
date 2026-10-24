@@ -1,0 +1,21 @@
+{
+  "id": "police",
+  "order": 120,
+  "branch": "civilService",
+  "label": "Police",
+  "npcJobsPerDay": 3.5,
+  "branchLabel": "Civil Service",
+  "branchOrder": 10,
+  "marketOrder": 10,
+  "availability": [
+    "overhaul_career_police_enforcement",
+    "overhaul_integration_services_police"
+  ],
+  "earningTags": [
+    "police",
+    "arrest"
+  ],
+  "earningOrder": 70,
+  "source": "police_module",
+  "keys": ["police"]
+}

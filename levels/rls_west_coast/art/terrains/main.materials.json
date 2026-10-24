@@ -1,0 +1,1090 @@
+{
+  "Asphalt-dc643310-5b8f-49e3-b218-950a4c3e02d6": {
+    "internalName": "Asphalt",
+    "class": "TerrainMaterial",
+    "persistentId": "dc643310-5b8f-49e3-b218-950a4c3e02d6",
+    "annotation": "ASPHALT",
+    "aoBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_ao.png",
+    "aoBaseTexSize": 2048,
+    "aoDetailTex": "/assets/materials/terrain/asphalt/asphalt/t_asphalt_ao.png",
+    "aoMacroTex": "/assets/materials/terrain/asphalt/macro_asphalt/t_macro_asphalt_ao.png",
+    "aoMacroTexSize": 30,
+    "baseColorBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_b.png",
+    "baseColorBaseTexSize": 2048,
+    "baseColorDetailStrength": [
+      0.300000012,
+      0
+    ],
+    "baseColorDetailTex": "/assets/materials/terrain/asphalt/asphalt/t_asphalt_b.png",
+    "baseColorMacroStrength": [
+      0.300000012,
+      0.5
+    ],
+    "baseColorMacroTex": "/assets/materials/terrain/asphalt/macro_asphalt/t_macro_asphalt_b.png",
+    "baseColorMacroTexSize": 30,
+    "detailDistances": [
+      0,
+      0,
+      50,
+      3000
+    ],
+    "groundmodelName": "ASPHALT",
+    "heightBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_h.png",
+    "heightBaseTexSize": 2048,
+    "heightDetailTex": "/assets/materials/terrain/asphalt/asphalt/t_asphalt_h.png",
+    "heightMacroStrength": [
+      0,
+      0
+    ],
+    "heightMacroTex": "/assets/materials/terrain/asphalt/macro_asphalt/t_macro_asphalt_h.png",
+    "heightMacroTexSize": 30,
+    "macroDistAtten": [
+      1,
+      1
+    ],
+    "macroDistances": [
+      0,
+      0,
+      100,
+      3000
+    ],
+    "normalBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_nm.png",
+    "normalBaseTexSize": 2048,
+    "normalDetailStrength": [
+      1,
+      0
+    ],
+    "normalDetailTex": "/assets/materials/terrain/asphalt/asphalt/t_asphalt_nm.png",
+    "normalMacroStrength": [
+      0.400000006,
+      0.400000006
+    ],
+    "normalMacroTex": "/assets/materials/terrain/asphalt/macro_asphalt/t_macro_asphalt_nm.png",
+    "normalMacroTexSize": 30,
+    "roughnessBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_r.png",
+    "roughnessBaseTexSize": 2048,
+    "roughnessDetailStrength": [
+      0.5,
+      0.300000012
+    ],
+    "roughnessDetailTex": "/assets/materials/terrain/asphalt/asphalt/t_asphalt_r.png",
+    "roughnessMacroStrength": [
+      0.5,
+      0.5
+    ],
+    "roughnessMacroTex": "/assets/materials/terrain/asphalt/macro_asphalt/t_macro_asphalt_r.png",
+    "roughnessMacroTexSize": 30
+  },
+  "BeachSand-a49964df-ad6c-42ae-a30d-69999af0d715": {
+    "internalName": "BeachSand",
+    "class": "TerrainMaterial",
+    "persistentId": "a49964df-ad6c-42ae-a30d-69999af0d715",
+    "annotation": "SAND",
+    "aoBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_ao.png",
+    "aoBaseTexSize": 2048,
+    "aoDetailTex": "/assets/materials/terrain/sand/t_sand/t_sand_ao.png",
+    "aoDetailTexSize": 3,
+    "aoMacroTex": "/assets/materials/terrain/sand/t_macro_sand/t_macro_sand_ao.png",
+    "aoMacroTexSize": 50,
+    "baseColorBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_b.png",
+    "baseColorBaseTexSize": 2048,
+    "baseColorDetailStrength": [
+      0.25,
+      0.100000001
+    ],
+    "baseColorDetailTex": "/assets/materials/terrain/sand/t_sand/t_sand_b.png",
+    "baseColorDetailTexSize": 3,
+    "baseColorMacroStrength": [
+      0.400000006,
+      0.400000006
+    ],
+    "baseColorMacroTex": "/assets/materials/terrain/sand/t_macro_sand/t_macro_sand_b.png",
+    "baseColorMacroTexSize": 50,
+    "detailDistances": [
+      0,
+      0,
+      30,
+      3000
+    ],
+    "groundmodelName": "SAND",
+    "heightBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_h.png",
+    "heightBaseTexSize": 2048,
+    "heightDetailTex": "/assets/materials/terrain/custom_height_blend/custom_height_blend_02_h.png",
+    "heightDetailTexSize": 3,
+    "heightMacroStrength": [
+      0,
+      0
+    ],
+    "heightMacroTex": "/assets/materials/terrain/custom_height_blend/custom_height_blend_02_h.png",
+    "heightMacroTexSize": 50,
+    "macroDistAtten": [
+      1,
+      1
+    ],
+    "macroDistances": [
+      0,
+      0,
+      100,
+      3000
+    ],
+    "normalBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_nm.png",
+    "normalBaseTexSize": 2048,
+    "normalDetailStrength": [
+      1,
+      0
+    ],
+    "normalDetailTex": "/assets/materials/terrain/sand/t_sand/t_sand_nm.png",
+    "normalDetailTexSize": 3,
+    "normalMacroStrength": [
+      0.5,
+      0.5
+    ],
+    "normalMacroTex": "/assets/materials/terrain/sand/t_macro_sand/t_macro_sand_nm.png",
+    "normalMacroTexSize": 50,
+    "roughnessBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_r.png",
+    "roughnessBaseTexSize": 2048,
+    "roughnessDetailStrength": [
+      1,
+      0.5
+    ],
+    "roughnessDetailTex": "/assets/materials/terrain/sand/t_sand/t_sand_r.png",
+    "roughnessDetailTexSize": 3,
+    "roughnessMacroStrength": [
+      0,
+      1
+    ],
+    "roughnessMacroTex": "/assets/materials/terrain/sand/t_macro_sand/t_macro_sand_r.png",
+    "roughnessMacroTexSize": 50
+  },
+  "Forest-9cd4833c-ca4d-4563-8c47-c7481f416954": {
+    "internalName": "Forest",
+    "class": "TerrainMaterial",
+    "persistentId": "9cd4833c-ca4d-4563-8c47-c7481f416954",
+    "aoBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_ao.png",
+    "aoBaseTexSize": 2048,
+    "aoDetailTex": "/assets/materials/terrain/grass/t_dirt_vegetation/t_dirt_vegetation_ao.png",
+    "aoMacroTex": "/assets/materials/terrain/soil/macro_clumply/t_macro_clumpy_ao.png",
+    "aoMacroTexSize": 30,
+    "baseColorBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_b.png",
+    "baseColorBaseTexSize": 2048,
+    "baseColorDetailStrength": [
+      0.25,
+      0
+    ],
+    "baseColorDetailTex": "/assets/materials/terrain/grass/t_dirt_vegetation/t_dirt_vegetation_b.png",
+    "baseColorMacroStrength": [
+      0.100000001,
+      0.200000003
+    ],
+    "baseColorMacroTex": "/levels/west_coast_usa/art/terrains/t_macro_forest_b.png",
+    "baseColorMacroTexSize": 30,
+    "detailDistances": [
+      0,
+      0,
+      50,
+      3000
+    ],
+    "groundmodelName": "DIRT_GRASS",
+    "heightBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_h.png",
+    "heightBaseTexSize": 2048,
+    "heightDetailTex": "/assets/materials/terrain/grass/t_dirt_vegetation/t_dirt_vegetation_h.png",
+    "heightMacroStrength": [
+      0,
+      0
+    ],
+    "heightMacroTex": "/assets/materials/terrain/soil/macro_clumply/t_macro_clumpy_h.png",
+    "heightMacroTexSize": 30,
+    "macroDistances": [
+      0,
+      10,
+      100,
+      3000
+    ],
+    "normalBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_nm.png",
+    "normalBaseTexSize": 2048,
+    "normalDetailStrength": [
+      1,
+      0.150000006
+    ],
+    "normalDetailTex": "/assets/materials/terrain/grass/t_dirt_vegetation/t_dirt_vegetation_nm.png",
+    "normalMacroTex": "/levels/west_coast_usa/art/terrains/t_macro_forest_nm.png",
+    "normalMacroTexSize": 30,
+    "roughnessBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_r.png",
+    "roughnessBaseTexSize": 2048,
+    "roughnessDetailStrength": [
+      0.300000012,
+      0.300000012
+    ],
+    "roughnessDetailTex": "/assets/materials/terrain/grass/t_dirt_vegetation/t_dirt_vegetation_r.png",
+    "roughnessMacroStrength": [
+      0.150000006,
+      0.800000012
+    ],
+    "roughnessMacroTex": "/assets/materials/terrain/soil/macro_clumply/t_macro_clumpy_r.png",
+    "roughnessMacroTexSize": 30
+  },
+  "RLSMud-cd8fda89-4311-4c81-a31c-5770abbd9f3f": {
+    "name": "RLSMud-cd8fda89-4311-4c81-a31c-5770abbd9f3f",
+    "internalName": "RLSMud",
+    "class": "TerrainMaterial",
+    "persistentId": "cd8fda89-4311-4c81-a31c-5770abbd9f3f",
+    "annotation": "SAND",
+    "aoBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_ao.png",
+    "aoBaseTexSize": 2048,
+    "aoDetailTex": "/assets/materials/terrain/mud/mud/t_mud_ao.png",
+    "aoMacroTex": "/assets/materials/terrain/soil/macro_clumply/t_macro_clumpy_ao.png",
+    "baseColorBaseTex": "/levels/rls_west_coast/art/terrains/colorMudDark.png",
+    "baseColorBaseTexSize": 2048,
+    "baseColorDetailStrength": [
+      0.25,
+      0.25
+    ],
+    "baseColorDetailTex": "/assets/materials/terrain/mud/mud/t_mud_b.png",
+    "baseColorMacroStrength": [
+      0,
+      0.200000003
+    ],
+    "baseColorMacroTex": "/assets/materials/terrain/soil/macro_clumply/t_macro_clumpy_b.png",
+    "detailDistances": [
+      0,
+      0,
+      20,
+      40
+    ],
+    "groundmodelName": "RLS_MYMUD",
+    "heightBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_h.png",
+    "heightBaseTexSize": 2048,
+    "heightDetailTex": "/assets/materials/terrain/mud/mud/t_mud_h.png",
+    "heightMacroTex": "/assets/materials/terrain/soil/macro_clumply/t_macro_clumpy_h.png",
+    "macroDistances": [
+      0,
+      10,
+      100,
+      3000
+    ],
+    "normalBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_nm.png",
+    "normalBaseTexSize": 2048,
+    "normalDetailStrength": [
+      0.699999988,
+      0.150000006
+    ],
+    "normalDetailTex": "/assets/materials/terrain/mud/mud/t_mud_nm.png",
+    "normalMacroStrength": [
+      0.200000003,
+      0.400000006
+    ],
+    "normalMacroTex": "/assets/materials/terrain/soil/macro_clumply/t_macro_clumpy_nm.png",
+    "roughnessBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_r.png",
+    "roughnessBaseTexSize": 2048,
+    "roughnessDetailStrength": [
+      0.5,
+      0.5
+    ],
+    "roughnessDetailTex": "/assets/materials/terrain/mud/mud/t_mud_r.png",
+    "roughnessMacroStrength": [
+      0.5,
+      0.5
+    ],
+    "roughnessMacroTex": "/assets/materials/terrain/soil/macro_clumply/t_macro_clumpy_r.png"
+  },
+  "RLS_Mud_Deep-cd8fda89-4311-4c81-a31c-5770abbd9f5f": {
+    "name": "RLS_Mud_Deep-cd8fda89-4311-4c81-a31c-5770abbd9f5f",
+    "internalName": "RLS_Mud_Deep",
+    "class": "TerrainMaterial",
+    "persistentId": "cd8fda89-4311-4c81-a31c-5770abbd9f5f",
+    "annotation": "SAND",
+    "aoBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_ao.png",
+    "aoBaseTexSize": 2048,
+    "aoDetailTex": "/assets/materials/terrain/mud/mud/t_mud_ao.png",
+    "aoMacroTex": "/assets/materials/terrain/soil/macro_clumply/t_macro_clumpy_ao.png",
+    "baseColorBaseTex": "/levels/rls_west_coast/art/terrains/colorMudDark.png",
+    "baseColorBaseTexSize": 2048,
+    "baseColorDetailStrength": [
+      0.25,
+      0.25
+    ],
+    "baseColorDetailTex": "/assets/materials/terrain/mud/mud/t_mud_b.png",
+    "baseColorMacroStrength": [
+      0,
+      0.200000003
+    ],
+    "baseColorMacroTex": "/assets/materials/terrain/soil/macro_clumply/t_macro_clumpy_b.png",
+    "detailDistances": [
+      0,
+      0,
+      20,
+      40
+    ],
+    "groundmodelName": "RLS_MYMUDDEEP",
+    "heightBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_h.png",
+    "heightBaseTexSize": 2048,
+    "heightDetailTex": "/assets/materials/terrain/mud/mud/t_mud_h.png",
+    "heightMacroTex": "/assets/materials/terrain/soil/macro_clumply/t_macro_clumpy_h.png",
+    "macroDistances": [
+      0,
+      10,
+      100,
+      3000
+    ],
+    "normalBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_nm.png",
+    "normalBaseTexSize": 2048,
+    "normalDetailStrength": [
+      0.699999988,
+      0.150000006
+    ],
+    "normalDetailTex": "/assets/materials/terrain/mud/mud/t_mud_nm.png",
+    "normalMacroStrength": [
+      0.200000003,
+      0.400000006
+    ],
+    "normalMacroTex": "/assets/materials/terrain/soil/macro_clumply/t_macro_clumpy_nm.png",
+    "roughnessBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_r.png",
+    "roughnessBaseTexSize": 2048,
+    "roughnessDetailStrength": [
+      0.5,
+      0.5
+    ],
+    "roughnessDetailTex": "/assets/materials/terrain/mud/mud/t_mud_r.png",
+    "roughnessMacroStrength": [
+      0.5,
+      0.5
+    ],
+    "roughnessMacroTex": "/assets/materials/terrain/soil/macro_clumply/t_macro_clumpy_r.png"
+  },
+  "RLS_Mud_Mid-cd8fda89-4311-4c81-a31c-5770abbd9f4f": {
+    "name": "RLS_Mud_Mid-cd8fda89-4311-4c81-a31c-5770abbd9f4f",
+    "internalName": "RLS_Mud_Mid",
+    "class": "TerrainMaterial",
+    "persistentId": "cd8fda89-4311-4c81-a31c-5770abbd9f4f",
+    "annotation": "SAND",
+    "aoBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_ao.png",
+    "aoBaseTexSize": 2048,
+    "aoDetailTex": "/assets/materials/terrain/mud/mud/t_mud_ao.png",
+    "aoMacroTex": "/assets/materials/terrain/soil/macro_clumply/t_macro_clumpy_ao.png",
+    "baseColorBaseTex": "/levels/rls_west_coast/art/terrains/colorMudDark.png",
+    "baseColorBaseTexSize": 2048,
+    "baseColorDetailStrength": [
+      0.25,
+      0.25
+    ],
+    "baseColorDetailTex": "/assets/materials/terrain/mud/mud/t_mud_b.png",
+    "baseColorMacroStrength": [
+      0,
+      0.200000003
+    ],
+    "baseColorMacroTex": "/assets/materials/terrain/soil/macro_clumply/t_macro_clumpy_b.png",
+    "detailDistances": [
+      0,
+      0,
+      20,
+      40
+    ],
+    "groundmodelName": "RLS_MYMUDMID",
+    "heightBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_h.png",
+    "heightBaseTexSize": 2048,
+    "heightDetailTex": "/assets/materials/terrain/mud/mud/t_mud_h.png",
+    "heightMacroTex": "/assets/materials/terrain/soil/macro_clumply/t_macro_clumpy_h.png",
+    "macroDistances": [
+      0,
+      10,
+      100,
+      3000
+    ],
+    "normalBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_nm.png",
+    "normalBaseTexSize": 2048,
+    "normalDetailStrength": [
+      0.699999988,
+      0.150000006
+    ],
+    "normalDetailTex": "/assets/materials/terrain/mud/mud/t_mud_nm.png",
+    "normalMacroStrength": [
+      0.200000003,
+      0.400000006
+    ],
+    "normalMacroTex": "/assets/materials/terrain/soil/macro_clumply/t_macro_clumpy_nm.png",
+    "roughnessBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_r.png",
+    "roughnessBaseTexSize": 2048,
+    "roughnessDetailStrength": [
+      0.5,
+      0.5
+    ],
+    "roughnessDetailTex": "/assets/materials/terrain/mud/mud/t_mud_r.png",
+    "roughnessMacroStrength": [
+      0.5,
+      0.5
+    ],
+    "roughnessMacroTex": "/assets/materials/terrain/soil/macro_clumply/t_macro_clumpy_r.png"
+  },
+  "RL_Mud_Bounty-cd8fda89-4311-4c81-a31c-5770abbd9f6f": {
+    "name": "RL_Mud_Bounty-cd8fda89-4311-4c81-a31c-5770abbd9f6f",
+    "internalName": "RL_Mud_Bounty",
+    "class": "TerrainMaterial",
+    "persistentId": "cd8fda89-4311-4c81-a31c-5770abbd9f6f",
+    "annotation": "SAND",
+    "aoBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_ao.png",
+    "aoBaseTexSize": 2048,
+    "aoDetailTex": "/assets/materials/terrain/mud/mud/t_mud_ao.png",
+    "aoMacroTex": "/assets/materials/terrain/soil/macro_clumply/t_macro_clumpy_ao.png",
+    "baseColorBaseTex": "/levels/rls_west_coast/art/terrains/colorMudDark.png",
+    "baseColorBaseTexSize": 2048,
+    "baseColorDetailStrength": [
+      0.25,
+      0.25
+    ],
+    "baseColorDetailTex": "/assets/materials/terrain/mud/mud/t_mud_b.png",
+    "baseColorMacroStrength": [
+      0,
+      0.200000003
+    ],
+    "baseColorMacroTex": "/assets/materials/terrain/soil/macro_clumply/t_macro_clumpy_b.png",
+    "detailDistances": [
+      0,
+      0,
+      20,
+      40
+    ],
+    "groundmodelName": "RLS_MYMUDBOUNTY",
+    "heightBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_h.png",
+    "heightBaseTexSize": 2048,
+    "heightDetailTex": "/assets/materials/terrain/mud/mud/t_mud_h.png",
+    "heightMacroTex": "/assets/materials/terrain/soil/macro_clumply/t_macro_clumpy_h.png",
+    "macroDistances": [
+      0,
+      10,
+      100,
+      3000
+    ],
+    "normalBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_nm.png",
+    "normalBaseTexSize": 2048,
+    "normalDetailStrength": [
+      0.699999988,
+      0.150000006
+    ],
+    "normalDetailTex": "/assets/materials/terrain/mud/mud/t_mud_nm.png",
+    "normalMacroStrength": [
+      0.200000003,
+      0.400000006
+    ],
+    "normalMacroTex": "/assets/materials/terrain/soil/macro_clumply/t_macro_clumpy_nm.png",
+    "roughnessBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_r.png",
+    "roughnessBaseTexSize": 2048,
+    "roughnessDetailStrength": [
+      0.5,
+      0.5
+    ],
+    "roughnessDetailTex": "/assets/materials/terrain/mud/mud/t_mud_r.png",
+    "roughnessMacroStrength": [
+      0.5,
+      0.5
+    ],
+    "roughnessMacroTex": "/assets/materials/terrain/soil/macro_clumply/t_macro_clumpy_r.png"
+  },
+  "Rock_cliff-7d66957c-1683-4347-9d23-7fd86a849c0c": {
+    "internalName": "Rock_cliff",
+    "class": "TerrainMaterial",
+    "persistentId": "7d66957c-1683-4347-9d23-7fd86a849c0c",
+    "annotation": "ROCK",
+    "aoBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_ao.png",
+    "aoBaseTexSize": 2048,
+    "aoDetailTex": "/levels/west_coast_usa/art/terrains/t_rock_ao.png",
+    "aoDetailTexSize": 9,
+    "aoMacroStrength": [
+      0,
+      1
+    ],
+    "aoMacroTex": "/levels/west_coast_usa/art/terrains/t_macro_cliff_ao.png",
+    "baseColorBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_b.png",
+    "baseColorBaseTexSize": 2048,
+    "baseColorDetailStrength": [
+      0.200000003,
+      0.100000001
+    ],
+    "baseColorDetailTex": "/levels/west_coast_usa/art/terrains/t_rock_b.png",
+    "baseColorDetailTexSize": 9,
+    "baseColorMacroStrength": [
+      0.200000003,
+      0.349999994
+    ],
+    "baseColorMacroTex": "/levels/west_coast_usa/art/terrains/t_macro_cliff_b.png",
+    "detailDistances": [
+      0,
+      0,
+      100,
+      100
+    ],
+    "groundmodelName": "DIRT_ROCKY",
+    "heightBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_h.png",
+    "heightBaseTexSize": 2048,
+    "heightDetailTex": "/assets/materials/terrain/soil/macro_clumply/t_macro_clumpy_h.png",
+    "heightDetailTexSize": 9,
+    "heightMacroTex": "/levels/west_coast_usa/art/terrains/t_macro_cliff_h.png",
+    "macroDistances": [
+      0,
+      10,
+      500,
+      3000
+    ],
+    "normalBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_nm.png",
+    "normalBaseTexSize": 2048,
+    "normalDetailStrength": [
+      0.800000012,
+      0.100000001
+    ],
+    "normalDetailTex": "/levels/west_coast_usa/art/terrains/t_rock_nm.png",
+    "normalDetailTexSize": 9,
+    "normalMacroTex": "/levels/west_coast_usa/art/terrains/t_macro_cliff_nm.png",
+    "roughnessBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_r.png",
+    "roughnessBaseTexSize": 2048,
+    "roughnessDetailTex": "/assets/materials/terrain/soil/macro_clumply/t_macro_clumpy_r.png",
+    "roughnessDetailTexSize": 9,
+    "roughnessMacroStrength": [
+      0.400000006,
+      0.400000006
+    ],
+    "roughnessMacroTex": "/levels/west_coast_usa/art/terrains/t_macro_cliff_r.png"
+  },
+  "asphalt_prepped-1b7d410d-8ac3-4a55-bbed-f8fe5490ef4f": {
+    "internalName": "asphalt_prepped",
+    "class": "TerrainMaterial",
+    "persistentId": "1b7d410d-8ac3-4a55-bbed-f8fe5490ef4f",
+    "annotation": "ASPHALT",
+    "aoBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_ao.png",
+    "aoBaseTexSize": 2048,
+    "aoDetailTex": "/assets/materials/terrain/asphalt/asphalt/t_asphalt_ao.png",
+    "aoMacroTex": "/assets/materials/terrain/asphalt/macro_asphalt/t_macro_asphalt_ao.png",
+    "aoMacroTexSize": 30,
+    "baseColorBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_b.png",
+    "baseColorBaseTexSize": 2048,
+    "baseColorDetailStrength": [
+      0.5,
+      0
+    ],
+    "baseColorDetailTex": "/assets/materials/terrain/asphalt/asphalt/t_asphalt_b.png",
+    "baseColorMacroStrength": [
+      0.5,
+      0.5
+    ],
+    "baseColorMacroTex": "/assets/materials/terrain/asphalt/macro_asphalt/t_macro_asphalt_b.png",
+    "baseColorMacroTexSize": 30,
+    "detailDistances": [
+      0,
+      0,
+      50,
+      3000
+    ],
+    "groundmodelName": "ASPHALT_PREPPED",
+    "heightBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_h.png",
+    "heightBaseTexSize": 2048,
+    "heightDetailTex": "/assets/materials/terrain/asphalt/asphalt/t_asphalt_h.png",
+    "heightMacroStrength": [
+      0,
+      0
+    ],
+    "heightMacroTex": "/assets/materials/terrain/asphalt/macro_asphalt/t_macro_asphalt_h.png",
+    "heightMacroTexSize": 30,
+    "macroDistances": [
+      0,
+      0,
+      100,
+      3000
+    ],
+    "normalBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_nm.png",
+    "normalBaseTexSize": 2048,
+    "normalDetailStrength": [
+      1,
+      0
+    ],
+    "normalDetailTex": "/assets/materials/terrain/asphalt/asphalt/t_asphalt_nm.png",
+    "normalMacroStrength": [
+      0.400000006,
+      0.400000006
+    ],
+    "normalMacroTex": "/assets/materials/terrain/asphalt/macro_asphalt/t_macro_asphalt_nm.png",
+    "normalMacroTexSize": 30,
+    "roughnessBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_r.png",
+    "roughnessBaseTexSize": 2048,
+    "roughnessDetailStrength": [
+      0.5,
+      0.300000012
+    ],
+    "roughnessDetailTex": "/assets/materials/terrain/asphalt/asphalt/t_asphalt_r.png",
+    "roughnessMacroStrength": [
+      0.5,
+      0.5
+    ],
+    "roughnessMacroTex": "/assets/materials/terrain/asphalt/macro_asphalt/t_macro_asphalt_r.png",
+    "roughnessMacroTexSize": 30
+  },
+  "dirt-07214cf7-350c-4cfa-a4d1-3c98bae7a650": {
+    "internalName": "dirt",
+    "class": "TerrainMaterial",
+    "persistentId": "07214cf7-350c-4cfa-a4d1-3c98bae7a650",
+    "aoBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_ao.png",
+    "aoBaseTexSize": 2048,
+    "aoDetailTex": "/assets/materials/terrain/soil/t_dirt_sandy/t_dirt_sandy_ao.png",
+    "aoMacroTex": "/assets/materials/terrain/soil/t_macro_flows/t_macro_flows_ao.png",
+    "aoMacroTexSize": 40,
+    "baseColorBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_b.png",
+    "baseColorBaseTexSize": 2048,
+    "baseColorDetailStrength": [
+      0.5,
+      0
+    ],
+    "baseColorDetailTex": "/assets/materials/terrain/soil/t_dirt_sandy/t_dirt_sandy_b.png",
+    "baseColorMacroStrength": [
+      0.200000003,
+      0.100000001
+    ],
+    "baseColorMacroTex": "/assets/materials/terrain/soil/t_macro_flows/t_macro_flows_b_02.png",
+    "baseColorMacroTexSize": 40,
+    "detailDistances": [
+      0,
+      0,
+      25,
+      3000
+    ],
+    "groundmodelName": "DIRT_ROCKY",
+    "heightBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_h.png",
+    "heightBaseTexSize": 2048,
+    "heightDetailTex": "/assets/materials/terrain/custom_height_blend/custom_height_blend_04_h.png",
+    "heightMacroStrength": [
+      0,
+      0
+    ],
+    "heightMacroTex": "/assets/materials/terrain/soil/macro_holes/t_macro_holes_h.png",
+    "heightMacroTexSize": 40,
+    "macroDistAtten": [
+      0,
+      0
+    ],
+    "macroDistances": [
+      0,
+      0,
+      100,
+      3000
+    ],
+    "normalBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_nm.png",
+    "normalBaseTexSize": 2048,
+    "normalDetailStrength": [
+      1,
+      0.150000006
+    ],
+    "normalDetailTex": "/assets/materials/terrain/soil/t_dirt_sandy/t_dirt_sandy_nm.png",
+    "normalMacroStrength": [
+      0.800000012,
+      0.5
+    ],
+    "normalMacroTex": "/assets/materials/terrain/soil/t_macro_flows/t_macro_flows_nm.png",
+    "normalMacroTexSize": 40,
+    "roughnessBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_r.png",
+    "roughnessBaseTexSize": 2048,
+    "roughnessDetailStrength": [
+      0.300000012,
+      0
+    ],
+    "roughnessDetailTex": "/assets/materials/terrain/soil/t_dirt_sandy/t_dirt_sandy_r.png",
+    "roughnessMacroStrength": [
+      0.150000006,
+      0.400000006
+    ],
+    "roughnessMacroTex": "/assets/materials/terrain/soil/t_macro_flows/t_macro_flows_r.png",
+    "roughnessMacroTexSize": 40
+  },
+  "dirt_grass-158d8344-64ee-49bc-b883-e8fe39153ae5": {
+    "internalName": "dirt_grass",
+    "class": "TerrainMaterial",
+    "persistentId": "158d8344-64ee-49bc-b883-e8fe39153ae5",
+    "aoBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_ao.png",
+    "aoBaseTexSize": 2048,
+    "aoDetailTex": "/assets/materials/terrain/grass/ind_grass_2/t_ind_grass_2_ao.png",
+    "aoMacroTex": "/assets/materials/terrain/grass/t_macro_dry_grass/t_macro_dry_grass_ao.png",
+    "aoMacroTexSize": 50,
+    "baseColorBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_b.png",
+    "baseColorBaseTexSize": 2048,
+    "baseColorDetailStrength": [
+      0.5,
+      0
+    ],
+    "baseColorDetailTex": "/assets/materials/terrain/grass/ind_grass_2/t_ind_grass_2_b.png",
+    "baseColorMacroStrength": [
+      0,
+      0.100000001
+    ],
+    "baseColorMacroTex": "/assets/materials/terrain/grass/t_macro_dry_grass/t_macro_dry_grass_b.png",
+    "baseColorMacroTexSize": 50,
+    "detailDistances": [
+      0,
+      0,
+      30,
+      3000
+    ],
+    "groundmodelName": "GRASS",
+    "heightBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_h.png",
+    "heightBaseTexSize": 2048,
+    "heightDetailTex": "/assets/materials/terrain/grass/ind_grass_2/t_ind_grass_2_h.png",
+    "heightMacroStrength": [
+      0,
+      0
+    ],
+    "heightMacroTex": "/assets/materials/terrain/soil/macro_holes/t_macro_holes_h.png",
+    "heightMacroTexSize": 50,
+    "macroDistAtten": [
+      1,
+      1
+    ],
+    "macroDistances": [
+      0,
+      0,
+      500,
+      3000
+    ],
+    "normalBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_nm.png",
+    "normalBaseTexSize": 2048,
+    "normalDetailStrength": [
+      1,
+      0
+    ],
+    "normalDetailTex": "/assets/materials/terrain/grass/ind_grass_2/t_ind_grass_2_nm.png",
+    "normalMacroStrength": [
+      0.699999988,
+      1
+    ],
+    "normalMacroTex": "/assets/materials/terrain/grass/t_macro_dry_grass/t_macro_dry_grass_nm.png",
+    "normalMacroTexSize": 50,
+    "roughnessBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_r.png",
+    "roughnessBaseTexSize": 2048,
+    "roughnessDetailStrength": [
+      1,
+      0
+    ],
+    "roughnessDetailTex": "/assets/materials/terrain/grass/ind_grass_2/t_ind_grass_2_r.png",
+    "roughnessMacroStrength": [
+      0,
+      0.800000012
+    ],
+    "roughnessMacroTex": "/assets/materials/terrain/grass/t_macro_dry_grass/t_macro_dry_grass_r.png",
+    "roughnessMacroTexSize": 50
+  },
+  "dirt_loose-653d03ab-55f8-4b23-be82-63ab05bd87a5": {
+    "internalName": "dirt_loose",
+    "class": "TerrainMaterial",
+    "persistentId": "653d03ab-55f8-4b23-be82-63ab05bd87a5",
+    "aoBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_ao.png",
+    "aoBaseTexSize": 2048,
+    "aoDetailTex": "/assets/materials/terrain/soil/dirt_crumbly/t_dirt_crumbly_ao.png",
+    "aoDetailTexSize": 3,
+    "aoMacroTex": "/assets/materials/terrain/soil/t_macro_flows/t_macro_flows_ao.png",
+    "aoMacroTexSize": 40,
+    "baseColorBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_b.png",
+    "baseColorBaseTexSize": 2048,
+    "baseColorDetailStrength": [
+      0.600000024,
+      0
+    ],
+    "baseColorDetailTex": "/assets/materials/terrain/soil/dirt_crumbly/t_dirt_crumbly_b.png",
+    "baseColorDetailTexSize": 3,
+    "baseColorMacroStrength": [
+      0.400000006,
+      0.400000006
+    ],
+    "baseColorMacroTex": "/assets/materials/terrain/soil/t_macro_flows/t_macro_flows_b_02.png",
+    "baseColorMacroTexSize": 40,
+    "detailDistances": [
+      0,
+      0,
+      25,
+      3000
+    ],
+    "groundmodelName": "DIRT_ROCKY",
+    "heightBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_h.png",
+    "heightBaseTexSize": 2048,
+    "heightDetailTex": "/assets/materials/terrain/soil/dirt_crumbly/t_dirt_crumbly_h.png",
+    "heightDetailTexSize": 3,
+    "heightMacroStrength": [
+      0,
+      0
+    ],
+    "heightMacroTex": "/assets/materials/terrain/soil/macro_holes/t_macro_holes_h.png",
+    "heightMacroTexSize": 40,
+    "macroDistAtten": [
+      1,
+      1
+    ],
+    "macroDistances": [
+      0,
+      0,
+      100,
+      3000
+    ],
+    "normalBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_nm.png",
+    "normalBaseTexSize": 2048,
+    "normalDetailStrength": [
+      1,
+      0.150000006
+    ],
+    "normalDetailTex": "/levels/west_coast_usa/art/terrains/t_dirt_crumbly_nm.png",
+    "normalDetailTexSize": 3,
+    "normalMacroStrength": [
+      0.800000012,
+      0.5
+    ],
+    "normalMacroTex": "/assets/materials/terrain/soil/t_macro_flows/t_macro_flows_nm.png",
+    "normalMacroTexSize": 40,
+    "roughnessBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_r.png",
+    "roughnessBaseTexSize": 2048,
+    "roughnessDetailStrength": [
+      0.300000012,
+      0
+    ],
+    "roughnessDetailTex": "/assets/materials/terrain/soil/dirt_crumbly/t_dirt_crumbly_r.png",
+    "roughnessDetailTexSize": 3,
+    "roughnessMacroStrength": [
+      0.150000006,
+      0.400000006
+    ],
+    "roughnessMacroTex": "/assets/materials/terrain/soil/t_macro_flows/t_macro_flows_r.png",
+    "roughnessMacroTexSize": 40
+  },
+  "grass-ed220e70-afa1-4796-8ce8-7ab7ff61be74": {
+    "internalName": "grass",
+    "class": "TerrainMaterial",
+    "persistentId": "ed220e70-afa1-4796-8ce8-7ab7ff61be74",
+    "aoBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_ao.png",
+    "aoBaseTexSize": 2048,
+    "aoDetailTex": "/assets/materials/terrain/grass/t_dirt_dry_grass/t_dirt_dry_grass_ao.png",
+    "aoMacroTex": "/assets/materials/terrain/grass/t_macro_dry_grass/t_macro_dry_grass_ao.png",
+    "aoMacroTexSize": 50,
+    "baseColorBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_b.png",
+    "baseColorBaseTexSize": 2048,
+    "baseColorDetailStrength": [
+      0.400000006,
+      0
+    ],
+    "baseColorDetailTex": "/assets/materials/terrain/grass/t_dirt_dry_grass/t_dirt_dry_grass_b.png",
+    "baseColorMacroStrength": [
+      0.300000012,
+      0
+    ],
+    "baseColorMacroTex": "/assets/materials/terrain/grass/t_macro_dry_grass/t_macro_dry_grass_b.png",
+    "baseColorMacroTexSize": 50,
+    "detailDistances": [
+      0,
+      0,
+      50,
+      3000
+    ],
+    "groundmodelName": "GRASS",
+    "heightBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_h.png",
+    "heightBaseTexSize": 2048,
+    "heightDetailTex": "/assets/materials/terrain/grass/t_dirt_dry_grass/t_dirt_dry_grass_h.png",
+    "heightMacroStrength": [
+      0,
+      0
+    ],
+    "heightMacroTex": "/assets/materials/terrain/grass/t_macro_dry_grass/t_macro_dry_grass_h.png",
+    "heightMacroTexSize": 50,
+    "macroDistAtten": [
+      1,
+      1
+    ],
+    "macroDistances": [
+      0,
+      0,
+      500,
+      3000
+    ],
+    "normalBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_nm.png",
+    "normalBaseTexSize": 2048,
+    "normalDetailStrength": [
+      1,
+      0
+    ],
+    "normalDetailTex": "/assets/materials/terrain/grass/t_dirt_dry_grass/t_dirt_dry_grass_nm.png",
+    "normalMacroStrength": [
+      0.5,
+      0.5
+    ],
+    "normalMacroTex": "/assets/materials/terrain/grass/t_macro_dry_grass/t_macro_dry_grass_nm.png",
+    "normalMacroTexSize": 50,
+    "roughnessBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_r.png",
+    "roughnessBaseTexSize": 2048,
+    "roughnessDetailStrength": [
+      1,
+      0
+    ],
+    "roughnessDetailTex": "/assets/materials/terrain/grass/t_dirt_dry_grass/t_dirt_dry_grass_r.png",
+    "roughnessMacroStrength": [
+      0,
+      0.800000012
+    ],
+    "roughnessMacroTex": "/assets/materials/terrain/grass/t_macro_dry_grass/t_macro_dry_grass_r.png",
+    "roughnessMacroTexSize": 50
+  },
+  "grass2-abcb7417-4f6c-4d53-a226-1af7167d9c76": {
+    "internalName": "grass2",
+    "class": "TerrainMaterial",
+    "persistentId": "abcb7417-4f6c-4d53-a226-1af7167d9c76",
+    "aoBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_ao.png",
+    "aoBaseTexSize": 2048,
+    "aoDetailTex": "/assets/materials/terrain/grass/t_grass_01/t_grass_01_ao.png",
+    "aoMacroTex": "/assets/materials/terrain/grass/t_macro_dry_grass/t_macro_dry_grass_ao.png",
+    "aoMacroTexSize": 50,
+    "baseColorBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_b.png",
+    "baseColorBaseTexSize": 2048,
+    "baseColorDetailStrength": [
+      0.5,
+      0
+    ],
+    "baseColorDetailTex": "/assets/materials/terrain/grass/t_grass_01/t_grass_01_b.png",
+    "baseColorMacroStrength": [
+      0.150000006,
+      0.200000003
+    ],
+    "baseColorMacroTex": "/assets/materials/terrain/grass/t_macro_dry_grass/t_macro_dry_grass_02_b.png",
+    "baseColorMacroTexSize": 50,
+    "detailDistances": [
+      0,
+      0,
+      30,
+      3000
+    ],
+    "groundmodelName": "GRASS",
+    "heightBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_h.png",
+    "heightBaseTexSize": 2048,
+    "heightDetailTex": "/assets/materials/terrain/custom_height_blend/custom_height_blend_03_h.png",
+    "heightMacroStrength": [
+      0,
+      0
+    ],
+    "heightMacroTex": "/assets/materials/terrain/custom_height_blend/custom_height_blend_h.png",
+    "heightMacroTexSize": 50,
+    "macroDistAtten": [
+      1,
+      1
+    ],
+    "macroDistances": [
+      0,
+      0,
+      500,
+      3000
+    ],
+    "normalBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_nm.png",
+    "normalBaseTexSize": 2048,
+    "normalDetailStrength": [
+      1,
+      0
+    ],
+    "normalDetailTex": "/assets/materials/terrain/grass/t_grass_01/t_grass_01_nm.png",
+    "normalMacroStrength": [
+      0.300000012,
+      0.300000012
+    ],
+    "normalMacroTex": "/assets/materials/terrain/grass/t_macro_dry_grass/t_macro_dry_grass_nm.png",
+    "normalMacroTexSize": 50,
+    "roughnessBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_r.png",
+    "roughnessBaseTexSize": 2048,
+    "roughnessDetailStrength": [
+      1,
+      0
+    ],
+    "roughnessDetailTex": "/assets/materials/terrain/grass/t_grass_01/t_grass_01_r.png",
+    "roughnessMacroStrength": [
+      0,
+      0.800000012
+    ],
+    "roughnessMacroTex": "/assets/materials/terrain/grass/t_macro_dry_grass/t_macro_dry_grass_r.png",
+    "roughnessMacroTexSize": 50
+  },
+  "gravel-bc0b8033-91be-4bba-af73-56e502ed4377": {
+    "internalName": "gravel",
+    "class": "TerrainMaterial",
+    "persistentId": "bc0b8033-91be-4bba-af73-56e502ed4377",
+    "aoBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_ao.png",
+    "aoBaseTexSize": 2048,
+    "aoDetailStrength": [
+      1,
+      0
+    ],
+    "aoDetailTex": "/assets/materials/terrain/soil/t_gravels/t_gravels_ao.png",
+    "aoMacroStrength": [
+      0,
+      0
+    ],
+    "aoMacroTex": "/assets/materials/terrain/soil/t_macro_flows/t_macro_flows_ao.png",
+    "aoMacroTexSize": 20,
+    "baseColorBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_b.png",
+    "baseColorBaseTexSize": 2048,
+    "baseColorDetailStrength": [
+      0.349999994,
+      0.100000001
+    ],
+    "baseColorDetailTex": "/assets/materials/terrain/soil/t_gravels/t_gravels_b.png",
+    "baseColorMacroStrength": [
+      0.5,
+      0.300000012
+    ],
+    "baseColorMacroTex": "/assets/materials/terrain/soil/t_macro_flows/t_macro_flows_b_02.png",
+    "baseColorMacroTexSize": 20,
+    "detailDistances": [
+      0,
+      0,
+      50,
+      3000
+    ],
+    "groundmodelName": "GRAVEL",
+    "heightBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_h.png",
+    "heightBaseTexSize": 2048,
+    "heightDetailTex": "/assets/materials/terrain/custom_height_blend/custom_height_blend_03_h.png",
+    "heightMacroStrength": [
+      0,
+      0
+    ],
+    "heightMacroTex": "/assets/materials/terrain/soil/t_macro_flows/t_macro_flows_h.png",
+    "heightMacroTexSize": 20,
+    "macroDistances": [
+      0,
+      0,
+      100,
+      3000
+    ],
+    "normalBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_nm.png",
+    "normalBaseTexSize": 2048,
+    "normalDetailStrength": [
+      1,
+      0.300000012
+    ],
+    "normalDetailTex": "/assets/materials/terrain/soil/t_gravels/t_gravels_nm.png",
+    "normalMacroStrength": [
+      0.800000012,
+      0.400000006
+    ],
+    "normalMacroTex": "/assets/materials/terrain/soil/t_macro_flows/t_macro_flows_nm.png",
+    "normalMacroTexSize": 20,
+    "roughnessBaseTex": "/levels/west_coast_usa/art/terrains/t_terrain_base_r.png",
+    "roughnessBaseTexSize": 2048,
+    "roughnessDetailTex": "/assets/materials/terrain/soil/t_gravels/t_gravels_r.png",
+    "roughnessMacroStrength": [
+      0,
+      0.800000012
+    ],
+    "roughnessMacroTex": "/assets/materials/terrain/soil/t_macro_flows/t_macro_flows_r.png",
+    "roughnessMacroTexSize": 20
+  },
+  "west_coast_usaTerrainMaterialTextureSet": {
+    "name": "west_coast_usaTerrainMaterialTextureSet",
+    "class": "TerrainMaterialTextureSet",
+    "persistentId": "f867d00e-1554-4f0b-a9d6-c61c85497a06",
+    "baseTexSize": [
+      4096,
+      4096
+    ],
+    "detailTexSize": [
+      1024,
+      1024
+    ],
+    "macroTexSize": [
+      1024,
+      1024
+    ]
+  }
+}

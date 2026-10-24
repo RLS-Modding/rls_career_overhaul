@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_career_progression_logbook",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 460,
+    "aliases": [
+      "career_modules_logbook"
+    ]
+  }
+}

@@ -59,7 +59,7 @@
     "cabover_interior_liftaxlePanel":"",
     "cabover_interior_pto":"cabover_interior_pto",
     "cabover_lowAirWarning":"cabover_lowAirBuzzer",
-    "cabover_shifter":"cabover_shifter",
+    "cabover_shifter":"cabover_shifter_A",
     "cargo_load_box_XL_stackA":"cargo_load_box_XL_stackA",
     "cargo_load_box_XL_stackB":"cargo_load_box_XL_stackB",
     "cargo_load_box_XL_stack_FA":"cargo_load_box_XL_stack_FA",

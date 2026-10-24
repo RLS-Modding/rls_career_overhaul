@@ -1,0 +1,111 @@
+{
+  "0-100 km/h":18,
+  "0-60 mph":17.1,
+  "100-0 km/h":50.5,
+  "60-0 mph":153.9,
+  "Body Style":"Fifth Wheel Truck ",
+  "BoundingBox":[
+    [
+      -0.8854,
+      -1.156,
+      -0.7184
+    ],
+    [
+      1.7534,
+      4.8952,
+      2.1785
+    ]
+  ],
+  "Braking G":0.778,
+  "Config Type":"Loaner",
+  "Configuration":"vehiclesData.md_series.md_career_shuffleboard_fifthwheel.Configuration",
+  "Description":"vehiclesData.md_series.md_career_shuffleboard_fifthwheel.Description",
+  "Drag Times":{
+    "time_0_60":16.559000339359,
+    "time_1000":17.808000355959,
+    "time_1_4":21.175500407815,
+    "time_1_8":13.73300026916,
+    "time_330":8.9310001954436,
+    "time_60":3.2320000994951,
+    "velAt_1_4":30.614044916635,
+    "velAt_1_8":23.40667623652
+  },
+  "Drivetrain":"RWD",
+  "Fuel Type":"Diesel",
+  "Induction Type":"Turbo",
+  "Off-Road Score":34,
+  "Performance Data":{
+    "fuelType":{
+      "fuelTank:diesel":true,
+      "pressureTank":true
+    },
+    "inductionType":{
+      "turbocharger":true
+    },
+    "lateralAcceleration":{
+      "maxAcceleration":6.4452181130392
+    },
+    "performanceIndex":17.859634296759,
+    "power":{
+      "propulsionPowerCombined":230156.73816997
+    },
+    "powertrainLayout":{
+      "poweredWheelsFront":0,
+      "poweredWheelsRear":4
+    },
+    "time_0_60":16.559000339359,
+    "time_1000":17.808000355959,
+    "time_1_4":21.175500407815,
+    "time_1_8":13.73300026916,
+    "time_330":8.9310001954436,
+    "time_60":3.2320000994951,
+    "transmissionStyle":{
+      "automaticGearbox":true
+    },
+    "vehicleClass":{
+      "description":"Economy/Utility",
+      "minPI":0,
+      "name":"D"
+    },
+    "velAt_1_4":30.614044916635,
+    "velAt_1_8":23.40667623652,
+    "weight":6266.2392578125
+  },
+  "Population":4800,
+  "Power":312,
+  "PowerPeakRPM":2450,
+  "Propulsion":"ICE",
+  "Top Speed":32.6147995,
+  "Torque":950,
+  "TorquePeakRPM":"1350 - 2050",
+  "Transmission":"Automatic",
+  "Value":73000,
+  "Weight":6155,
+  "Weight/Power":19.7275641,
+  "Years":{
+    "max":1998,
+    "min":1992
+  },
+  "defaultPaintName1":"White",
+  "defaultPaintName2":"Black",
+  "defaultPaintName3":"White",
+  "isAuxiliary":false,
+  "thumbnailConfig":{
+    "cameraConfig":{
+      "posOffset":{
+        "x":-9.107150955,
+        "y":-6.462622389,
+        "z":1.8011932
+      },
+      "rotOffset":{
+        "w":0.9047302183,
+        "x":0.04128396763,
+        "y":-0.01371148123,
+        "z":0.4237580221
+      }
+    },
+    "configCamEnabled":true,
+    "modelCamEnabled":false
+  },
+  "Name":"MD70 Fifth Wheel Shuffleboard (A)"
+}

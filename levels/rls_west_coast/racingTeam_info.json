@@ -1,0 +1,98 @@
+{
+  "league2Invite": {
+    "orgName": "West Coast Amateur Racing Association",
+    "acronym": "WCARA",
+    "feeEarly": 1500,
+    "feeLate": 2500,
+    "feeEscalateMinutes": 60,
+    "bankReasonShort": "WCARA"
+  },
+  "league3Invite": {
+    "orgName": "Nodeoline Racing Series",
+    "acronym": "NRS",
+    "feeEarly": 2500,
+    "feeLate": 3500,
+    "feeEscalateMinutes": 60,
+    "bankReasonShort": "NRS"
+  },
+  "league4Invite": {
+    "orgName": "Beam Racing International",
+    "acronym": "BRI",
+    "feeEarly": 3500,
+    "feeLate": 4500,
+    "feeEscalateMinutes": 60,
+    "bankReasonShort": "BRI"
+  },
+  "sponsorOffer": {
+    "focusLabel": "RLS Racing"
+  },
+  "messages": {
+    "raceOffersLeague2": "Use the Race tab to accept sanctioned offers and assign drivers (proxy / spectate flow).",
+    "welcomeLeague2": "Welcome to WCARA — hire drivers from the Drivers tab and run races from the Race tab.",
+    "welcomeLeague3": "Welcome to the Nodeoline Racing Series — national stages, larger fields, sharper drivers. Keep the cars sorted.",
+    "welcomeLeague4": "Welcome to Beam Racing International — top-tier pro racing. Field your best, manage the program, and prove it on the grid.",
+    "welcomeToastTitle": "WCARA",
+    "proxyRaceScheduledToastTitle": "WCARA"
+  },
+  "leagueDisplayNames": {
+    "league1": "Belasco City Racing Club",
+    "league2": "West Coast Amateur Racing Association",
+    "league3": "Nodeoline Racing Series",
+    "league4": "Beam Racing International"
+  },
+  "hints": {},
+  "splashes": {
+    "purchase": {
+      "title": "You bought in",
+      "body": "Alright. You bought in. Just so we’re clear—this isn’t a hobby anymore. You’re running a team now. Cars need work. Races cost money. And winning doesn’t happen nearly as often as you’d like.\n\nTake a breath, then open the computer and start turning goals into progress. The club season is yours to run. Your office is upstairs, better get to it.",
+      "continueLabel": "Continue",
+      "imageUrl": ""
+    },
+    "league2": {
+      "title": "The next chapter",
+      "body": "Didn’t expect you to stick it out this long… but here you are. This next level’s different. People take it seriously. The cars are faster, the fields are tighter, and mistakes cost you more than just a bad finish. You’ve got a shot—but only if you stay on top of things. Keep your cars in shape. Don’t waste money chasing upgrades you don’t need. And don’t expect easy wins. You’ve proven you can hang locally. Now let’s see if that holds up out here.\n\nYou are invited to register with the regional amateur association — real grids, real stakes, and the kind of logistics that do not fit on a postcard. Fee posts to your team account when you accept.\n\nYou can step up now, or step away and deal with it from the Goals tab when you are ready.",
+      "acceptLabel": "Accept",
+      "laterLabel": "Later",
+      "imageUrl": ""
+    },
+    "league2Welcome": {
+      "title": "Welcome to WCARA",
+      "body": "Your registration went through. The grid’s a step up from local club racing — keep the cars sorted, watch the budget, and use the Race tab when you are ready to run.",
+      "continueLabel": "Let's Go!",
+      "imageUrl": ""
+    },
+    "league3": {
+      "title": "Moving up the ladder",
+      "body": "Your regional season is in the books and people are starting to notice. The Nodeoline Racing Series is opening a seat for your team — that means national stages, deeper fields, and a paddock that does not forgive sloppy management.\n\nThe cars get faster from here. The repair bills get fatter. The fans get less patient. None of that matters if you have the program dialed in — and so far, you do.\n\nRegistration fee posts to your team account when you accept. Or hit Later and decide from the Goals tab when you have your money in order.",
+      "acceptLabel": "Register",
+      "laterLabel": "Later",
+      "imageUrl": ""
+    },
+    "league3Welcome": {
+      "title": "Welcome to NRS",
+      "body": "Registration cleared. You are now competing in the Nodeoline Racing Series — keep the operation tight, run the cars hard but smart, and use the Race tab when you are ready to roll out.",
+      "continueLabel": "Let's Go!",
+      "imageUrl": ""
+    },
+    "league4": {
+      "title": "The big league is calling",
+      "body": "You have outrun the national circuit. Beam Racing International — the top tier — is inviting your team to apply. The cars are quicker than anything you have run, the broadcasts are real, and so are the consequences.\n\nThis is where teams either become a name or learn how expensive ambition is. You have done the work to be here. The only question left is whether you can do the work it takes to stay.\n\nRegistration fee posts to your team account when you accept. Or pick Later and finalize it from the Goals tab.",
+      "acceptLabel": "Apply",
+      "laterLabel": "Later",
+      "imageUrl": ""
+    },
+    "league4Welcome": {
+      "title": "Welcome to BRI",
+      "body": "Your team is on the pro license now. Beam Racing International — top-tier grids, top-tier payouts, top-tier risk. Keep the program sharp, manage the cars and drivers carefully, and use the Race tab when you are ready to roll.",
+      "continueLabel": "Let's Go!",
+      "imageUrl": ""
+    },
+    "careerFinale": {
+      "title": "Well done indeed",
+      "body": "Look how far you've come..... what started as a few bucks and a dream has turned into a career. You know what they say, \"find something you love to do and you'll never work a day in your life\"\n\nHow does it feel? National recognition, dreams realized? You've made it. Enjoy this career you've built - keep pushing the envelope and competing - it doesn't get any easier, but, you know that by now.\n\nCongratulations kid, well done indeed",
+      "continueLabel": "Continue",
+      "imageUrl": ""
+    }
+  },
+  "extra": {}
+}

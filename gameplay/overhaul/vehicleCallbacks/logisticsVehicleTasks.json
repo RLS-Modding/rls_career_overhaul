@@ -1,0 +1,7 @@
+{
+  "id": "logisticsVehicleTasks",
+  "order": 20,
+  "callbacks": [
+    {"id": "receiveHaulSurfaceDamage", "extension": "overhaul_career_logistics_vehicleTasks", "fn": "receiveHaulSurfaceDamage", "guard": "module"}
+  ]
+}

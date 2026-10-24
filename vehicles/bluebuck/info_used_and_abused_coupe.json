@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":4500,  
+    "Configuration": "Used & Abused - Coupe ( Joe's Junk Career )",
+    "Description": "Beater Bluebuck Coupe with damaged body panels and misc junk parts.",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 268,
+    "Torque": 271,
+    "Value": 7000,
+    "Weight": 1702,
+    "Years": {
+      "max": 1963,
+      "min": 1962
+    }  
+}
+
+

@@ -1,0 +1,50 @@
+{
+  "id": "car-meet",
+  "name": "Car Meet",
+  "icon": "cars",
+  "iconTile": "car-meet.png",
+  "route": "/overhaul/car-meets-phone",
+  "color": "#696969",
+  "iconColor": "#ffffff",
+  "category": "Social",
+  "storeTagline": "Invites and reputation",
+  "storeDescription": "Browse car meet invites, RSVP to events, and keep up with clubs and your car culture reputation.",
+  "defaultPage": 0,
+  "defaultPosition": 3,
+  "notifications": [
+    {
+      "key": "carMeet.invite",
+      "label": "Invites",
+      "default": true,
+      "description": "Meet and club invites"
+    }
+  ],
+  "notificationSources": [
+    "car meets"
+  ],
+  "onInstall": {
+    "extension": "overhaul_career_carmeets_carmeets",
+    "call": "notifyOnPhoneAppInstalled",
+    "loadOnlyInCareer": true
+  },
+  "uiRoutes": [
+    {
+      "name": "carMeetOffers",
+      "path": "carMeetOffers",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/CarMeetOffers.vue",
+      "uiOrder": 22,
+      "luaOrder": 12,
+      "backTarget": "play",
+      "parent": "overhaul"
+    },
+    {
+      "name": "car-meets-phone",
+      "path": "car-meets-phone",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/CarMeetsPhone.vue",
+      "uiOrder": 63,
+      "luaOrder": 13,
+      "backTarget": "phone-main",
+      "title": "Car Meets"
+    }
+  ]
+}

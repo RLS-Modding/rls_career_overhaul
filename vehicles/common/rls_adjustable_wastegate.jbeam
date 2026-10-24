@@ -1,0 +1,18 @@
+{
+"rls_adjustable_wastegate": {
+    "information": {
+        "authors":"RLS Career Overhaul",
+        "name":"Adjustable Wastegate Actuator",
+        "value":850,
+    },
+    "slotType":"rls_adjustable_wastegate",
+    "variables": [
+        ["name", "type", "unit", "category", "default", "min", "max", "title", "description"],
+        ["$rlsWastegateAdjustment", "range", "psi", "Engine", 0, -4, 7, "Wastegate Adjustment", "Mechanical adjustment relative to the turbocharger's standard wastegate pressure", {"stepDis":0.2}],
+    ],
+    "turbocharger": {
+        "wastegateStart":"$=$rlsWastegateBase+$rlsWastegateAdjustment",
+        "wastegateLimit":"$=$rlsWastegateBase+$rlsWastegateAdjustment+$rlsWastegateLimitDelta",
+    },
+},
+}

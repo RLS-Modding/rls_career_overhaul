@@ -1,0 +1,42 @@
+{
+  "id": "fre-contracts",
+  "careerOnly": true,
+  "name": "FRE Contracts",
+  "icon": "roadblockL",
+  "iconTile": "fre-contracts.png",
+  "route": "/overhaul/phone-fre-contracts",
+  "color": "#ff6a00",
+  "iconColor": "#ffffff",
+  "category": "Activities",
+  "storeTagline": "Contracts and sponsors",
+  "storeDescription": "Pick up FRE contract offers, track active deals, and get notified when new work is available.",
+  "defaultPage": 0,
+  "defaultPosition": 11,
+  "notifications": [
+    {
+      "key": "fre.contractReady",
+      "label": "Contract Ready",
+      "default": true,
+      "description": "New contract offers",
+      "order": 0
+    }
+  ],
+  "notificationSources": [
+    "fre contracts"
+  ],
+  "onInstall": {
+    "extension": "overhaul_events_fre_offers",
+    "call": "notifyOnPhoneAppInstalled",
+    "loadOnlyInCareer": false
+  },
+  "uiRoutes": [
+    {
+      "name": "phone-fre-contracts",
+      "path": "phone-fre-contracts",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneFreContracts.vue",
+      "uiOrder": 104,
+      "luaOrder": 33,
+      "backTarget": "phone-main"
+    }
+  ]
+}

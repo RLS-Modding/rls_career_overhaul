@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesJunk",
+	"Population":1000,  
+    "Configuration": "Al Kaput",
+    "Description": "Used to be the one that gave some whooping sessions back in the back, it got whooped some time ago",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 33,
+    "Torque": 33,
+    "Value": 2250,
+    "Weight": 1123,
+    "Years": {
+      "max": 1934,
+      "min": 1933
+    }  
+}
+
+

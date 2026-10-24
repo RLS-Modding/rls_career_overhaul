@@ -1,0 +1,7 @@
+{
+  "id": "tuningShopKits",
+  "order": 220,
+  "callbacks": [
+    {"id": "kitVehicleConfig", "extension": "overhaul_career_business_tuningShop_kits", "fn": "onVehicleConfigReceived", "guard": "none"}
+  ]
+}

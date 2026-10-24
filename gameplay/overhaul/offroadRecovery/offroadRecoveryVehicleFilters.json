@@ -1,0 +1,138 @@
+{
+  "recoveryJunkerVehFilter": {
+    "type": "vehicle",
+    "unlockTag": "recoveryJunkerVeh",
+    "filterName": "Low Value Vehicle",
+    "tierLabel": "Trail Recovery",
+    "skillUnlockFlag": "offroadRecoveryJunkerVeh",
+    "skillUnlockLevel": 1,
+    "payMultiplier": 0.85,
+    "baseXp": 120,
+    "priority": 10,
+    "filter": {
+      "whiteList": {
+        "Value": {"min": 1000, "max": 25000},
+        "Type": ["Car"],
+        "Config Type": ["Factory"]
+      },
+      "blackList": {"model_key": ["atv", "wl40", "frameless_dump"]}
+    },
+    "subFilters": []
+  },
+  "recoverySmallVehFilter": {
+    "type": "vehicle",
+    "unlockTag": "recoverySmallVeh",
+    "filterName": "Budget Vehicle",
+    "tierLabel": "Backcountry Recovery",
+    "skillUnlockFlag": "offroadRecoverySmallVeh",
+    "skillUnlockLevel": 5,
+    "payMultiplier": 1.0,
+    "baseXp": 250,
+    "priority": 20,
+    "filter": {
+      "whiteList": {
+        "Value": {"min": 25000, "max": 50000},
+        "Type": ["Car"],
+        "Config Type": ["Factory"]
+      },
+      "blackList": {"model_key": ["atv", "wl40", "frameless_dump"]}
+    },
+    "subFilters": []
+  },
+  "recoveryFleetVehFilter": {
+    "type": "vehicle",
+    "unlockTag": "recoveryFleetVeh",
+    "filterName": "Standard Vehicle",
+    "tierLabel": "Technical Recovery",
+    "skillUnlockFlag": "offroadRecoveryFleetVeh",
+    "skillUnlockLevel": 10,
+    "payMultiplier": 1.15,
+    "baseXp": 500,
+    "priority": 30,
+    "filter": {
+      "whiteList": {
+        "Value": {"min": 40000, "max": 100000},
+        "Type": ["Car"],
+        "Config Type": ["Factory"]
+      },
+      "blackList": {"model_key": ["atv", "wl40", "frameless_dump"]}
+    },
+    "subFilters": []
+  },
+  "recoveryTrailerFilter": {
+    "type": "vehicle",
+    "unlockTag": "recoveryTrailer",
+    "filterName": "Standalone Trailer",
+    "tierLabel": "Trailer Recovery",
+    "skillUnlockFlag": "offroadRecoveryFleetVeh",
+    "skillUnlockLevel": 10,
+    "payMultiplier": 1.5,
+    "baseXp": 600,
+    "priority": 35,
+    "filter": {
+      "whiteList": {"Type": ["Trailer"]},
+      "blackList": {"model_key": ["frameless_dump"]}
+    },
+    "subFilters": []
+  },
+  "recoveryHighEndVehFilter": {
+    "type": "vehicle",
+    "unlockTag": "recoveryHighEndVeh",
+    "filterName": "High End Vehicle",
+    "tierLabel": "Specialist Recovery",
+    "skillUnlockFlag": "offroadRecoveryHighEndVeh",
+    "skillUnlockLevel": 15,
+    "payMultiplier": 1.35,
+    "baseXp": 900,
+    "priority": 40,
+    "filter": {
+      "whiteList": {
+        "Value": {"min": 100000, "max": 200000},
+        "Type": ["Car"],
+        "Config Type": ["Factory"]
+      },
+      "blackList": {"model_key": ["atv", "wl40", "frameless_dump"]}
+    },
+    "subFilters": []
+  },
+  "recoveryExoticVehFilter": {
+    "type": "vehicle",
+    "unlockTag": "recoveryExoticVeh",
+    "filterName": "Exotic Vehicle",
+    "tierLabel": "Extreme Recovery",
+    "skillUnlockFlag": "offroadRecoveryExoticVeh",
+    "skillUnlockLevel": 20,
+    "payMultiplier": 1.6,
+    "baseXp": 1400,
+    "priority": 50,
+    "filter": {
+      "whiteList": {
+        "Value": {"min": 200000},
+        "Type": ["Car"],
+        "Config Type": ["Factory"]
+      },
+      "blackList": {"model_key": ["atv", "wl40", "frameless_dump"]}
+    },
+    "subFilters": []
+  },
+  "recoveryHeavyVehFilter": {
+    "type": "vehicle",
+    "unlockTag": "recoveryHeavyVeh",
+    "filterName": "Heavy Vehicle",
+    "tierLabel": "Heavy Recovery",
+    "skillUnlockFlag": "offroadRecoveryHeavyVeh",
+    "skillUnlockLevel": 25,
+    "payMultiplier": 1.8,
+    "baseXp": 1800,
+    "priority": 60,
+    "filter": {
+      "whiteList": {
+        "model_key": ["us_semi", "citybus", "md_series", "midtruck"],
+        "Type": ["Truck", "Bus"],
+        "Config Type": ["Factory"]
+      },
+      "blackList": {"model_key": ["atv", "wl40", "frameless_dump"]}
+    },
+    "subFilters": []
+  }
+}

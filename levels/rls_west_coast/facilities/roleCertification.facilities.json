@@ -1,0 +1,20 @@
+{
+  "roleCertifications": [
+    {
+      "id": "policeAssignment",
+      "triggerName": "policeAssignment",
+      "role": "police",
+      "name": "Police Certification",
+      "preview": "roleAssignment/policeAssignment.jpg",
+      "skillPath": "careerSkills-emergency",
+      "minimumLevel": 20,
+      "fee": 10000,
+      "durationSeconds": 14400,
+      "roleLabel": "Police",
+      "skillPaths": [
+        "careerSkills-emergency",
+        "emergency"
+      ]
+    }
+  ]
+}

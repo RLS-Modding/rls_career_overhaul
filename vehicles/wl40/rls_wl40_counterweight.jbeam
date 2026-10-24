@@ -1,95 +1,20 @@
 {
-"wl40_counterweight_R": {
-    "information":{
-        "authors":"BeamNG",
-        "name":"Underbody Counterweight (6407kg)", //6407kg cast iron
-        "value":6000,
-    },
-    "slotType" : "wl40_counterweight_R",
-    "triggers2": [
-        ["id", "idRef:", "idX:", "idY:", "type", "size", "baseRotation", "rotation", "translation", "baseTranslation"],
-        //override bumper triggers
-        ["bumperLightsSwitch","rb2ll","rb1ll","rb12ll","sphere",0.0275,{"x":0,"y":0,"z":0},{"x":0,"y":0,"z":0},{"x":0,"y":0,"z":0} {"x":0.187,"y":0.248,"z":0.08},{"disable":"$=$components.enableWorkLightsSwitch~=true"}],
-        ["engine_kill",       "rb2ll","rb1ll","rb12ll","box", {"x":0.03, "y":0.05, "z":0.08},{"x":5,"y":0,"z":0},{"x":0,"y":0,"z":0},{"x":0,"y":0,"z":0} {"x":0.083,"y":0.210,"z":0.05}],
-    ],
-    "flexbodies":[
-        ["mesh", "[group]:", "nonFlexMaterials"],
-        ["wl40_counterweight", ["wl40_bumper_R"]],
-        {"deformGroup":""}
-    ],
-    "nodes": [
-        ["id",     "posX", "posY", "posZ"],
-        {"frictionCoef":0.5},
-        {"nodeMaterial":"|NM_METAL"},
-        {"collision":true},
-        {"selfCollision":true},
-        {"nodeWeight":801},
-        {"group":"wl40_bumper_R"},
-        ["rb11ll", 1.328,  3.528,  0.546],
-        ["rb11l",  0.757,  3.528,  0.546],
-        ["rb11r", -0.757,  3.528,  0.546],
-        ["rb11rr",-1.328,  3.528,  0.546],
-
-        ["rb12ll", 1.328,  4.669,  0.546],
-        ["rb12l",  0.757,  4.669,  0.546],
-        ["rb12r", -0.757,  4.669,  0.546],
-        ["rb12rr",-1.328,  4.669,  0.546],
-
-        //collider
-        {"nodeWeight":10},
-        {"selfCollision":false},
-        {"group":""},
-        ["rbc12",  0.000,  4.669,  0.546],
-        ["rbc11",  0.000,  3.528,  0.546],
-
-        {"group":""},
-    ],
-},
+// RLS heavy underbody counterweight using the 0.40 counterweight components.
 "rls_wl40_counterweight_R": {
     "information":{
         "authors":"BeamNG",
-        "name":"Underbody Counterweight (12814kg)", //6407kg cast iron
+        "name":"Underbody Counterweight (12814kg)", //2x 6407kg cast iron
         "value":9000,
     },
     "slotType" : "wl40_counterweight_R",
-    "triggers2": [
-        ["id", "idRef:", "idX:", "idY:", "type", "size", "baseRotation", "rotation", "translation", "baseTranslation"],
-        //override bumper triggers
-        ["bumperLightsSwitch","rb2ll","rb1ll","rb12ll","sphere",0.0275,{"x":0,"y":0,"z":0},{"x":0,"y":0,"z":0},{"x":0,"y":0,"z":0} {"x":0.187,"y":0.248,"z":0.08},{"disable":"$=$components.enableWorkLightsSwitch~=true"}],
-        ["engine_kill",       "rb2ll","rb1ll","rb12ll","box", {"x":0.03, "y":0.05, "z":0.08},{"x":5,"y":0,"z":0},{"x":0,"y":0,"z":0},{"x":0,"y":0,"z":0} {"x":0.083,"y":0.210,"z":0.05}],
-    ],
+    "components": {
+        "hasUnderbodyCounterweight": true,
+        "underbodyCounterweightWeight": 12814,
+    },
     "flexbodies":[
         ["mesh", "[group]:", "nonFlexMaterials"],
         ["wl40_counterweight", ["wl40_bumper_R"]],
         {"deformGroup":""}
     ],
-    "nodes": [
-        ["id",     "posX", "posY", "posZ"],
-        {"frictionCoef":0.5},
-        {"nodeMaterial":"|NM_METAL"},
-        {"collision":true},
-        {"selfCollision":true},
-        {"nodeWeight":1602},
-        {"group":"wl40_bumper_R"},
-        ["rb11ll", 1.328,  3.528,  0.546],
-        ["rb11l",  0.757,  3.528,  0.546],
-        ["rb11r", -0.757,  3.528,  0.546],
-        ["rb11rr",-1.328,  3.528,  0.546],
-
-        ["rb12ll", 1.328,  4.669,  0.546],
-        ["rb12l",  0.757,  4.669,  0.546],
-        ["rb12r", -0.757,  4.669,  0.546],
-        ["rb12rr",-1.328,  4.669,  0.546],
-
-        //collider
-        {"nodeWeight":10},
-        {"selfCollision":false},
-        {"group":""},
-        ["rbc12",  0.000,  4.669,  0.546],
-        ["rbc11",  0.000,  3.528,  0.546],
-
-        {"group":""},
-    ],
 },
-
 }

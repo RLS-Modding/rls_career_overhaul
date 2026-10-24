@@ -1,0 +1,40 @@
+{
+  "id": "skeletonCoastMiningCompany",
+  "label": "Mining Company",
+  "sitesFile": "miningTruck.sites.json",
+  "officeSpot": "miningOffice",
+  "truckSpawnSpot": "miningTruckSpawn",
+  "pickupSpots": [
+    "miningPickup1",
+    "miningPickup2",
+    "miningPickup3"
+  ],
+  "dropOffArea": "miningDropOff",
+  "organizationId": "skeletonCoastMiningCompany",
+  "dropOffAreaFallback": {
+    "position": [
+      2741.2981,
+      5374.80664,
+      74.6072845
+    ],
+    "rotationMatrix": [
+      0.759369135,
+      -0.650660038,
+      0,
+      0.650660038,
+      0.759369135,
+      0,
+      0,
+      0,
+      1
+    ],
+    "scale": [
+      2.46868801,
+      4.36005211,
+      2.06645441
+    ]
+  },
+  "version": 1,
+  "levelId": "skeleton_coast",
+  "defaultLocation": true
+}

@@ -1,0 +1,7 @@
+{
+  "id": "derby",
+  "order": 80,
+  "callbacks": [
+    {"id": "onAiRecoveryRequest", "extension": "overhaul_events_derby_derby", "fn": "onAiRecoveryRequest", "guard": "function"}
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "repo",
+  "name": "Repo",
+  "icon": "tow",
+  "iconTile": "repo.png",
+  "route": "/overhaul/phone-repo",
+  "color": "#1E90FF",
+  "iconColor": "#ffffff",
+  "category": "Jobs",
+  "storeTagline": "Repossession work",
+  "storeDescription": "Find repo targets, plan pickups, and handle recovery jobs from your phone.",
+  "defaultPage": 0,
+  "defaultPosition": 4,
+  "uiRoutes": [
+    {
+      "name": "phone-repo",
+      "path": "phone-repo",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneRepo.vue",
+      "uiOrder": 72,
+      "luaOrder": 59,
+      "backTarget": "phone-main"
+    }
+  ]
+}

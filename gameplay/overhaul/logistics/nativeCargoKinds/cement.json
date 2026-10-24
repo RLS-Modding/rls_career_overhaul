@@ -1,0 +1,5 @@
+{
+  "id": "cement",
+  "order": 40,
+  "handler": "overhaul/lib/logistics/nativeCargoKinds/cement"
+}

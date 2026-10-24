@@ -1,0 +1,6 @@
+{
+  "id": "quarry",
+  "order": 150,
+  "extension": "overhaul_jobs_quarry_quarry",
+  "definition": "overhaul/jobs/quarry/activity"
+}

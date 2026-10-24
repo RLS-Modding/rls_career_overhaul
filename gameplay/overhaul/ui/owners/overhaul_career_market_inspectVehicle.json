@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_career_market_inspectVehicle",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 410,
+    "aliases": [
+      "career_modules_inspectVehicle"
+    ]
+  }
+}

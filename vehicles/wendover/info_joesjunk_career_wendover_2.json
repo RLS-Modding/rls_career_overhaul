@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":12000,  
+    "Configuration": "Its Fine... Ish( Joe's Junk Career )",
+    "Description": "Ready for a road trip! To the junkyard!",
+    "Drivetrain": "FWD",
+    "Fuel Type": "Gasoline",
+    "Power": 135,
+    "Torque": 136,
+    "Value": 2100,
+    "Weight": 1648,
+    "Years": {
+      "max": 1991,
+      "min": 1987
+    }  
+}
+
+

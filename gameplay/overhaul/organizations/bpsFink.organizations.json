@@ -1,0 +1,137 @@
+{
+  "bps": {
+    "name": "BPS",
+    "description": "Beam Parcel Service. Sorts and delivers parcels for civic and retail customers across the map.",
+    "icon": "cardboardBox",
+    "loanableVehicles": [
+      {
+        "model": "van",
+        "config": "h25_career_with_cargo",
+        "reputationLvl": -1,
+        "deliveryLvl": 0,
+        "rentalCategory": "hSeries",
+        "maxParcelPayloadKg": 1300,
+        "mileage": 241401600
+      },
+      {
+        "model": "van",
+        "config": "BPS Box Van",
+        "reputationLvl": 1,
+        "deliveryLvl": 2,
+        "rentalCategory": "boxVans",
+        "maxParcelPayloadKg": 2500,
+        "mileage": 241401600
+      },
+      {
+        "model": "us_semi",
+        "config": "BPS Cargo Box",
+        "reputationLvl": 3,
+        "deliveryLvl": 3,
+        "rentalCategory": "cargoBoxTrucks",
+        "maxParcelPayloadKg": 6000,
+        "mileage": 241401600
+      }
+    ],
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  },
+  "finkIndustries": {
+    "name": "Fink Industries",
+    "description": "Port new-vehicle distributor. Hire for company jockey and haul runs, or take owner-op contracts and rent yard equipment.",
+    "icon": "carDealer",
+    "loanableVehicles": [
+      {
+        "model": "pickup",
+        "config": "d25_longbed_A",
+        "reputationLvl": -1,
+        "deliveryLvl": 0,
+        "rentalCategory": "dSeries",
+        "mileage": 241401600
+      },
+      {
+        "model": "tiltdeck",
+        "config": "22ft_standard",
+        "reputationLvl": -1,
+        "deliveryLvl": 0,
+        "rentalCategory": "tiltDeckTrailers",
+        "mileage": 241401600
+      },
+      {
+        "model": "tiltdeck",
+        "config": "30ft_standard",
+        "reputationLvl": -1,
+        "deliveryLvl": 0,
+        "rentalCategory": "tiltDeckTrailers",
+        "mileage": 241401600
+      },
+      {
+        "model": "pickup",
+        "config": "d35_longbed_dually_A",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "rentalCategory": "dSeries",
+        "mileage": 241401600
+      },
+      {
+        "model": "tiltdeck",
+        "config": "22ft_gooseneck",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "rentalCategory": "tiltDeckTrailers",
+        "mileage": 241401600
+      },
+      {
+        "model": "tiltdeck",
+        "config": "30ft_gooseneck",
+        "reputationLvl": 0,
+        "deliveryLvl": 0,
+        "rentalCategory": "tiltDeckTrailers",
+        "mileage": 241401600
+      },
+      {
+        "model": "tiltdeck",
+        "config": "40ft_gooseneck",
+        "reputationLvl": 1,
+        "deliveryLvl": 1,
+        "rentalCategory": "tiltDeckTrailers",
+        "mileage": 241401600
+      },
+      {
+        "model": "us_semi",
+        "config": "Fink Industries Rollback",
+        "reputationLvl": 3,
+        "deliveryLvl": 3,
+        "rentalCategory": "tSeriesRollbacks",
+        "mileage": 241401600
+      },
+      {
+        "model": "us_semi",
+        "config": "Fink Industries TC83",
+        "reputationLvl": 3,
+        "deliveryLvl": 3,
+        "rentalCategory": "tSeriesRollbacks",
+        "mileage": 241401600
+      },
+      {
+        "model": "dryvan",
+        "config": "Fink Industries Car Hauler",
+        "reputationLvl": 3,
+        "deliveryLvl": 3,
+        "rentalCategory": "carHaulTrailers",
+        "mileage": 241401600
+      }
+    ],
+    "reputationLevels": [
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  }
+}

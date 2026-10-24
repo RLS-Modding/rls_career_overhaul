@@ -1,0 +1,50 @@
+{
+  "id": "overhaul_career_garage_property_propertyOwners",
+  "order": 100,
+  "exports": {
+    "namespace": false,
+    "aliases": [
+      "career_modules_propertyOwners"
+    ]
+  },
+  "routes": [
+    {
+      "name": "garage-listing",
+      "order": 16,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "play"
+        }
+      }
+    },
+    {
+      "name": "garage-listings",
+      "order": 17,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "overhaul.computer",
+          "title": "Garage Listings"
+        }
+      }
+    },
+    {
+      "name": "garage-offers",
+      "order": 18,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "garage-listings",
+          "title": "Garage Offers"
+        }
+      }
+    },
+    {
+      "name": "purchase-garage",
+      "order": 69,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "play"
+        }
+      }
+    }
+  ]
+}

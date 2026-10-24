@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":10000,  
+    "Configuration": "Oh My Lawd ( Joe's Junk Career )",
+    "Description": "What a crazy life this car had! One day it is grocery shopping and the next its off-roading in the desert.",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 152,
+    "Torque": 154,
+    "Value": 2200,
+    "Weight": 1473,
+    "Years": {
+      "max": 1989,
+      "min": 1985
+    }  
+}
+
+

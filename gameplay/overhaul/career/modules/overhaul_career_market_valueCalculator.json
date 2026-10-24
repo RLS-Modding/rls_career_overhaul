@@ -1,0 +1,5 @@
+{
+  "id": "overhaul_career_market_valueCalculator",
+  "order": 1340,
+  "module": "overhaul/career/market/valueCalculator"
+}

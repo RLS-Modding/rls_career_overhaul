@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":12500,  
+    "Configuration": "Not So Green ( Joe's Junk Career )",
+    "Description": "The only thing green about this car is the nasty paint job on it. And the fact that there is grass growing in the trunk.",
+    "Drivetrain": "FWD",
+    "Fuel Type": "EV",
+    "Power": 193,
+    "Torque": 195,
+    "Value": 3750,
+    "Weight": 1627,
+    "Years": {
+      "max": 2024,
+      "min": 2020
+    }  
+}
+
+

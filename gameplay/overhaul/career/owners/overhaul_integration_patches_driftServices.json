@@ -1,0 +1,37 @@
+{
+  "id": "overhaul_integration_patches_driftServices",
+  "order": 45,
+  "module": "overhaul/integration/patches/driftServices",
+  "scopes": [
+    {
+      "id": "services",
+      "order": 26
+    }
+  ],
+  "bigMap": {
+    "types": [
+      {
+        "id": "driftSpot",
+        "icon": "drift01",
+        "tags": [
+          "type_driftSpots"
+        ]
+      }
+    ],
+    "groups": [
+      {
+        "id": "type_driftSpots",
+        "label": "bigMap.group.type.driftSpots",
+        "icon": "drift01",
+        "placements": {
+          "freeroam": [
+            {
+              "section": "freeroamPois",
+              "order": 3
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

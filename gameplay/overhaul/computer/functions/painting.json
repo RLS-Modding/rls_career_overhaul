@@ -1,0 +1,5 @@
+{
+  "id": "painting",
+  "icon": "sprayCan",
+  "routeTarget": "overhaul.computer.painting"
+}

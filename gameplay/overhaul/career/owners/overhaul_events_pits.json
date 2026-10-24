@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_events_pits",
+  "order": 36,
+  "module": "overhaul/events/pits",
+  "scopes": [
+    {
+      "id": "children",
+      "order": 36,
+      "parent": "overhaul_events_host"
+    }
+  ]
+}

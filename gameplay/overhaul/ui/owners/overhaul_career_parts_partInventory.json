@@ -1,0 +1,29 @@
+{
+  "id": "overhaul_career_parts_partInventory",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 500,
+    "aliases": [
+      "career_modules_partInventory"
+    ]
+  },
+  "backHandlers": [
+    {
+      "id": "overhaulPartInventoryExitHandler",
+      "method": "requestExit",
+      "alias": "partInventoryExitHandler"
+    }
+  ],
+  "routes": [
+    {
+      "name": "overhaul.computer.partInventory",
+      "order": 6,
+      "overlay": true,
+      "meta": {
+        "deferAutosave": true
+      }
+    }
+  ]
+}

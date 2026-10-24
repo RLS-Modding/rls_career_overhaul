@@ -1,0 +1,40 @@
+{
+  "id": "overhaul_integration_services_crawlScores",
+  "order": 52,
+  "module": "overhaul/integration/services/crawlScores",
+  "scopes": [
+    {
+      "id": "services",
+      "order": 14
+    }
+  ],
+  "bigMap": {
+    "types": [
+      {
+        "id": "crawl",
+        "icon": "rockCrawling02"
+      }
+    ],
+    "groups": [
+      {
+        "id": "type_crawl",
+        "label": "bigMap.group.type.crawl",
+        "icon": "rockCrawling02",
+        "placements": {
+          "freeroam": [
+            {
+              "section": "freeroamPois",
+              "order": 5
+            }
+          ],
+          "career": [
+            {
+              "section": "freeroamPois",
+              "order": 6
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

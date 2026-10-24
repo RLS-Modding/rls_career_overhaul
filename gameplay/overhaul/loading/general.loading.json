@@ -1,0 +1,136 @@
+{
+    "materials": {
+        "marbleSmall": {
+            "name": "Marble Block",
+            "typeName": "Marble",
+            "model": "marble_block",
+            "config": "rails",
+            "maxSpawned": 4,
+            "units": "Blocks",
+            "unitType": "item",
+            "payPerUnit": 2500,
+            "contractChance": 0.75,
+            "reputationGain": 2,
+            "reputationLoss": 12,
+            "tiers": {
+                "1": [3, 6],
+                "2": [4, 8],
+                "3": [6, 15],
+                "4": [10, 25]
+            },
+            "damage": {
+                "ignore": [
+                    "rails"
+                ],
+                "damageThreshold": 0.01
+            },
+            "deliveryVehicle": {
+                "model": "dumptruck",
+                "config": "quarry",
+                "bedSettings": "dumptruck"
+            }
+        },
+        "marbleBig": {
+            "name": "Large Marble Block",
+            "typeName": "Marble",
+            "model": "marble_block",
+            "config": "big_rails",
+            "maxSpawned": 2,
+            "units": "Blocks",
+            "unitType": "item",
+            "payPerUnit": 7500,
+            "contractChance": 0.25,
+            "reputationGain": 5,
+            "reputationLoss": 25,
+            "tiers": {
+                "2": [1, 2],
+                "3": [3, 6],
+                "4": [5, 10]
+            },
+            "damage": {
+                "ignore": [
+                    "rails"
+                ],
+                "damageThreshold": 0.01
+            },
+            "deliveryVehicle": {
+                "model": "dumptruck",
+                "config": "quarry",
+                "bedSettings": "dumptruck"
+            }
+        },
+        "rocks": {
+            "name": "Rock Pile",
+            "typeName": "Rocks",
+            "model": "rock_pile",
+            "config": "default",
+            "maxSpawned": 1,
+            "units": "Tons",
+            "unitType": "mass",
+            "massPerProp": 41000,
+            "targetLoad": 25000,
+            "payPerUnit": 650,
+            "contractChance": 0.5,
+            "reputationGain": 0.5,
+            "deliveryVehicle": {
+                "model": "us_semi",
+                "config": "t83s_dump",
+                "bedSettings": "us_semi"
+            },
+            "tiers": {
+                "1": [10, 20],
+                "2": [20, 40],
+                "3": [40, 80],
+                "4": [80, 160]
+            }
+        }
+    },
+    "bedSettings": {
+        "dumptruck": {
+            "offsetBack": 4.0,
+            "offsetSide": -0.75,
+            "length": 6.5,
+            "width": 4,
+            "floorHeight": 1.0,
+            "loadHeight": 3.5
+        },
+        "us_semi": {
+            "offsetBack": 3.0,
+            "offsetSide": -0.45,
+            "length": 6.0,
+            "width": 2.4,
+            "floorHeight": 0.3,
+            "loadHeight": 3.5
+        }
+    },
+    "settings": {
+        "maxProps": 6,
+        "devMode": false,
+        "ui": {
+            "updateInterval": 0.5,
+            "animationSpeed": 8.0,
+            "pulseSpeed": 5.0,
+            "markerPulseSpeed": 2.5,
+            "markerRotationSpeed": 0.4,
+            "markerBeamSpeed": 30.0,
+            "markerMaxBeamHeight": 12.0,
+            "markerRingExpandSpeed": 1.5,
+            "zoneMarkerMaxBeamHeight": 15.0,
+            "zoneMarkerPulseSpeed": 2.5
+        },
+        "truck": {
+            "arrivalSpeedThreshold": 2.0,
+            "arrivalDistanceThreshold": 1.0
+        },
+        "payload": {
+            "updateInterval": 0.25,
+            "nodeSamplingStep": 10,
+            "minLoadRatio": 0.25
+        },
+        "zones": {
+            "checkInterval": 0.1,
+            "detectionRadius": 10.0,
+            "sitesLoadRetryInterval": 1.0
+        }
+    }
+}

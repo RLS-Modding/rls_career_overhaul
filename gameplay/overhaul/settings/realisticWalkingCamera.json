@@ -1,0 +1,16 @@
+{
+  "id": "realisticWalkingCamera",
+  "key": "realisticWalkingCamera",
+  "order": 600,
+  "type": "boolean",
+  "default": true,
+  "section": "gameplay",
+  "validateSingle": false,
+  "validateLoaded": false,
+  "ui": {
+    "label": "ui.overhaulManager.settings.realisticWalkingCamera.label",
+    "description": "ui.overhaulManager.settings.realisticWalkingCamera.description",
+    "section": "gameplay",
+    "icon": "person"
+  }
+}

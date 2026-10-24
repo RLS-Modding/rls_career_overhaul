@@ -1,0 +1,3 @@
+{"name":"Joes Junk Assets","class":"SimGroup","__parent":"JoesJunk"}
+{"name":"joesJunk_icon","class":"BeamNGPointOfInterest","__parent":"JoesJunk","position":[152.579208,776.221252,104.032806],"rotationMatrix":[-0.942321777,-0.334708244,0,0.334708244,-0.942321777,0,0,0,1]}
+{"name":"joesJunk_area","class":"BeamNGGameplayArea","__parent":"JoesJunk","position":[152.779572,775.456299,103.759254],"rotationMatrix":[-0.0103931427,-0.999945819,0,0.999945819,-0.0103931427,0,0,0,1],"scale":[1.13588154,2.73859644,2.05547523]}

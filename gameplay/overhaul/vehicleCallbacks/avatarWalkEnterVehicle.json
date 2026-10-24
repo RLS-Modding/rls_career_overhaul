@@ -1,0 +1,9 @@
+{
+  "id": "avatarWalkEnterVehicle",
+  "order": 10,
+  "callbacks": [
+    {"id": "notePlayerMove", "extension": "overhaul_avatar_walkEnterVehicle", "fn": "notePlayerMove", "guard": "module"},
+    {"id": "receiveCollisionEnvelope", "extension": "overhaul_avatar_walkEnterVehicle", "fn": "receiveCollisionEnvelope", "guard": "module"},
+    {"id": "walkInDoorState", "extension": "overhaul_avatar_walkEnterVehicle", "fn": "noteDoorState", "guard": "module"}
+  ]
+}

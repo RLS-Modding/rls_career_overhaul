@@ -1,0 +1,18 @@
+{
+  "id": "overhaul_phone_phone",
+  "order": 92,
+  "module": "overhaul/phone/phone",
+  "scopes": [
+    {
+      "id": "bootManual",
+      "order": 2
+    }
+  ],
+  "inputActions": {
+    "order": 1,
+    "path": "/lua/ge/extensions/core/input/actions/rls_career_overhaul_phone.json",
+    "actions": [
+      "openPhone"
+    ]
+  }
+}

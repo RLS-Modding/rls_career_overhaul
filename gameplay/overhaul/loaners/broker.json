@@ -1,0 +1,16 @@
+{
+  "vehicles": [
+    {"id":"cargo-van","name":"Cargo van","model":"van","config":"cargoservicevan872426","market":"parcels","basic":true,"reputationLvl":-1},
+    {"id":"tractor","name":"Day-cab tractor","model":"us_semi","config":"semidaycab035558","market":"trailers","basic":true,"reputationLvl":-1},
+    {"id":"dump","name":"Dump truck","model":"md_series","config":"smalldumptruck767436","market":"bulk","basic":true,"reputationLvl":-1},
+    {"id":"tanker","name":"Tanker truck","model":"us_semi","config":"rigidtankertruck443910","market":"liquids","basic":true,"reputationLvl":-1},
+    {"id":"mixer","name":"Concrete mixer","model":"us_semi","config":"cementmixer817238","market":"specialty","basic":true,"reputationLvl":-1},
+    {"id":"secure","name":"Secure cash truck","model":"md_series","config":"small_money_transport_career","market":"specialty","basic":true,"reputationLvl":-1},
+    {"id":"pickup","name":"Heavy-duty pickup","model":"pickup","config":"d35_longbed_dually_A","market":"cars","basic":true,"reputationLvl":-1},
+    {"id":"transport-trailer","name":"Vehicle transport trailer","model":"tiltdeck","config":"22ft_standard","market":"cars","basic":true,"reputationLvl":-1},
+    {"id":"cargo-trailer","name":"Cargo trailer","model":"boxutility_large","config":"trailer_career_cargo_large","market":"parcels","basic":true,"reputationLvl":-1},
+    {"id":"box-truck","name":"Medium box truck","model":"md_series","config":"mediumboxtruck196979","market":"parcels","rotation":0,"reputationLvl":0},
+    {"id":"large-dump","name":"Heavy dump truck","model":"us_semi","config":"mediumdumptruck159523","market":"bulk","rotation":1,"reputationLvl":0},
+    {"id":"large-secure","name":"Large cash truck","model":"md_series","config":"large_money_transport_career","market":"specialty","rotation":0,"reputationLvl":0}
+  ]
+}

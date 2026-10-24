@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":5500,  
+    "Configuration": "Used & Abused ( Joe's Junk Career )",
+    "Description": "Beater Moonhawk with damaged body panels and misc junk parts.",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 189,
+    "Torque": 191,
+    "Value": 18500,
+    "Weight": 1715,
+    "Years": {
+      "max": 1978,
+      "min": 1976
+    }  
+}
+
+

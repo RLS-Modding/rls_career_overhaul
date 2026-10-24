@@ -1,0 +1,7 @@
+{
+  "id": "passengerOccupants",
+  "order": 280,
+  "callbacks": [
+    {"id": "seatFillConditions", "extension": "overhaul_vehicles_passengerOccupants", "fn": "onSeatFillConditions", "guard": "none"}
+  ]
+}

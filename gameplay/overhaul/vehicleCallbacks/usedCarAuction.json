@@ -1,0 +1,9 @@
+{
+  "id": "usedCarAuction",
+  "order": 250,
+  "callbacks": [
+    {"id": "auctionLotFinalized", "extension": "overhaul_career_market_auction_auction", "fn": "finalizePurchasedLot", "guard": "none"},
+    {"id": "auctionFreezeReady", "extension": "overhaul_career_market_auction_auction", "fn": "afterAiDisabledForFreeze", "guard": "function"},
+    {"id": "auctionTransitReady", "extension": "overhaul_career_market_auction_auction", "fn": "afterAiDisabledForTransit", "guard": "function"}
+  ]
+}

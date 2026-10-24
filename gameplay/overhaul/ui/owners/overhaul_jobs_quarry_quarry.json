@@ -1,0 +1,10 @@
+{
+  "id": "overhaul_jobs_quarry_quarry",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "other",
+    "namespaceOrder": 20,
+    "aliases": []
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "_comment": "Part/metadata rules for traffic eligibility. Evaluated once per model/config (cached). Mods can ship compatible configs by avoiding these patterns.",
+  "rejectConfigTypes": [
+    "Frame",
+    "joesJunkshell"
+  ],
+  "rejectTrafficConfigTypes": [
+    "Police"
+  ],
+  "trafficConfigTypeWeights": {
+    "joesjunkcar": 0.05,
+    "joesjunk": 0.05
+  },
+  "rejectConfigNamePatterns": [
+    "police"
+  ],
+  "rejectIfPowerAtMost": 0,
+  "rejectIfPowerBelow": 60,
+  "rejectPartValuePatterns": [
+    "wheel_square"
+  ],
+  "engineSlotNameMustInclude": "engine",
+  "engineSlotNameMustNotInclude": [
+    "ecu",
+    "internal",
+    "mount",
+    "cover",
+    "lid",
+    "bay",
+    "sound"
+  ],
+  "rejectEmptyMainEngineSlot": true,
+  "requireFrontAndRearWheels": true,
+  "wheelSlotNamePattern": "^wheel_[FR]"
+}

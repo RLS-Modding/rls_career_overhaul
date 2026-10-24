@@ -1,0 +1,18 @@
+{
+    "Config Type": "joesjunkcar",
+	"Population":12300,  
+    "Configuration": "Bouncy ( Joe's Junk Career )",
+    "Description": "You will get why this car is called '' Bouncy '' very quickly.",
+    "Drivetrain": "RWD",
+    "Fuel Type": "Gasoline",
+    "Power": 182,
+    "Torque": 184,
+    "Value": 2150,
+    "Weight": 1688,
+    "Years": {
+      "max": 1997,
+      "min": 1993
+    }  
+}
+
+

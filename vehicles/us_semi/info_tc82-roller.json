@@ -36,11 +36,10 @@
   "TorquePeakRPM":"N/A",
   "Transmission":"N/A",
   "Value":30000,
-  "Weight":"N/A",
   "Weight/Power":0.0,
   "Years":{
     "max":1977,
     "min":1972
   },
-  "defaultPaintName1":"Pearl White"
+  "defaultPaintName1":"pearl_white"
 }

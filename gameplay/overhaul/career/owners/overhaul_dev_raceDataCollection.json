@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_dev_raceDataCollection",
+  "order": 15,
+  "module": "overhaul/dev/raceDataCollection",
+  "scopes": [
+    {
+      "id": "children",
+      "order": 15,
+      "parent": "overhaul_events_host"
+    }
+  ]
+}

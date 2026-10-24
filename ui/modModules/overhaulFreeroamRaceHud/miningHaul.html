@@ -1,0 +1,84 @@
+<link rel="stylesheet" type="text/css" href="/ui/modModules/overhaulFreeroamRaceHud/miningHaul.css" />
+
+<div class="mnh-overlay" ng-if="visible">
+  <div class="mnh-card" overhaul-popup="close()" ng-if="payload.mode !== 'hud'" bng-blur="true" ng-style="cardStyle()" ng-mousedown="startDrag($event)">
+    <div class="mnh-accent"></div>
+    <div class="mnh-head">
+      <div class="mnh-pre">{{ payload.label || 'Mining Company' }}</div>
+      <div class="mnh-title" ng-if="payload.mode === 'intro'">HT-55 Driver Program</div>
+      <div class="mnh-title" ng-if="payload.mode === 'office'">Shift Office</div>
+      <div class="mnh-title" ng-if="payload.mode === 'hud'">HT-55 Hauling</div>
+      <div class="mnh-title" ng-if="payload.mode === 'summary'">Shift Summary</div>
+    </div>
+
+    <div class="mnh-body" ng-if="payload.mode === 'intro'">
+      <p>{{ payload.body }}</p>
+      <div class="mnh-actions">
+        <button type="button" class="mnh-btn mnh-btn-primary" ng-click="startShift()">Start Shift</button>
+        <button type="button" class="mnh-btn mnh-btn-secondary" bng-scoped-nav-autofocus ng-click="close()">Close</button>
+      </div>
+    </div>
+
+    <div class="mnh-body" ng-if="payload.mode === 'office'">
+      <div class="mnh-notice" ng-if="payload.notice">{{ payload.notice }}</div>
+      <div class="mnh-grid">
+        <div><span>Ore</span><strong>{{ payload.oreDelivered || 0 }}</strong></div>
+        <div><span>Deliveries</span><strong>{{ payload.deliveriesCompleted || 0 }}</strong></div>
+        <div><span>Diamonds</span><strong>{{ payload.diamondsFound || 0 }}</strong></div>
+        <div><span>Net</span><strong>{{ money(payload.netEarnings) }}</strong></div>
+      </div>
+      <div class="mnh-actions">
+        <button type="button" class="mnh-btn mnh-btn-primary" ng-click="repairTruck()">Repair HT-55</button>
+        <button type="button" class="mnh-btn mnh-btn-danger" ng-click="endShift()">End Shift</button>
+        <button type="button" class="mnh-btn mnh-btn-secondary" bng-scoped-nav-autofocus ng-click="close()">Close</button>
+      </div>
+    </div>
+
+    <div class="mnh-body" ng-if="payload.mode === 'hud'">
+      <div class="mnh-notice" ng-if="payload.notice">{{ payload.notice }}</div>
+      <div class="mnh-route">{{ payload.target || 'Excavation Zone' }}</div>
+      <div class="mnh-grid">
+        <div><span>Hopper Volume</span><strong>{{ payload.deliveredThisRun || 0 }}/{{ payload.totalProps || 0 }}</strong></div>
+        <div><span>Total Ore</span><strong>{{ payload.oreDelivered || 0 }}</strong></div>
+        <div><span>Diamonds</span><strong>{{ payload.diamondsFound || 0 }}</strong></div>
+        <div><span>Earnings</span><strong>{{ money(payload.netEarnings) }}</strong></div>
+      </div>
+    </div>
+
+    <div class="mnh-body" ng-if="payload.mode === 'summary'">
+      <div class="mnh-grid">
+        <div><span>Ore</span><strong>{{ payload.oreDelivered || 0 }}</strong></div>
+        <div><span>Deliveries</span><strong>{{ payload.deliveriesCompleted || 0 }}</strong></div>
+        <div><span>Diamonds</span><strong>{{ payload.diamondsFound || 0 }}</strong></div>
+        <div><span>Repairs</span><strong>{{ money(payload.repairCosts) }}</strong></div>
+        <div class="mnh-wide"><span>Total Earnings</span><strong>{{ money(payload.netEarnings) }}</strong></div>
+      </div>
+      <div class="mnh-actions">
+        <button type="button" class="mnh-btn mnh-btn-primary" bng-scoped-nav-autofocus ng-click="close()">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mnh-card" ng-if="payload.mode === 'hud'" ng-style="cardStyle()" ng-mousedown="startDrag($event)">
+    <div class="mnh-accent"></div>
+    <div class="mnh-head">
+      <div class="mnh-pre">{{ payload.label || 'Mining Company' }}</div>
+      <div class="mnh-title">HT-55 Hauling</div>
+    </div>
+    <div class="mnh-body">
+      <div class="mnh-notice" ng-if="payload.notice">{{ payload.notice }}</div>
+      <div class="mnh-route">{{ payload.target || 'Excavation Zone' }}</div>
+      <div class="mnh-grid">
+        <div><span>Hopper Volume</span><strong>{{ payload.deliveredTons || 0 }} tons</strong></div>
+        <div><span>Total Ore</span><strong>{{ payload.oreDelivered || 0 }}</strong></div>
+        <div><span>Diamonds</span><strong>{{ payload.diamondsFound || 0 }}</strong></div>
+        <div><span>Earnings</span><strong>{{ money(payload.netEarnings) }}</strong></div>
+      </div>
+      <div class="mnh-actions">
+        <button type="button" class="mnh-btn mnh-btn-primary" ng-if="payload.canLoad" ng-click="loadTruck()">Load Ore</button>
+        <button type="button" class="mnh-btn mnh-btn-primary" ng-if="payload.canProcess" ng-click="processOre()">Process Ore</button>
+        <button type="button" class="mnh-btn mnh-btn-danger" ng-if="payload.canEnd" ng-click="endShift()">End Shift</button>
+      </div>
+    </div>
+  </div>
+</div>

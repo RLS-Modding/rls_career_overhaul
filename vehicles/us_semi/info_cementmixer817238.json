@@ -1,0 +1,15 @@
+{
+  "Body Style": "Cement Mixer",
+  "Config Type": "Loaner",
+  "Configuration": "Cement Mixer",
+  "Description": "A commercial mixer fitted with the RLS dynamic concrete cargo load.",
+  "Name": "T-Series Cement Mixer",
+  "loanerName": "T-Series Cement Mixer",
+  "capacity": [
+    {"amount": 6000, "type": "cement"}
+  ],
+  "defaultPaintName1": "Scarlet Red",
+  "defaultPaintName2": "Scarlet Red",
+  "defaultPaintName3": "White",
+  "isAuxiliary": false
+}

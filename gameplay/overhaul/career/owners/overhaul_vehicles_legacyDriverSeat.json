@@ -1,0 +1,9 @@
+{
+  "id": "overhaul_vehicles_legacyDriverSeat",
+  "order": 119,
+  "module": "overhaul/vehicles/legacyDriverSeat",
+  "scopes": [
+    {"id": "bootManual", "order": 35},
+    {"id": "late", "order": 1}
+  ]
+}

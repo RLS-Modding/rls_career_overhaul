@@ -1,0 +1,34 @@
+{
+  "id": "overhaul_career_logistics_cargoScreen",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 370,
+    "aliases": [
+      "career_modules_delivery_cargoScreen"
+    ]
+  },
+  "routes": [
+    {
+      "name": "overhaul.materialContractPickup",
+      "order": 7,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "play",
+          "onLeave": "overhaul_career_logistics_cargoScreen.onMaterialContractPickupRouteLeave"
+        }
+      }
+    },
+    {
+      "name": "overhaul.passiveBusinessSupplyPickup",
+      "order": 8,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "play",
+          "onLeave": "overhaul_career_logistics_cargoScreen.onPassiveBusinessSupplyPickupRouteLeave"
+        }
+      }
+    }
+  ]
+}
