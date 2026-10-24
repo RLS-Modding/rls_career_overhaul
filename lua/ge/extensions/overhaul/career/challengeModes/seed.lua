@@ -2,6 +2,7 @@
 -- Map: format, binary values, catalogs, name hashes, variables, codec, generation, import and public API.
 local M = {}
 local challengeRounding = require('overhaul/lib/career/challengeRounding')
+local levelData = require('overhaul/lib/world/levelData')
 
 -- Parts ---------------------------------------------------------------------------------------------
 
@@ -21,6 +22,9 @@ do
   format.MARKER_STARTING_GARAGES = 0x04
   format.MARKER_DIFFICULTY = 0x05
   format.MARKER_MAP = 0x06
+  -- Named-format only: older readers reject these markers, so seeds without them stay readable everywhere.
+  format.MARKER_STARTER_VEHICLES = 0x07
+  format.MARKER_STARTING_GARAGE_MODE = 0x08
   format.MARKER_VARIABLE_NUMBER = 0x10
   format.MARKER_VARIABLE_INTEGER = 0x11
   format.MARKER_VARIABLE_BOOLEAN = 0x12
@@ -324,12 +328,13 @@ do
 
   -- Garages -------------------------------------------------------------------------------------------
 
-  function catalog.getAvailableGarageIds()
+  -- mapId limits the list to one map's garages; without it every compatible map is included.
+  function catalog.getAvailableGarageIds(mapId)
     local ids = {}
     -- challengeModes is always loaded at boot, so its garage list needs no guard.
     local garages = overhaul_career_challengeModes.getAvailableGarages()
     for _, garage in ipairs(garages) do
-      if garage.id and type(garage.id) == "string" and garage.id ~= "" then
+      if garage.id and type(garage.id) == "string" and garage.id ~= "" and (not mapId or garage.mapId == mapId) then
         table.insert(ids, garage.id)
       end
     end
@@ -824,6 +829,31 @@ do
     end)
   end
 
+  local STARTING_GARAGE_MODE_VALUES = { default = 0, none = 1 }
+  local STARTING_GARAGE_MODE_NAMES = { [0] = "default", [1] = "none" }
+
+  -- The default mode is implied by a missing section.
+  local function encodeStartingGarageModeSection(buffer, challengeData)
+    local modeValue = STARTING_GARAGE_MODE_VALUES[challengeData.startingGarageMode]
+    if not modeValue or modeValue == 0 then return true end
+    return appendSection(buffer, "starting garage mode", function(section)
+      table.insert(section, string.char(parts.format.MARKER_STARTING_GARAGE_MODE))
+      table.insert(section, string.char(modeValue))
+    end)
+  end
+
+  local function encodeStarterVehicleSection(buffer, challengeData)
+    local vehicles = challengeData.starterVehicles
+    if type(vehicles) ~= "table" or #vehicles == 0 then return true end
+    return appendSection(buffer, "starter vehicles", function(section)
+      table.insert(section, string.char(parts.format.MARKER_STARTER_VEHICLES))
+      parts.binary.writeVarInt(section, #vehicles)
+      for _, vehicleId in ipairs(vehicles) do
+        parts.binary.writeName(section, tostring(vehicleId))
+      end
+    end)
+  end
+
   local function encodeMapSection(buffer, challengeData)
     local map = challengeData.map
     if type(map) ~= "string" or map == "" then return true end
@@ -869,6 +899,10 @@ do
     succeeded, err = encodeGarageSection(buffer, challengeData)
     if not succeeded then return nil, err end
     succeeded, err = encodeMapSection(buffer, challengeData)
+    if not succeeded then return nil, err end
+    succeeded, err = encodeStartingGarageModeSection(buffer, challengeData)
+    if not succeeded then return nil, err end
+    succeeded, err = encodeStarterVehicleSection(buffer, challengeData)
     if not succeeded then return nil, err end
 
     table.insert(buffer, string.char(parts.format.MARKER_END))
@@ -982,6 +1016,47 @@ do
     return nextOffset
   end
 
+  local function readStartingGarageModeSection(challengeData, decodeState, bytes, offset)
+    if not decodeState.namedFormat then
+      return nil, "Starting garage mode needs a named seed"
+    end
+    if offset > #bytes then
+      return nil, "Incomplete starting garage mode data"
+    end
+    local modeName = STARTING_GARAGE_MODE_NAMES[string.byte(bytes, offset)]
+    if not modeName then
+      return nil, "Invalid starting garage mode"
+    end
+    challengeData.startingGarageMode = modeName
+    return offset + 1
+  end
+
+  local function readStarterVehicleSection(challengeData, decodeState, bytes, offset)
+    if not decodeState.namedFormat then
+      return nil, "Starter vehicles need a named seed"
+    end
+    if offset + 1 > #bytes then
+      return nil, "Incomplete starter vehicle data"
+    end
+    local vehicleCount, nextOffset, err = parts.binary.readVarInt(bytes, offset)
+    if vehicleCount == nil then
+      return nil, "Failed to read starter vehicle count: " .. tostring(err)
+    end
+    if vehicleCount * 2 > (#bytes - nextOffset + 1) then
+      return nil, "Invalid starter vehicle count"
+    end
+    challengeData.starterVehicles = {}
+    for index = 1, vehicleCount do
+      local vehicleId = nil
+      vehicleId, nextOffset, err = parts.binary.readName(bytes, nextOffset)
+      if vehicleId == nil then
+        return nil, "Failed to read starter vehicle " .. index .. ": " .. tostring(err)
+      end
+      table.insert(challengeData.starterVehicles, vehicleId)
+    end
+    return nextOffset
+  end
+
   local function readEconomySection(challengeData, decodeState, bytes, offset)
     if offset + 2 > #bytes then
       return nil, "Incomplete economy adjuster data"
@@ -1028,6 +1103,10 @@ do
       return readGarageSection(challengeData, decodeState, bytes, offset)
     elseif marker == parts.format.MARKER_MAP then
       return readMapSection(challengeData, decodeState, bytes, offset)
+    elseif marker == parts.format.MARKER_STARTING_GARAGE_MODE then
+      return readStartingGarageModeSection(challengeData, decodeState, bytes, offset)
+    elseif marker == parts.format.MARKER_STARTER_VEHICLES then
+      return readStarterVehicleSection(challengeData, decodeState, bytes, offset)
     elseif marker == parts.format.MARKER_ECONOMY_ADJUSTER then
       return readEconomySection(challengeData, decodeState, bytes, offset)
     elseif marker >= parts.format.MARKER_VARIABLE_NUMBER and marker <= parts.format.MARKER_VARIABLE_TABLE then
@@ -1151,9 +1230,9 @@ do
     return value
   end
 
-  -- Up to three distinct garages; nil when the game offers none.
-  local function randomGarageSelection()
-    local available = parts.catalog.getAvailableGarageIds()
+  -- Up to three distinct garages from one map; nil when the map offers none.
+  local function randomGarageSelection(mapId)
+    local available = parts.catalog.getAvailableGarageIds(mapId)
     if #available == 0 then return nil end
     local count = math.random(1, math.min(MAX_RANDOM_GARAGES, #available))
     local selected = {}
@@ -1176,7 +1255,7 @@ do
       return definition.default or "random_" .. variableName
     elseif varType == "multiselect" or varType == "array" then
       if variableName == "targetGarages" then
-        return randomGarageSelection()
+        return randomGarageSelection(options.map or levelData.defaultMap())
       end
       return {}
     end
@@ -1242,7 +1321,7 @@ do
       return options.startingGarages
     end
     if math.random() < 0.3 then
-      return randomGarageSelection()
+      return randomGarageSelection(options.map or levelData.defaultMap())
     end
     return nil
   end
