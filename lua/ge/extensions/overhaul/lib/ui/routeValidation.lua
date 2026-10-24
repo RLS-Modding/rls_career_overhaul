@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Shared route declarations must validate identically for phone and standalone manifests.
 -- validateDeclarations returns the first problem as a reason string, or nil when every route is valid.
 local catalog = require("overhaul/lib/platform/catalog")

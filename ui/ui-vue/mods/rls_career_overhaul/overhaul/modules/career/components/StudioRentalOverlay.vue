@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- Film studio rentals (overhaul_career_garage_studioRentals_studioRentals). Renders the StudioRentalState
      payload only: a prompt card (offer, started, or why a car can't go), a status chip while driving to a
      staged stage, and short notices when a car comes back. All words live in PROMPTS / NOTICES below. -->

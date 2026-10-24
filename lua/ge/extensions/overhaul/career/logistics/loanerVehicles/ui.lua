@@ -2,6 +2,9 @@
 -- If a copy of the bCDDL was not distributed with this
 -- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
 
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+-- RLS modifications: Copyright (C) RLS Modding
+
 -- Loaner menu rows: which loaners a facility lists, whether each can be taken, and the row data the menu shows.
 -- Part of the Overhaul fork of stock career/modules/loanerVehicles.lua. Map: shared helpers, fleet, space, availability, unlock text, row projection, part API.
 

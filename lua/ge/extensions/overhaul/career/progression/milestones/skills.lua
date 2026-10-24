@@ -1,6 +1,9 @@
 -- This Source Code Form is subject to the terms of the bCDDL, v. 1.1.
 -- If a copy of the bCDDL was not distributed with this
 -- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
+
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+-- RLS modifications: Copyright (C) RLS Modding
 -- Skill and branch milestones: one milestone per branch that owns its attribute, with a reward at each level.
 -- Based on stock's generalMilestones/branches.lua, with canonical-attribute ownership and batched claims.
 local M = {}

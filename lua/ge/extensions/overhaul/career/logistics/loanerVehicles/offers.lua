@@ -1,3 +1,10 @@
+-- This Source Code Form is subject to the terms of the bCDDL, v. 1.1.
+-- If a copy of the bCDDL was not distributed with this
+-- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
+
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+-- RLS modifications: Copyright (C) RLS Modding
+
 -- Loaner offers: which organization vehicles a facility can loan, the hourly rate, config and facility lookups, and the marks that queue a car for the next spawn. The marks live in the extension state.
 -- Read usesSkillUnlocks, usesIndependentHourlyRental, getConfigInfo, getInventoryConfigInfo, isTrailerVehicle in order.
 

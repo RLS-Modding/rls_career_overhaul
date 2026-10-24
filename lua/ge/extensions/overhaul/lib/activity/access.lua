@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Activity host access: get() is the production entry, and career.lua publishes the same object as career.activity.
 -- Map: career lifetime, owner adoption, policy indexing, instance APIs and the shared access object.
 local hostLib = require('overhaul/lib/activity/host')

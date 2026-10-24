@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <template>
   <div data-broker-scope class="broker" ref="screenRef" v-bng-ui-nav-scroll v-bng-on-ui-nav:tab_l="() => changeTab(-1)" v-bng-on-ui-nav:tab_r="() => changeTab(1)" :class="{ expanded: s.expanded, 'market-home': s.view === 'markets'}">
     <header data-broker-scope v-if="s.expanded" class="apphead">

@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Route discovery is shared by the Lua route catalog and the phone UI listing.
 -- Callers keep their own fallback policy; this scanner keeps no state between calls.
 local catalog = require("overhaul/lib/platform/catalog")

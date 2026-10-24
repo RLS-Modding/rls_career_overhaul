@@ -2,6 +2,9 @@
 // If a copy of the bCDDL was not distributed with this
 // file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
 
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+// RLS modifications: Copyright (C) RLS Modding
+
 // RLS house controls: the Style Guide's buttons, switch, dropdown, slider, number field and prompt as
 // components that keep the game's controller focus and click sounds. Use these instead of BngButton /
 // BngSwitch / BngDropdown / BngSlider / BngInput / openPrompt on career screens.

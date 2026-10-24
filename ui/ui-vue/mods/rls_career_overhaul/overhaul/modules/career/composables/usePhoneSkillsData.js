@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Skills data map: shared cache and display metadata; skill/unlock normalization;
 // page discovery and detail hydration; load, lookup, reset and composable access.
 import { ref } from 'vue'

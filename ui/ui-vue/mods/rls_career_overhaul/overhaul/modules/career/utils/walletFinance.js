@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Shared presentation for the wallet history (pause menu Financial History and the phone Wallet).
 // The Lua read model (playerAttributes.getFinancialHistoryView) owns grouping, sorting and totals;
 // this file only names the choices, asks for a view, and formats what comes back.

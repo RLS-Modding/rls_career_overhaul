@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!--
 Map of PhoneFreeroamEvents.vue. This view owns the data lifecycle (events listener, scope acquisition, and the 2 s
 fallback to a live screen), list/map selection, the map's selected event, the minimap claim, and mounting the minimap's

@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Catalog state belongs to this UI, never to a Lua require-cached library. Failed replies retain
 // the previous data; timeouts settle; a superseded discovery cannot publish over a newer one.
 import { shallowRef } from 'vue'

@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // The stock controls store owns capture and edits. The hook snapshot supplies
 // device defaults for an action-only reset, which stock does not expose in JS.
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'

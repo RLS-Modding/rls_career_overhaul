@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- The Vault's auction counter in the house style: a .modal card with an Auctions / My listings tab bar
      (LB / RB switch tabs), offer and lot-count pickers, and the player's cars with their listing state.
      It sits inside the auction's nav scope, so Back still closes the counter through the screen. The

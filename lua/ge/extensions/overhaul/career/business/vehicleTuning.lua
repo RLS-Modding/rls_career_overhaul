@@ -1,3 +1,10 @@
+-- This Source Code Form is subject to the terms of the bCDDL, v. 1.1.
+-- If a copy of the bCDDL was not distributed with this
+-- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
+
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+-- RLS modifications: Copyright (C) RLS Modding
+
 -- Business vehicle tuning, cart pricing and charges for customer and personal vehicles.
 -- Read prices, vehicle lookup, cart pricing, tuning payloads, applying a tune, cart rows, then the public API.
 local capabilities = require("overhaul/lib/platform/capabilities")

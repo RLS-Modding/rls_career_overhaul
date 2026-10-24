@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // A retargetable spring for UI motion, in Apple's two designer terms: damping ratio (1 = no
 // overshoot) and response (seconds to reach the target, not a fixed duration). A new target keeps
 // the current value and velocity, so motion can be reversed mid-flight without a jump. The loop

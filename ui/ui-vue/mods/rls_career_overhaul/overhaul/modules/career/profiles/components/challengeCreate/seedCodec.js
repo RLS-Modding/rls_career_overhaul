@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { ref } from 'vue'
 
 // Seed traffic with the Lua encoder and decoder. Owns the pending request ids and the latest encode id, so

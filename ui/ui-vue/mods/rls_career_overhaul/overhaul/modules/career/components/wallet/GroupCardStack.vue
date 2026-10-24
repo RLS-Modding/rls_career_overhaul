@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- A deck of wallet groups (vehicles, work types, categories, months). Each card peeks out by its
      header over the one before it; choosing a card pulls it out of the deck on a spring, the rest
      recede, and it opens to show everything. Back, or choosing the pulled-out header again, slides

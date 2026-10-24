@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Activity catalog: which owner extensions the activity host adopts, read from /gameplay/overhaul/activities/<id>.json.
 -- A manifest is {id, order, extension, definition?}; the catalog never loads an extension or requires a definition module.
 local manifests = require('overhaul/lib/platform/manifests')

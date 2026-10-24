@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Map: popup defaults and reward normalization; queue items; sound and timer ownership;
 // queue advancement; controller event listeners and cleanup; stylesheet and overlay mounting.
 import { reportFailure } from '../../modules/overhaulAngular/reportFailure.js'

@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Owns vehicle-photo scrolling for ../views/ComputerMain.vue.
 // activeId reads the selected vehicle ID; bind strip to the photo row.
 // Reveals selected or focused photos and releases listeners and observers on unmount.

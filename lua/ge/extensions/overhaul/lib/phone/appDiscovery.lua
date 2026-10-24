@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Phone app manifest discovery: reads and validates gameplay/overhaul/phone/apps/*.json, shared by the
 -- catalog and the route scans, so neither depends on the UI entry point.
 local routeValidation = require("overhaul/lib/ui/routeValidation")

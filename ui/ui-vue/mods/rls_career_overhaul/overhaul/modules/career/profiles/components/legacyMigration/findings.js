@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Pure findings seam for LegacyMigrationModal: turns the report's compatibility issues into severity buckets of grouped
 // rows. No Vue and no bridge calls. The shell computes the buckets; the Review step only renders them.
 

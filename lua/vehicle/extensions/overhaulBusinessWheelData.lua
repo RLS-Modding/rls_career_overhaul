@@ -2,6 +2,9 @@
 -- If a copy of the bCDDL was not distributed with this
 -- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
 
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+-- RLS modifications: Copyright (C) RLS Modding
+
 -- GE-callable API: enableWheelData(), disableWheelData().
 -- Owns the wheel telemetry stream while enabled; read smoothing, payload updates, then the toggle API.
 -- Fork of stock lua/vehicle/extensions/advancedwheeldebug.lua (BeamNG 0.40).

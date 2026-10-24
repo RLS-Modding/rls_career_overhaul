@@ -81,4 +81,4 @@ RLS Career Overhaul is a community mod and is not affiliated with BeamNG GmbH.
 
 ## Licensing
 
-See [Licensing](LICENSING.md) and [third-party notices](THIRD_PARTY_NOTICES.md) for the applicable terms and current license scope.
+Original RLS source listed in the [license scope](licenses/RLS-AGPL-SCOPE.md) is AGPLv3-only with a BeamNG additional permission. BeamNG-derived files and included components retain their applicable licenses. See [Licensing](LICENSING.md) and [third-party notices](THIRD_PARTY_NOTICES.md).

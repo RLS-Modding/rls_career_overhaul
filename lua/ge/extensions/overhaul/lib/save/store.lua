@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- SaveStore: binds owner persistence to the existing save pipeline and tracks unsafe lifetimes.
 -- Writes keep the capture boundary: captured slot writes, immediate writes, and the key registry.
 

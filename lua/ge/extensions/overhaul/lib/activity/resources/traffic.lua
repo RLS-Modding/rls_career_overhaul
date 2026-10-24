@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Activity resource: traffic amount. Forwards saveAndSetTrafficAmount and restoreTrafficAmount from the activityTraffic capability.
 -- Not a counted lease: restoreTrafficAmount restores on every call today, so the adapter only records who cut and restored.
 local capabilities = require('overhaul/lib/platform/capabilities')

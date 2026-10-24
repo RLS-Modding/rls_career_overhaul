@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Entry card view model: newest local save, loading/empty/ready copy, and compact saved metadata.
 
 // What a first-time player is offered, shown only while there is no Overhaul save yet.

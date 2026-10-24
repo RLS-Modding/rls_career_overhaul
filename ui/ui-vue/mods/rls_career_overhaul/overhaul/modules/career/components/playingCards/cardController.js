@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 const SVG_URL = "/ui/entrypoints/main/rls_career_overhaul/rls_playingCards.svg"
 const SVG_NS = "http://www.w3.org/2000/svg"
 

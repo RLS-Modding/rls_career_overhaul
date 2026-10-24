@@ -2,6 +2,9 @@
 -- If a copy of the bCDDL was not distributed with this file,
 -- You can obtain one at http://beamng.com/bCDDL-1.1.txt
 
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+-- RLS modifications: Copyright (C) RLS Modding
+
 -- Intersection decisions, traffic actions and route selection.
 -- create binds this extension instance; require caches only the factory.
 

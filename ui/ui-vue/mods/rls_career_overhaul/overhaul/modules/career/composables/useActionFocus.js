@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Preserve row identity across refresh/removal. Keep busy controls enabled and
 // use aria-disabled + a guarded handler so focus is never dropped mid-request.
 import { nextTick, ref, unref } from "vue"

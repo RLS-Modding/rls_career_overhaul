@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Platform manifest discovery for registries with an explicit `order`: one folder (depth 0), one manifest per
 -- file, entries sorted by order then id. Broken files are skipped with a warning.
 -- Raw directory data is lazy and lasts until a mod mount changes.

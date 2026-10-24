@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- Style Guide slider (.slider) on top of the game's BngSlider, so scoped controller nav, ok/back confirm,
      held-direction repeat, the embedded number box (with-input) and reset (with-reset) all still work.
      Drop-in for BngSlider: every prop, v-model, event and the exposed dirty API pass straight through. -->

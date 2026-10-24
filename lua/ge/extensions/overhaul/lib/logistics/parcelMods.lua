@@ -2,6 +2,9 @@
 -- If a copy of the bCDDL was not distributed with this
 -- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
 
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+-- RLS modifications: Copyright (C) RLS Modding
+
 -- Parcel modifier definitions, compatibility and timed-delivery rules; queries also work with no career.
 -- Read definitions, availability checks, generation and registration; missing map modifiers are isolated from known ones.
 local M = {}

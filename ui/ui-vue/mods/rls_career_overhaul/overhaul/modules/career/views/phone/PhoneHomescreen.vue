@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <template>
 
     <div ref="homescreenRef" class="homescreen" :style="baseBackgroundStyle" v-bng-on-ui-nav:context="openTileMenu" v-bng-on-ui-nav:tab_l="() => goToPage(currentPageIndex - 1)" v-bng-on-ui-nav:tab_r="() => goToPage(currentPageIndex + 1)">

@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // A pad move is committed only after choosing a destination. Work on copies so
 // Cancel and invalid destinations cannot change the saved layout.
 export function placeHomeApp({ pages, dock, appId, target, pageSize }) {

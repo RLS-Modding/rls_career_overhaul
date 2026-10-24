@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Decimal escapes have a fixed width so a following digit cannot become part of the escape.
 function quoteString(value) {
   return `"${value.replace(/[\\"\x00-\x1f\x7f]/g, character => {

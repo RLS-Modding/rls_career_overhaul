@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Mount map: route subscription, per-route stock DOM placement, shared-app render, teardown.
 // Stock views are compiled, so the mod entry owns this insertion instead of a VFS override.
 import { lua, useBridge } from "@/bridge"

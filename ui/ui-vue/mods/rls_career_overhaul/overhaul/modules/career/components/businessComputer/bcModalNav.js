@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Controller navigation for the business computer's hand-built modals (overlays teleported to <body>).
 // Same contract as the house popups (HouseConfirm): the modal is its own scope while it is mounted, the
 // d-pad stays inside it, B/Start close it (the template binds v-bng-on-ui-nav:back,menu to the close

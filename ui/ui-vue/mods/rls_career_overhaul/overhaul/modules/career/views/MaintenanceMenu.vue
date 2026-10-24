@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- RLS Maintenance computer, house style. Same data, checks, cart and checkout as before; layout:
      the car first, then one row per system (icon, name, mileage, health bar + percent). A row opens
      to its service items: Check (reveals health) and Service (adds to the cart, price in gold).

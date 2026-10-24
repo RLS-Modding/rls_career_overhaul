@@ -1,3 +1,10 @@
+-- This Source Code Form is subject to the terms of the bCDDL, v. 1.1.
+-- If a copy of the bCDDL was not distributed with this
+-- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
+
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+-- RLS modifications: Copyright (C) RLS Modding
+
 -- Facility discovery by cargo capabilities; queries need a loaded map but also work outside a career.
 -- Part of the Overhaul fork of stock lua/ge/extensions/career/modules/delivery/generator.lua.
 local M = {}

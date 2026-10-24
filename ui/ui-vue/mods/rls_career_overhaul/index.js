@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Mount career overlay components that used to live in mod App.vue.
  * BeamNG 0.39 serves the Vue shell from ui-vue/dist, so VFS App.vue overrides

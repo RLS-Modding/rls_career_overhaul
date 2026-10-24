@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Stock pause content is bundled. Mount in its existing card using the entry-card host pattern.
 import { getComponent } from '@/services/uiMods'
 import { runRaw } from '@/bridge/libs/Lua.js'

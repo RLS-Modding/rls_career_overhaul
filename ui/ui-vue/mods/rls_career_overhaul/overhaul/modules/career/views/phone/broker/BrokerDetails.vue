@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <template>
           <section data-broker-scope class="detail-pane" aria-label="Selected load"><div data-broker-scope class="scroll detail-scroll" v-bng-ui-nav-scroll>
             <div data-broker-scope class="detail-hero" :class="{ 'no-photo': !rowImage(s.selectedRow) }">

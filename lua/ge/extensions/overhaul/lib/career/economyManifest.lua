@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Economy umbrella sections and type aliases, read from /gameplay/overhaul/economy/sections/<id>.json by the
 -- economy policy and adjuster. Require-only: every call scans the folder; callers cache the result per instance.
 local manifests = require("overhaul/lib/platform/manifests")

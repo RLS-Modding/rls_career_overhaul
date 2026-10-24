@@ -1,3 +1,10 @@
+-- This Source Code Form is subject to the terms of the bCDDL, v. 1.1.
+-- If a copy of the bCDDL was not distributed with this
+-- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
+
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+-- RLS modifications: Copyright (C) RLS Modding
+
 -- Race start, standings, exit settlement and proxy-fleet cleanup for one host load.
 -- Read bindings/identity, result/start operations, ordered settlement, cleanup, exit and returned services.
 local capabilities = require("overhaul/lib/platform/capabilities")

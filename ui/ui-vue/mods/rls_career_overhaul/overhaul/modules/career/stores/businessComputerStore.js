@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Cross-tab business computer flows: vehicle selection, view transitions and closing.
 // Tab stores own their data and actions; this store keeps the event forwarding in one session.
 import { safeLua, reportUiFailure } from "../utils/safeLua.js"

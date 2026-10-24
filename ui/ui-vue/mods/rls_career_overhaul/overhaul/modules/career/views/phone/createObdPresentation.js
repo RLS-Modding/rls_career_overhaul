@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Capture the screen's category refs so findings track its current vehicle.
 export function createObdPresentation({ units, engine, radiator, transmission, recentSymptoms }) {
   const POWER_LIMIT_DEFINITIONS = {

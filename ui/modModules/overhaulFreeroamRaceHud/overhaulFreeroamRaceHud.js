@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import './gameplayPopup.js'
 // The stock loader imports this entry once; controller imports retain their registration order.
 import './FreeroamRaceHudController.js'

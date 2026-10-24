@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <template>
   <div :class="['rls-house', 'skill-tree-tab', { 'skill-tree-tab--multi': trees.length > 1 }]">
     <div v-if="trees.length === 0" class="empty empty-state">

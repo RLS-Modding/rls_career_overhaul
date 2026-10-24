@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- Entry map: one first-career button or two stock-scope nav buttons, progressive profile events, existing load path, panel skin. -->
 <template>
   <!-- No Overhaul save yet: the whole bar is one invitation that starts a new career. -->

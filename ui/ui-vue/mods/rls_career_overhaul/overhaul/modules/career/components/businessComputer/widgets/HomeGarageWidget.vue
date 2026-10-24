@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <template>
   <!-- Current Vehicle: photo first, name biggest, payment in gold, goal; Put away is the one orange action. -->
   <div class="rls-house home-widget garage-widget">

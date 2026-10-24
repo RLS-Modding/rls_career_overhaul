@@ -1,3 +1,8 @@
+/* RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+ * Copyright (C) RLS Modding
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 // Shared skin for the migration modal's shell and children. Vue scopes each block to the component that includes it, so a
 // child includes only the blocks it renders. Include shared blocks before component-local rules so local rules take precedence.
 @use "./tokens" as *;

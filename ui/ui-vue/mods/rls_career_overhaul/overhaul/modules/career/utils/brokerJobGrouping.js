@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Reserved work is stricter than market display grouping. Missing identities
 // stay separate; matching display names cannot prove an interchangeable route.
 function locationKey(location) {

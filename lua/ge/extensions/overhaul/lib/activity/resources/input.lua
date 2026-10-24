@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Activity resource: blocked input actions. Uses the two calls owners make today (actionFilter.setGroup, then
 -- addAction(0, name, true|false)). Remembers the groups this activity blocked so releaseAll unblocks exactly those.
 local M = {}

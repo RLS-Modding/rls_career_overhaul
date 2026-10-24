@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Shared numeric policy for pad steps, presets and optional keyboard entry.
 export function amountValue(value, { min = 0, max = Number.MAX_SAFE_INTEGER, step = 1 } = {}) {
   const number = Number(value)

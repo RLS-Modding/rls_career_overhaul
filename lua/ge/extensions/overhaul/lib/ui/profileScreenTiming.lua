@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Opt-in timing of the profile screen's Lua work, for in-game measurement only.
 -- Off unless OVERHAUL_DEBUG_PROFILE_TIMING is true; then each finished span logs one D-level "profileTiming" line.
 local M = {}

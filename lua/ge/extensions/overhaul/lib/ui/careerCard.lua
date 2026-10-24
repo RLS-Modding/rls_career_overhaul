@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Pause summaries are contributed by their live owners. No optional feature is loaded by opening pause.
 local manifests = require('overhaul/lib/platform/manifests')
 local optional = require('overhaul/lib/platform/optional')

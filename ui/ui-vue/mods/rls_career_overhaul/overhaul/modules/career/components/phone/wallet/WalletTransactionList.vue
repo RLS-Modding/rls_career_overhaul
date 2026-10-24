@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- Inset grouped list of wallet transactions: category tile, what it was, what it was for, and a
      signed amount beside a labelled relative time. Tapping a row opens its details (the full label
      and context); a small chevron shows which way it goes. Inside a group (groupBy) rows leave out

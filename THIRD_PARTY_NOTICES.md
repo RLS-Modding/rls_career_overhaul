@@ -8,6 +8,13 @@ Some source files retain the **BeamNG Common Development and Distribution Licens
 
 Covered files and modifications retain bCDDL requirements, including source availability, contributor identification and preservation of upstream notices. This is not a blanket license for all BeamNG material or a finding that integrated AGPL/bCDDL code is compatible. Other BeamNG code and assets require their applicable terms.
 
+## BeamNG UI
+
+The identified [stock UI adaptations](licenses/BeamNG-UI-SCOPE.md) retain
+the [BeamNG UI copyright and MIT permission text](licenses/BeamNG-UI-MIT.txt).
+Existing bCDDL source notices remain in effect where present; the UI
+directory license is not used to erase those notices.
+
 ## Tyre Wear and Thermals Redux
 
 **ZestyMaple98** — Tyre Wear and Thermals Redux, source archive version 0.20, resource version 64879.

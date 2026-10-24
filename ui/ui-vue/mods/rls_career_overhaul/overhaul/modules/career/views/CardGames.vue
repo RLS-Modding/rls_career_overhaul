@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <template>
   <!-- Controller (no scope on this screen): every control block that appears puts focus on its main
        button; B steps back one level (bet -> cancel, result -> game list, game list -> leave table) and

@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Guards registered service exports and defers the latest deserialize until activation.
 -- getDirect exposes an implementation to callers that already enforce the active-service gate.
 local function exportNames(module, exports)

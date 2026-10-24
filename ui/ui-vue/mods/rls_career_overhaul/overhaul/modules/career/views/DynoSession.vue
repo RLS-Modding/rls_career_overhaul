@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <template>
   <!-- Controller (no scope on this screen): each phase puts focus on its main action; B closes How It
        Works, else cancels the offer / finishes a completed session (inert while a pull is set up or running) -->

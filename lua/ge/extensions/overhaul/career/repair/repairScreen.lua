@@ -2,6 +2,9 @@
 -- If a copy of the bCDDL was not distributed with this
 -- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
 
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+-- RLS modifications: Copyright (C) RLS Modding
+
 -- Repair screen: the insurance and roadside repair menu, its quotes, payment and the repair tether.
 -- Fork of stock lua/ge/extensions/career/modules/insurance/repairScreen.lua (BeamNG 0.40); read it top to bottom.
 local M = {}

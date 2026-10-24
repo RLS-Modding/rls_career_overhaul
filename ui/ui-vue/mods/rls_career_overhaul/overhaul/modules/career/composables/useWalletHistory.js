@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Wallet history for one screen: asks the Lua read model for the view the screen's options name,
 // keeps each option set's view so switching back is instant, and reloads when Lua reports a new
 // transaction (OverhaulFinancialHistoryChanged; no polling).

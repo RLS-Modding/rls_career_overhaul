@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <template>
   <div class="business-computer-wrapper" :class="{ workshop: sessionStore.vehicleView === 'parts' || sessionStore.vehicleView === 'tuning', 'engine-shop-fullscreen': sessionStore.hasCapability('fullscreenComputer') }">
     <!-- the workshop views show the balance under the career status chip instead (no overlap) -->

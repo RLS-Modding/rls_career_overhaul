@@ -1,3 +1,10 @@
+-- This Source Code Form is subject to the terms of the bCDDL, v. 1.1.
+-- If a copy of the bCDDL was not distributed with this
+-- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
+
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+-- RLS modifications: Copyright (C) RLS Modding
+
 -- Skill lookups: the one place callers read skill levels, level thresholds and skill XP, backed by the
 -- branch catalog and overhaul_career_economy_playerAttributes. Stateless: callers keep their own fallbacks.
 local M = {}

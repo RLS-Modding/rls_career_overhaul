@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- Engine Materials Pickup, house style (same data, events and Lua calls as before).
      Order: where you are -> what's waiting and what it costs -> how much to take this trip ->
      which parked vehicles it goes into -> Back / Load. Orange only on Load. -->

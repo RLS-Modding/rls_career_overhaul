@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- Style Guide button (.btn and its variants) with the game's controller focus and click sound.
      Hold-to-confirm: put v-bng-click="{ holdCallback, holdDelay }" on it as with BngButton; the
      hold-start / hold-active classes that directive sets drive the fill. -->

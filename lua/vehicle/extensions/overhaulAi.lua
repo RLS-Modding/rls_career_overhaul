@@ -2,6 +2,9 @@
 -- If a copy of the bCDDL was not distributed with this
 -- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
 
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+-- RLS modifications: Copyright (C) RLS Modding
+
 -- GE-callable API (also queued as ai.* after GE replaces the stock AI instance):
 -- setMode(mode), setSpeedMode(speedMode), setSpeed(speed), setAvoidCars(v), driveInLane(v),
 -- setTargetObjectID(id), setPullOver(val), setAggression(v), setAggressionMode(aggrmode),

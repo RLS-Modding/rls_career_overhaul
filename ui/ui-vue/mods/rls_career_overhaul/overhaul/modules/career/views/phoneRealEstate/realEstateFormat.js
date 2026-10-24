@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Display formatting for the real estate phone views. Pure: no state, no bridge.
 // The K/M branch is chosen before rounding, so values just under a boundary can
 // print as "1000K" or "1000 m". Those outputs are pinned by the characterization test.

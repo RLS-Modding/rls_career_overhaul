@@ -1,6 +1,9 @@
 -- This Source Code Form is subject to the terms of the bCDDL, v. 1.1.
 -- If a copy of the bCDDL was not distributed with this
 -- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
+
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+-- RLS modifications: Copyright (C) RLS Modding
 -- Part of the Overhaul fork of stock lua/ge/extensions/career/modules/delivery/general.lua.
 
 -- Logistics general: the raw POI list for the level. Each delivery facility gets one marker per stall that needs one, plus an office marker. general.lua owns the runtime state and the binding.

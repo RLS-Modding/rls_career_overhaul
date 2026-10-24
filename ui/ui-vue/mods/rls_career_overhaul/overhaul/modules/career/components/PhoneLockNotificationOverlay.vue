@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <template>
   <Teleport to="body">
     <div ref="navigationRoot" class="phone-lock-root" bng-no-nav="true" bng-no-child-nav="true" aria-live="polite" aria-atomic="true" :style="rootStyle">

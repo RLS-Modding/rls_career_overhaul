@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- Racing team dev console (dev key only), house style: title + hint, a status notice, one panel per
      group with a caption and neutral buttons, destructive resets as quiet-danger, and the dev log in a
      slim-scrolling sheet. -->

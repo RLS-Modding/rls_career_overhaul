@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- Engine shop (engineShop), house style. Faint caption + title + hint with gold account
      and brand facts on the right; near-black panels and .sheet tables with caption column heads; status
      as short pills; neutral row buttons with one orange per view; slim scaleX bars; quiet dev folds. -->

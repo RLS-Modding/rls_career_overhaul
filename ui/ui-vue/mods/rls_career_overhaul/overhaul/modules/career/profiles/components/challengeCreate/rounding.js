@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Rounding that runs when a numeric field is committed (Enter or blur). Each function returns the value to
 // store, or undefined when nothing should be stored. Rounding is half-up to the nearest step.
 function roundToStep(value, step) {

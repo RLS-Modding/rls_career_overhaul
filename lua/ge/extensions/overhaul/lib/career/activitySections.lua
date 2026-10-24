@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Economy adjuster activity sections, discovered from /gameplay/overhaul/economy/activities/<id>.json.
 -- Require-only library: reads files and keeps no state; callers cache the list per extension instance.
 local manifests = require("overhaul/lib/platform/manifests")

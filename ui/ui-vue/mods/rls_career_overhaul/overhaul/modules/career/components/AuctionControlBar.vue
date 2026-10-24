@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <template>
   <!-- The auction panel's own action footer. Controller hints follow walk mode; keyboard keeps NP0. -->
   <footer class="ua-control-bar" aria-live="polite" :style="{ '--ua-hold-ms': `${holdMs}ms` }">

@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Route metadata is published before phone app definitions, so the phone never offers a page
 // before its route exists. No Lua calls, extension loading or component loading in this store.
 // uiMods can evaluate one file under two import URLs. Routing belongs to the current UI

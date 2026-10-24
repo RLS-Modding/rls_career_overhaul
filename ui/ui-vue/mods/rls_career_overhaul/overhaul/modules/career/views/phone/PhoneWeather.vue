@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <template>
   <main class="weather-app" v-bng-ui-nav-scroll.force :class="`weather-app--${state.condition || 'clear'}`">
     <div v-if="!state.ready" class="loading">Loading forecast...</div>

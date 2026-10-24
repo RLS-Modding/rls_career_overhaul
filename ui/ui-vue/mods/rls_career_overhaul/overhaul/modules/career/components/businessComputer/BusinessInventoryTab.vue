@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- Business computer: used-parts inventory, house style. Title + hint, search with totals, then one
      panel per vehicle (name, count pill) holding a line per part: name, faint mileage, condition pill
      (colour only when Excellent or worn), gold value and a neutral Sell. Selling by vehicle is quiet. -->

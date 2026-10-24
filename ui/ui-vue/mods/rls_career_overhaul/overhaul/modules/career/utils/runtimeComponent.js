@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Runtime loading owns graph requests and stable component identities per file/host.
 // Read shared loading, overlay wrappers, pending screens, then lazy route preparation.
 // The graph owns resolved modules; recovery retires requests at both cache owners.

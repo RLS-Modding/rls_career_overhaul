@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <template>
   <dl v-if="rewards.length" class="reward-values">
     <div v-for="reward in rewards" :key="reward.attributeKey" class="reward-value" :class="{ negative: reward.rewardAmount < 0 }">

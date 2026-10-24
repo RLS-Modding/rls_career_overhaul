@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- The Vault's paid entry prompt: the 2.7 card's layout (icon, title, fee row, warning, paired
      buttons) built from the house kit (HouseConfirm's card, HouseButton). It sits inside the auction's
      own nav scope, so Back still reaches the screen's cancel. When entry is blocked, the reason shows

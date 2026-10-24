@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- Passive business (Mini Mart, cafes, ...) sections inside the Business Computer, house style.
      The sidebar lists Dashboard, Stock & Supplies, Finances and Upgrades: the store expands the single
      Lua tab into those entries and passes the chosen one as data.view. LB/RB, B and sidebar focus are

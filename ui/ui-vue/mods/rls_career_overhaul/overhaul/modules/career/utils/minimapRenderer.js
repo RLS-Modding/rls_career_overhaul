@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Owns the cached road raster and mounted map surfaces. View boxes stay in world
 // coordinates; only CSS transforms move the static terrain and road layers.
 const SVG = 'http://www.w3.org/2000/svg'

@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Phone app catalog. Apps are discovered, never listed. Lua (lib/phone/appCatalog.lua) finds, across
 // all mods through BeamNG's virtual file system:
 //  - JSON manifests, /gameplay/overhaul/phone/apps/<id>.json (the built-in apps; Lua reads them too,

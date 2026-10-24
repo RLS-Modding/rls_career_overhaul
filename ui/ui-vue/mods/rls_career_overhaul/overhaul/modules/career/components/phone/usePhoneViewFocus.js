@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Remember an actual control for each in-screen view, including v-show swaps.
 import { nextTick, onBeforeUnmount, onMounted, watch } from 'vue'
 import useControls from '@/services/controls'

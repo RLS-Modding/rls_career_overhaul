@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <template>
   <article :bng-nav-item="blockedReason ? true : null" :aria-description="blockedReason || null" v-bng-tooltip="blockedReason || undefined" class="rls-house job-card" :class="[layout === 'full' ? 'is-full' : 'is-compact', { active: isActive }]">
     <!-- the car first: big photo on full cards, a wide thumbnail on the compact (widget) card -->

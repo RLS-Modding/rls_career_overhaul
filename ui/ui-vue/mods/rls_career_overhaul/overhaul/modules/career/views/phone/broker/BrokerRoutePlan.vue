@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <template>
         <div data-broker-scope class="scroll route-plan" v-bng-ui-nav-scroll>
           <RouteMap data-broker-scope v-if="s.data.stops.length" class="plan-map" :legs="planPreview?.legs || []" :points="planPreview?.points || {}">{{ planLoading ? 'Tracing route…' : 'Route preview unavailable' }}</RouteMap>

@@ -2,6 +2,9 @@
 -- If a copy of the bCDDL was not distributed with this
 -- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
 
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+-- RLS modifications: Copyright (C) RLS Modding
+
 -- Save-slot lookups and writes for the profile screen: newest save per profile, save state, employment-mode preflight and the slot setters that apply a change to a running career.
 -- Reading order: lookups, then writes, then the per-career setters (M.new(ctx)), then the public API.
 

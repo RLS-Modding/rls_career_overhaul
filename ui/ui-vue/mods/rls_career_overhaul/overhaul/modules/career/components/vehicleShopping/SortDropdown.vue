@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- Sort control, house style: a neutral button naming the current order ("Price, low to high")
      with a chevron, opening a compact near-black menu: a direction toggle on top (worded per field:
      Oldest / Newest, Nearest / Farthest, Low to high / High to low), then one single-line row per sort

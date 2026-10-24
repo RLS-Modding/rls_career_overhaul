@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- Business computer Vehicles tab, house style. Title + faint hint, a neutral "Vehicle Shopping" for the
      racing team, then the Garage caption with a count and one row per fleet car like VehicleTileRow: big
      photo first, name biggest, class / power / year as faint spec lines, book value in gold with the

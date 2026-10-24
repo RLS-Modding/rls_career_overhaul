@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 export const METERS_PER_MILE = 1609.344
 
 // Dyno data reports metric hp (PS) but some sources send watts. No engine makes 10,000 PS, so a larger

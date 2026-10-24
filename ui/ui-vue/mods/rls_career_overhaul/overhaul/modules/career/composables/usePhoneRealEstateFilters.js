@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Filter and sort state for the real estate list view. The caller owns the garage
 // list and the player balance, and passes them in; this composable only derives the
 // filtered, sorted list from them.

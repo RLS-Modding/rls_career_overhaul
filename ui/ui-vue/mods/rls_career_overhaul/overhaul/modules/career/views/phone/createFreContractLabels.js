@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Read timers through the screen so offer labels retain its sync clock.
 export function createFreContractLabels({ displaySanctionedMinutes, displayRemaining, disciplineLabel, tierLabel }) {
   const CLASS_BRANCHES = ['stock', 'modified', 'super', 'open']

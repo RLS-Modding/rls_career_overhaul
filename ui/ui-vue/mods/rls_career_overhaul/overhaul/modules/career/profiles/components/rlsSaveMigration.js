@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // RLS saves on the Overhaul profile screen, the way RLS showed legacy saves: as normal
 // profile cards, and loading one opens the legacy migration step (LegacyMigrationModal).
 // "Create migrated copy" runs the save importer (overhaul_shell_saveImport), which copies

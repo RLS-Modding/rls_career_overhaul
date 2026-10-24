@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Activity resource: the player camera. Remembers the camera active before the first change and restores it on release.
 -- Uses the calls owners make today: core_camera.setByName(0, name, ...), and resetCamera when none was remembered.
 local M = {}

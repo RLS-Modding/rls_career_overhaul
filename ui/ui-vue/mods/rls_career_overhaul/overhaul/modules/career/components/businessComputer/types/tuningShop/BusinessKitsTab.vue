@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- Business computer: Kits, house style. Title + hint with the storage meter (scaleX fill), then
      vehicle cards (photo first, one orange Create Kit each) and saved kit cards (facts Event / Time /
      Parts, neutral Apply, quiet-danger delete icon). Dialogs use the house .modal look. -->

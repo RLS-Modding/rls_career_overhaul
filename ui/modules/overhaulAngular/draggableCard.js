@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Each overlay owns its layout and clamp policy; this service owns only the active pointer drag.
 export function createDraggableCard($scope, layout, clampLayout, safeApply, options = {}) {
   let drag = null

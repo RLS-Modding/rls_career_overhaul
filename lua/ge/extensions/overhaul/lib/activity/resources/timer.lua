@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Activity resource: delayed callbacks with cancellation. after(seconds, fn, ...) runs fn on a job after `seconds`,
 -- unless cancelAll ran since it was scheduled. Cancellation releases sleeping jobs and callback state.
 local M = {}

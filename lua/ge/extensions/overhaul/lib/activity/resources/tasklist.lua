@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Activity resource: tasklist rows. Forwards owners' payload tables unchanged to the UI events they use today.
 -- clearOwn clears only the rows this activity showed; clearAll keeps the global ClearTasklist for owners that use it.
 local M = {}

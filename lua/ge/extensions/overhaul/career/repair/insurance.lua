@@ -1,6 +1,9 @@
 -- This Source Code Form is subject to the terms of the bCDDL, v. 1.1.
 -- If a copy of the bCDDL was not distributed with this
 -- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
+
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+-- RLS modifications: Copyright (C) RLS Modding
 -- Fork of stock lua/ge/extensions/career/modules/insurance/insurance.lua (BeamNG 0.40).
 -- Insurance facade: owns the shared insurance state and exports the functions of its five parts.
 -- The policy, premium, repair, policy-change and UI parts live in repair/insurance/ and are bound below.

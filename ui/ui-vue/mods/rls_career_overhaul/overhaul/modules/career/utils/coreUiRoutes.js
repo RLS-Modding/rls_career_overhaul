@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Builds the core route tree and overlay list from the generated snapshot of gameplay/overhaul/ui/coreUi.json.
 // Components are lazy runtime components, one per VFS path, so a component that two routes share compiles once.
 import snapshot from "./builtinCoreUi"

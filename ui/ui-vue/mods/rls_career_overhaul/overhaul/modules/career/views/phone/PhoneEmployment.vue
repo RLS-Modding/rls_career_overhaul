@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <template>
   <div class="employment" ref="screenRef" v-bng-ui-nav-scroll v-bng-on-ui-nav:tab_l="() => switchTab('hiring')" v-bng-on-ui-nav:tab_r="() => switchTab('current')">
     <div v-if="!loaded" class="empty"><p>Loading employment…</p></div>

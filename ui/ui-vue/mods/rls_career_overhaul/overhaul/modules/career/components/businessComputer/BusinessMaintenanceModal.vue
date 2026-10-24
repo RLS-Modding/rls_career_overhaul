@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- Business computer: vehicle maintenance popup, house .modal look. Caption + vehicle name, then a
      caption per system over a sheet of lines (name, faint health, colour only when low). Check is quiet,
      service / replace are neutral with the price in gold; the only orange is Buy and Install. -->

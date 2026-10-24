@@ -2,6 +2,9 @@
 // If a copy of the bCDDL was not distributed with this
 // file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
 
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+// RLS modifications: Copyright (C) RLS Modding
+
 // Cargo store map: selection and filters; payload intake and move requests; reactive setup and lifecycle.
 // Popup sessions and component loading belong to the cargoLoadActions interaction owner.
 import { onScopeDispose, computed, ref, watch } from "vue"

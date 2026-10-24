@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <template>
   <section class="rls-house rls-house-card overhaul-career-card" aria-label="Overhaul career overview"
     v-bng-scoped-nav="{ scopeId: 'overhaul-pause-skills', type: 'container' }">

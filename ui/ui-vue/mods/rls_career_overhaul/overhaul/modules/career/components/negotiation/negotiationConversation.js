@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Chat bubbles for NegotiationChatWindow, built from the offer history. Vehicle negotiations get the other
 // party's words from Lua on each of their turns (entry.line = { text, pre, post }, chosen per seller type);
 // hosts that send no lines (real estate) keep the default wording below.

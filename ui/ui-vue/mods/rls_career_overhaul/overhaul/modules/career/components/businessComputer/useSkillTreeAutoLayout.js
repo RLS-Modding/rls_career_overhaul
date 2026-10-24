@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Private skill-tree layout; the screen keeps ownership of viewport and node measurements.
 // Inject the same refs so geometry reads occur at their original points in each layout pass.
 export function useSkillTreeAutoLayout({ canvasRef, NODE_WIDTH, NODE_HEIGHT, NODE_SPACING_X, NODE_SPACING_Y }) {

@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!--
   One phone app notice: why an app can't be used right now (locked behind a skill, unavailable while walking,
   failed to load). Plain fills the app screen; `card` is the dark card used inside an app's own overlay.

@@ -3,6 +3,8 @@
 
 -- Thermal/wear behavior derived from Tyre Wear and Thermals Redux by ZestyMaple98, distributed under AGPLv3.
 -- See licenses/tyre-thermals-AGPL-3.0.txt.
+-- RLS modifications: Copyright (C) RLS Modding.
+-- Modified integration; changes and dates: licenses/tyre-thermals-NOTICE.md.
 
 -- Keep calibrated gravity at 9.81; the exact standard conversion is 9.80665 m/s^2.
 local calibratedGravityMS2 = 9.81

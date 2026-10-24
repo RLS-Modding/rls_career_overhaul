@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- Legacy save migration report and options, shown when a legacy or RLS save is loaded.
      Map, in reading order (this is the shell; the parts are in legacyMigration/):
      1. Props, emits, the result watch, and the values the Result step needs (the Result step is drawn by this template).

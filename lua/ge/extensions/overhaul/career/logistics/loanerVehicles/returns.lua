@@ -2,6 +2,9 @@
 -- If a copy of the bCDDL was not distributed with this
 -- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
 
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+-- RLS modifications: Copyright (C) RLS Modding
+
 -- Loaner returns, fines and employment notices; the update bills rentals and watches walk-away timers.
 -- Read damageFineApplies, chargeDamagedReturn, returnVehicleActual, returnVehicle, returnVehicles in order.
 

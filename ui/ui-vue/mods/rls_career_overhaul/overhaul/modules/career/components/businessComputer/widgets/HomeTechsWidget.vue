@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <template>
   <!-- Technicians: name + a short status pill (busy label in accent-soft, Idle neutral), progress via scaleX. -->
   <div class="rls-house home-widget techs-widget">

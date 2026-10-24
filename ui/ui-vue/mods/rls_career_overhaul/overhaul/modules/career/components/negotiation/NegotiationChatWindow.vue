@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- Shared negotiation chat (vehicle, real estate, phone marketplace). Presentational: the host passes the
      negotiation state and does the Lua calls on send / accept / walk-away / resolve.
      Layout: one compact header (photo as avatar, the other party, what's being sold, patience), the

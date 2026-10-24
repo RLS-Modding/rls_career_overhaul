@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Preinstalled apps (manifest systemApp: true) are always available and never removable; the
  * default dock holds four (manifest defaultDock); default home apps come from manifest

@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Read-only VFS discovery shared by platform registries. Nothing is cached here: every scan returns
 -- fresh data, and extension owners keep whatever they derive in their own instances.
 local M = {}

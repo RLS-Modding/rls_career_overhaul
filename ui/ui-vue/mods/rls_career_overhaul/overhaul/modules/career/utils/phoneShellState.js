@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Retain Lua's opening snapshot before the route mounts. uiMods can import this service through
 // multiple URLs, so all copies in this UI window share the same snapshot and event binding.
 import { replacePhoneSettings } from '../composables/usePhoneSettings'

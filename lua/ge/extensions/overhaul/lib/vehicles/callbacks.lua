@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Vehicle callbacks: the GE side of answers that vehicle Lua sends back, routed through owner-declared rows.
 -- Vehicle Lua reaches GE modules through these rows, so the vehicle side never names a GE extension.
 local lifecycle = require('overhaul/lib/lifecycle/host')

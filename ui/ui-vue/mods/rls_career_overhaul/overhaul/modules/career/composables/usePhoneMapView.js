@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Owns map geometry and pointer interaction for a phone view. The caller keeps
 // selection, map visibility, minimap ownership and DOM-layer mounting together.
 // Read state, geometry, animation, then pointer handlers; stopMapFocusAnimation

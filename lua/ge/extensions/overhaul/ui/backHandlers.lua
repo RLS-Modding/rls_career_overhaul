@@ -2,6 +2,9 @@
 -- If a copy of the bCDDL was not distributed with this
 -- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
 
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+-- RLS modifications: Copyright (C) RLS Modding
+
 -- Back handlers for Overhaul's screens, resolved by the UI router while Overhaul runs.
 -- Fork of stock lua/ge/extensions/ui/router/routeHandlers/careerExitHandlers.lua (BeamNG 0.40).
 local M = {}

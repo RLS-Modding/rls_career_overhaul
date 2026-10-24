@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- Style Guide dropdown (.menu / .menu-btn / .menu-list / .menu-item). Never a native select.
      items: [{ value, label, meta?, disabled? }]  (same shape BngDropdown takes). -->
 <template>

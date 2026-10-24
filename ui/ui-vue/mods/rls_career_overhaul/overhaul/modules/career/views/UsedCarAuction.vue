@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <template>
   <div ref="auctionRoot" class="rls-house auction-overlay-layout ua-overlay-root" :aria-busy="busy"
     :inert="inputSuspended ? true : undefined" :bng-uinav-suppressed="inputSuspended || controllerWalking ? '' : undefined"

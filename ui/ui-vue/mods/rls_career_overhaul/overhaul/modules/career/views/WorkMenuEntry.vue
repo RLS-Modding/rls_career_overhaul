@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- Hand-off screen while the Job Broker opens (cargo overview / my cargo). House card; same calls. -->
 <template>
   <div class="work-entry rls-house" v-bng-scoped-nav="navScope" v-bng-on-ui-nav:back,menu="back">

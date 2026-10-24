@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Owns reversible field bindings without disturbing a later wrapper from another mod.
 -- Policies choose hook refresh and direct replacements; retired guarded wrappers pass through.
 local M = {}

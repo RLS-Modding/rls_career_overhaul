@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Computer presentation is discovered; original dynamic hooks still own built-in choices.
 -- Availability gates inspect built menu data without running unlock code.
 local catalog = require("overhaul/lib/platform/catalog")

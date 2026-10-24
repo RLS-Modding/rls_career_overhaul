@@ -2,6 +2,9 @@
 -- If a copy of the bCDDL was not distributed with this
 -- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
 
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+-- RLS modifications: Copyright (C) RLS Modding
+
 -- The hired-cab facade owns instance state, Overhaul guards and public bindings.
 -- Each factory call creates fresh runtime functions and scratch values.
 -- Part of the Overhaul fork of stock lua/ge/extensions/gameplay/taxi.lua (BeamNG 0.40).

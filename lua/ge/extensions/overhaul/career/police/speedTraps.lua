@@ -1,6 +1,9 @@
 -- This Source Code Form is subject to the terms of the bCDDL, v. 1.1.
 -- If a copy of the bCDDL was not distributed with this
 -- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
+
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+-- RLS modifications: Copyright (C) RLS Modding
 -- Speed traps: fines, reputation penalties and leaderboards for the player's speed-trap passes.
 -- Fork of stock lua/ge/extensions/career/modules/speedTraps.lua (BeamNG 0.40); read the helpers, then the trap handler and hooks.
 local M = {}

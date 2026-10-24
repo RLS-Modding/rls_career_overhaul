@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Money text for the migration modal's parts. Clamps at 0 and uses the viewer's locale grouping.
 // Stays local: utils/units.js formatMoney sets min and max fraction digits together, keeps the sign and
 // shows a dash for NaN and Infinity. This copy sets max digits only, clamps at 0, reads NaN as 0 and prints Infinity.

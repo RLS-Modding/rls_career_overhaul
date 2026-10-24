@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Keep pointer-down state local to one mounted homescreen.
 export function createPhonePageGestures({ isDraggingIcon, pagePointerStart, pageDragDelta, isDraggingPage, currentPageIndex, pages, PAGE_WIDTH, goToPage, reportUiFailure }) {
   let isPointerDown = false

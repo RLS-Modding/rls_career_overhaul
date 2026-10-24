@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- Pull-down sort menu anchored to its Sort button. It grows out of the button's corner on a
      critically damped spring and shrinks back into it the same way; reopening mid-close retargets
      from where it is. Reduced motion turns the movement into a short cross-fade. -->

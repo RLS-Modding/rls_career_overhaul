@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Read only on scroll/resize; no animation loop or smooth motion, including on controller focus.
 export function scrollEdges(grid) {
   return { above: grid.scrollTop > 1, below: grid.scrollHeight - grid.clientHeight - grid.scrollTop > 1 }

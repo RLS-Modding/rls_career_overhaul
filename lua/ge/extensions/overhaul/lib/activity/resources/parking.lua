@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Activity resource: parking spot reservations. A per-activity wrapper over the reservation provider, with one owner token.
 -- Remembers the spots it holds so releaseAll releases exactly those; the token is made on first use, drawing no random number.
 local M = {}

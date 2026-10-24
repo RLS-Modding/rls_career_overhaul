@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- House picker for "which of your vehicles here?" (opened by useZoneVehiclePicker.js).
      Renders state.view from overhaul_career_garage_zoneVehicles: one .row per vehicle with its picture,
      name and labelled values; vehicles that can't be used stay listed with the reason. Back cancels. -->

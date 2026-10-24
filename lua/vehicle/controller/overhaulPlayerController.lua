@@ -2,6 +2,9 @@
 -- If a copy of the bCDDL was not distributed with this
 -- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
 
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+-- RLS modifications: Copyright (C) RLS Modding
+
 -- Owns the walking controller: movement input, fixed-step forces and animation state.
 -- Read state/tuning, movement helpers, simulation updates, input actions, then the exported controller API.
 -- player/controllerSeam.lua adapts this controller for the vehicle extension.

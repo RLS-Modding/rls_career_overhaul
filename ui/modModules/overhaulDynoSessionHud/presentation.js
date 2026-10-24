@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { reportFailure } from '../../modules/overhaulAngular/reportFailure.js'
 const DEFAULT_LAYOUT = { x: 18, y: 18 }
 const GRAPH_VIEW = { w: 720, h: 320 }

@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- Career-only colour picker for PaintPicker's `house` mode. Same contract as the game's BngColorPicker in its
      full_luminosity view (the one PaintPicker used): reads hue / saturation / luminosity from the v-model (the
      picker's Paint), writes them back and emits `change`. The look follows the house; the colours are content.

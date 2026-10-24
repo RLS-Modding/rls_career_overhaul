@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { formatMoney } from "../../../../utils/units.js"
 
 // Pass the host's locale explicitly so these cards keep their grouping if a caller later supplies game units.

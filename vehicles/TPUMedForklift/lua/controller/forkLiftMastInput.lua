@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Bridges tilt sources into forklift hydros (tilt_input).
 -- Dedicated mast actions write mast_tilt_input; BeamNG shared tiltUp/tiltDown write
 -- upfit_tilt. Prefer the dedicated mast command so an idle upfit_tilt of 0 cannot

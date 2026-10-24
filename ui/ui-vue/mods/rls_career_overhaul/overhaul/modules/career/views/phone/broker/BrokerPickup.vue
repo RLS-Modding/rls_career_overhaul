@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <template>
   <span data-broker-scope class="pickup-distance" :class="{ here: row.atPickup }" :title="label" :aria-label="label" role="img"><BngIcon data-broker-scope :type="icons.mapPoint" aria-hidden="true" /><span data-broker-scope v-if="!row.atPickup" aria-hidden="true">{{ dist(row.pickupDistance) }}</span><span data-broker-scope v-else-if="spelled" aria-hidden="true">You're here</span></span>
 </template>

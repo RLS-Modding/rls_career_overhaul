@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Computed values and bound helpers for the Loading Work screen.
 // The caller passes only the refs these values read, so nothing here can write the rest of the view's state.
 import { computed } from 'vue'

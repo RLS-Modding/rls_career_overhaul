@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Formatting and type tables for the Freeroam Events screen and its parts. Every formatter returns exactly what the
 // screen has always shown, including its edge cases (see the comments on each function).
 import { formatMoney } from '../../utils/units.js'

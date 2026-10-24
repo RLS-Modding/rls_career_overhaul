@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Snapshot intake owns anchors; components derive time without rewriting shared state.
 export function secondsUntil(expiresAt, nowSeconds) {
   return Number.isFinite(expiresAt) ? Math.max(0, Math.ceil(expiresAt - nowSeconds)) : 0

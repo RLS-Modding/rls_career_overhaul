@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // A visible panel can release navigation while retaining just its Back action.
 // Decide a walk-mode tap/hold on release so a hold never opens a dialog first.
 // onHoldChange reports when a walk-mode press starts or ends, so the panel can

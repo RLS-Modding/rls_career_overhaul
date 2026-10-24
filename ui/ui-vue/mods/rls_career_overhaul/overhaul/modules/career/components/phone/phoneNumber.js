@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Keep the original input and its mouse/keyboard handlers. Consume stock menu
 // events locally while editing, so B exits the field before its containing form.
 const editors = new WeakMap()

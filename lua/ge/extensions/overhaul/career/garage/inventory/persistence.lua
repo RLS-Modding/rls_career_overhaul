@@ -1,3 +1,10 @@
+-- This Source Code Form is subject to the terms of the bCDDL, v. 1.1.
+-- If a copy of the bCDDL was not distributed with this
+-- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
+
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+-- RLS modifications: Copyright (C) RLS Modding
+
 -- Inventory persistence owns condition snapshots, thumbnail work and save writes.
 -- Read in order: thumbnails, listings, condition batches, save tasks, vehicle files and inventory capture.
 local persistence = {}

@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- Pause menu > History > Financial History in the house style. One compact row of wallet totals,
      one row of controls (Group by segments, a Sort menu that includes the order), then either every
      transaction (None) or a deck of group cards (vehicle, work type, category, month): each card

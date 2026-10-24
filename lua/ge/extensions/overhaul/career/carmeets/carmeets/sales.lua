@@ -1,3 +1,10 @@
+-- This Source Code Form is subject to the terms of the bCDDL, v. 1.1.
+-- If a copy of the bCDDL was not distributed with this
+-- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
+
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+-- RLS modifications: Copyright (C) RLS Modding
+
 -- Car meet sales helpers: meet vehicle inventory lookup, player position, invite cap and meet sale offers.
 -- Map: per-load state, vehicle lookups, paint and shop data, sale offers and returned API.
 

@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Right-stick scroll acceleration for every UI scroll area.
 //
 // The game's crossfire (bundled, cannot be patched from the mod) scrolls the area under focus at a

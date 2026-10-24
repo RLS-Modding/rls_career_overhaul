@@ -2,6 +2,9 @@
 -- If a copy of the bCDDL was not distributed with this
 -- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
 
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+-- RLS modifications: Copyright (C) RLS Modding
+
 -- Cargo-screen materials: loads material contracts from storages, builds material storage cards, runs the pickup screen and stages material and cargo moves. materialContractManager owns contracts and credit.
 -- Read transientSlotsForStorage, loadTarget, addLoadTargetsForContainer, formatLoadTargets in order.
 

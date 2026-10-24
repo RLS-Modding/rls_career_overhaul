@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Rounding and validation for challenge settings: economy multipliers, loan amounts and starting capital.
 -- Each setting snaps to its step and clamps to its range; a non-number falls back to its default.
 local M = {}

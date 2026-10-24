@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 /**
  * Dormant until F9. Do not poll or mount anything at UI boot.
  * Lua overhaul_dev_testerMenu.toggle() emits RlsTesterMenu; we compile the

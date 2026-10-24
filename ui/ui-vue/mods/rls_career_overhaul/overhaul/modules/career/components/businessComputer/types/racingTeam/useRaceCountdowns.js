@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Private race countdowns; retain wall-clock precedence and each simulation/snapshot fallback.
 // The screen supplies the shared subscribed clock.
 export function useRaceCountdowns({ racingTeamStore, scheduleUiSecondTick }) {

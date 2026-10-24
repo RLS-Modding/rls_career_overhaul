@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Shared by EngineShopSupplyPickup.vue and PassiveBusinessSupplyPickup.vue.
 // Keep genuine supplier pictures and switch missing or failed images to the short name card.
 // Picture for a facility hero banner, or '' when the facility has no picture of its own.

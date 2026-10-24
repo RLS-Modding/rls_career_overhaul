@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- RLS Garage Listings computer, house style. Same data, Lua calls and flows as before; layout:
      a portfolio summary, then one photo-first card per property (name, value in gold, capacity and
      vehicles as plain-glyph lines) with its actions. Orange is left to the open listing form's

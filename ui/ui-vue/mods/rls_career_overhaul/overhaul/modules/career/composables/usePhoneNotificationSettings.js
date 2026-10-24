@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Notification settings map: storage and display flags; channel controls and summaries;
 // Do Not Disturb, lock/banner controls and sliders; public composable and event lifecycle.
 import { computed, ref, onMounted, onUnmounted, onActivated } from 'vue'

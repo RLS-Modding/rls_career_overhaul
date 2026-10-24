@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Angular content keeps its owning controller; the stock popup owns navigation.
 angular.module('beamng.stuff').directive('overhaulPopup', ['$compile', function($compile) {
   return {

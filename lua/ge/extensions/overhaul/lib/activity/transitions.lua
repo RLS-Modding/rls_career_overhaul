@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Activity transition names: the lifecycle transitions an activity definition may name a handler for, and the hooks that announce them.
 -- The names match the lifecycle owner descriptors in tests/fixtures/lifecycle. Data only: nothing here dispatches.
 local M = {}

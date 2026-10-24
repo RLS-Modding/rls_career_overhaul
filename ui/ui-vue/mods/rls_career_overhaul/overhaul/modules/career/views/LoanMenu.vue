@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <template>
   <ComputerWrapper :path="[computerStore.computerData.facilityName]" title="Loans" back @back="close">
     <!-- Controller: the screen's own scope is active on entry so the d-pad works at once (the

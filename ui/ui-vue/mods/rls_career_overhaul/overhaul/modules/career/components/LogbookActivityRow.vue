@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <template>
   <button type="button" class="career-logbook-item activity-row" :class="{ selected }" :aria-expanded="selected" bng-nav-item
     v-bng-sound-class="'bng_click_generic_small'">

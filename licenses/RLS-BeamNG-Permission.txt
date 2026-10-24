@@ -1,0 +1,30 @@
+Additional permission under GNU AGPL version 3, section 7
+
+"RLS Covered Material" means the material licensed by RLS Modding under GNU
+AGPL version 3 only and expressly identified as carrying this permission in
+its source notice and in licenses/RLS-AGPL-SCOPE.md. This permission is granted
+only under copyright that RLS Modding owns or is authorized to license.
+
+"BeamNG Components" means the BeamNG.drive game engine and its runtime
+facilities, and BeamNG source components licensed under bCDDL 1.1, including
+modified versions of those bCDDL components.
+
+RLS Modding grants you additional permission to link or combine the RLS
+Covered Material, including modified versions, with the BeamNG Components,
+and to use and convey the resulting combination. Solely because of that
+combination, you are not required by RLS Modding's AGPL grant to license the
+BeamNG Components under the AGPL or to provide the proprietary BeamNG
+engine's source code.
+
+You must continue to comply with the AGPL for the RLS Covered Material,
+including its applicable source, notice, and remote-network source-access
+obligations. Source for bCDDL components you convey remains subject to bCDDL,
+including its source-availability and notice requirements. Each BeamNG
+Component remains subject to its own applicable terms; this permission
+supplies no right to copy, distribute, or relicense it or any other
+third-party material.
+
+This permission does not waive another copyright holder's license conditions.
+As provided by AGPL section 7, you may remove this additional permission from
+a copy. Authors of later modifications may extend the permission to material
+they have authority to license, but are not required to do so.

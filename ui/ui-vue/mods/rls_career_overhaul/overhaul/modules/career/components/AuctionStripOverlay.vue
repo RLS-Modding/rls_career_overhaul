@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <template>
   <div v-if="visible" ref="root" @mousedown="!interactive && $event.preventDefault()" v-bng-scoped-nav="navScope" :bng-no-child-nav="!interactive ? 'true' : null">
     <AuctionStrip :lot="state.currentLot" :state="state" :music-state="musicState" :busy="busy"

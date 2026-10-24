@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- UI state events: a periodic refresh is sent only when its payload differs from the last one sent on that event.
 -- Every push of an event must go through send or refresh so the remembered payload is the one the UI has.
 local ffi = require('ffi')

@@ -1,6 +1,9 @@
 -- This Source Code Form is subject to the terms of the bCDDL, v. 1.1.
 -- If a copy of the bCDDL was not distributed with this
 -- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
+
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+-- RLS modifications: Copyright (C) RLS Modding
 -- Fork of stock lua/ge/extensions/career/modules/milestones/generalMilestones/speedTraps.lua (BeamNG 0.40).
 -- Speed-trap milestones: the top speed through any trap, the share of traps triggered and the total trigger count.
 -- Keeps the stock layout on purpose so it still diffs against stock.

@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- Detail page for one shop listing, opened from a VehicleCard. Back (button, controller Back via the shop's
      close(), or Escape) returns to the list where it was. Same actions as the card (useShopVehicle). -->
 <template>

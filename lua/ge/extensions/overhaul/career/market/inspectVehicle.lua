@@ -1,6 +1,9 @@
 -- This Source Code Form is subject to the terms of the bCDDL, v. 1.1.
 -- If a copy of the bCDDL was not distributed with this
 -- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
+
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+-- RLS modifications: Copyright (C) RLS Modding
 -- Fork of stock lua/ge/extensions/career/modules/inspectVehicle.lua (BeamNG 0.40).
 -- Owns the inspection and test-drive lifetime of one listed car, including its route and maintenance previews.
 -- Read config/state, tethers and travel, then inspection steps, lifecycle and the public hooks.

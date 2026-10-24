@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <template>
   <ComputerWrapper :title="definition?.label || ''" close @back="back">
     <component v-if="component" :is="component" :computer-function="definition" :computer-id="context.computerId" :inventory-id="context.inventoryId" :call-lua="callModLua" />

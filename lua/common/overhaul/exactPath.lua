@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- The GE progress tracker and VE driver share the same origin-space trajectory.
 -- Only terminal points get the vehicle's front-reference offset in the driver.
 local M = {}

@@ -2,6 +2,9 @@
 -- If a copy of the bCDDL was not distributed with this
 -- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
 
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+-- RLS modifications: Copyright (C) RLS Modding
+
 -- Marketplace negotiation: one session owns offers, patience, UI routing and sale completion.
 -- Notable: also owns listing travel (route preview, inspection taxi hail); inspection owns the private listing spawn.
 -- What the other party says comes from lib/market/negotiationLines; this file only says who is talking (the source).

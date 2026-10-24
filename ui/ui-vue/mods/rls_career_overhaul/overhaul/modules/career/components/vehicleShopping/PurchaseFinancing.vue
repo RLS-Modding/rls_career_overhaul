@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <template>
   <section ref="root" class="purchase-financing" v-bng-on-ui-nav:back="onBack" v-bng-ui-nav-scroll>
     <h3>Finance this purchase</h3>

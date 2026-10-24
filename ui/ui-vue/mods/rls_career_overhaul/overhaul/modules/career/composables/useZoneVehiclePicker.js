@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Opens the house vehicle picker when overhaul_career_garage_zoneVehicles asks for one.
 // Lua owns the list and re-pushes it while the picker is open; this file only shows the latest view,
 // sends the choice back and closes when Lua says so. A late reply for an old ticket is ignored.

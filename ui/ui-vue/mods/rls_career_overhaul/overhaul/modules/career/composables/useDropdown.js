@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // A dropdown owns opening and placement timing; callers keep selection, focus and dismissal policies.
 // Listener lifetimes stay with the caller so nested menus and controller scopes keep their ordering.
 import { ref, nextTick } from 'vue'

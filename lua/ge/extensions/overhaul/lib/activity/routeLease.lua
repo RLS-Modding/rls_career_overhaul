@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Ground-marker route lease: set (one position or a waypoint list), isCurrent and clear
 -- act only on the path this lease set, so another owner's route
 -- is never cleared by mistake. `owner` is an optional label (the activity id when created through the activity host).

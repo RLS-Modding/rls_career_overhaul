@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Publication belongs to the current UI window, including when uiMods uses two import URLs.
 const host = globalThis.window || globalThis
 const key = Symbol.for('overhaul.luaScopeDeclarations')

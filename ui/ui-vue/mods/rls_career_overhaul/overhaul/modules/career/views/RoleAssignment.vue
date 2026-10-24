@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- Role certification prompt (shown when you drive into an assignment trigger). House card: what it
      takes, Certify (asks to confirm) and Cancel. Controller: the card is its own nav scope, active once
      the data is in, focus on Certify (Cancel when you can't afford it); B cancels. -->

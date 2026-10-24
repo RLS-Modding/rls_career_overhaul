@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import { NOTIFICATION_CHANNEL_APP_IDS } from './phoneNotificationRegistry'
 import { getNotificationSourceAppIds, onPhoneAppsChanged } from './phoneAppCatalog'
 import { acquireScope } from './luaScopes'

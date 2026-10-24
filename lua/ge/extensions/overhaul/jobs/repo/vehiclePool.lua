@@ -1,3 +1,10 @@
+-- This Source Code Form is subject to the terms of the bCDDL, v. 1.1.
+-- If a copy of the bCDDL was not distributed with this
+-- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
+
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+-- RLS modifications: Copyright (C) RLS Modding
+
 -- Filters repo vehicles by dealership and skill unlocks, then selects weighted candidates.
 -- Filter caches belong to this factory instance so extension reloads get fresh state.
 return function(REPO_FILTERS_FILE, REPO_SKILL_ATTRIBUTE_KEY, REPO_SKILL_MAX_LEVEL, REPO_SKILL_PATH_IDS)

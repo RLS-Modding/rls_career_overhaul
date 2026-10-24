@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Map: Lua output/library commands; transport press feedback; artwork sizing and flyout placement;
 // playlist and volume inputs; audio-state polling and transport commands; instance lifecycle; directive registration.
 import { createSafeApply } from './safeApply.js'

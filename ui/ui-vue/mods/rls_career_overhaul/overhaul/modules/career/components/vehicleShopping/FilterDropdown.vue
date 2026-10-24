@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- Filters control, house style: a neutral Filters button (glyph + count pill) opening a compact
      near-black panel as wide as the toolbar. Two rows of filter fields (Price, Year, Mileage, Power,
      Weight / Body, Make, Drivetrain, Transmission, Fuel): faint caption over the current choice

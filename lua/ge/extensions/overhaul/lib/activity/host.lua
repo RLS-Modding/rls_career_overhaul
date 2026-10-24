@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Activity host: an instance keeps the activity definitions registered with it and delegates to the owners' existing
 -- functions. It never decides who may start, settles, saves or releases anything, and dispatches no lifecycle hook.
 

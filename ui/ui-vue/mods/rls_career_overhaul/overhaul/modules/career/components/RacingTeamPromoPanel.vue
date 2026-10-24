@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- League promo / milestone panel for the racing team, house style. Image first, then the title
      (biggest), body text, the registration fee in gold and the slotted actions on the right.
      variant "modal": near-black house modal card, shown inside .rt-promo-overlay (teleported to body

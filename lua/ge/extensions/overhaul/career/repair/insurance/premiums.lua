@@ -2,6 +2,9 @@
 -- If a copy of the bCDDL was not distributed with this
 -- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
 
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+-- RLS modifications: Copyright (C) RLS Modding
+
 -- Distance, renewals, driver score and gestures (onUpdate); premiums, discounts and policy quotes.
 -- Part of the Overhaul fork of stock lua/ge/extensions/career/modules/insurance/insurance.lua.
 local partFactory = {}

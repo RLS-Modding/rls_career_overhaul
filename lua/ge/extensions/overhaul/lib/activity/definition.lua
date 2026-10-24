@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Activity definitions: validated data that describes an existing owner (job, event, session, business) to the activity host.
 -- Every callable field points at the owner's own code; the host only delegates and adds no policy. Reads no game global.
 local transitions = require('overhaul/lib/activity/transitions')

@@ -1,3 +1,10 @@
+-- This Source Code Form is subject to the terms of the bCDDL, v. 1.1.
+-- If a copy of the bCDDL was not distributed with this
+-- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
+
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+-- RLS modifications: Copyright (C) RLS Modding
+
 -- Owned-vehicle spawning, spawn-readiness tracking, entering vehicles and the walking fallback.
 -- Each attempt keeps its engine-spawn and post-spawn failure boundaries separate; the tracker only observes them.
 -- damageRestore.lua owns placement holds and restoration replies; callers finish movement through completeVehiclePlacement.

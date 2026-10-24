@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Private race-action diagnostics retain each action's reason strings and fallback wording.
 // Keep separate policies for scheduling, grid entry and cancellation.
 export const isOutOfSpecErr = (err) => {

@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 import '../overhaulFreeroamRaceHud/gameplayPopup.js'
 // The entry owns the how-to dialog, the graph model cache, click dispatch and the listener lifecycle, and wires the
 // layout, telemetry and binding helpers in scope-initialization order, before the stock loader mounts the overlay.

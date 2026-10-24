@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // HUD panel placement: the layout this controller holds, pointer drag and resize, and the game-blur notify that follows
 // each visible move. The document listeners are added here and removed by dispose.
 function createHudLayout($scope, angularRootScope) {

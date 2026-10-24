@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <template>
   <div ref="root" class="overhaul-popup" :class="{ 'rls-house': !preserveLayout }" role="dialog" aria-modal="true"
     v-bng-scoped-nav="scope" v-bng-on-ui-nav:back="cancel">

@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- Phone Wallet: balance and recent activity, plus the same money grouped by vehicle, by work type
      and by category. The Lua read model groups, sorts and totals; this screen picks the view and
      draws it. Reading order: tabs and sorts (data), loading, motion, then the template's pieces. -->

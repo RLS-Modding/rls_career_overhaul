@@ -1,3 +1,7 @@
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+-- Copyright (C) RLS Modding
+-- SPDX-License-Identifier: AGPL-3.0-only
+
 -- Legacy race_data.json remains authoritative. Add-on fragments add races by id.
 -- No cache: race owners retain their existing per-instance caching and mutation semantics.
 local M = {}

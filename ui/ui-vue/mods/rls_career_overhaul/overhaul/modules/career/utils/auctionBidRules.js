@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Shared by the expanded auction and its mini card. Lua validates again on bid.
 export const auctionBidIncrement = (lot, amount = 250) => Math.max(Number(lot?.minStep) || 250, amount)
 // The bid sizes both screens offer; a larger minimum step folds smaller ones together.

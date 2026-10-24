@@ -1,3 +1,4 @@
+-- Tire integration provenance and notices: licenses/tyre-thermals-NOTICE.md.
 -- Pure tire-model helpers shared by GE, vehicle Lua, and standalone tests.
 -- Classification and surface tuning stay shared so both VMs calculate the same wear.
 local M = {}

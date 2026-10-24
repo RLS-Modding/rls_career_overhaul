@@ -1,3 +1,10 @@
+-- This Source Code Form is subject to the terms of the bCDDL, v. 1.1.
+-- If a copy of the bCDDL was not distributed with this
+-- file, You can obtain one at http://beamng.com/bCDDL-1.1.txt
+
+-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
+-- RLS modifications: Copyright (C) RLS Modding
+
 -- Counts stock metric deltas once into the career slot while stock keeps the cloud statistics.
 -- Owns career activation and save readiness; the stock-derived metric core lives beside this facade.
 -- Fork of stock lua/ge/extensions/gameplay/statistic.lua (BeamNG 0.40).

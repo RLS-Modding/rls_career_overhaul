@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- Car meet / bazaar offers on the car you brought: one centred near-black card. Header is the car
      (photo first, name, mileage, est. market and asking price), then the asking-price editor, then one
      row per buyer offer with neutral Accept / Negotiate and a quiet Decline. Negotiate hands off to the

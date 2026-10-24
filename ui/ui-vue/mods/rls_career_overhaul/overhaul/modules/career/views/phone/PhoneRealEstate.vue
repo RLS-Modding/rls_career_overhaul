@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!--
 Map of PhoneRealEstate.vue. This view owns lifecycle, the tab state and the minimap claim.
 - Script, in reading order: refs and tab state; filters (usePhoneRealEstateFilters); owned

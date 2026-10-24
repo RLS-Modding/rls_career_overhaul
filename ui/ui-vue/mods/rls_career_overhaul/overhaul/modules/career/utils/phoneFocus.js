@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // The phone owns target eligibility; stock crossfire still owns movement and OK.
 // Inert is not a crossfire boundary, so mirror it to the stock opt-out attributes.
 const CONTROLS = 'button, input:not([type="hidden"]), textarea, select, a[href], [role="button"], [role="tab"], [role="checkbox"], [role="radio"], [role="switch"], [role="slider"]'

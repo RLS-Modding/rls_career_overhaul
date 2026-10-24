@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <template>
   <div class="tab-panel jobs-panel" v-bng-on-ui-nav:tab_l="event => switchSubTab(event)" v-bng-on-ui-nav:tab_r="event => switchSubTab(event)">
     <div class="segment-control">

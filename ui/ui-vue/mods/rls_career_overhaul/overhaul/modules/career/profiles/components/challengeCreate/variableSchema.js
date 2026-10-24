@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Projects a win condition's variable definitions into the rows the form renders, sorted by their `order`.
 // Types the form has no input for are dropped here, so the templates never see them.
 export function projectVariables(defs) {

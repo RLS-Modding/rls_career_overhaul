@@ -1,3 +1,7 @@
+// RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+// Copyright (C) RLS Modding
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // Owned-property listings for the real estate phone view: the owned garage list,
 // asking prices and guidance per garage, and the offers sub-view. The view passes in
 // the Lua bridge and the confirmation prompt; it keeps the tab state that decides

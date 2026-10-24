@@ -1,3 +1,7 @@
+<!-- RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+     Copyright (C) RLS Modding
+     SPDX-License-Identifier: AGPL-3.0-only -->
+
 <!-- House lines for wallet transactions in the pause Financial History: what it was and the
      amount, then what it was for and when. Choosing a line opens its details (the full label and
      context); a small chevron shows which way it goes. Inside a group (groupBy) lines leave out
