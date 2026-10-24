@@ -81,7 +81,7 @@ For suspected security vulnerabilities, use the [private reporting policy](SECUR
 
 ## Credits
 
-Created and maintained by **RLS Modding**, with help from contributors, testers and the community. See the [contributors](https://github.com/RLS-Modding/rls_career_overhaul/graphs/contributors) and bundled `licenses` for included third-party material.
+Created and maintained by **RLS Modding**, with help from contributors, testers and the community. See the [v2.8.0 credits](CREDITS.md), [contributors](https://github.com/RLS-Modding/rls_career_overhaul/graphs/contributors) and bundled `licenses` for included third-party material.
 
 RLS Career Overhaul is a community mod and is not affiliated with BeamNG GmbH.
 
