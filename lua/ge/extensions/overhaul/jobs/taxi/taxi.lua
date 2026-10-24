@@ -1041,7 +1041,7 @@ local function calculateSpeedFactor()
   if not currentFare then
     return 0
   end
-  local elapsedTime = os.difftime(os.time(), currentFare.startTime)
+  local elapsedTime = currentFare.rideElapsed or 0
   local actualSpeed = (currentFare.paidDistance or currentFare.totalDistance or 0) / math.max(1, elapsedTime)
 
   return (actualSpeed - suggestedSpeed) / suggestedSpeed
@@ -1064,6 +1064,7 @@ shared.startRide = function(fare)
   end
 
   currentFare.startTime = os.time()
+  currentFare.rideElapsed = 0
   state = "pickup"
   M.rideData = {}
 end
@@ -1071,7 +1072,7 @@ end
 local function prepareRideCompletion()
   overhaul_vehicles_passengerOccupants.clear('taxi')
 
-  local elapsedTime = os.difftime(os.time(), currentFare.startTime)
+  local elapsedTime = currentFare.rideElapsed or 0
   local speedFactor = calculateSpeedFactor()
 
   local passengerType = getPassengerType(currentFare.passengerType)
@@ -1290,6 +1291,7 @@ local function updateRidePickup()
       overhaul_vehicles_passengerOccupants.setPassengers('taxi', vehicle:getID(), currentFare.passengers)
       core_groundMarkers.setPath(currentFare.destination.pos, {clearPathOnReachingTarget = true})
       currentFare.startTime = os.time()
+      currentFare.rideElapsed = 0
       -- Only the passenger leg is used for speed, tips and skill XP.
       currentFare.paidDistance = currentFare.paidDistance or calculateDrivingDistance(currentFare.pickup.pos, currentFare.destination.pos)
       currentFare.totalDistance = currentFare.paidDistance
@@ -1348,6 +1350,11 @@ local function updateFareOffers()
 end
 
 local function update(_, dtSimSeconds)
+  -- Count every simulation frame of the passenger leg, including sub-second fares.
+  -- A zero duration is valid; falling back to wall time would count paused time.
+  if currentFare and state == "dropoff" then
+    currentFare.rideElapsed = (currentFare.rideElapsed or 0) + dtSimSeconds
+  end
   taxiSkillCacheTick = taxiSkillCacheTick + 1
   timer = timer + dtSimSeconds
   if timer < updateTimer then

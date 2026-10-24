@@ -112,14 +112,18 @@ local function register(taxi)
       return string.format("%s (%d passengers) - Scenic route", passengerType.name, fare.passengers)
     end,
     getPaymentLabel = function(fare, speedFactor, passengerType)
-      local actualSpeed = (tonumber(fare.paidDistance or fare.totalDistance) or 0) / math.max(1, (os.difftime(os.time(), fare.startTime)))
+      local actualSpeed = (tonumber(fare.paidDistance or fare.totalDistance) or 0) / math.max(1, fare.rideElapsed or 0)
       local suggestedSpeed = 18
 
       local label
-      if actualSpeed <= suggestedSpeed * 0.6 then
+      if actualSpeed < 1.5 then
+        label = "No Pace Bonus"
+      elseif actualSpeed <= suggestedSpeed * 0.6 then
         label = "Scenic Bonus"
-      elseif actualSpeed <= suggestedSpeed then
+      elseif actualSpeed <= suggestedSpeed * 0.8 then
         label = "Perfect Pace"
+      elseif actualSpeed <= suggestedSpeed then
+        label = "Good Pace"
       else
         label = "Too Fast"
       end
