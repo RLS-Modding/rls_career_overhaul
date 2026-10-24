@@ -55,9 +55,9 @@ If your save is missing, check that you opened the same BeamNG user folder/profi
 
 The final page of the update intro lets you choose a phone shortcut. Existing custom bindings stay saved. You can also manage the shortcut through the phone’s **Controls** app; there is no default phone shortcut for a fresh setup. If you skipped setup or cannot open the phone, use **Options → Controls**, search for **Toggle Phone**, and assign a key or controller button there.
 
-## Maps and companions
+## Maps
 
-RLS West Coast is included. Other maps need their map files and the matching career companion where one is provided. A map being available in freeroam does not automatically give it career locations, jobs or events. Companion features vary by map; use versions compatible with your Overhaul release.
+RLS West Coast is included. Additional career maps are installed as map mods, with their career locations and data bundled in the same download. Use a map version compatible with your Overhaul release. Available jobs, facilities and events vary by map.
 
 ## Help and bug reports
 
@@ -65,7 +65,7 @@ Start with the [troubleshooting guide](https://github.com/RLS-Modding/rls_career
 
 Include:
 
-- BeamNG and Overhaul versions, map and companion versions.
+- BeamNG and Overhaul versions, map versions.
 - Whether the save is new or migrated.
 - Steps to reproduce, what you expected and what happened.
 - A screenshot or short video, and `beamng.log` from the affected session.
