@@ -1,0 +1,76 @@
+name: Bug report
+description: Report something that is not working in RLS Career Overhaul.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Search existing issues first. If the same problem is already reported, add your details there.
+        Please use exact version numbers rather than "latest". Keep a backup of any affected save.
+        Migration supports older RLS careers; stock-only careers cannot currently be imported.
+  - type: input
+    id: versions
+    attributes:
+      label: BeamNG and Overhaul versions
+      description: Include the exact version of each, including any hotfix or test build.
+      placeholder: "BeamNG: ... / Overhaul: ..."
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Windows
+        - Linux native
+        - Linux with Proton
+        - Other (describe in the report)
+    validations:
+      required: true
+  - type: input
+    id: map
+    attributes:
+      label: Map and version
+      description: Name the map and include its version if installed separately. For a menu or startup problem, you can say "Not in a map".
+      placeholder: "RLS West Coast, or additional map name + version"
+    validations:
+      required: true
+  - type: dropdown
+    id: save
+    attributes:
+      label: Career save
+      options:
+        - New career on this version
+        - Existing career updated to this version
+        - Created a migrated copy of an older RLS career
+        - Trying to import a stock-only career
+        - Not in career / not sure
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Include the activity, location and vehicle/configuration if they matter. For input problems, name the input device and action.
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Expected and actual result
+      description: What should have happened, and what happened instead? Include the exact error text if available.
+    validations:
+      required: true
+  - type: textarea
+    id: other_mods
+    attributes:
+      label: Other mods and checks already tried
+      description: List relevant mods and any comparisons you have already made. Testing with only Overhaul and required map files helps, but is not required to submit this report.
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshots, video or session log
+      description: Attach useful files here. A beamng.log from the affected session helps with errors and loading failures. Check for personal information before uploading; do not include passwords or tokens.

@@ -1,0 +1,25 @@
+name: Feature request
+description: Suggest an improvement or something new to do in Overhaul.
+body:
+  - type: markdown
+    attributes:
+      value: Search existing requests first. Describe the experience you want; you do not need to design the code.
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like to do?
+      description: Describe the feature or improvement.
+    validations:
+      required: true
+  - type: textarea
+    id: benefit
+    attributes:
+      label: How would it help?
+      description: Give an example of when you would use it, or what feels missing today.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Examples or extra details
+      description: Optional screenshots, related ideas, maps or activities. Mention any workaround you use now.

@@ -73,6 +73,10 @@ Include:
 
 Keep save backups when troubleshooting. Check logs for personal paths or other information you do not want to share.
 
+## Contributing
+
+Have a fix, translation or idea? See the [contribution guide](CONTRIBUTING.md) for reports, PRs and how we carry accepted changes into development and public releases. Contributors only need to open a PR here; maintainers handle the matching dev work.
+
 ## Credits
 
 Created and maintained by **RLS Modding**, with help from contributors, testers and the community. See the [contributors](https://github.com/RLS-Modding/rls_career_overhaul/graphs/contributors) and bundled `licenses` for included third-party material.
