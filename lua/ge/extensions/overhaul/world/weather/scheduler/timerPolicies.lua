@@ -158,12 +158,12 @@ M.periodic = {
   },
 }
 
--- Stamps are deadlines or durations on wall or process clocks.
+-- Stamps are deadlines or durations on wall, process, or simulation clocks.
 M.stamps = {
-  {id = "taxi.fareTiming", file = OVERHAUL_DIR .. "jobs/taxi/taxi.lua", clock = "wall (os.time, whole seconds)",
-    effect = "speed factor and tip from os.difftime(os.time(), currentFare.startTime)",
-    pause = "pause and menu time count toward ride time",
-    anchors = {"local elapsedTime = os.difftime(os.time(), currentFare.startTime)", "currentFare.startTime = os.time()"}},
+  {id = "taxi.fareTiming", file = OVERHAUL_DIR .. "jobs/taxi/taxi.lua", clock = "simulation (dtSimSeconds)",
+    effect = "speed factor and tip from accumulated passenger-leg rideElapsed",
+    pause = "paused frames add no ride time",
+    anchors = {"local elapsedTime = currentFare.rideElapsed or 0", "currentFare.rideElapsed = 0", "currentFare.rideElapsed = (currentFare.rideElapsed or 0) + dtSimSeconds"}},
   {id = "repo.reward", file = OVERHAUL_DIR .. "jobs/repo.lua", clock = "wall (os.time)",
     effect = "time multiplier in calculateReward, at least 1 s",
     pause = "pause time counts toward elapsed seconds",
