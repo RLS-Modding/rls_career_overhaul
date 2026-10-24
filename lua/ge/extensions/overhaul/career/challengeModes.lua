@@ -276,6 +276,13 @@ local function isChallengeActive()
   return activeChallenge ~= nil
 end
 
+-- The flag is saved with the active challenge, so a reload never gifts the starter vehicle twice.
+local function markStarterVehicleGranted()
+  if not activeChallenge then return false end
+  activeChallenge.starterVehicleGranted = true
+  return true
+end
+
 local function checkWinCondition()
   if not activeChallenge then
     return false
@@ -364,6 +371,7 @@ M.getWinConditions = parts.catalog.getWinConditions
 M.startChallenge = startChallenge
 M.getActiveChallenge = getActiveChallenge
 M.isChallengeActive = isChallengeActive
+M.markStarterVehicleGranted = markStarterVehicleGranted
 M.discoverChallenges = parts.catalog.discoverChallenges
 M.getChallengeEditorData = parts.editor.getChallengeEditorData
 M.getChallengeDropdownData = parts.editor.getChallengeDropdownData
