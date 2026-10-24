@@ -7,7 +7,7 @@ import { returnFocusToOpener } from '../../../composables/useScreenEntryFocus'
 
 // State of the multiselect modal: which variable is open, and the button that opened it, so focus can return
 // there. Values and search queries stay in the parent's refs. This module reads and writes them by variable id.
-export function useMultiselectVariables({ activeVariables, formVariables, multiselectQueries, overlayRef }) {
+export function useMultiselectVariables({ activeVariables, formVariables, multiselectQueries, overlayRef, formMap }) {
   const multiselectModalOpen = ref(false)
   const currentMultiselectVariableId = ref('')
   let multiselectOpener = null
@@ -24,7 +24,11 @@ export function useMultiselectVariables({ activeVariables, formVariables, multis
     if (!variable || !variable.options) return []
 
     // Options is now a direct table/array
-    return Array.isArray(variable.options) ? variable.options : []
+    const options = Array.isArray(variable.options) ? variable.options : []
+    // Map-bound options (garages) only resolve on the challenge's map, so a chosen map hides the others.
+    const mapId = formMap && formMap.value
+    if (!mapId) return options
+    return options.filter(item => !item.mapId || item.mapId === mapId)
   }
 
   function getFilteredMultiselectOptions(variableId) {

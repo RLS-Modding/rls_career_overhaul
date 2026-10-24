@@ -19,7 +19,7 @@
     ChallengeBasicFields    name, ID, description, difficulty and map dropdowns (both teleported menus)
     ChallengeStartingTab    starting capital, win condition select, debt block
     ChallengeMultiselectModal  teleported multiselect picker
-  The seed section, the win-condition variable fields, the garages tab and the economy tab are in this template;
+  The seed section, the win-condition variable fields, the garages, starter vehicles and economy tabs are in this template;
   their inputs write the form state with v-model. ChallengeBasicFields and ChallengeStartingTab take values as
   props and report changes as events; neither writes a prop.
 
@@ -189,11 +189,19 @@
                   class="ccm-garage-default-btn"
                   type="button"
                   @click.stop="onUseDefaultGarages()"
-                  :class="{ 'ccm-garage-default-active': formStartingGarages.length === 0 }"
+                  :class="{ 'ccm-garage-default-active': formStartingGarages.length === 0 && formStartingGarageMode !== 'none' }"
                 >
                   Default
                 </button>
-                <div class="ccm-hint">Default starter garage (free)</div>
+                <button
+                  class="ccm-garage-default-btn"
+                  type="button"
+                  @click.stop="onUseNoGarage()"
+                  :class="{ 'ccm-garage-default-active': formStartingGarageMode === 'none' }"
+                >
+                  No garage
+                </button>
+                <div class="ccm-hint">{{ formStartingGarageMode === 'none' ? 'Start without any garage' : 'Default starter garage (free)' }}</div>
               </div>
 
               <div v-if="formStartingGarages.length > 0" class="ccm-garage-selection">
@@ -223,6 +231,7 @@
                       :value="garage.id"
                       type="checkbox"
                       class="ccm-garage-checkbox"
+                      :disabled="formStartingGarageMode === 'none'"
                     />
                     <div class="ccm-garage-info">
                       <div class="ccm-garage-name">{{ garage.name }}</div>
@@ -230,6 +239,51 @@
                         <span class="ccm-garage-price"><BngIcon class="cur" :type="icons.beamCurrency" />{{ garage.price?.toLocaleString() || '0' }}</span>
                         <span class="ccm-garage-capacity">{{ garage.capacity || 0 }} slots</span>
                         <span v-if="garage.starterGarage" class="ccm-garage-starter">Starter</span>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="activeTab === 'starterVehicles'" class="ccm-tab-panel">
+              <p class="ccm-hint">Optional. One listed vehicle is gifted at random on a new career, worn out like the hardcore starter.</p>
+              <div class="ccm-field">
+                <input v-bng-text-input v-model="starterVehicleQuery" class="ccm-input" placeholder="Search vehicles..." />
+              </div>
+
+              <div v-if="formStarterVehicles.length > 0" class="ccm-garage-selection">
+                <div class="ccm-garage-selected">
+                  <div class="ccm-garage-selected-title">Selected Vehicles ({{ formStarterVehicles.length }})</div>
+                  <div class="ccm-garage-selected-list">
+                    <div v-for="vehicle in selectedStarterVehicleRows" :key="vehicle.id" class="ccm-garage-selected-item">
+                      <span>{{ vehicle.name }}</span>
+                      <button
+                        class="ccm-garage-remove"
+                        type="button"
+                        @click.stop="removeStarterVehicle(vehicle.id)"
+                        @mousedown.stop
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="ccm-garages">
+                <div v-for="vehicle in filteredStarterVehicles" :key="vehicle.id" class="ccm-garage-row">
+                  <label class="ccm-garage-label">
+                    <input
+                      v-model="formStarterVehicles"
+                      :value="vehicle.id"
+                      type="checkbox"
+                      class="ccm-garage-checkbox"
+                    />
+                    <div class="ccm-garage-info">
+                      <div class="ccm-garage-name">{{ vehicle.name }}</div>
+                      <div class="ccm-garage-details">
+                        <span>{{ vehicle.id }}</span>
                       </div>
                     </div>
                   </label>
@@ -315,6 +369,7 @@ const seedInput = ref('')
 const seedError = ref('')
 const econQuery = ref('')
 const garageQuery = ref('')
+const starterVehicleQuery = ref('')
 const activeTab = ref('starting')
 const copyStatus = ref('')
 // How long "Copied!" stays on the copy button.
@@ -340,12 +395,13 @@ const activeEditorData = computed(() => {
 const {
   formId, formName, formDescription, formDifficulty, formStartingCapital, formWinCondition, formVariables,
   formLoanAmount, formLoanInterest, formLoanPayments, formEconomyAdjuster, formStartingGarages, formMap,
+  formStartingGarageMode, formStarterVehicles,
   multiselectQueries, isApplyingSeed, seedPayload, canSave,
   winConditionOptions, variableDefinitions, loansRequired, activeVariables, variableRows,
   paymentsMinutes, perPaymentDisplay, interestPercent,
   markInitialSnapshot, initializeVariables, resetFormDefaults, applySeedDataToForm,
   roundVariableToStep, roundEconomyMultiplier, roundLoanAmount, roundStartingCapital,
-  removeGarage, onUseDefaultGarages,
+  removeGarage, onUseDefaultGarages, onUseNoGarage, removeStarterVehicle,
 } = useChallengeForm({ activeEditorData, seedError, onSeedApplied: () => updateSeedFromPayload() })
 
 const events = useEvents()
@@ -410,11 +466,11 @@ const {
   multiselectModalOpen, currentMultiselectVariableId, currentMultiselectVariable,
   getFilteredMultiselectOptions, getMultiselectItemName, removeMultiselectItem,
   setMultiselectSelection, setMultiselectQuery, openMultiselectModal, closeMultiselectModal,
-} = useMultiselectVariables({ activeVariables, formVariables, multiselectQueries, overlayRef })
+} = useMultiselectVariables({ activeVariables, formVariables, multiselectQueries, overlayRef, formMap })
 
-// The starting-garages tab's list: the editor's garages filtered by the search box, and the selected ids as
-// { id, name } chips. The selection itself stays in the parent.
-function useStartingGarages({ activeEditorData, garageQuery, formStartingGarages }) {
+// The starting-garages tab's list: the editor's garages on the chosen map, filtered by the search box, and the
+// selected ids as { id, name } chips. The selection itself stays in the parent.
+function useStartingGarages({ activeEditorData, garageQuery, formStartingGarages, formMap }) {
   const availableGarages = computed(() => {
     const raw = activeEditorData.value && activeEditorData.value.availableGarages
     return Array.isArray(raw) ? raw : []
@@ -422,7 +478,8 @@ function useStartingGarages({ activeEditorData, garageQuery, formStartingGarages
 
   const filteredGarages = computed(() => {
     const q = garageQuery.value.trim().toLowerCase()
-    const garages = availableGarages.value
+    const mapId = formMap.value
+    const garages = mapId ? availableGarages.value.filter(g => !g.mapId || g.mapId === mapId) : availableGarages.value
     if (!q) return garages
     return garages.filter(g => ((g.name || g.id || '').toLowerCase().includes(q)))
   })
@@ -455,7 +512,31 @@ function useEconomyMultipliers({ activeEditorData, econQuery }) {
   return { filteredActivityTypes, economyRows }
 }
 
-const { filteredGarages, selectedGarageRows, getGarageName } = useStartingGarages({ activeEditorData, garageQuery, formStartingGarages })
+// The starter-vehicles tab's list: the editor's starter configs filtered by the search box, and the selected ids
+// as { id, name } chips. Ids are "model/config" strings, so a JSON-only entry still shows by its id.
+function useStarterVehicles({ activeEditorData, starterVehicleQuery, formStarterVehicles }) {
+  const availableStarterVehicles = computed(() => {
+    const raw = activeEditorData.value && activeEditorData.value.availableStarterVehicles
+    return Array.isArray(raw) ? raw : []
+  })
+
+  const filteredStarterVehicles = computed(() => {
+    const q = starterVehicleQuery.value.trim().toLowerCase()
+    const vehicles = availableStarterVehicles.value
+    if (!q) return vehicles
+    return vehicles.filter(v => ((v.name || '') + ' ' + (v.id || '')).toLowerCase().includes(q))
+  })
+
+  const selectedStarterVehicleRows = computed(() => formStarterVehicles.value.map(vehicleId => {
+    const vehicle = availableStarterVehicles.value.find(v => v.id === vehicleId)
+    return { id: vehicleId, name: vehicle ? vehicle.name : vehicleId }
+  }))
+
+  return { filteredStarterVehicles, selectedStarterVehicleRows }
+}
+
+const { filteredGarages, selectedGarageRows, getGarageName } = useStartingGarages({ activeEditorData, garageQuery, formStartingGarages, formMap })
+const { filteredStarterVehicles, selectedStarterVehicleRows } = useStarterVehicles({ activeEditorData, starterVehicleQuery, formStarterVehicles })
 const { filteredActivityTypes, economyRows } = useEconomyMultipliers({ activeEditorData, econQuery })
 
 const tabs = computed(() => {
@@ -464,6 +545,7 @@ const tabs = computed(() => {
     tabList.push({ id: 'winCondition', label: 'Win Condition Settings' })
   }
   tabList.push({ id: 'garages', label: 'Starting Garages' })
+  tabList.push({ id: 'starterVehicles', label: 'Starter Vehicles' })
   tabList.push({ id: 'economy', label: 'Economy Multipliers' })
   return tabList
 })
@@ -647,6 +729,8 @@ async function onSave() {
     winCondition: formWinCondition.value,
     economyAdjuster: Object.keys(formEconomyAdjuster).length > 0 ? formEconomyAdjuster : undefined,
     startingGarages: formStartingGarages.value.length > 0 ? formStartingGarages.value : undefined,
+    startingGarageMode: formStartingGarageMode.value === 'none' ? 'none' : undefined,
+    starterVehicles: formStarterVehicles.value.length > 0 ? formStarterVehicles.value : undefined,
     map: formMap.value || undefined
   }
 
