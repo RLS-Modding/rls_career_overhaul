@@ -135,7 +135,7 @@ function installer.new(inputs)
     guihooks.trigger('businessComputer:onVehicleWheelData', {
       success = true,
       businessId = vehicleInfo.businessId,
-      vehicleId = tonumber(vehicleInfo.vehicleId),
+      vehicleId = vehicleInfo.vehicleId,
       wheelData = data
     })
   end
