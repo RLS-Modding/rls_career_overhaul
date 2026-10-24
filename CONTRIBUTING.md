@@ -2,6 +2,8 @@
 
 Bug reports, fixes, translations and ideas are welcome. Search the existing issues and PRs first so related work stays together.
 
+For suspected security vulnerabilities, follow the [private reporting policy](SECURITY.md).
+
 ## Report a problem
 
 Use the bug report form and include the exact BeamNG and Overhaul versions. Add the map name and version when relevant, the steps to reproduce, and what happened instead of what you expected.

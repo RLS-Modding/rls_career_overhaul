@@ -77,6 +77,8 @@ Keep save backups when troubleshooting. Check logs for personal paths or other i
 
 Have a fix, translation or idea? See the [contribution guide](CONTRIBUTING.md) for reports, PRs and how we carry accepted changes into development and public releases. Contributors only need to open a PR here; maintainers handle the matching dev work.
 
+For suspected security vulnerabilities, use the [private reporting policy](SECURITY.md).
+
 ## Credits
 
 Created and maintained by **RLS Modding**, with help from contributors, testers and the community. See the [contributors](https://github.com/RLS-Modding/rls_career_overhaul/graphs/contributors) and bundled `licenses` for included third-party material.

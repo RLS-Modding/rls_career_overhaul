@@ -1,5 +1,8 @@
 blank_issues_enabled: true
 contact_links:
+  - name: Report a security vulnerability privately
+    url: https://github.com/RLS-Modding/rls_career_overhaul/security/advisories/new
+    about: Send suspected security vulnerabilities privately; use issues for gameplay bugs.
   - name: Installation and troubleshooting
     url: https://github.com/RLS-Modding/rls_career_overhaul/wiki/Troubleshooting
     about: Check setup, save migration and common problems before filing a report.
