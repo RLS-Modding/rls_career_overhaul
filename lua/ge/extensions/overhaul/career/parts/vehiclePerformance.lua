@@ -591,14 +591,14 @@ end
 
 local function getAggregateScoresFromVehId(inventoryId)
   local vehicle = overhaul_career_garage_inventory.getVehicles()[inventoryId]
-  local certificationData = vehicle.certificationData
+  local certificationData = vehicle and vehicle.certificationData
   if not certificationData then return end
   return extensions.gameplay_vehiclePerformance.getAggregateScores(certificationData)
 end
 
 local function getVehicleClass(inventoryId)
   local vehicle = overhaul_career_garage_inventory.getVehicles()[inventoryId]
-  local certificationData = vehicle.certificationData
+  local certificationData = vehicle and vehicle.certificationData
   if not certificationData then return end
   return extensions.gameplay_vehiclePerformance.getClassFromData(certificationData)
 end
