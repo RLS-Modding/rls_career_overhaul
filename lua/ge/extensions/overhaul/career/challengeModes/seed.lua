@@ -3,6 +3,7 @@
 local M = {}
 local challengeRounding = require('overhaul/lib/career/challengeRounding')
 local levelData = require('overhaul/lib/world/levelData')
+local seedStartSections = require('overhaul/career/challengeModes/seedStartSections')
 
 -- Parts ---------------------------------------------------------------------------------------------
 
@@ -829,30 +830,11 @@ do
     end)
   end
 
-  local STARTING_GARAGE_MODE_VALUES = { default = 0, none = 1 }
-  local STARTING_GARAGE_MODE_NAMES = { [0] = "default", [1] = "none" }
-
-  -- The default mode is implied by a missing section.
-  local function encodeStartingGarageModeSection(buffer, challengeData)
-    local modeValue = STARTING_GARAGE_MODE_VALUES[challengeData.startingGarageMode]
-    if not modeValue or modeValue == 0 then return true end
-    return appendSection(buffer, "starting garage mode", function(section)
-      table.insert(section, string.char(parts.format.MARKER_STARTING_GARAGE_MODE))
-      table.insert(section, string.char(modeValue))
-    end)
-  end
-
-  local function encodeStarterVehicleSection(buffer, challengeData)
-    local vehicles = challengeData.starterVehicles
-    if type(vehicles) ~= "table" or #vehicles == 0 then return true end
-    return appendSection(buffer, "starter vehicles", function(section)
-      table.insert(section, string.char(parts.format.MARKER_STARTER_VEHICLES))
-      parts.binary.writeVarInt(section, #vehicles)
-      for _, vehicleId in ipairs(vehicles) do
-        parts.binary.writeName(section, tostring(vehicleId))
-      end
-    end)
-  end
+  local startSections = seedStartSections.create({
+    binary = parts.binary,
+    format = parts.format,
+    appendSection = appendSection,
+  })
 
   local function encodeMapSection(buffer, challengeData)
     local map = challengeData.map
@@ -900,9 +882,7 @@ do
     if not succeeded then return nil, err end
     succeeded, err = encodeMapSection(buffer, challengeData)
     if not succeeded then return nil, err end
-    succeeded, err = encodeStartingGarageModeSection(buffer, challengeData)
-    if not succeeded then return nil, err end
-    succeeded, err = encodeStarterVehicleSection(buffer, challengeData)
+    succeeded, err = startSections.encode(buffer, challengeData)
     if not succeeded then return nil, err end
 
     table.insert(buffer, string.char(parts.format.MARKER_END))
@@ -1016,47 +996,6 @@ do
     return nextOffset
   end
 
-  local function readStartingGarageModeSection(challengeData, decodeState, bytes, offset)
-    if not decodeState.namedFormat then
-      return nil, "Starting garage mode needs a named seed"
-    end
-    if offset > #bytes then
-      return nil, "Incomplete starting garage mode data"
-    end
-    local modeName = STARTING_GARAGE_MODE_NAMES[string.byte(bytes, offset)]
-    if not modeName then
-      return nil, "Invalid starting garage mode"
-    end
-    challengeData.startingGarageMode = modeName
-    return offset + 1
-  end
-
-  local function readStarterVehicleSection(challengeData, decodeState, bytes, offset)
-    if not decodeState.namedFormat then
-      return nil, "Starter vehicles need a named seed"
-    end
-    if offset + 1 > #bytes then
-      return nil, "Incomplete starter vehicle data"
-    end
-    local vehicleCount, nextOffset, err = parts.binary.readVarInt(bytes, offset)
-    if vehicleCount == nil then
-      return nil, "Failed to read starter vehicle count: " .. tostring(err)
-    end
-    if vehicleCount * 2 > (#bytes - nextOffset + 1) then
-      return nil, "Invalid starter vehicle count"
-    end
-    challengeData.starterVehicles = {}
-    for index = 1, vehicleCount do
-      local vehicleId = nil
-      vehicleId, nextOffset, err = parts.binary.readName(bytes, nextOffset)
-      if vehicleId == nil then
-        return nil, "Failed to read starter vehicle " .. index .. ": " .. tostring(err)
-      end
-      table.insert(challengeData.starterVehicles, vehicleId)
-    end
-    return nextOffset
-  end
-
   local function readEconomySection(challengeData, decodeState, bytes, offset)
     if offset + 2 > #bytes then
       return nil, "Incomplete economy adjuster data"
@@ -1104,9 +1043,9 @@ do
     elseif marker == parts.format.MARKER_MAP then
       return readMapSection(challengeData, decodeState, bytes, offset)
     elseif marker == parts.format.MARKER_STARTING_GARAGE_MODE then
-      return readStartingGarageModeSection(challengeData, decodeState, bytes, offset)
+      return startSections.readStartingGarageMode(challengeData, decodeState, bytes, offset)
     elseif marker == parts.format.MARKER_STARTER_VEHICLES then
-      return readStarterVehicleSection(challengeData, decodeState, bytes, offset)
+      return startSections.readStarterVehicles(challengeData, decodeState, bytes, offset)
     elseif marker == parts.format.MARKER_ECONOMY_ADJUSTER then
       return readEconomySection(challengeData, decodeState, bytes, offset)
     elseif marker >= parts.format.MARKER_VARIABLE_NUMBER and marker <= parts.format.MARKER_VARIABLE_TABLE then
