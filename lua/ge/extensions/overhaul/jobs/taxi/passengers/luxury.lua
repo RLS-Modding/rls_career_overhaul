@@ -104,11 +104,13 @@ local luxuryPassenger = {
     return string.format("%s (%d passengers) - Premium fare", passengerType.name, fare.passengers)
   end,
   getPaymentLabel = function(fare, speedFactor, passengerType)
-    local actualSpeed = (tonumber(fare.paidDistance or fare.totalDistance) or 0) / math.max(1, (os.difftime(os.time(), fare.startTime)))
+    local actualSpeed = (tonumber(fare.paidDistance or fare.totalDistance) or 0) / math.max(1, fare.rideElapsed or 0)
     local suggestedSpeed = 18
 
     local label
-    if actualSpeed <= suggestedSpeed * 0.6 then
+    if actualSpeed < 2 then
+      label = "No Pace Bonus"
+    elseif actualSpeed <= suggestedSpeed * 0.6 then
       label = "Comfort Bonus"
     elseif actualSpeed <= suggestedSpeed * 0.9 then
       label = "Premium Service"

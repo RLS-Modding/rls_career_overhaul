@@ -70,12 +70,12 @@ const loadExtension = () => {
   safeLua(() => lua.overhaul_career_business_computer.loadWheelDataExtension(props.businessId, props.vehicleId), "BusinessWheelData: loadExtension")
 }
 
-const unloadExtension = () => {
-  if (!props.businessId || !props.vehicleId) {
+const unloadExtension = (businessId = props.businessId, vehicleId = props.vehicleId) => {
+  if (!businessId || !vehicleId) {
     return
   }
 
-  safeLua(() => lua.overhaul_career_business_computer.unloadWheelDataExtension(props.businessId, props.vehicleId), "BusinessWheelData: unloadExtension")
+  safeLua(() => lua.overhaul_career_business_computer.unloadWheelDataExtension(businessId, vehicleId), "BusinessWheelData: unloadExtension")
 }
 
 watch(() => [props.businessId, props.vehicleId], (newValues, oldValues) => {
@@ -83,7 +83,7 @@ watch(() => [props.businessId, props.vehicleId], (newValues, oldValues) => {
   const [oldBusinessId, oldVehicleId] = oldValues || []
 
   if (oldBusinessId && oldVehicleId && (oldBusinessId !== newBusinessId || oldVehicleId !== newVehicleId)) {
-    unloadExtension()
+    unloadExtension(oldBusinessId, oldVehicleId)
     data.value = []
   }
 
