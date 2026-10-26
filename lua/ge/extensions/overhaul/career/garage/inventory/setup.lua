@@ -10,7 +10,7 @@
 local setup = {}
 local vehicleMap = require('overhaul/career/garage/inventory/vehicleMap')
 local levelData = require('overhaul/lib/world/levelData')
-local challengeCatalog = require('overhaul/career/start/challengeCatalog')
+local challengeStartRules = require('overhaul/career/start/challengeStartRules')
 
 -- Gifted starters are worn out like the hardcore car, so their value stays at beater level.
 local STARTER_MILEAGE_METERS = 900000 * 1609.344
@@ -503,7 +503,7 @@ function setup.new(inputs)
   local function pickChallengeStarter(challenge)
     local candidates = {}
     for _, entry in ipairs(challenge.starterVehicles) do
-      local config, model, configKey = challengeCatalog.starterVehiclePath(entry)
+      local config, model, configKey = challengeStartRules.starterVehiclePath(entry)
       if config and FS:fileExists(config) then
         table.insert(candidates, {model = model, key = configKey, config = config})
       else

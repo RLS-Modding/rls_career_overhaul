@@ -5,6 +5,7 @@
 
 local challengeRounding = require('overhaul/lib/career/challengeRounding')
 local challengeCatalog = require('overhaul/career/start/challengeCatalog')
+local challengeStartRules = require('overhaul/career/start/challengeStartRules')
 local activityTaxonomy = require('overhaul/lib/career/activityTaxonomy')
 
 local M = {}
@@ -90,36 +91,6 @@ local function getAvailableGarages()
   end
 
   return availableGarages
-end
-
--- Starter vehicle selection --------------------------------------------
-
-local function configTypeOf(vehicleInfo)
-  local configType = vehicleInfo["Config Type"]
-  if not configType and vehicleInfo.aggregates and vehicleInfo.aggregates["Config Type"] then
-    configType = next(vehicleInfo.aggregates["Config Type"])
-  end
-  return configType
-end
-
--- The editor offers the same worn-out pool as the hardcore start; JSON challenges may name any config.
-local function getAvailableStarterVehicles()
-  local available = {}
-  local seen = {}
-  if not util_configListGenerator then return available end
-  for _, vehicleInfo in ipairs(util_configListGenerator.getEligibleVehicles(false, false) or {}) do
-    local id = vehicleInfo.model_key and vehicleInfo.key and (vehicleInfo.model_key .. "/" .. vehicleInfo.key)
-    if id and not seen[id] and configTypeOf(vehicleInfo) == "Hardcore" then
-      seen[id] = true
-      table.insert(available, {
-        id = id,
-        name = vehicleInfo.Name or vehicleInfo.Configuration or id,
-        model = vehicleInfo.model_key,
-      })
-    end
-  end
-  table.sort(available, function(left, right) return left.name < right.name end)
-  return available
 end
 
 -- Activity projections -------------------------------------------------
@@ -223,7 +194,7 @@ local function getChallengeEditorData(state)
     activityTypesBySource = activityTypesBySource,
     currentMultipliers = currentMultipliers,
     availableGarages = availableGarages,
-    availableStarterVehicles = getAvailableStarterVehicles(),
+    availableStarterVehicles = challengeStartRules.getAvailableStarterVehicles(),
     loanTerms = {6, 12, 18, 24, 36, 48, 60},
     defaults = editorDefaults(),
     stats = {
@@ -249,7 +220,7 @@ local function getEditorDataLight(state)
     winConditions = winConditions,
     activityTypes = activityTypes,
     availableGarages = getAvailableGarages(),
-    availableStarterVehicles = getAvailableStarterVehicles(),
+    availableStarterVehicles = challengeStartRules.getAvailableStarterVehicles(),
     defaults = {
       startingCapital = DEFAULT_STARTING_CAPITAL,
       loanAmount = DEFAULT_LOAN_AMOUNT,
@@ -820,7 +791,7 @@ function M.create(ctx, catalog)
 
   return {
     getAvailableGarages = getAvailableGarages,
-    getAvailableStarterVehicles = getAvailableStarterVehicles,
+    getAvailableStarterVehicles = challengeStartRules.getAvailableStarterVehicles,
     getChallengeEditorData = bind(getChallengeEditorData),
     createChallengeFromUI = bind(createChallengeFromUI),
     getChallengeOptionsForCareerCreation = bind(getChallengeOptionsForCareerCreation),
