@@ -297,13 +297,6 @@ export function useChallengeForm({ activeEditorData, seedError, onSeedApplied })
     formStartingGarageMode.value = 'none'
   }
 
-  function removeStarterVehicle(vehicleId) {
-    const index = formStarterVehicles.value.indexOf(vehicleId)
-    if (index > -1) {
-      formStarterVehicles.value.splice(index, 1)
-    }
-  }
-
   return {
     formId, formName, formDescription, formDifficulty, formStartingCapital, formWinCondition, formVariables,
     formLoanAmount, formLoanInterest, formLoanPayments, formEconomyAdjuster, formStartingGarages, formMap,
@@ -313,6 +306,6 @@ export function useChallengeForm({ activeEditorData, seedError, onSeedApplied })
     paymentsMinutes, perPaymentDisplay, interestPercent,
     markInitialSnapshot, initializeVariables, resetFormDefaults, applySeedDataToForm,
     roundVariableToStep, roundEconomyMultiplier, roundLoanAmount, roundStartingCapital,
-    removeGarage, onUseDefaultGarages, onUseNoGarage, removeStarterVehicle,
+    removeGarage, onUseDefaultGarages, onUseNoGarage,
   }
 }

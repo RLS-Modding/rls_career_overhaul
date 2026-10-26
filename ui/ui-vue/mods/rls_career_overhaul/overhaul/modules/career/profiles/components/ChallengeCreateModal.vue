@@ -18,10 +18,11 @@
   Parts (challengeCreate/)
     ChallengeBasicFields    name, ID, description, difficulty and map dropdowns (both teleported menus)
     ChallengeStartingTab    starting capital, win condition select, debt block
+    ChallengeStarterVehiclesTab  starter vehicle search and selection
     ChallengeMultiselectModal  teleported multiselect picker
-  The seed section, the win-condition variable fields, the garages, starter vehicles and economy tabs are in this template;
-  their inputs write the form state with v-model. ChallengeBasicFields and ChallengeStartingTab take values as
-  props and report changes as events; neither writes a prop.
+  The seed section, the win-condition variable fields, the garages tab and the economy tab are in this template;
+  their inputs write the form state with v-model. ChallengeBasicFields, ChallengeStartingTab and
+  ChallengeStarterVehiclesTab take values as props and report changes as events; none writes a prop.
 
   Modules (challengeCreate/)
     useChallengeForm        form state and writes
@@ -246,50 +247,11 @@
               </div>
             </div>
 
-            <div v-if="activeTab === 'starterVehicles'" class="ccm-tab-panel">
-              <p class="ccm-hint">Optional. One listed vehicle is gifted at random on a new career, worn out like the hardcore starter.</p>
-              <div class="ccm-field">
-                <input v-bng-text-input v-model="starterVehicleQuery" class="ccm-input" placeholder="Search vehicles..." />
-              </div>
-
-              <div v-if="formStarterVehicles.length > 0" class="ccm-garage-selection">
-                <div class="ccm-garage-selected">
-                  <div class="ccm-garage-selected-title">Selected Vehicles ({{ formStarterVehicles.length }})</div>
-                  <div class="ccm-garage-selected-list">
-                    <div v-for="vehicle in selectedStarterVehicleRows" :key="vehicle.id" class="ccm-garage-selected-item">
-                      <span>{{ vehicle.name }}</span>
-                      <button
-                        class="ccm-garage-remove"
-                        type="button"
-                        @click.stop="removeStarterVehicle(vehicle.id)"
-                        @mousedown.stop
-                      >
-                        ×
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="ccm-garages">
-                <div v-for="vehicle in filteredStarterVehicles" :key="vehicle.id" class="ccm-garage-row">
-                  <label class="ccm-garage-label">
-                    <input
-                      v-model="formStarterVehicles"
-                      :value="vehicle.id"
-                      type="checkbox"
-                      class="ccm-garage-checkbox"
-                    />
-                    <div class="ccm-garage-info">
-                      <div class="ccm-garage-name">{{ vehicle.name }}</div>
-                      <div class="ccm-garage-details">
-                        <span>{{ vehicle.id }}</span>
-                      </div>
-                    </div>
-                  </label>
-                </div>
-              </div>
-            </div>
+            <ChallengeStarterVehiclesTab
+              v-if="activeTab === 'starterVehicles'"
+              v-model:starterVehicles="formStarterVehicles"
+              :available-starter-vehicles="activeEditorData.availableStarterVehicles"
+            />
 
             <div v-if="activeTab === 'economy'" class="ccm-tab-panel">
               <div class="ccm-econ-section">
@@ -352,6 +314,7 @@ import { safeLua } from '../../utils/safeLua.js'
 import HouseButton from '../../components/house/HouseButton.vue'
 import ChallengeBasicFields from './challengeCreate/ChallengeBasicFields.vue'
 import ChallengeStartingTab from './challengeCreate/ChallengeStartingTab.vue'
+import ChallengeStarterVehiclesTab from './challengeCreate/ChallengeStarterVehiclesTab.vue'
 import ChallengeMultiselectModal from './challengeCreate/ChallengeMultiselectModal.vue'
 import { useChallengeForm } from './challengeCreate/useChallengeForm.js'
 import { createSeedCodec } from './challengeCreate/seedCodec.js'
@@ -369,7 +332,6 @@ const seedInput = ref('')
 const seedError = ref('')
 const econQuery = ref('')
 const garageQuery = ref('')
-const starterVehicleQuery = ref('')
 const activeTab = ref('starting')
 const copyStatus = ref('')
 // How long "Copied!" stays on the copy button.
@@ -401,7 +363,7 @@ const {
   paymentsMinutes, perPaymentDisplay, interestPercent,
   markInitialSnapshot, initializeVariables, resetFormDefaults, applySeedDataToForm,
   roundVariableToStep, roundEconomyMultiplier, roundLoanAmount, roundStartingCapital,
-  removeGarage, onUseDefaultGarages, onUseNoGarage, removeStarterVehicle,
+  removeGarage, onUseDefaultGarages, onUseNoGarage,
 } = useChallengeForm({ activeEditorData, seedError, onSeedApplied: () => updateSeedFromPayload() })
 
 const events = useEvents()
@@ -512,31 +474,7 @@ function useEconomyMultipliers({ activeEditorData, econQuery }) {
   return { filteredActivityTypes, economyRows }
 }
 
-// The starter-vehicles tab's list: the editor's starter configs filtered by the search box, and the selected ids
-// as { id, name } chips. Ids are "model/config" strings, so a JSON-only entry still shows by its id.
-function useStarterVehicles({ activeEditorData, starterVehicleQuery, formStarterVehicles }) {
-  const availableStarterVehicles = computed(() => {
-    const raw = activeEditorData.value && activeEditorData.value.availableStarterVehicles
-    return Array.isArray(raw) ? raw : []
-  })
-
-  const filteredStarterVehicles = computed(() => {
-    const q = starterVehicleQuery.value.trim().toLowerCase()
-    const vehicles = availableStarterVehicles.value
-    if (!q) return vehicles
-    return vehicles.filter(v => ((v.name || '') + ' ' + (v.id || '')).toLowerCase().includes(q))
-  })
-
-  const selectedStarterVehicleRows = computed(() => formStarterVehicles.value.map(vehicleId => {
-    const vehicle = availableStarterVehicles.value.find(v => v.id === vehicleId)
-    return { id: vehicleId, name: vehicle ? vehicle.name : vehicleId }
-  }))
-
-  return { filteredStarterVehicles, selectedStarterVehicleRows }
-}
-
 const { filteredGarages, selectedGarageRows, getGarageName } = useStartingGarages({ activeEditorData, garageQuery, formStartingGarages, formMap })
-const { filteredStarterVehicles, selectedStarterVehicleRows } = useStarterVehicles({ activeEditorData, starterVehicleQuery, formStarterVehicles })
 const { filteredActivityTypes, economyRows } = useEconomyMultipliers({ activeEditorData, econQuery })
 
 const tabs = computed(() => {
@@ -1053,7 +991,7 @@ watch(() => props.editChallengeId, (newId, oldId) => {
 
 /* Checkboxes: the house .check box (dark square, orange with a white tick when on) */
 .ccm-checkbox,
-.ccm-garage-checkbox {
+:deep(.ccm-garage-checkbox) {
   appearance: none;
   flex: 0 0 auto;
   width: 1.15em;
@@ -1154,7 +1092,8 @@ watch(() => props.editChallengeId, (newId, oldId) => {
   color: var(--accent-soft);
 }
 
-.ccm-garage-selected {
+/* The selection chips and checkbox list are shared with ChallengeStarterVehiclesTab, so they reach into it. */
+:deep(.ccm-garage-selected) {
   padding: var(--inset);
   border-radius: var(--radius-panel);
   background: var(--panel);
@@ -1162,7 +1101,7 @@ watch(() => props.editChallengeId, (newId, oldId) => {
   gap: 0.6em;
 }
 
-.ccm-garage-selected-title {
+:deep(.ccm-garage-selected-title) {
   color: var(--faint);
   font-size: 0.78em;
   font-weight: 700;
@@ -1170,13 +1109,13 @@ watch(() => props.editChallengeId, (newId, oldId) => {
   letter-spacing: 0.06em;
 }
 
-.ccm-garage-selected-list {
+:deep(.ccm-garage-selected-list) {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4em;
 }
 
-.ccm-garage-selected-item {
+:deep(.ccm-garage-selected-item) {
   display: flex;
   align-items: center;
   gap: 0.45em;
@@ -1187,7 +1126,7 @@ watch(() => props.editChallengeId, (newId, oldId) => {
   font-weight: 600;
 }
 
-.ccm-garage-remove {
+:deep(.ccm-garage-remove) {
   appearance: none;
   display: grid;
   place-items: center;
@@ -1205,12 +1144,12 @@ watch(() => props.editChallengeId, (newId, oldId) => {
   @include house-focus;
 }
 
-.ccm-garage-remove:hover {
+:deep(.ccm-garage-remove:hover) {
   background: var(--panel-hover);
   color: #fff;
 }
 
-.ccm-garages {
+:deep(.ccm-garages) {
   display: grid;
   gap: 0.15em;
   padding: 0.35em;
@@ -1218,7 +1157,7 @@ watch(() => props.editChallengeId, (newId, oldId) => {
   background: var(--panel);
 }
 
-.ccm-garage-label {
+:deep(.ccm-garage-label) {
   display: flex;
   align-items: center;
   gap: 0.75em;
@@ -1228,11 +1167,11 @@ watch(() => props.editChallengeId, (newId, oldId) => {
   cursor: pointer;
 }
 
-.ccm-garage-label:hover {
+:deep(.ccm-garage-label:hover) {
   background: rgba(255, 255, 255, 0.04);
 }
 
-.ccm-garage-info {
+:deep(.ccm-garage-info) {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -1240,11 +1179,11 @@ watch(() => props.editChallengeId, (newId, oldId) => {
   min-width: 0;
 }
 
-.ccm-garage-name {
+:deep(.ccm-garage-name) {
   font-weight: 600;
 }
 
-.ccm-garage-details {
+:deep(.ccm-garage-details) {
   display: flex;
   gap: 0.75em;
   font-size: 0.85em;
