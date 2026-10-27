@@ -4,14 +4,14 @@
 
 <template>
   <div class="ccm-tab-panel">
-    <p class="ccm-hint">Optional. One listed vehicle is gifted at random on a new career, worn out like the hardcore starter.</p>
+    <p class="ccm-hint">Optional. A new career on this challenge starts with one of these cars, picked at random. They're old and have plenty of miles on them.</p>
     <div class="ccm-field">
-      <input v-bng-text-input v-model="query" class="ccm-input" placeholder="Search vehicles..." />
+      <input v-bng-text-input v-model="query" class="ccm-input" placeholder="Search cars..." />
     </div>
 
     <div v-if="starterVehicles.length > 0" class="ccm-garage-selection">
       <div class="ccm-garage-selected">
-        <div class="ccm-garage-selected-title">Selected Vehicles ({{ starterVehicles.length }})</div>
+        <div class="ccm-garage-selected-title">Selected Cars ({{ starterVehicles.length }})</div>
         <div class="ccm-garage-selected-list">
           <div v-for="vehicle in selectedRows" :key="vehicle.id" class="ccm-garage-selected-item">
             <span>{{ vehicle.name }}</span>

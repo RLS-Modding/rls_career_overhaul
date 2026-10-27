@@ -202,7 +202,7 @@
                 >
                   No garage
                 </button>
-                <div class="ccm-hint">{{ formStartingGarageMode === 'none' ? 'Start without any garage' : 'Default starter garage (free)' }}</div>
+                <div class="ccm-hint">{{ formStartingGarageMode === 'none' ? 'You start without a garage and have to buy your first one.' : 'Default starter garage (free)' }}</div>
               </div>
 
               <div v-if="formStartingGarages.length > 0" class="ccm-garage-selection">
@@ -483,7 +483,7 @@ const tabs = computed(() => {
     tabList.push({ id: 'winCondition', label: 'Win Condition Settings' })
   }
   tabList.push({ id: 'garages', label: 'Starting Garages' })
-  tabList.push({ id: 'starterVehicles', label: 'Starter Vehicles' })
+  tabList.push({ id: 'starterVehicles', label: 'Starter Car' })
   tabList.push({ id: 'economy', label: 'Economy Multipliers' })
   return tabList
 })

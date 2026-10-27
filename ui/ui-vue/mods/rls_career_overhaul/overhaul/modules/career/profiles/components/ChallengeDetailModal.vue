@@ -52,7 +52,7 @@
                             <span class="cdm-location-value">{{ startingGaragesDisplay }}</span>
                         </div>
                         <div v-if="starterVehiclesDisplay" class="cdm-location-item">
-                            <span class="cdm-location-label">Starter Vehicle (one of):</span>
+                            <span class="cdm-location-label">Starter Car:</span>
                             <span class="cdm-location-value">{{ starterVehiclesDisplay }}</span>
                         </div>
                         <div v-if="startingMapDisplay" class="cdm-location-item">
@@ -755,7 +755,9 @@ const starterVehiclesDisplay = computed(() => {
     for (const vehicle of props.editorData?.availableStarterVehicles || []) {
         if (vehicle.id && vehicle.name) vehicleNames.set(vehicle.id, vehicle.name)
     }
-    return challenge.starterVehicles.map(id => vehicleNames.get(id) || id).join(', ')
+    const names = challenge.starterVehicles.map(id => vehicleNames.get(id) || id)
+    if (names.length === 1) return names[0]
+    return `One of ${names.slice(0, -1).join(', ')} or ${names[names.length - 1]}, picked at random`
 })
 
 const startingMapDisplay = computed(() => {

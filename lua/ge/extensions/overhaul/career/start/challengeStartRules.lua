@@ -55,14 +55,14 @@ end
 local function checkStartingGarageFields(challengeData)
   local mode = challengeData.startingGarageMode
   if mode ~= nil and not STARTING_GARAGE_MODES[mode] then
-    return false, "Starting garage mode must be 'default' or 'none'"
+    return false, 'The starting garage option has to be "default" or "none".'
   end
   local startingGarages = challengeData.startingGarages
   if startingGarages ~= nil and type(startingGarages) ~= "table" then
-    return false, "Starting garages must be a list"
+    return false, "Starting garages have to be a list of garage IDs."
   end
   if mode == "none" and startingGarages and #startingGarages > 0 then
-    return false, "A challenge without a starting garage cannot list starting garages"
+    return false, "This challenge starts without a garage, so it can't list starting garages too."
   end
   return true
 end
@@ -71,11 +71,11 @@ end
 local function checkStarterVehiclesField(starterVehicles)
   if starterVehicles == nil then return true end
   if type(starterVehicles) ~= "table" then
-    return false, "Starter vehicles must be a list"
+    return false, 'Starter cars have to be a list, like ["covet/rls_hardcore_covet"].'
   end
   for _, entry in ipairs(starterVehicles) do
     if not starterVehiclePath(entry) then
-      return false, string.format("Invalid starter vehicle '%s'; expected model/config", tostring(entry))
+      return false, string.format('"%s" should be written as model/config, like "covet/rls_hardcore_covet".', tostring(entry))
     end
   end
   return true
@@ -87,6 +87,24 @@ local function garageIdsOnMap(getAvailableGarages, mapId)
     if garage.mapId == mapId then onMap[garage.id] = true end
   end
   return onMap
+end
+
+-- Display names for the error message; a garage or map the list does not name shows as its id.
+local function garageAndMapNames(getAvailableGarages, garageId, mapId)
+  local garageName, mapName = nil, mapId
+  for _, garage in ipairs(getAvailableGarages() or {}) do
+    if garage.id == garageId and garage.name then garageName = garage.name end
+    if garage.mapId == mapId and garage.mapName then mapName = garage.mapName end
+  end
+  return garageName, mapName
+end
+
+local function garageNotOnMapMessage(getAvailableGarages, garageId, mapId)
+  local garageName, mapName = garageAndMapNames(getAvailableGarages, garageId, mapId)
+  if garageName then
+    return string.format("%s is on a different map. Pick garages from %s or change the challenge's map.", garageName, tostring(mapName))
+  end
+  return string.format('There\'s no garage called "%s" on %s.', tostring(garageId), tostring(mapName))
 end
 
 -- Garage ids only resolve on the map the challenge loads; ids from another map could never be granted or owned.
@@ -107,7 +125,7 @@ local function checkGaragesOnChallengeMap(challengeData, getAvailableGarages)
   for _, ids in pairs(lists) do
     for _, garageId in ipairs(ids) do
       if not onMap[garageId] then
-        return false, string.format("Garage '%s' is not available on map '%s'", tostring(garageId), mapId)
+        return false, garageNotOnMapMessage(getAvailableGarages, garageId, mapId)
       end
     end
   end

@@ -184,7 +184,7 @@ function challengeStarter.new(inputs)
     if granted == nil then
       inputs.state.inventorySetupDone = false
     elseif not granted then
-      ui_message("Your starter vehicle could not be delivered.", nil, "vehicleInventory")
+      ui_message("Your starter car couldn't be delivered, so you're starting without one.", nil, "vehicleInventory")
       teleportPlayerToStartingGarage(levelName)
     end
   end
