@@ -217,6 +217,7 @@ function setup.new(inputs)
     inputs.state.inventorySetupDone = false
     inputs.state.lastFailedSpawnPos = nil
     inputs.state.hardcoreStarterGranted = false
+    inputs.state.challengeStarterGranted = false
 
     local saveSlot, savePath = overhaul_career_saveSystem.getCurrentProfile()
     if not saveSlot or not savePath then return end

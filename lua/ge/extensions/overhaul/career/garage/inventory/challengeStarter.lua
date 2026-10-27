@@ -45,7 +45,7 @@ function challengeStarter.new(inputs)
   end
 
   -- Challenge starter ------------------------------------------------------------------------------
-  -- The grant is recorded on the active challenge, which is saved with the career, so it happens once per save.
+  -- Setup can run again before the new save is first written, so the grant is remembered for this load.
 
   local function owedChallengeStarter()
     local challengeModes = overhaul_career_challengeModes
@@ -169,13 +169,13 @@ function challengeStarter.new(inputs)
       return false
     end
 
-    overhaul_career_challengeModes.markStarterVehicleGranted()
+    inputs.state.challengeStarterGranted = true
     log("I", "career.inventory", "Challenge starter granted: " .. starter.config)
     return true
   end
 
   local function finalizeChallengeStarter(challenge, levelName)
-    if challenge.starterVehicleGranted then
+    if inputs.state.challengeStarterGranted then
       log("I", "career.inventory", "setupInventory retry: challenge starter already granted")
       if not placeChallengeStarterPlayer(levelName) then inputs.state.inventorySetupDone = false end
       return

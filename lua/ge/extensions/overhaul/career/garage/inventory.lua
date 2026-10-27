@@ -57,6 +57,7 @@ garageState.accessTimerAccumulator = 0
 garageState.inventorySetupDone = false
 garageState.lastFailedSpawnPos = nil
 garageState.hardcoreStarterGranted = false
+garageState.challengeStarterGranted = false
 
 -- Garage helpers ----------------------------------------------------------------------------------
 
