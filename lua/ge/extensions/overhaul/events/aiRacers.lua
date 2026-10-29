@@ -138,6 +138,7 @@ racerState.mDelayedDespawnTimer = 0
 racerState.mDelayedDespawnStaggerSeconds = 4.0
 racerState.mPlayerUnfreezeAt = nil -- os.clock() time when to unfreeze player after AI GO (avoids dt spikes)
 racerState.mDnfCallback = nil -- called with vehId when an AI is despawned (DNF)
+racerState.mGridTeamCarVehId = nil -- Racing Team car set up on the grid and not yet released to its race drive
 -- Cache for per-race AI config (aiRacingConfig.json byRace): [levelId] = { byRace = { pathKey -> overrides } }
 local mRaceConfigCache = {}
 racerState.pendingPowerCallback = nil
@@ -247,7 +248,7 @@ local function retireUpsideDownRacer(vehId, vehObj, state, step, limits, toDespa
   racerState.mRecoveryStateByVehId[vehId] = state
 end
 
-local function recoverUprightRacer(vehId, vehObj, state, step, cfg, limits, toDespawn)
+local function recoverUprightRacer(vehId, vehObj, state, step, limits, toDespawn)
   state.upsideDownTime = 0
   if not racerState.mRetiredUpsideDownByVehId[vehId] then
     state.cooldown = math.max(0, (state.cooldown or 0) - step)
@@ -270,11 +271,13 @@ local function recoverUprightRacer(vehId, vehObj, state, step, cfg, limits, toDe
                                 recovery.stopRecovering()
                             end
                         ]])
+      -- Re-drive with the race's own route settings, the ones the start used; the level default
+      -- would switch a script-path race such as Short Track to navgraph routing.
       parts.drive.queueDriveForVehicle(
         vehObj,
         racerState.mActiveRaceForRecovery,
         racerState.mActiveLapCountForRecovery,
-        cfg,
+        parts.config.getMergedConfigForRace(racerState.mActiveRaceForRecovery),
         racerState.mVehicleLaneIndexByVehId[vehId]
       )
       state.recoveries = (state.recoveries or 0) + 1
@@ -294,7 +297,7 @@ local function recoverUprightRacer(vehId, vehObj, state, step, cfg, limits, toDe
   racerState.mRecoveryStateByVehId[vehId] = state
 end
 
-local function updateRacerRecoveryVehicle(vehId, step, cfg, limits, toDespawn)
+local function updateRacerRecoveryVehicle(vehId, step, limits, toDespawn)
   local vehObj = be:getObjectByID(vehId)
     if not vehObj then return end
   local state = racerState.mRecoveryStateByVehId[vehId]
@@ -310,7 +313,7 @@ local function updateRacerRecoveryVehicle(vehId, step, cfg, limits, toDespawn)
     if upsideDown then
       retireUpsideDownRacer(vehId, vehObj, state, step, limits, toDespawn)
     else
-      recoverUprightRacer(vehId, vehObj, state, step, cfg, limits, toDespawn)
+      recoverUprightRacer(vehId, vehObj, state, step, limits, toDespawn)
     end
 end
 
@@ -343,7 +346,7 @@ function M.onUpdate(dtReal)
   local limits = racerRecoveryLimits(cfg)
   local toDespawn = {}
   for _, vehId in ipairs(racerState.mSpawnedAiVehicleIds) do
-    updateRacerRecoveryVehicle(vehId, step, cfg, limits, toDespawn)
+    updateRacerRecoveryVehicle(vehId, step, limits, toDespawn)
   end
   parts.drive.despawnAiVehiclesById(toDespawn)
 end

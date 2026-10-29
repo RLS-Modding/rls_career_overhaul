@@ -8,24 +8,27 @@ function lib.create(ownerServices)
   local PROXY_BRACKET_SOFT_PW_BELOW_PLAYER = ownerServices.PROXY_BRACKET_SOFT_PW_BELOW_PLAYER
   local racerState = ownerServices.racerState
 
+  -- Every car on the grid, rivals and the Racing Team car alike, waits for green with this setup.
+  local function queueGridRacerSetup(vehObj, vehId, cfg)
+    vehObj:queueLuaCommand("if not overhaulDriver then extensions.load('overhaulDriver') end")
+    -- race* parameters require overhaulAi to be installed explicitly.
+    if overhaul_shell_extensionManager and overhaul_shell_extensionManager.applyOverrideAI then
+      overhaul_shell_extensionManager.applyOverrideAI(vehId)
+    else
+      vehObj:queueLuaCommand("if not ai then extensions.load('ai') end")
+    end
+    vehObj:queueLuaCommand("if ai and ai.setMode then ai.setMode('stop') end")
+    vehObj:queueLuaCommand("input.event('parkingbrake', 1, 1)")
+    if cfg.startEngineOnSpawn ~= false then racerState.queueEngineStart(vehObj) end
+  end
+
   -- Execute a staging plan: pool rows { model, config, matchPw? }. Config path uses merged race subdir when basename-only.
   local function initializeSpawnedRacer(vehId, cfg)
     pcall(function()
       ownerServices.parts.config.applyAiBasePaintOnly(vehId, ownerServices.parts.config.pickRandomAiColor())
     end)
     local vehObj = be:getObjectByID(vehId)
-    if vehObj then
-      vehObj:queueLuaCommand("if not overhaulDriver then extensions.load('overhaulDriver') end")
-      -- race* parameters require overhaulAi to be installed explicitly.
-      if overhaul_shell_extensionManager and overhaul_shell_extensionManager.applyOverrideAI then
-        overhaul_shell_extensionManager.applyOverrideAI(vehId)
-      else
-        vehObj:queueLuaCommand("if not ai then extensions.load('ai') end")
-      end
-      vehObj:queueLuaCommand("if ai and ai.setMode then ai.setMode('stop') end")
-      vehObj:queueLuaCommand("input.event('parkingbrake', 1, 1)")
-      if cfg.startEngineOnSpawn ~= false then racerState.queueEngineStart(vehObj) end
-    end
+    if vehObj then queueGridRacerSetup(vehObj, vehId, cfg) end
   end
 
   local function spawnStagingPlan(raceName, race, facilityName, slotPlan)
@@ -297,23 +300,31 @@ function lib.create(ownerServices)
             ownerServices.parts.config.applyAiBasePaintOnly(vehId, ownerServices.parts.config.pickRandomAiColor())
           end)
           local vehObj = be:getObjectByID(vehId)
-          if vehObj then
-            vehObj:queueLuaCommand("if not overhaulDriver then extensions.load('overhaulDriver') end")
-            -- race* parameters require overhaulAi to be installed explicitly.
-            if overhaul_shell_extensionManager and overhaul_shell_extensionManager.applyOverrideAI then
-              overhaul_shell_extensionManager.applyOverrideAI(vehId)
-            else
-              vehObj:queueLuaCommand("if not ai then extensions.load('ai') end")
-            end
-            vehObj:queueLuaCommand("if ai and ai.setMode then ai.setMode('stop') end")
-            vehObj:queueLuaCommand("input.event('parkingbrake', 1, 1)")
-            if cfg.startEngineOnSpawn ~= false then racerState.queueEngineStart(vehObj) end
-          end
+          if vehObj then queueGridRacerSetup(vehObj, vehId, cfg) end
         end
       end
     end
     ownerServices.parts.config.setLastSpawnedLineupSnapshot(spawnedLineup)
     return spawned
+  end
+
+  -- The Racing Team car is already on the grid when its rivals spawn, so it gets their setup there
+  -- instead of its racing AI starting cold at green.
+  function M.prepareTeamCarOnGrid(vehId, race)
+    local vehObj = vehId and be:getObjectByID(vehId)
+    if not vehObj or not race then return false end
+    local cfg = ownerServices.parts.config.getMergedConfigForRace(race)
+    if cfg.enabled == false then return false end
+    queueGridRacerSetup(vehObj, vehId, cfg)
+    racerState.mGridTeamCarVehId = vehId
+    return true
+  end
+
+  -- Staging ended before green: the team car stays spawned, so its AI lets go for whoever drives it next.
+  function M.releaseTeamCarFromGrid()
+    local vehObj = racerState.mGridTeamCarVehId and be:getObjectByID(racerState.mGridTeamCarVehId)
+    racerState.mGridTeamCarVehId = nil
+    if vehObj then vehObj:queueLuaCommand("if ai and ai.setMode then ai.setMode('disabled') end") end
   end
 
   -- Spawn AI vehicles at AI staging spots for this facility/race. They remain stopped until releaseAndDrive().

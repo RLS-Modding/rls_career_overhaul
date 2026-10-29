@@ -520,6 +520,10 @@ end
 -- Proxy race lifetime -------------------------------------------------------------------------------
 
 function M.clearRacingTeamProxyParkingState()
+  -- Staging ended before green; once the race drives the team car this does nothing.
+  if overhaul_events_aiRacers and overhaul_events_aiRacers.releaseTeamCarFromGrid then
+    overhaul_events_aiRacers.releaseTeamCarFromGrid()
+  end
   M.trackFlowState.racingTeamProxyRaceActive = false
   M.trackFlowState.racingTeamProxyBusinessId = nil
   M.trackFlowState.racingTeamProxyFleetVehicleId = nil

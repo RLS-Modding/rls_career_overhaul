@@ -11,6 +11,16 @@ local mVehicleFrozen = false
 local mPreRaceState = nil
 local mCameraNameBeforeRideAlong = nil
 
+-- Vehicle input takes events from every source unless a type lists the allowed ones. Vehicle AI
+-- writes the driving inputs as "ai", so while it drives the spectator's controls cannot move the
+-- team car. The AI never writes the clutch, so it is released before the lock holds it there.
+local SPECTATOR_LOCKED_INPUTS = "{'steering', 'throttle', 'brake', 'parkingbrake', 'clutch'}"
+local LOCK_AI_DRIVEN_INPUTS = "if input and input.setAllowedInputSource then"
+  .. " input.event('clutch', 0, 'FILTER_AI', nil, nil, nil, 'ai')"
+  .. " for _, t in ipairs(" .. SPECTATOR_LOCKED_INPUTS .. ") do input.setAllowedInputSource(t, 'ai', true) end end"
+local UNLOCK_AI_DRIVEN_INPUTS = "if input and input.setAllowedInputSource then"
+  .. " for _, t in ipairs(" .. SPECTATOR_LOCKED_INPUTS .. ") do input.setAllowedInputSource(t, nil) end end"
+
 local function setProxyExternalCamera()
   core_camera.setByName(0, "external", true)
 end
@@ -51,7 +61,7 @@ end
 local function unfreezePlayerVehicle(vehObj)
   if vehObj then
     core_vehicleBridge.executeAction(vehObj, "setFreeze", false)
-    vehObj:queueLuaCommand("if input and input.setEnabled then input.setEnabled(true) end")
+    vehObj:queueLuaCommand(UNLOCK_AI_DRIVEN_INPUTS)
   end
   local aiRacers = overhaul_events_aiRacers
   if aiRacers and aiRacers.setPlayerFreeze then
@@ -146,8 +156,7 @@ function M.setVehicleInputLocked(vehId, locked)
   if not obj then
     return
   end
-  local en = locked and "false" or "true"
-  obj:queueLuaCommand("if input and input.setEnabled then input.setEnabled(" .. en .. ") end")
+  obj:queueLuaCommand(locked and LOCK_AI_DRIVEN_INPUTS or UNLOCK_AI_DRIVEN_INPUTS)
   if locked and vid == getPlayerVehId() then
     mRideAlongVehId = vid
   end
@@ -225,6 +234,9 @@ function M.onInit()
   setExtensionUnloadMode(M, "manual")
   -- Restoring from the Lua reload batch fails before career is up.
   extensions.disableSerialization("overhaul_career_business_racingTeam_rideAlong")
+  -- A reload forgets the ride-along, so release any lock it left on the car the player sits in.
+  local playerVehicle = be and be:getPlayerVehicle(0)
+  if playerVehicle then playerVehicle:queueLuaCommand(UNLOCK_AI_DRIVEN_INPUTS) end
 end
 
 function M.onVehicleSwitched(oldId, newId)

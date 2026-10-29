@@ -198,6 +198,18 @@ function lib.create(ownerServices)
     return true
   end
 
+  -- The team car waits for green with its rivals' setup: their racing AI installed and held stopped.
+  local function prepareTeamCarOnGrid(raceForAi)
+    local fleet = overhaul_career_business_fleet
+    local aiRacers = overhaul_events_aiRacers
+    if not fleet or not aiRacers or not aiRacers.prepareTeamCarOnGrid then return end
+    local teamCarId = fleet.getSpawnedVehicleId(
+      M.trackFlowState.racingTeamProxyBusinessId,
+      M.trackFlowState.racingTeamProxyFleetVehicleId
+    )
+    if teamCarId then aiRacers.prepareTeamCarOnGrid(teamCarId, raceForAi) end
+  end
+
   -- Runs in the jobsystem once the player sits in the team car at the staging spot.
   local function racingTeamProxyRunStagingTailAfterPlayerInTeamCar(job)
     local raceForAi = M.trackRaceForAi()
@@ -208,6 +220,7 @@ function lib.create(ownerServices)
         M.abortRacingTeamProxyStagingLoadIn("ai_spawn_failed")
         return
       end
+      prepareTeamCarOnGrid(raceForAi)
     else
       job.sleep(0.05)
     end
@@ -216,6 +229,7 @@ function lib.create(ownerServices)
 
   return {
     restoreRacingTeamProxySpectatorUiAfterMinimal = restoreRacingTeamProxySpectatorUiAfterMinimal,
+    refreshProxySpectatorUiIfMinimal = function() M.refreshRacingTeamProxySpectatorUiMinimalIfActive() end,
     racingTeamProxyUseTeamLoadingOverlay = racingTeamProxyUseTeamLoadingOverlay,
     racingTeamProxyResetAiSpawnBookkeeping = racingTeamProxyResetAiSpawnBookkeeping,
     racingTeamProxyPoolReferencePower = racingTeamProxyPoolReferencePower,

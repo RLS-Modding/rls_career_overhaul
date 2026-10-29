@@ -488,7 +488,7 @@ function factory.create(inputs)
   local function calculateTotalCheckpoints()
     local mainCount = #checkpoints
     local altCount = altCheckpoints and #altCheckpoints or 0
-    local mergePoints = race.altRoute and race.altRoute.mergeCheckpoints or { 0, 0 }
+    local mergePoints = (race and race.altRoute and race.altRoute.mergeCheckpoints) or { 0, 0 }
 
     -- If the player is on the alt route, adjust total checkpoints accordingly
     local total

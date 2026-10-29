@@ -220,7 +220,12 @@ function M.create(ownerServices)
         overhaul_events_fre_sanctionedRacing.onRaceBegin(raceName)
       end
     end
-    if hostRefs.competitiveTrackFlow.raceUsesSanctionedParkingStaging(raceName) then
+    if hostRefs.competitiveTrackFlow.raceUsesSanctionedParkingStaging(raceName)
+      or (
+        hostRefs.competitiveTrackFlow.isRacingTeamProxyRaceActive
+        and hostRefs.competitiveTrackFlow.isRacingTeamProxyRaceActive()
+      )
+    then
       hostRefs.competitiveTrackFlow.clearSanctionedCareerGoToRaceActive()
       hostRefs.competitiveTrackFlow.onTrackRaceBeganFromRacingTeamProxy()
     end

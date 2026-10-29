@@ -343,7 +343,12 @@ function part.new(inputs)
     local pos = spot.pos
     local r = spot.rot
     local q = quat(r[1] or 0, r[2] or 0, r[3] or 0, r[4] or 1)
-    inputs.parts.garage.teleportVehicleExact(vehObj, vec3(pos[1], pos[2], pos[3]), q, true, true)
+    -- Grid spots share the site parking convention with the AI grid. Vehicle spawning
+    -- and safeTeleport both add the same half-turn, so keep it: the team car must
+    -- face the course exactly like the cars spawned on the neighbouring spots.
+    if not inputs.parts.garage.teleportVehicleExact(vehObj, vec3(pos[1], pos[2], pos[3]), q, true, true) then
+      return false
+    end
     core_camera.resetCamera(0)
     return true
   end

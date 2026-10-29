@@ -47,6 +47,9 @@ function M.onFreeroamSessionStarted(payload)
   end
   session.mAltRoute = useAlt
   M.setAltRoute(useAlt)
+  if M.setRace then
+    M.setRace(racePayload, sessionRaceName)
+  end
   local totalCp = M.calculateTotalCheckpoints()
   session.totalCheckpoints = totalCp
   session.currentExpectedCheckpoint = M.enableCheckpoint(0, useAlt)

@@ -2,6 +2,9 @@
 -- The racer load owns state; read geometry, parameter steps, cleanup, drive commands and the service factory.
 local lib = {}
 
+-- Sent as the AI, so a ride-along that admits only AI input still releases the team car.
+local RELEASE_PARKING_BRAKE_AS_AI = "input.event('parkingbrake', 0, 1, nil, nil, nil, 'ai')"
+
 function lib.create(ownerServices)
   local M = ownerServices.M
   local DEFAULT_CONFIG = ownerServices.DEFAULT_CONFIG
@@ -507,7 +510,7 @@ function lib.create(ownerServices)
     local targetSpeedSmootherRate = tonumber(cfg.targetSpeedSmootherRate)
       or DEFAULT_CONFIG.targetSpeedSmootherRate
       or 18
-    vehObj:queueLuaCommand("input.event('parkingbrake', 0, 1)")
+    vehObj:queueLuaCommand(RELEASE_PARKING_BRAKE_AS_AI)
 
     vehObj:queueLuaCommand("ai.setAggression(" .. tostring(aggression) .. ")")
     vehObj:queueLuaCommand("ai.setRacing(true)")
@@ -596,7 +599,7 @@ function lib.create(ownerServices)
     local targetSpeedSmootherRate = tonumber(cfg.targetSpeedSmootherRate)
       or DEFAULT_CONFIG.targetSpeedSmootherRate
       or 18
-    vehObj:queueLuaCommand("input.event('parkingbrake', 0, 1)")
+    vehObj:queueLuaCommand(RELEASE_PARKING_BRAKE_AS_AI)
 
     vehObj:queueLuaCommand("ai.setAggression(" .. tostring(aggression) .. ")")
     vehObj:queueLuaCommand("ai.setRacing(true)")
@@ -652,16 +655,31 @@ function lib.create(ownerServices)
     end
   end
 
-  --- Same path AI as grid rivals, for the player vehicle during racing-team ride-along (input locked separately).
-  function M.driveVehicleOnRacePath(vehId, race, lapCount, laneIndex)
+  --- Same path and AI as grid rivals, for the player vehicle during racing-team ride-along (input locked separately).
+  --- driveOpts.useScriptPath skips navgraph (player grid orientation is unreliable with map-node rotation).
+  function M.driveVehicleOnRacePath(vehId, race, lapCount, laneIndex, driveOpts)
     if not vehId or not race then return end
-    local cfg = ownerServices.parts.config.getMergedConfigForRace(race)
-    if not cfg or cfg.enabled == false then return end
+    local mergedCfg = ownerServices.parts.config.getMergedConfigForRace(race)
+    if not mergedCfg or mergedCfg.enabled == false then return end
+    local cfg = mergedCfg
+    if type(driveOpts) == "table" and driveOpts.useScriptPath == true then
+      cfg = {}
+      for k, v in pairs(mergedCfg) do
+        cfg[k] = v
+      end
+      cfg.useNavgraphPathfinding = false
+    end
     M.preloadPathForRace(race)
     local requiredLaps = (type(lapCount) == "number" and lapCount > 0) and lapCount or 1
     local noOfLaps = math.max(requiredLaps, 99)
     local vehObj = be:getObjectByID(vehId)
     if not vehObj then return end
+    -- Grid staging already gave the team car its rivals' AI (prepareTeamCarOnGrid); this covers a
+    -- start that skipped staging. The race now owns the car, so a staging abort must not release it.
+    if overhaul_shell_extensionManager and overhaul_shell_extensionManager.applyOverrideAI then
+      overhaul_shell_extensionManager.applyOverrideAI(vehId)
+    end
+    racerState.mGridTeamCarVehId = nil
     if cfg.startEngineOnSpawn ~= false then racerState.queueEngineStart(vehObj) end
     racerState.mVehicleLaneIndexByVehId[vehId] = laneIndex
     queueDriveForVehicle(vehObj, race, noOfLaps, cfg, laneIndex)

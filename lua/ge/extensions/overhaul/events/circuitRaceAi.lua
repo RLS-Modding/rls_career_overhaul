@@ -501,16 +501,40 @@ function M.resetForRaceBegin()
   resetGapPacingState()
 end
 
+local function proxyTeamCarLaneIndex(raceForAi)
+  local lanes = raceForAi and raceForAi.checkpointRoadLanes
+  if type(lanes) == "table" and #lanes > 0 then return 0 end
+  return nil
+end
+
 function M.setupAfterAiSpawn(raceName, subjectID, totalCheckpoints, mainRace, raceForAi)
   local aiRacers = overhaul_events_aiRacers
+  local trackFlow = overhaul_events_competitiveTrackFlow
   if not aiRacers or not aiRacers.getSpawnedVehicleIds or not aiRacers.releaseAndDrive then return end
   local ids = aiRacers.getSpawnedVehicleIds() or {}
-  if #ids == 0 then return end
-  local aiLaps = overhaul_events_competitiveTrackFlow.getDisplayTotalLapsForRace(raceForAi)
+  local proxyParking = trackFlow
+    and trackFlow.isRacingTeamProxyRaceActive
+    and trackFlow.isRacingTeamProxyRaceActive()
+  local proxySession = trackFlow
+    and trackFlow.isRacingTeamProxyRaceSessionActive
+    and trackFlow.isRacingTeamProxyRaceSessionActive()
+  if #ids == 0 then
+    -- Proxy races must not silently start with an empty AI grid.
+    if proxyParking and trackFlow.abortRacingTeamProxyStagingLoadIn then
+      trackFlow.abortRacingTeamProxyStagingLoadIn("empty_ai_grid")
+    elseif (proxyParking or proxySession) and overhaul_events_utils and overhaul_events_utils.displayMessage then
+      overhaul_events_utils.displayMessage("Failed to load opponents. Try again.", 5)
+    end
+    return
+  end
+  local aiLaps = 0
+  if trackFlow and trackFlow.getDisplayTotalLapsForRace then
+    aiLaps = trackFlow.getDisplayTotalLapsForRace(raceForAi) or 0
+  end
   if aiLaps < 1 then aiLaps = (raceForAi.lapCount and raceForAi.lapCount > 0) and raceForAi.lapCount or 3 end
   aiRacers.releaseAndDrive(raceForAi, aiLaps)
   local aiTotalCheckpoints = totalCheckpoints
-  if raceForAi == mainRace.altRoute then
+  if mainRace and raceForAi == mainRace.altRoute then
     if
       overhaul_events_checkpointManager.getAiAltCheckpointCount
       and overhaul_events_checkpointManager.getAiAltCheckpointCount() > 0
@@ -549,14 +573,20 @@ function M.setupAfterAiSpawn(raceName, subjectID, totalCheckpoints, mainRace, ra
       end
     end
   end
-  if
-    overhaul_events_competitiveTrackFlow
-    and overhaul_events_competitiveTrackFlow.isRacingTeamProxyRaceSessionActive
-    and overhaul_events_competitiveTrackFlow.isRacingTeamProxyRaceSessionActive()
-    and subjectID
-    and aiRacers.driveVehicleOnRacePath
-  then
-    aiRacers.driveVehicleOnRacePath(subjectID, raceForAi, aiLaps, nil)
+  -- Proxy freeroam begin can lag the session flag; promote active parking to session before drive.
+  if proxyParking and not proxySession and trackFlow.onTrackRaceBeganFromRacingTeamProxy then
+    trackFlow.onTrackRaceBeganFromRacingTeamProxy()
+    proxySession = trackFlow.isRacingTeamProxyRaceSessionActive
+      and trackFlow.isRacingTeamProxyRaceSessionActive()
+  end
+  if proxySession and subjectID and aiRacers.driveVehicleOnRacePath then
+    aiRacers.driveVehicleOnRacePath(
+      subjectID,
+      raceForAi,
+      aiLaps,
+      proxyTeamCarLaneIndex(raceForAi),
+      { useScriptPath = true }
+    )
   end
 end
 
