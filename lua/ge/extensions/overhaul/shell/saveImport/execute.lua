@@ -151,7 +151,7 @@ end
 -- Choose a legacy migration policy against the newest slot, while plain imports retain their current behavior.
 local function legacyPlan(services, profile, found, options)
   local legacy = options and services.scan.legacy(found[1].info,
-    jsonReadFile(found[1].path .. '/career/rls_career/partRenames040.json'))
+    names.sourceJson(found[1].path .. '/career/rls_career/partRenames040.json'))
   if not legacy then return nil end
   local preflight = M.sourcePreflight(profile, found[1])
   local plan, err = cashOut.selectPlan(preflight, options)

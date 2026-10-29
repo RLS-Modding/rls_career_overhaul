@@ -68,7 +68,7 @@ local function unsupportedReason(slot)
   if version > 64 then return 'Made with a newer save version (' .. version .. ')' end
   if slot.info.corrupted then return 'Save slot is marked corrupted' end
   for _, file in ipairs({'playerAttributes.json', 'inventory.json', 'general.json'}) do
-    if type(jsonReadFile(slot.path .. '/career/' .. file)) ~= 'table' then
+    if type(names.sourceJson(slot.path .. '/career/' .. file)) ~= 'table' then
       return 'Missing or unreadable career/' .. file
     end
   end
@@ -145,9 +145,9 @@ local function blockedSlotNames(found, isSupported)
 end
 
 local function listingRow(profile, slot, found, records, isSupported)
-  local attrs = jsonReadFile(slot.path .. '/career/playerAttributes.json')
+  local attrs = names.sourceJson(slot.path .. '/career/playerAttributes.json')
   if type(attrs) ~= 'table' then attrs = {} end
-  local marker = jsonReadFile(slot.path .. '/' .. names.PART_RENAME_MARKER)
+  local marker = names.sourceJson(slot.path .. '/' .. names.PART_RENAME_MARKER)
   local imported = importedTargets(records, profile)
   local blockedSlots = blockedSlotNames(found, isSupported)
   local reasons = {}

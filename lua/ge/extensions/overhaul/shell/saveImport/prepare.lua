@@ -354,7 +354,11 @@ end
 local function slotFilesOf(helpers, files, slot)
   local slotFiles, prefix = {}, slot.name .. '/'
   for name, entry in pairs(files) do
-    if name:sub(1, #prefix) == prefix then slotFiles[name:sub(#prefix + 1)] = entry end
+    if name:sub(1, #prefix) == prefix then
+      local canonical = names.canonicalSavePath(name:sub(#prefix + 1))
+      assert(not slotFiles[canonical], 'Save filename collision: ' .. canonical)
+      slotFiles[canonical] = entry
+    end
     helpers.checkpoint(nil, nil, 1 / 128)
   end
   return slotFiles

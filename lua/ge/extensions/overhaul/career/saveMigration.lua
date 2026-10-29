@@ -42,7 +42,7 @@ local partMigrationWarnings
 -- Save paths and layout ---------------------------------------------------------------------------
 
 local function isSaveLayoutCurrent(savePath)
-  local marker = jsonReadFile(savePath .. PART_RENAME_MARKER_PATH)
+  local marker = require("overhaul/lib/save/sourcePaths").readJson(savePath .. PART_RENAME_MARKER_PATH)
   return type(marker) == "table" and (tonumber(marker.version) or 0) >= PART_RENAME_VERSION
 end
 
