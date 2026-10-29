@@ -181,14 +181,21 @@ const applyBusinessData = (intake, data) => {
 // Read requests: loads the business for the computer. For fleet repair it also sets the maintenance flag and schedules a
 // refresh of the vehicle rows. `session` holds the refs, the hasCapability check, setBusinessData and the loaded listeners.
 // Returns whether usable business data arrived, so phone callers can offer a retry after a failed read.
-const loadBusinessDataFor = async (session, businessType, targetBusinessId) => {
-  const { isMenuActive, isMaintenanceEnabled, businessId, businessData, pulledOutVehicles, hasCapability, setBusinessData, dataLoadedListeners } = session
+const loadBusinessDataFor = async (session, businessType, targetBusinessId, owner) => {
+  const { isMenuActive, isMaintenanceEnabled, businessId, businessData, pulledOutVehicles, hasCapability, setBusinessData, dataLoadedListeners,
+    ensureBusinessSession, isBusinessSessionCurrent } = session
   if (typeof targetBusinessId === "boolean" || targetBusinessId === "true") {
     return false
   }
+  // Failed-pull refreshes belong to an open session, independent of its jobs/data snapshots.
+  // Ordinary loads keep their existing publication behavior.
+  if (owner === undefined) ensureBusinessSession(businessType, targetBusinessId)
+  const isCurrent = () => owner === undefined || isBusinessSessionCurrent(owner, businessType, targetBusinessId)
+  if (!isCurrent()) return false
   isMenuActive.value = true
   try {
     const descriptor = await fetchTypeData(businessType)
+    if (!isCurrent()) return false
     const declared = descriptor || businessTypeFacts(businessType)
     let data
     if (declared.capabilities?.ownerEndpoints === true && declared.module) {
@@ -196,6 +203,7 @@ const loadBusinessDataFor = async (session, businessType, targetBusinessId) => {
     } else {
       data = await lua.overhaul_career_business_computer.getBusinessComputerUIData(businessType, targetBusinessId)
     }
+    if (!isCurrent()) return false
     if (data != null && typeof data === "object" && !Array.isArray(data)) {
       setBusinessData(descriptor ? { ...data, ...typeDataFields(descriptor) } : data)
     }
@@ -207,14 +215,16 @@ const loadBusinessDataFor = async (session, businessType, targetBusinessId) => {
         maintenanceEnabledFromLua = (await lua.overhaul_career_maintenance_maintenanceMode.isEnabled()) === true
       } catch (error) {
       }
+      if (!isCurrent()) return false
       isMaintenanceEnabled.value = maintenanceEnabledFromUiData || maintenanceEnabledFromLua
       // Fleet repair flags depend on async part-condition snapshots; refresh
       // vehicle rows shortly after opening so Repair visibility is ready.
       window.setTimeout(async () => {
         try {
-          if (!isMenuActive.value) return
+          if (!isCurrent() || !isMenuActive.value) return
           if (normalizeId(businessId.value) !== normalizeId(targetBusinessId)) return
           const result = await lua.overhaul_career_business_computer.getVehiclesOnly(targetBusinessId)
+          if (!isCurrent()) return
           const vehiclesData = result && anchorBusinessTimers(result)
           if (!vehiclesData) return
           const vehiclesFromData = Array.isArray(vehiclesData.pulledOutVehicles) ? vehiclesData.pulledOutVehicles : []
@@ -232,7 +242,7 @@ const loadBusinessDataFor = async (session, businessType, targetBusinessId) => {
     return data != null && typeof data === "object" && !Array.isArray(data)
       && data.businessDataLoadFailed !== true && typeof data.businessId !== "boolean"
   } catch (error) {
-    isMaintenanceEnabled.value = false
+    if (isCurrent()) isMaintenanceEnabled.value = false
     return false
   }
 }
@@ -270,6 +280,22 @@ export const useBusinessSessionStore = defineStore("overhaulBusinessSession", ()
 
   const isMenuActive = ref(false)
   const isMaintenanceEnabled = ref(false)
+
+  let businessSessionToken = {}
+  const captureBusinessSession = () => businessSessionToken
+  const isBusinessSessionCurrent = (token, type, id) => isMenuActive.value && token === businessSessionToken
+    && token.businessType === type && token.businessId === normalizeId(id)
+  const ensureBusinessSession = (type, id) => {
+    // The intended target owns the token even while an ordinary load still exposes the previous business's data.
+    if (!isMenuActive.value || businessSessionToken.businessType !== type
+      || businessSessionToken.businessId !== normalizeId(id)) {
+      businessSessionToken = { businessType: type, businessId: normalizeId(id) }
+    }
+  }
+  const endBusinessSession = () => {
+    businessSessionToken = {}
+    forgetTabSource()
+  }
 
   const businessId = computed(() => businessData.value.businessId)
 
@@ -375,8 +401,9 @@ export const useBusinessSessionStore = defineStore("overhaulBusinessSession", ()
 
   const tabsBySection = computed(() => groupTabsBySection(registeredTabs))
 
-  const readSession = { isMenuActive, isMaintenanceEnabled, businessId, businessData, pulledOutVehicles, hasCapability, setBusinessData, dataLoadedListeners }
-  const loadBusinessData = (businessType, targetBusinessId) => loadBusinessDataFor(readSession, businessType, targetBusinessId)
+  const readSession = { isMenuActive, isMaintenanceEnabled, businessId, businessData, pulledOutVehicles, hasCapability, setBusinessData, dataLoadedListeners,
+    ensureBusinessSession, isBusinessSessionCurrent }
+  const loadBusinessData = (businessType, targetBusinessId, owner) => loadBusinessDataFor(readSession, businessType, targetBusinessId, owner)
 
   const getLuaModule = () => {
     if (hasCapability('ownerEndpoints')) {
@@ -427,6 +454,8 @@ export const useBusinessSessionStore = defineStore("overhaulBusinessSession", ()
     getLuaModule,
     requestFinancesData,
     forgetTabSource,
+    captureBusinessSession,
+    endBusinessSession,
     onBusinessDataApplied,
     onBusinessDataLoaded
   }

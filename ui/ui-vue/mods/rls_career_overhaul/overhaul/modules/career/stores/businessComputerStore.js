@@ -179,7 +179,7 @@ function createViewActions(sessionStore, cartStore, tuningStore) {
 // Menu lifecycle --------------------------------------------------------------
 function createMenuActions(sessionStore, racingStore, techsStore, cartStore) {
   const { businessId, pulledOutVehicle, vehicleView, isMenuActive, businessData, activeView } = storeToRefs(sessionStore)
-  const { forgetTabSource, hasCapability } = sessionStore
+  const { endBusinessSession, hasCapability } = sessionStore
   const { stopRacingTeamSimPoll } = racingStore
   const { partsTreeCache, tuningDataCache } = storeToRefs(cartStore)
   const { hasUncommittedCartChanges, clearCart } = cartStore
@@ -188,7 +188,7 @@ function createMenuActions(sessionStore, racingStore, techsStore, cartStore) {
   let menuCloseInProgress = false
 
   const onMenuClosed = () => {
-    forgetTabSource()
+    endBusinessSession()
     const closingBusinessId = businessId.value
     const closingPassive = hasCapability('passiveIncome')
     const closingVehicleId = pulledOutVehicle.value?.vehicleId ?? null

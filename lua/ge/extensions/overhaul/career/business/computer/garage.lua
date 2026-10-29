@@ -151,8 +151,13 @@ function installer.new(inputs)
     local normalizedVehicleId = inputs.parts.vehicles.normalizeVehicleIdValue(vehicleId)
     local pulledOutVehiclesList = inputs.parts.vehicles.getPulledOutVehiclesList(businessId)
     if isVehiclePulledOut(pulledOutVehiclesList, normalizedVehicleId) then
-      overhaul_career_business_fleet.setActiveVehicle(businessId, normalizedVehicleId)
-      return true
+      -- The fleet verifies the world object and repairs a stale lift reservation.
+      local result = overhaul_career_business_fleet.pullOutVehicle(businessType, businessId, vehicleId)
+      if result then
+        overhaul_career_business_fleet.setActiveVehicle(businessId, normalizedVehicleId)
+        triggerVehicleGarageEvent('businessComputer:onVehiclePulledOut', businessId, businessType, normalizedVehicleId)
+      end
+      return result
     end
 
     refusal = jobLockRefusal(businessId, module, normalizedVehicleId)

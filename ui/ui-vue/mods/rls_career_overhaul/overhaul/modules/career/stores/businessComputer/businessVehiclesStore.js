@@ -18,7 +18,7 @@ import { useBusinessCartStore } from "./businessCartStore.js"
 // Vehicle selection and lifecycle: sell, pull out, personal vehicle selection and put away.
 function createVehicleLifecycleActions(context) {
   const {
-    businessId, businessType, pulledOutVehicle, activeVehicleId, isDamageLocked, loadBusinessData, getLuaModule,
+    businessId, businessType, pulledOutVehicle, activeVehicleId, isDamageLocked, loadBusinessData, getLuaModule, captureBusinessSession,
     getBusinessVehicleById, showDamageLockWarning, normalizeLuaResult, clearCachesForVehicle
   } = context
 
@@ -51,9 +51,12 @@ function createVehicleLifecycleActions(context) {
       showDamageLockWarning()
       return false
     }
+    const owner = captureBusinessSession()
+    const targetBusinessId = businessId.value
+    const targetBusinessType = businessType.value
     try {
       pullOutDiag("pullOutVehicle calling Lua", { businessId: businessId.value, vehicleId })
-      const raw = await lua.overhaul_career_business_computer.pullOutVehicle(businessId.value, vehicleId)
+      const raw = await lua.overhaul_career_business_computer.pullOutVehicle(targetBusinessId, vehicleId)
       pullOutDiag("pullOutVehicle Lua raw", { businessId: businessId.value, vehicleId, raw })
       if (raw && typeof raw === "object" && raw.success === false) {
         pullOutDiag("pullOutVehicle Lua failure", { errorCode: raw.errorCode, message: raw.message })
@@ -61,6 +64,8 @@ function createVehicleLifecycleActions(context) {
       const success = normalizeLuaResult(raw)
       if (!success) {
         pullOutDiag("pullOutVehicle normalized false", { businessId: businessId.value, vehicleId })
+        // The loader rejects closed/replaced sessions while allowing same-session jobs/data patches.
+        await loadBusinessData(targetBusinessType, targetBusinessId, owner)
       }
       return !!success
     } catch (error) {
@@ -548,13 +553,13 @@ export const useBusinessVehiclesStore = defineStore("overhaulBusinessVehicles", 
     isDamageLocked
   } = storeToRefs(sessionStore)
   const {
-    getBusinessVehicleById, showDamageLockWarning, normalizeLuaResult, loadBusinessData, getLuaModule
+    getBusinessVehicleById, showDamageLockWarning, normalizeLuaResult, loadBusinessData, getLuaModule, captureBusinessSession
   } = sessionStore
   const cartStore = useBusinessCartStore()
   const { clearCachesForVehicle } = cartStore
 
   const { sellVehicle, pullOutVehicle, selectPersonalVehicle, putAwayVehicle } = createVehicleLifecycleActions({
-    businessId, businessType, pulledOutVehicle, activeVehicleId, isDamageLocked, loadBusinessData, getLuaModule,
+    businessId, businessType, pulledOutVehicle, activeVehicleId, isDamageLocked, loadBusinessData, getLuaModule, captureBusinessSession,
     getBusinessVehicleById, showDamageLockWarning, normalizeLuaResult, clearCachesForVehicle
   })
   const { repairBusinessVehicle, startVehiclePainting, startVehicleRefueling } = createShopServiceActions({
