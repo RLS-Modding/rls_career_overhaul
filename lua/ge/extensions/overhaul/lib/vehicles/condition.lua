@@ -24,12 +24,17 @@ local function repairPartConditions(data)
 
         local inventoryPart = nil
         if data.inventoryId then
-          local partId = overhaul_career_parts_partInventory.getPartPathToPartIdMap()[data.inventoryId][partPath]
+          local partMap = overhaul_career_parts_partInventory.getPartPathToPartIdMap()[data.inventoryId] or {}
+          local partId = partMap[partPath]
           inventoryPart = overhaul_career_parts_partInventory.getInventory()[partId]
-          inventoryPart.repairCount = inventoryPart.repairCount or 0
-          inventoryPart.repairCount = inventoryPart.repairCount + 1
-          local vehicle = overhaul_career_garage_inventory.getVehicles()[data.inventoryId]
-          vehicle.changedSlots[inventoryPart.containingSlot] = true
+          -- Saved conditions can outlive a part-inventory mapping, including mod parts.
+          -- Repair those conditions even when optional inventory bookkeeping is unavailable.
+          if inventoryPart then
+            inventoryPart.repairCount = inventoryPart.repairCount or 0
+            inventoryPart.repairCount = inventoryPart.repairCount + 1
+            local vehicle = overhaul_career_garage_inventory.getVehicles()[data.inventoryId]
+            vehicle.changedSlots[inventoryPart.containingSlot] = true
+          end
         end
 
         -- Only crash-broken parts lose their damaged finish.

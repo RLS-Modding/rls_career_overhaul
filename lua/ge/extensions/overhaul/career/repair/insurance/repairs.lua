@@ -403,6 +403,9 @@ function partFactory.new(inputs)
       if committed then return true end
       if overhaul_career_garage_inventory.getVehicles()[vehInvId] ~= vehInfo then return false end
       repairPartConditions(data)
+      -- Stored repairs have no live condition capture to refresh detached inventory rows.
+      -- Synchronize before the forced save and later spawn reconciliation can reuse them.
+      overhaul_career_parts_partInventory.updatePartConditionsInInventory(vehInvId)
       if overhaul_career_maintenance_tireSystem and overhaul_career_maintenance_tireSystem.clearFlatsForVehicle then
         overhaul_career_maintenance_tireSystem.clearFlatsForVehicle(vehInvId)
       end
