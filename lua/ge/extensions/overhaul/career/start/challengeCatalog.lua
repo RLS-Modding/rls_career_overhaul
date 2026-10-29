@@ -4,6 +4,7 @@
 -- Requires -------------------------------------------------------------
 
 local challengeRounding = require('overhaul/lib/career/challengeRounding')
+local challengeStartRules = require('overhaul/career/start/challengeStartRules')
 
 local M = {}
 
@@ -171,6 +172,8 @@ local function buildChallengeTemplate()
     economyAdjuster = {},
     winCondition = "",
     startingGarages = {}, -- default starting garages for challenges
+    startingGarageMode = "default",
+    starterVehicles = {}, -- one is picked at random and gifted on a new save
     category = "custom",
     createdBy = "",
     createdDate = "",
@@ -608,6 +611,9 @@ local function validateChallenge(state, challengeData)
   ok, message = validateWinConditionVariables(state, challengeData)
   if not ok then return false, message end
 
+  ok, message = challengeStartRules.validate(challengeData, state.ctx and state.ctx.getAvailableGarages)
+  if not ok then return false, message end
+
   return true, "Valid"
 end
 
@@ -619,6 +625,7 @@ function M.create(ctx)
     winConditions = buildBuiltInWinConditions(ctx),
     discovered = {},
     discoveredReady = false,
+    ctx = ctx,
   }
   local challengeTemplate = buildChallengeTemplate()
 

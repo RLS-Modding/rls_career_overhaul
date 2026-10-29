@@ -2,6 +2,8 @@
 -- Map: format, binary values, catalogs, name hashes, variables, codec, generation, import and public API.
 local M = {}
 local challengeRounding = require('overhaul/lib/career/challengeRounding')
+local levelData = require('overhaul/lib/world/levelData')
+local seedStartSections = require('overhaul/career/challengeModes/seedStartSections')
 
 -- Parts ---------------------------------------------------------------------------------------------
 
@@ -21,6 +23,9 @@ do
   format.MARKER_STARTING_GARAGES = 0x04
   format.MARKER_DIFFICULTY = 0x05
   format.MARKER_MAP = 0x06
+  -- Named-format only: older readers reject these markers, so seeds without them stay readable everywhere.
+  format.MARKER_STARTER_VEHICLES = 0x07
+  format.MARKER_STARTING_GARAGE_MODE = 0x08
   format.MARKER_VARIABLE_NUMBER = 0x10
   format.MARKER_VARIABLE_INTEGER = 0x11
   format.MARKER_VARIABLE_BOOLEAN = 0x12
@@ -324,12 +329,13 @@ do
 
   -- Garages -------------------------------------------------------------------------------------------
 
-  function catalog.getAvailableGarageIds()
+  -- mapId limits the list to one map's garages; without it every compatible map is included.
+  function catalog.getAvailableGarageIds(mapId)
     local ids = {}
     -- challengeModes is always loaded at boot, so its garage list needs no guard.
     local garages = overhaul_career_challengeModes.getAvailableGarages()
     for _, garage in ipairs(garages) do
-      if garage.id and type(garage.id) == "string" and garage.id ~= "" then
+      if garage.id and type(garage.id) == "string" and garage.id ~= "" and (not mapId or garage.mapId == mapId) then
         table.insert(ids, garage.id)
       end
     end
@@ -824,6 +830,12 @@ do
     end)
   end
 
+  local startSections = seedStartSections.create({
+    binary = parts.binary,
+    format = parts.format,
+    appendSection = appendSection,
+  })
+
   local function encodeMapSection(buffer, challengeData)
     local map = challengeData.map
     if type(map) ~= "string" or map == "" then return true end
@@ -869,6 +881,8 @@ do
     succeeded, err = encodeGarageSection(buffer, challengeData)
     if not succeeded then return nil, err end
     succeeded, err = encodeMapSection(buffer, challengeData)
+    if not succeeded then return nil, err end
+    succeeded, err = startSections.encode(buffer, challengeData)
     if not succeeded then return nil, err end
 
     table.insert(buffer, string.char(parts.format.MARKER_END))
@@ -1028,6 +1042,10 @@ do
       return readGarageSection(challengeData, decodeState, bytes, offset)
     elseif marker == parts.format.MARKER_MAP then
       return readMapSection(challengeData, decodeState, bytes, offset)
+    elseif marker == parts.format.MARKER_STARTING_GARAGE_MODE then
+      return startSections.readStartingGarageMode(challengeData, decodeState, bytes, offset)
+    elseif marker == parts.format.MARKER_STARTER_VEHICLES then
+      return startSections.readStarterVehicles(challengeData, decodeState, bytes, offset)
     elseif marker == parts.format.MARKER_ECONOMY_ADJUSTER then
       return readEconomySection(challengeData, decodeState, bytes, offset)
     elseif marker >= parts.format.MARKER_VARIABLE_NUMBER and marker <= parts.format.MARKER_VARIABLE_TABLE then
@@ -1151,9 +1169,9 @@ do
     return value
   end
 
-  -- Up to three distinct garages; nil when the game offers none.
-  local function randomGarageSelection()
-    local available = parts.catalog.getAvailableGarageIds()
+  -- Up to three distinct garages from one map; nil when the map offers none.
+  local function randomGarageSelection(mapId)
+    local available = parts.catalog.getAvailableGarageIds(mapId)
     if #available == 0 then return nil end
     local count = math.random(1, math.min(MAX_RANDOM_GARAGES, #available))
     local selected = {}
@@ -1176,7 +1194,7 @@ do
       return definition.default or "random_" .. variableName
     elseif varType == "multiselect" or varType == "array" then
       if variableName == "targetGarages" then
-        return randomGarageSelection()
+        return randomGarageSelection(options.map or levelData.defaultMap())
       end
       return {}
     end
@@ -1242,7 +1260,7 @@ do
       return options.startingGarages
     end
     if math.random() < 0.3 then
-      return randomGarageSelection()
+      return randomGarageSelection(options.map or levelData.defaultMap())
     end
     return nil
   end

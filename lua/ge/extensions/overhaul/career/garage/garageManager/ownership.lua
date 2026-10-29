@@ -306,6 +306,13 @@ local function installStartingGarages(inputs, helpers)
     return false
   end
 
+  -- A challenge with startingGarageMode "none" starts homeless, whatever the career's garage preference says.
+  function helpers.isNoGarageChallenge()
+    if not overhaul_career_challengeModes.isChallengeActive() then return false end
+    local activeChallenge = overhaul_career_challengeModes.getActiveChallenge()
+    return activeChallenge ~= nil and activeChallenge.startingGarageMode == "none"
+  end
+
   function helpers.getManualStartingGaragePreference()
     return overhaul_career_career.getStartingGaragePreference() or {mode = "default", garageId = nil}
   end
@@ -376,6 +383,7 @@ local function installStartingGarages(inputs, helpers)
   end
 
   function helpers.getEffectiveStartingGarages(levelName)
+    if helpers.isNoGarageChallenge() then return {}, "challenge" end
     if overhaul_career_challengeModes.isChallengeActive() then
       local activeChallenge = overhaul_career_challengeModes.getActiveChallenge()
       if activeChallenge and activeChallenge.startingGarages and #activeChallenge.startingGarages > 0 then
@@ -663,6 +671,7 @@ local function installLoadReconciliation(inputs, helpers)
   end
 
   function helpers.ensureManualStartingGarage()
+    if helpers.isNoGarageChallenge() then return end
     local preference = helpers.getManualStartingGaragePreference()
     if preference.mode == "default" and preference.garageId and preference.garageId ~= "" then
       helpers.ensureStartingGarageGranted(preference.garageId, "manually selected")

@@ -46,10 +46,14 @@
                             <span class="cdm-debt-value"><template v-if="debtSummary"><BngIcon class="cur" :type="icons.beamCurrency" />{{ debtSummary.amount }} at {{ debtSummary.interest }}. {{ debtSummary.payments }} payment{{ debtSummary.payments !== 1 ? 's' : '' }} (<BngIcon class="cur" :type="icons.beamCurrency" />{{ debtSummary.perPayment }} per payment)</template></span>
                         </div>
                     </div>
-                    <div v-if="startingGaragesDisplay || startingMapDisplay" class="cdm-starting-location">
+                    <div v-if="startingGaragesDisplay || startingMapDisplay || starterVehiclesDisplay" class="cdm-starting-location">
                         <div v-if="startingGaragesDisplay" class="cdm-location-item">
                             <span class="cdm-location-label">Starting Garages:</span>
                             <span class="cdm-location-value">{{ startingGaragesDisplay }}</span>
+                        </div>
+                        <div v-if="starterVehiclesDisplay" class="cdm-location-item">
+                            <span class="cdm-location-label">Starter Car:</span>
+                            <span class="cdm-location-value">{{ starterVehiclesDisplay }}</span>
                         </div>
                         <div v-if="startingMapDisplay" class="cdm-location-item">
                             <span class="cdm-location-label">Starting Map:</span>
@@ -723,6 +727,7 @@ function formatMultiplier(mult) {
 
 const startingGaragesDisplay = computed(() => {
     const challenge = fullChallengeData.value || props.challenge
+    if (challenge?.startingGarageMode === 'none') return 'None'
     if (!challenge?.startingGarages || !Array.isArray(challenge.startingGarages) || challenge.startingGarages.length === 0) {
         return null
     }
@@ -740,6 +745,19 @@ const startingGaragesDisplay = computed(() => {
         .filter(Boolean)
 
     return garageNames.length > 0 ? garageNames.join(', ') : null
+})
+
+const starterVehiclesDisplay = computed(() => {
+    const challenge = fullChallengeData.value || props.challenge
+    if (!Array.isArray(challenge?.starterVehicles) || challenge.starterVehicles.length === 0) return null
+
+    const vehicleNames = new Map()
+    for (const vehicle of props.editorData?.availableStarterVehicles || []) {
+        if (vehicle.id && vehicle.name) vehicleNames.set(vehicle.id, vehicle.name)
+    }
+    const names = challenge.starterVehicles.map(id => vehicleNames.get(id) || id)
+    if (names.length === 1) return names[0]
+    return `One of ${names.slice(0, -1).join(', ')} or ${names[names.length - 1]}, picked at random`
 })
 
 const startingMapDisplay = computed(() => {
