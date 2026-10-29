@@ -479,9 +479,20 @@ function persistence.new(inputs)
             vehicle.partConditions = task.freshPartConditions[inventoryId]
             vehicle.mechanismState = task.freshMechanismStates[inventoryId]
           end
-          overhaul_career_saveSystem.captureSaveWrites(function(vehicleWriter)
-            overhaul_career_repair_damageManager.saveDamageState(inventoryId, currentSavePath .. "/career/vehicles/damage/" .. inventoryId .. "_damageState.json", nil, vehicle.partConditions, vehicleWriter)
-            saveVehicle(vehicleWriter)
+          -- Label deferred vehicle+damage writes so save failures name the family (not feature=unregistered).
+          overhaul_career_saveSystem.withFeatureWrites({
+            key = "garage.inventory.vehicles",
+            required = true,
+            base = currentSavePath,
+            files = {
+              "career/vehicles/" .. inventoryId .. ".json",
+              "career/vehicles/damage/" .. inventoryId .. "_damageState.json",
+            },
+          }, function()
+            overhaul_career_saveSystem.captureSaveWrites(function(vehicleWriter)
+              overhaul_career_repair_damageManager.saveDamageState(inventoryId, currentSavePath .. "/career/vehicles/damage/" .. inventoryId .. "_damageState.json", nil, vehicle.partConditions, vehicleWriter)
+              saveVehicle(vehicleWriter)
+            end)
           end)
           task[key] = true
           checkSaveFinished(currentSavePath, task)

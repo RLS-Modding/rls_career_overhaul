@@ -71,6 +71,8 @@ local inFlightManualSave = false
 local exitFlush = false
 local pendingExit
 local exitSaveFailed = false
+-- After a failed exit/reload save, the next exit or Ctrl+L continues without saving (avoids soft-lock).
+local exitBypassReady = false
 
 local syncSaveExtensionsDone
 local asyncSaveExtensions = {}
@@ -976,8 +978,20 @@ local function abortSaveInFlight(reason)
   mergeVehiclesThumbnailUpdate(inFlightVehiclesThumbnailUpdate)
   -- Never restore a complete stamp over partially replaced files.
   if backupReady and backupWasCurrent and saveInFlightProfile == currentProfile then currentSavePath = backupPath end
-  guihooks.trigger("toastrMsg", {type="error", label="career-save", title=_tr("ui.career.save.toast.failed.title"), msg=_tr("ui.career.save.toast.failed.msg") .. " " .. tostring(reason), config={timeOut=15000}})
-  guihooks.trigger("OverhaulSaveStatus", {state = "idle"})
+  -- Exit/reload was waiting on this save: next Ctrl+L or exit continues without saving.
+  local waitingForExit = pendingExit ~= nil
+  if waitingForExit then
+    exitBypassReady = true
+    exitFlush = false
+  end
+  local detail = tostring(reason or "unknown error")
+  if #detail > 180 then detail = detail:sub(1, 177) .. "..." end
+  local playerTitle = "Career save failed"
+  local playerMsg = waitingForExit
+    and "Your last good save is kept. Press Ctrl+L again, or exit again, to continue without saving."
+    or "Your last good save is kept. Try Save again later. If you need to leave, press Ctrl+L twice to reload without saving."
+  guihooks.trigger("toastrMsg", {type="error", label="career-save", title=playerTitle, msg=playerMsg .. " (" .. detail .. ")", config={timeOut=20000}})
+  guihooks.trigger("OverhaulSaveStatus", {state = "failed", reason = playerMsg, detail = detail, exitBypassReady = exitBypassReady == true})
   lifecycle.finish(saveTransition, "failed", {reason = reason})
   trace({kind = "finish", result = "failed", generation = activeSaveGeneration, reason = tostring(reason)})
   extensions.hook("onOverhaulSaveFailed", oldestSave)
@@ -1023,6 +1037,7 @@ local function saveCompleted()
   lastSaveStats = {captureMs = captureMs, files = fileCount, reused = reusedFiles, writeFrames = writeFrames,
     totalMs = clockMs() - snapshotStarted, snapshotMs = snapshotCopyMs, path = oldestSave}
   log("D", "saveSystem", string.format("save timing capture_ms=%.3f files=%d reused=%d write_frames=%d total_ms=%.3f snapshot_copy_ms=%.3f finalize_ms=%.3f path=%s", captureMs, fileCount, reusedFiles, writeFrames, clockMs() - snapshotStarted, snapshotCopyMs, clockMs() - finalizeStarted, oldestSave))
+  exitBypassReady = false
   guihooks.trigger("OverhaulSaveStatus", {state = queueSave and pendingManualSave and "deferred" or "saved"})
   if pendingSaveSuccessSound and not queueSave then
     pendingSaveSuccessSound = false
@@ -1313,7 +1328,23 @@ local function flushSaveForExit(callback, captureFresh)
   if isCareerActive() and currentProfile then extensions.hook("onOverhaulBeforeSaveExit") end
   if not isCareerActive() or not currentProfile then
     clearQueuedSave()
+    exitBypassReady = false
     if callback then callback() end
+    return true
+  end
+  -- Prior exit/reload save already failed: continue without writing so the player is not soft-locked.
+  if exitBypassReady then
+    exitBypassReady = false
+    exitSaveFailed = false
+    clearQueuedSave()
+    local finish = callback or pendingExit
+    pendingExit, exitFlush = nil, false
+    if finish then
+      guihooks.trigger("toastrMsg", {type="warning", label="career-save", title="Continuing without saving",
+        msg="Career progress since the last good save was not written.", config={timeOut=10000}})
+      guihooks.trigger("OverhaulSaveStatus", {state = "idle"})
+      finish()
+    end
     return true
   end
   if callback then pendingExit = callback end
@@ -1343,7 +1374,7 @@ end
 
 local exitContinuations = {flushSaveForExit = flushSaveForExit}
 local reload = transitions.newReload({
-  cancelPendingExit = function() pendingExit, exitFlush = nil, false end,
+  cancelPendingExit = function() pendingExit, exitFlush, exitBypassReady = nil, false, false end,
   shouldSaveBeforeReload = function() return isCareerActive() and currentProfile and autosaveEnabled() and not saveInProgress end,
   saveCurrent = saveCurrent,
   -- Reload requests its fresh snapshot before flushing; do not queue another.
@@ -1373,6 +1404,8 @@ local function onOverhaulActive(active)
   pendingExit = nil
   reload.reset()
   exitFlush = false
+  exitBypassReady = false
+  exitSaveFailed = false
   stoppedFor = 0
   -- Deactivation unloads career modules before queued saves can run.
   if not saveInProgress then

@@ -105,7 +105,7 @@ end
 local function failSave(task, message)
   if taskIsCurrent(task) then
     log('E', 'damageManager', message)
-    overhaul_career_saveSystem.saveFailed()
+    overhaul_career_saveSystem.saveFailed(message)
   end
 end
 
