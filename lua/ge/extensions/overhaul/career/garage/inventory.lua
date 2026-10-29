@@ -529,7 +529,8 @@ local function tickAccessTimers(elapsed)
   end
 end
 
-local function onUpdate(dtReal, _dtSim, _dtRaw)
+local function onUpdate(dtReal, dtSim, _dtRaw)
+  parts.spawn.onUpdate(dtSim)
   parts.persistence.pumpThumbnailCaptures()
   retryPendingMigration()
   tickNewCareerSave()

@@ -12,6 +12,11 @@ function M.new(inputs)
   local owner = {}
   local run
   local pauseSequence = 0
+  local simulationTime = 0
+
+  function owner.onUpdate(dtSim)
+    simulationTime = simulationTime + math.max(dtSim or 0, 0)
+  end
 
   -- The global lookup can retain a miss across a vehicle replacement's registration gap.
   local function vehicleObject(vehId)
@@ -109,15 +114,10 @@ function M.new(inputs)
     local reached = waitForMechanisms(attempt, version, job)
     if reached == nil then return end
     -- A carried load must wait for the unloaded support to settle after the pose changes.
-    local settled = 0
-    local function physicsPaused()
-      return simTimeAuthority and simTimeAuthority.getPause and simTimeAuthority.getPause() == true
-    end
-    while settled < SETTLE_SECONDS do
+    local settleUntil = simulationTime + SETTLE_SECONDS
+    while simulationTime < settleUntil do
       if not valid(attempt) or attempt.version ~= version or attempt.held then return end
-      local running = not physicsPaused()
       job.sleep(WAIT_INTERVAL_SECONDS)
-      if running and not physicsPaused() then settled = settled + WAIT_INTERVAL_SECONDS end
     end
     finished(attempt, version, not reached)
   end
@@ -137,7 +137,13 @@ function M.new(inputs)
         local ready = inputs.readiness.get(attempt.inventoryId).states.veAcknowledged
         if not attempt.held and ready then
           local version = attempt.version
-          job.sleep(SETTLE_SECONDS)
+          -- Other cars can pause physics while real-time jobs keep running. Native
+          -- startup couplers must finish before commitLoad restores this vehicle.
+          local settleUntil = simulationTime + SETTLE_SECONDS
+          while valid(attempt) and not attempt.held and attempt.version == version
+              and simulationTime < settleUntil do
+            job.sleep(WAIT_INTERVAL_SECONDS)
+          end
           if not valid(attempt) then break end
           if not attempt.held and attempt.version == version then
             restoreAtRest(attempt, version, job)

@@ -601,6 +601,7 @@ function spawnPart.new(inputs)
     spawnVehicle = spawnVehicle,
     spawnReadiness = readiness,
     completeVehiclePlacement = damageRestore.complete,
+    onUpdate = damageRestore.onUpdate,
     deferVehiclePlacement = damageRestore.defer,
     isDamageRestorePending = damageRestore.isPending,
     teleportWalkFallback = teleportWalkFallback,
