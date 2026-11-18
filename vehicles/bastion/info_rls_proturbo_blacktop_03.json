@@ -1,0 +1,87 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Configuration": "Eric Duncan - Pro Turbo",
+  "Description": "Burnt-orange broad-torque V8 sedan with stock-output heavy-duty block and four-speed drag automatic. Turbo only; Pro League unlimited class. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Drivetrain": "RWD",
+  "Transmission": "Automatic",
+  "Fuel Type": "Gasoline",
+  "Induction Type": "Turbo",
+  "Years": {
+    "min": 2016,
+    "max": 2022
+  },
+  "Value": 180000,
+  "Motorsport": {
+    "version": 1,
+    "id": "bastion/rls_proturbo_blacktop_03",
+    "configId": "rls_proturbo_blacktop_03",
+    "model": "bastion",
+    "config": "/vehicles/bastion/rls_proturbo_blacktop_03.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "marcus_cross",
+    "driverName": "Eric Duncan",
+    "builder": "Blacktop Engineering",
+    "classIds": [
+      "pro_turbo"
+    ],
+    "approvedClassIds": [
+      "pro_turbo"
+    ],
+    "leagueId": "pro_league",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "0e65da5e13555629235f7536069539ec8504138c8a9b2578b6102869085db55c",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "4-speed drag automatic",
+      "induction": "Twin turbochargers",
+      "nitrous": false,
+      "years": {
+        "min": 2016,
+        "max": 2022
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_18x5",
+          "part": "tire_F_28_4_5_18_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_18x12_alt",
+          "part": "tire_R_28_13_5_18_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "bastion_rollcage",
+          "part": "bastion_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 7.6846250301581,
+      "runId": "PT-036",
+      "evidenceConfigSHA256": "9d4ec571c909aa93e7320b7270d820d830a582c3b7fc7da4f4d3397dd5453ee9",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/pro-turbo/final-results.json",
+      "acceptedConfig": "outputs/pro-turbo/accepted/rls_proturbo_blacktop_03/rls_proturbo_blacktop_03.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_pro_turbo"
+  }
+}

@@ -450,13 +450,20 @@ local function applyMaintenancePartConditions(inventoryId, partConditions, vehId
     return false
   end
 
+  -- Maintenance reads conditions natively, possibly before Fuels has bound the
+  -- engine and tanks on a fresh spawn. Keep their saved fuel records.
+  partConditions = deepCopyValue(partConditions)
+  if inventory.preserveRlsFuelEngineStates then
+    partConditions = inventory.preserveRlsFuelEngineStates(vehicleData.partConditions, partConditions)
+  end
+
   local nextSignature = getSerializedSignature(partConditions)
   local currentSignature = getSerializedSignature(vehicleData.partConditions)
   if nextSignature and nextSignature == currentSignature then
     return true
   end
 
-  vehicleData.partConditions = deepCopyValue(partConditions)
+  vehicleData.partConditions = partConditions
   if inventory.setVehicleDirty then
     inventory.setVehicleDirty(inventoryId)
   end

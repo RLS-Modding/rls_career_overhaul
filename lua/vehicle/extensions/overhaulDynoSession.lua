@@ -102,7 +102,7 @@ local function getActualGearIndex()
     or parseGearValue(values.visualGear)
     or parseGearValue(values.gear)
 
-  return gear and floor(gear) or 0
+  return gear and floor(gear) or nil
 end
 
 local function getDisplayGear()
@@ -121,7 +121,9 @@ end
 
 local function getGear()
   local actual = getActualGearIndex()
-  if actual ~= 0 then
+  -- Zero is an observed neutral gearbox, not a missing reading. A stale UI
+  -- stream may still show the last forward gear after disengagement.
+  if actual ~= nil then
     return actual
   end
   return getDisplayGear()
@@ -148,7 +150,12 @@ local function getBrake()
       or 0))
 end
 
--- Power and torque --------------------------------------------------------------------------------
+local function getParkingBrake()
+  local values=electrics.values or {}
+  return max(0,min(1,tonumber(values.parkingbrake)
+    or tonumber(input and input.parkingbrake) or tonumber(values.parkingbrake_input) or 0))
+end
+
 local function getPowerTorque(engine, rpm)
   local flywheelTorque = engine and (tonumber(engine.outputTorque1) or tonumber(engine.outputTorque)) or 0
   -- wheels.wheelPower is a graphics-frame cache, so sum live wheel devices after the physics step.
@@ -205,6 +212,7 @@ local function makeSample()
   return {
     pullId = pullState.pullId,
     dynoSweepControlled = not rampState or rampState.controlled ~= false,
+    dynoLoadMode = rampState and rampState.mode,
     physicsSampleCount = physicsCount,
     time = pullState.timer,
     stage = pullState.stage,
@@ -212,6 +220,8 @@ local function makeSample()
     gear = getGear(),
     throttle = getThrottle(),
     brake = getBrake(),
+    parkingBrake = getParkingBrake(),
+    transmission = overhaulDynoTransmission and overhaulDynoTransmission.getState() or nil,
     wheelPower = max(0, wheelPower),
     wheelTorque = max(0, wheelTorque),
     rawWheelTorque = rawWheelTorque,
@@ -334,6 +344,7 @@ local function discardWindow()
 end
 
 local function endRecording(reason)
+  if overhaulDynoTransmission then overhaulDynoTransmission.release() end
   pullState.endReason = reason
   pullState.cutoffTime = pullState.timer
   discardTail(reason == "revLimiter" and "limiterBuffer" or "endBuffer")
@@ -342,7 +353,7 @@ local function endRecording(reason)
 end
 
 local function checkRawSample(sample)
-  if sample.dynoSweepControlled == false then addFlag("dynoSweepUnregulated") end
+  if sample.dynoSweepControlled == false and sample.dynoLoadMode ~= "preset" then addFlag("dynoSweepUnregulated") end
   if sample.gear <= 0 then
     addFlag("neutralGear")
   end
@@ -354,6 +365,10 @@ local function checkRawSample(sample)
 
   if sample.brake > pullState.maxBrake then
     addFlag("brakeInput")
+  end
+
+  if sample.parkingBrake > pullState.maxBrake then
+    addFlag("parkingBrakeInput")
   end
 
   if sample.throttle < pullState.highThrottle then
@@ -504,6 +519,7 @@ local function buildCompletedPullResult(
 end
 
 local function finishPull(aborted)
+  if overhaulDynoTransmission then overhaulDynoTransmission.release() end
   if not pullState then
     return
   end
@@ -573,6 +589,7 @@ local function updateArmed(sample, dt)
 end
 
 local function updateReady(sample, dt)
+  if pullState.holdGear and pullState.holdGear>0 and (not overhaulDynoTransmission or not overhaulDynoTransmission.getState().active) then return end
   updateStableGear(sample, dt)
 
   if sample.gear <= 0 then
@@ -626,6 +643,12 @@ local function onPhysicsStep(dt)
 
   -- Limiter pulses and lifts fall between samples, so latch the first boundary every frame.
   if pullState.stage == "recording" then
+    -- Catch short shifts/brake pulses between the 50 Hz telemetry samples too.
+    local gear=getGear()
+    if gear<=0 then addFlag("neutralGear") end
+    if gear~=pullState.recordingGear then addFlag("gearChanged") end
+    if getBrake()>pullState.maxBrake then addFlag("brakeInput") end
+    if getParkingBrake()>pullState.maxBrake then addFlag("parkingBrakeInput") end
     local engine = getEngine()
     if engine and engine.revLimiterActive == true then
       endRecording("revLimiter")
@@ -667,15 +690,20 @@ local function onPhysicsStep(dt)
   end
 end
 
--- Lifecycle --------------------------------------------------------------------------------------
-local function startPull(pullId)
+local function startPull(pullId, options)
+  if options and (tonumber(options.holdGear) or 0)>0 and not overhaulDynoTransmission then return false end
+  if overhaulDynoTransmission and not overhaulDynoTransmission.arm(options) then
+    obj:queueGameEngineLua(geCallback.command('dynoPullStartFailed',serialize(pullId)))
+    return false
+  end
   clearOverrides()
   extensions.load("overhaulDynoLoad")
-  overhaulDynoLoad.startPull()
+  overhaulDynoLoad.startPull(options)
   enablePhysicsStepHook()
 
   pullState = {
     pullId = pullId,
+    holdGear = options and tonumber(options.holdGear) or 0,
     timer = 0,
     stageTimer = 0,
     sampleTimer = 0,
@@ -717,6 +745,13 @@ local function startPull(pullId)
   }
 
   controller.setFreeze(0)
+  -- Setup and retry can leave the ignition off. Use the native starter, which
+  -- returns to ignition-on when the engine fires; never write engine RPM.
+  if electrics.setIgnitionLevel and (electrics.values.ignitionLevel or 0) < 2 then
+    electrics.setIgnitionLevel(3)
+  elseif electrics.setIgnitionLevel and (electrics.values.rpm or 0) < 100 then
+    electrics.setIgnitionLevel(3)
+  end
 end
 
 -- Public API -----------------------------------------------------------------------------------------

@@ -104,6 +104,35 @@ function part.new(inputs)
   local minDeliveryDistance = inputs.rules.minDeliveryDistance
   local sharedCalc = inputs.services.sharedCalc
 
+  -- Maps may maintain a small standing pool instead of adding unbounded
+  -- batches. Reservations and loaded freight never count as fresh stock.
+  -- With a cap, also returns how many items may still be added: one parcel
+  -- roll can add several duplicate copies.
+  local function offerRollCount(generator, matches)
+    local count = math.random(generator.min, generator.max)
+    local cap = tonumber(generator.maxAvailableOffers)
+    if not cap then return count end
+    local current = callbacks.getGeneratorOfferCount(generator, matches)
+    local minimum = math.min(cap, tonumber(generator.minAvailableOffers) or 0)
+    local room = math.max(0, cap - current)
+    return math.min(math.max(count, minimum - current), room), room
+  end
+
+  local function parcelSizeAvailable(slots, status)
+    local key = slots > 64 and "slot128" or slots > 32 and "slot64" or slots > 16 and "slot32" or "slot16"
+    return status[key] ~= false
+  end
+
+  local function parcelSizes(template, generator)
+    if not generator.unlockedParcelSizesOnly then return template.slots end
+    local status = ext.parcelMods.getParcelModUnlockStatusSimple()
+    local available = {}
+    for _, slots in ipairs(template.slots) do
+      if parcelSizeAvailable(slots, status) then available[#available + 1] = slots end
+    end
+    return available
+  end
+
   -- Parcel Finalizing, Templates and Generation ---------------------------------------------
 
   local getMoneyRewardForParcelItem = sharedCalc.getMoneyRewardForParcelItem
@@ -231,12 +260,18 @@ function part.new(inputs)
     end
   end
 
-  local function generateItemWithDuplicates(template, origin, destination, timeOffset, generatorLabel, generator)
+  -- maxCopies is the capped pool's remaining room; nil leaves duplicates unlimited.
+  local function generateItemWithDuplicates(template, origin, destination, timeOffset, generatorLabel, generator, maxCopies)
     callbacks.profilerPushEvent("Duplicate Item")
     local offerExpiresAt = callbacks.generationTime() + template.offerDuration * (0.9+math.random()*0.2) + timeOffset
     local originFacility = callbacks.getFacilityById(origin.facId)
     local itemName = callbacks.randomFromList(template.names)
-    local slots = callbacks.randomFromList(template.slots)
+    local sizes = parcelSizes(template, generator)
+    if not sizes[1] then
+      callbacks.profilerPopEvent("Duplicate Item")
+      return 0
+    end
+    local slots = callbacks.randomFromList(sizes)
     local authoredWeight = callbacks.randomFromList(template.weight) * (math.random()*0.2 + 0.9)
     local itemGroupSeed = round(math.random()*1000000)
 
@@ -269,6 +304,7 @@ function part.new(inputs)
     end
 
     local duplicateAmount = getDuplicateAmount(template)
+    if maxCopies then duplicateAmount = math.min(duplicateAmount, maxCopies) end
     gen.groupId = gen.groupId + 1
     for d = 1, duplicateAmount do
       local copy = deepcopy(item)
@@ -367,7 +403,8 @@ function part.new(inputs)
   local routePickers = {parcelProvider = pickProviderRoute, parcelReceiver = pickReceiverRoute}
 
   -- One roll of the generator: adds the item (and its duplicates) unless the roll is skipped.
-  local function rollParcelItem(fac, generator, timeOffset)
+  -- Returns how many items were added.
+  local function rollParcelItem(fac, generator, timeOffset, maxCopies)
     local template = getDeliveryItemTemplateFor(generator)
     if not template then
       logMissingTemplate(generator)
@@ -382,8 +419,8 @@ function part.new(inputs)
       origin, destination = pickRoute(fac, generator, template)
     end
     callbacks.profilerPopEvent("Origin and Destination")
-    if pickRoute and not origin then return end
-    generateItemWithDuplicates(template, origin, destination, timeOffset, generator.name, generator)
+    if pickRoute and not origin then return 0 end
+    return generateItemWithDuplicates(template, origin, destination, timeOffset, generator.name, generator, maxCopies)
   end
 
   local function triggerParcelGenerator(fac, generator, timeOffset)
@@ -401,13 +438,22 @@ function part.new(inputs)
       return
     end
 
-    local rollCount = math.random(generator.min, generator.max)
+    local matches
+    if generator.unlockedParcelSizesOnly then
+      local status = ext.parcelMods.getParcelModUnlockStatusSimple()
+      matches = function(item) return parcelSizeAvailable(item.slots, status) end
+    end
+    local rollCount, room = offerRollCount(generator, matches)
     if rollCount <= 0 then return end
 
     local remainingRolls = MAX_PARCEL_ROLLS
     for _ = 1, rollCount do
-      rollParcelItem(fac, generator, timeOffset)
+      local added = rollParcelItem(fac, generator, timeOffset, room)
       if callbacks.yieldGeneration then callbacks.yieldGeneration() end
+      if room then
+        room = room - (added or 0)
+        if room <= 0 then return end
+      end
       remainingRolls = remainingRolls - 1
       if remainingRolls <= 0 then
         log("D","","Could not generate items after " .. MAX_PARCEL_ROLLS .. " tries: " .. fac.id.. " -> " .. dumps(generator))
@@ -438,12 +484,32 @@ function part.new(inputs)
     return nil
   end
 
-  local function getRandomVehicleFromFilterByFilterId(filterId)
+  local function getVehicleSalesDealerId(fac)
+    local level=getCurrentLevelIdentifier()
+    if level~='american_road' and level~='east_coast_usa' and level~='jungle_rock_island'
+      and level~='rls_american_road' and level~='rls_east_coast_usa' and level~='rls_jungle_rock_island' then return end
+    if not fac then return end
+    if fac.vehicleSalesDealerId then return fac.vehicleSalesDealerId end
+    local grouped=overhaul_world_facilities.getFacilities(level)
+    for _,dealer in ipairs(grouped and grouped.dealerships or{})do if dealer.id==fac.id then return dealer.id end end
+  end
+  local function getRandomVehicleFromFilterByFilterId(filterId, salesDealerId)
     local filter = getVehicleFilterByIdSafe(filterId, "getRandomVehicleFromFilterByFilterId")
     if not filter then
       return nil
     end
 
+    if salesDealerId then
+      local shopping=overhaul_career_market_vehicleShopping
+      local list=shopping and shopping.getRandomVehicleFromCache(salesDealerId,1)
+      local info=list and list[1]
+      if not info then return end
+      info.filter=info.precomputedFilter or{}
+      for _,entry in ipairs(info.precomputedFilters or{})do
+        if (entry.selectionIndex or (entry.filter and entry.filter._selectionIndex) or 1)==info.selectedSubFilterIndex then info.filter=entry.filter;break end
+      end
+      return info,filter.filterName or 'Vehicle'
+    end
     local info = getRandomVehicleInfo(filter, eligibleVehicles)
     if info then return info, (filter.filterName or "Vehicle") end
   end
@@ -451,7 +517,7 @@ function part.new(inputs)
   local function finalizeVehicleOffer(offer)
 
     if not offer.vehicle.model then
-      local vehInfo, filterName = getRandomVehicleFromFilterByFilterId(offer.vehicle.filterId)
+      local vehInfo, filterName = getRandomVehicleFromFilterByFilterId(offer.vehicle.filterId, offer.vehicle.salesDealerId)
 
       if not vehInfo then
         log("E","","finalizeVehicleOffer: getRandomVehicleFromFilterByFilterId returned nil for filterId: " .. tostring(offer.vehicle.filterId))
@@ -460,7 +526,7 @@ function part.new(inputs)
 
       offer.vehicle.model = vehInfo.model_key
       offer.vehicle.config = vehInfo.key
-      if vehInfo.filter.whiteList.Mileage then
+      if vehInfo.filter.whiteList and vehInfo.filter.whiteList.Mileage then
         offer.vehicle.mileage = randomGauss3()/3 * (vehInfo.filter.whiteList.Mileage.max - vehInfo.filter.whiteList.Mileage.min) + vehInfo.filter.whiteList.Mileage.min
       else
         offer.vehicle.mileage = 0
@@ -518,7 +584,17 @@ function part.new(inputs)
       return
     end
 
-    local count = math.random(generator.min, generator.max)
+    if generator.preferUnlockedFilters then
+      local unlocked = {}
+      for _, id in ipairs(availableFilters) do
+        local filter = getVehicleFilterByIdSafe(id, "triggerVehicleOfferGenerator")
+        if ext.vehicleOfferManager.isVehicleTagUnlocked(filter.unlockTag) then unlocked[#unlocked + 1] = id end
+      end
+      if unlocked[1] then availableFilters = unlocked end
+    end
+    local eligible = {}
+    for _, id in ipairs(availableFilters) do eligible[id] = true end
+    local count = offerRollCount(generator, function(offer) return offer.vehicle and eligible[offer.vehicle.filterId] end)
 
     local haulDestination
     local haulExpiresAt
@@ -625,6 +701,15 @@ function part.new(inputs)
         organization = callbacks.getOfferOrganization(fac, destinationFac, generator.offerMode)
       }
       item.offerMode = generator.offerMode
+      if type=='vehicle' then
+        local salesFacility=logisticType=='vehDeliveryNew' and destinationFac
+          or (logisticType=='vehForPrivate' or logisticType=='vehLargeTruck') and fac
+        item.vehicle.salesDealerId=getVehicleSalesDealerId(salesFacility)
+        if item.vehicle.salesDealerId then
+          finalizeVehicleOffer(item)
+          if not item.vehicle.model then goto continue end
+        end
+      end
       ext.vehicleOfferManager.addOffer(item)
       ::continue::
     end
@@ -633,6 +718,7 @@ function part.new(inputs)
   return {
     finalizeParcelItemDistanceAndRewards = finalizeParcelItemDistanceAndRewards,
     finalizeVehicleOffer = finalizeVehicleOffer,
+    getVehicleSalesDealerId = getVehicleSalesDealerId,
     getDeliveryParcelTemplates = getDeliveryParcelTemplates,
     getDeliveryVehicleTemplates = getDeliveryVehicleTemplates,
     getParcelTemplateById = getParcelTemplateById,

@@ -1,0 +1,73 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "bastion/rls_proturbo_blacktop_04",
+    "configId": "rls_proturbo_blacktop_04",
+    "model": "bastion",
+    "config": "/vehicles/bastion/rls_proturbo_blacktop_04.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "caleb_reece",
+    "driverName": "Ezra Edwards",
+    "builder": "Blacktop Engineering",
+    "classIds": [
+      "pro_turbo"
+    ],
+    "approvedClassIds": [
+      "pro_turbo"
+    ],
+    "leagueId": "pro_league",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "b4140cdf21dcd0a2289ad2f5caabf96179c2b7b2d04f27db57fe382c23cdefb2",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "6-speed H-pattern manual",
+      "induction": "Twin turbochargers",
+      "nitrous": false,
+      "years": {
+        "min": 2016,
+        "max": 2022
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_18x5",
+          "part": "tire_F_28_4_5_18_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_18x12_alt",
+          "part": "tire_R_28_13_5_18_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "bastion_rollcage",
+          "part": "bastion_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 7.9442224552254,
+      "runId": "PT-015",
+      "evidenceConfigSHA256": "edacc2bf2a4d2079fa5ff93cf01f8263f0777583e819e483364056a08353f44a",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/pro-turbo/final-results.json",
+      "acceptedConfig": "outputs/pro-turbo/accepted/rls_proturbo_blacktop_04/rls_proturbo_blacktop_04.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_pro_turbo"
+  }
+}

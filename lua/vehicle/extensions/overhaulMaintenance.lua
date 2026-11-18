@@ -80,6 +80,7 @@ runtime.activePartInfos = nil
 runtime.partTypeTags = nil
 runtime.inventoryId = nil
 local updateTimer = 0
+local outputRebindPending = false
 runtime.syncTimer = 0
 runtime.dirtyState = false
 runtime.runtimeDisabled = true
@@ -230,6 +231,14 @@ local function updateGFX(dt)
     return
   end
 
+  -- Native powertrain reset follows onReset; rebind once on the next frame.
+  if outputRebindPending then
+    outputRebindPending = false
+    for _, entry in ipairs(runtime.deviceContexts.engine.devices) do
+      common.bindOutputDerating(entry.device)
+    end
+  end
+
   updateTimer = updateTimer + dt
   runtime.syncTimer = runtime.syncTimer + dt
 
@@ -276,6 +285,11 @@ local function onReset()
     parts.failures.updateState(0)
     parts.diagnostics.sendDebugStream(true)
   end
+  for _, entry in ipairs(runtime.deviceContexts.engine.devices) do
+    local output = entry.device.rlsMaintenanceOutput
+    if output then output.resetPending = true end
+  end
+  outputRebindPending = true
 end
 
 -- Public API: maintenance -----------------------------------------------------------------------
@@ -487,7 +501,14 @@ end
 
 -- Game hooks -------------------------------------------------------------------------------------
 
+local function releaseOutputDerating()
+  for _, entry in ipairs(runtime.deviceContexts.engine.devices) do
+    common.releaseOutputDerating(entry.device)
+  end
+end
+
 M.onExtensionLoaded = onExtensionLoaded
+M.onExtensionUnloaded = releaseOutputDerating
 M.onReset = onReset
 M.updateGFX = updateGFX
 

@@ -406,6 +406,10 @@ function partFactory.new(inputs)
       -- Stored repairs have no live condition capture to refresh detached inventory rows.
       -- Synchronize before the forced save and later spawn reconciliation can reuse them.
       overhaul_career_parts_partInventory.updatePartConditionsInInventory(vehInvId)
+      local repairedVehId = overhaul_career_garage_inventory.getVehicleIdFromInventoryId(vehInvId)
+      if repairedVehId and overhaul_career_maintenance_fuelSystem then
+        overhaul_career_maintenance_fuelSystem.onVehicleRepair(repairedVehId)
+      end
       if overhaul_career_maintenance_tireSystem and overhaul_career_maintenance_tireSystem.clearFlatsForVehicle then
         overhaul_career_maintenance_tireSystem.clearFlatsForVehicle(vehInvId)
       end
@@ -500,7 +504,7 @@ function partFactory.new(inputs)
   local function startRepairInGarage(invVehId, repairOptionData, callback)
     repairOptionData = (repairOptionData and type(repairOptionData) == "table") and repairOptionData or {}
     local garage = overhaul_career_garage_inventory.getClosestGarage()
-    local spaceInfo = overhaul_career_garage_garageManager.isGarageSpace(garage.id)
+    local spaceInfo = overhaul_career_garage_garageManager.isGarageSpace(garage.id, invVehId)
     local hasStorage = spaceInfo and spaceInfo[1]
     local isInstant = not repairOptionData.repairTime or repairOptionData.repairTime <= 0
 

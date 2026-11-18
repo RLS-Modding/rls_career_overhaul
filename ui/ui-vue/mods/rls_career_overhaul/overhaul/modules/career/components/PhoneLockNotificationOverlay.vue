@@ -10,36 +10,18 @@
         <article v-if="queue.length" class="phone-lock-peek">
           <div class="phone-lock-bevel"></div>
           <div class="phone-lock-screen" :style="screenStyle">
-            <div class="phone-status-bar">
-              <div class="status-bar-cell status-bar-left">
-                <button class="status-back" type="button" tabindex="-1" disabled>
-                  <span class="status-back-icon" aria-hidden="true">
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M8 2L4 6l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
-                  </span>
-                  <span class="status-time">{{ timeParts.main }}<span class="status-time-period" v-if="timeParts.period">{{ timeParts.period }}</span></span>
-                </button>
-              </div>
-              <div class="status-bar-cell status-bar-center">
-                <div class="dynamic-island">
-                  <span class="dynamic-island-label">Notifications</span>
-                </div>
-              </div>
-              <div class="status-bar-cell status-bar-right" v-if="cashDisplay">
-                <div class="status-right-pill">
-                  <span class="status-cash">{{ cashDisplay }}</span>
-                </div>
-              </div>
-            </div>
-
+            <!-- The newest arrival shows as a banner at the top of the peeking phone, like the open phone's
+                 banner. Older ones wait behind it (card edges and "N more"); the full list is in the
+                 Notification Center. -->
             <div class="phone-lock-stack">
               <TransitionGroup name="phone-lock-row">
                 <article
-                  v-for="item in queue"
+                  v-for="item in queue.slice(0, 1)"
                   :key="item.id"
                   ref="cardEls"
                   :data-card-id="item.id"
-                  class="phone-lock-card"
-                  :class="`phone-lock-card--${item.kind}`"
+                  class="rls-house phone-lock-card"
+                  :class="[`phone-lock-card--${item.kind}`, `phone-lock-card--edges-${edgeCount}`]"
                   :style="swipeFor(item.id).swipeStyle.value"
                   role="button"
                   tabindex="0"
@@ -51,30 +33,14 @@
                   @pointerup="swipeFor(item.id).onPointerEnd($event)"
                   @pointercancel="swipeFor(item.id).onPointerCancel($event)"
                 >
-                  <template v-if="item.kind === 'racing'">
-                    <div class="phone-lock-card__body phone-lock-card__racing">
-                      <template v-if="item.presentationSimple">
-                        <span class="phone-lock-card__headline">{{ item.source }}</span>
-                      </template>
-                      <template v-else>
-                        <span class="phone-lock-card__headline">{{ item.title || 'Race Ready' }}</span>
-                        <span v-if="item.subline" class="phone-lock-card__sub">{{ item.subline }}</span>
-                        <span class="phone-lock-card__app">{{ item.source }}</span>
-                      </template>
-                    </div>
-                  </template>
-                  <template v-else-if="item.presentationSimple">
-                    <div class="phone-lock-card__body">
-                      <span class="phone-lock-card__message phone-lock-card__message--simple">{{ item.source }}</span>
-                    </div>
-                  </template>
-                  <template v-else>
-                    <div class="phone-lock-card__body">
-                      <span class="phone-lock-card__source">{{ item.source }}</span>
-                      <span v-if="item.message" class="phone-lock-card__message">{{ item.message }}</span>
-                      <span v-if="item.meta" class="phone-lock-card__meta">{{ item.meta }}</span>
-                    </div>
-                  </template>
+                  <PhoneNotificationContent :item="item" :more-count="queue.length - 1" />
+                  <span
+                    v-for="edge in edgeCount"
+                    :key="edge"
+                    class="phone-lock-card__edge"
+                    :class="`phone-lock-card__edge--${edge}`"
+                    aria-hidden="true"
+                  ></span>
                 </article>
               </TransitionGroup>
             </div>
@@ -87,6 +53,7 @@
 
 <script setup>
 import PhoneNavigation from './phone/PhoneNavigation.vue'
+import PhoneNotificationContent from './phone/PhoneNotificationContent.vue'
 import { isPhoneRoute } from "../utils/phoneRoutes.js"
 import { isPhoneShellVisible } from "../utils/phoneShellState"
 import { luaLiteral } from "../utils/luaLiteral.js"
@@ -110,16 +77,15 @@ import {
   applyLockScreenNotificationPrefs,
   applyBannerNotificationPrefs,
 } from "../utils/phoneNotificationPayload"
-import { resolveNotificationRoute, installAppFromNotification } from "../utils/phoneNotificationRoutes"
+import { openNotification } from "../utils/phoneNotificationRoutes"
 import { openPhoneRoute } from "../utils/phoneNavigation"
 import { useHorizontalSwipeDismiss } from "../composables/useHorizontalSwipeDismiss"
+import { isNotificationCenterCareer, keepNotificationCenterFor, onNotificationCenterRemoved, recordPhoneNotification, removeNotificationCenterEntries } from "../composables/usePhoneNotificationCenter"
+import { loadNotificationApps } from "../utils/phoneNotificationApps"
 
 const DEFAULT_TTL_SECONDS = 8
 const MAX_QUEUE_SIZE = 5
 const MAX_PENDING_SIZE = 20
-const PHONE_TIME_KEY = "phone_last_time"
-const PHONE_MONEY_KEY = "phone_last_money"
-const PHONE_IS_CAREER_KEY = "phone_is_career"
 const DEFAULT_SOUND = {
   soundClass: "AudioGui",
   type: "event:>UI>Missions>Info_Open",
@@ -141,16 +107,12 @@ const cardEls = ref([])
 // One swipe state per card id, created when the card first renders and dropped once it leaves the queue.
 const swipeControllers = new Map()
 const viewportWidth = ref(typeof window !== "undefined" ? window.innerWidth : 1920)
-const timeString = ref(sessionStorage.getItem(PHONE_TIME_KEY) || "9:10")
-const cachedMoney = sessionStorage.getItem(PHONE_MONEY_KEY)
-const careerMoney = ref(cachedMoney !== null && cachedMoney !== "" ? Number(cachedMoney) : null)
-const isCareer = ref(sessionStorage.getItem(PHONE_IS_CAREER_KEY) === "true")
 const rlsLoadingVisible = ref(false)
 const proxyTeamLoadingVisible = ref(false)
 const pendingNotifications = []
+const NOTIFICATION_CENTER_ROUTE = "phone-notification-center"
 let nextId = 1
 let phoneOpenCheckId = null
-let careerStatusInterval = null
 let dndCheckInterval = null
 
 const isUiLoading = computed(() =>
@@ -178,29 +140,10 @@ const onProxyTeamLoading = (...args) => {
 const flushPendingNotifications = () => {
   if (isUiLoading.value || !pendingNotifications.length) return
   const batch = pendingNotifications.splice(0)
+  // Delivered now, so none is left to count as the leaving career's.
+  heldFromLeavingCareer = 0
   batch.forEach(deliverNotification)
 }
-
-const formatCash = m => {
-  if (m == null || typeof m !== "number") return "$0"
-  if (m >= 1e12) return `$${(m / 1e12).toFixed(1)}T`
-  if (m >= 1e9) return `$${(m / 1e9).toFixed(1)}B`
-  if (m >= 1e6) return `$${(m / 1e6).toFixed(1)}M`
-  if (m >= 1000) return `$${Math.round(m).toLocaleString()}`
-  return `$${Math.round(m)}`
-}
-
-const cashDisplay = computed(() => {
-  if (!isCareer.value || careerMoney.value == null) return null
-  return formatCash(careerMoney.value)
-})
-
-const timeParts = computed(() => {
-  const s = timeString.value || ""
-  const m = s.match(/^(.+?)\s+(AM|PM)$/i)
-  if (m) return { main: m[1], period: ` ${m[2]}` }
-  return { main: s, period: "" }
-})
 
 const rootStyle = computed(() => {
   const scale = getPhoneScale(phoneSettings)
@@ -231,6 +174,10 @@ const screenStyle = computed(() => {
     backgroundImage: `linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(0,0,0,0.25) 100%)`,
   }
 })
+
+// Notifications still waiting behind the shown banner peek out as up to two card edges.
+const MAX_STACK_EDGES = 2
+const edgeCount = computed(() => Math.min(queue.value.length - 1, MAX_STACK_EDGES))
 
 const isPhoneOpen = () => isPhoneRoute(route) || isPhoneShellVisible()
 
@@ -299,6 +246,30 @@ const swipeFor = id => {
   return swipe
 }
 
+// A notification cleared or opened in the Notification Center leaves the closed-phone queue too; the
+// front-banner timer then starts for whichever banner is next.
+const withdrawCleared = centerIds => {
+  const gone = new Set(centerIds)
+  // Collected first: dismissById takes items out of the queue being read.
+  const leaving = queue.value.filter(item => gone.has(item.centerId)).map(item => item.id)
+  leaving.forEach(dismissById)
+}
+let stopWithdrawing = null
+
+// Loading a career keeps the list when it is the same one (a map travel leaves and loads it again) and
+// starts it over for any other, which also takes back the banners still waiting. Arrivals held back by a
+// loading screen when the career left are dropped only if another career is loaded; on a travel they stay.
+let heldFromLeavingCareer = 0
+const onCareerChange = data => {
+  if (!data?.active) {
+    heldFromLeavingCareer = pendingNotifications.length
+    return
+  }
+  if (!isNotificationCenterCareer(data.profile)) pendingNotifications.splice(0, heldFromLeavingCareer)
+  heldFromLeavingCareer = 0
+  keepNotificationCenterFor(data.profile)
+}
+
 const openNewest = () => { if (queue.value.length) return handleNotificationClick(queue.value[0]) }
 const dismissNewest = () => { if (queue.value.length) dismissById(queue.value[0].id) }
 
@@ -315,6 +286,14 @@ watch(() => queue.value.map(item => item.id), ids => {
   for (const id of swipeControllers.keys()) {
     if (!ids.includes(id)) swipeControllers.delete(id)
   }
+  // Only the banner on show counts down; the ones waiting behind it start theirs when they come up.
+  queue.value.forEach((item, index) => {
+    if (index === 0 && !item.timeoutId) scheduleTimeout(item)
+    if (index > 0 && item.timeoutId) {
+      window.clearTimeout(item.timeoutId)
+      item.timeoutId = null
+    }
+  })
 })
 
 const handleNotificationClick = async item => {
@@ -323,10 +302,8 @@ const handleNotificationClick = async item => {
   if (isPhoneOpen()) {
     dismissCurrentHeadsUp()
   }
-  await installAppFromNotification(lua, item)
-  const targetRoute = resolveNotificationRoute(item)
-  if (!targetRoute) return
-  openPhoneRoute(router, targetRoute)
+  // Once it opened, it has been seen: it leaves the Notification Center too.
+  if (await openNotification(item, { lua, router, navigate: openPhoneRoute })) removeNotificationCenterEntries([item.centerId])
 }
 
 const scheduleTimeout = item => {
@@ -334,10 +311,12 @@ const scheduleTimeout = item => {
 }
 
 const deliverNotification = raw => {
+  const parsed = normalizePhoneNotificationPayload(raw)
+  if (!parsed) return
+  // Like iOS, the Notification Center keeps every notification, also ones Do Not Disturb or the
+  // banner switches keep quiet. Banners carry their entry's id so opening one clears it there too.
+  const normalized = { ...parsed, centerId: recordPhoneNotification(parsed)?.id }
   if (isDoNotDisturbActive(phoneSettings)) return
-
-  const normalized = normalizePhoneNotificationPayload(raw)
-  if (!normalized) return
 
   const phoneOpen = isPhoneOpen()
   const useLockPath = normalized.forcePeek || !phoneOpen
@@ -353,7 +332,7 @@ const deliverNotification = raw => {
         if (existing.timeoutId) window.clearTimeout(existing.timeoutId)
         const item = { ...existing, ...payload, id: existing.id }
         queue.value[existingIdx] = item
-        scheduleTimeout(item)
+        if (existingIdx === 0) scheduleTimeout(item)
         if (payload.sound !== false && payload.sound !== "none") playSound(item)
         return
       }
@@ -366,12 +345,17 @@ const deliverNotification = raw => {
       queue.value = queue.value.slice(0, MAX_QUEUE_SIZE)
       overflow.forEach(o => o.timeoutId && window.clearTimeout(o.timeoutId))
     }
-    scheduleTimeout(item)
     playSound(item)
     return
   }
 
   if (phoneSettings.bannerNotificationsEnabled === false) return
+  // The Notification Center on screen already lists it at the top, as on iOS; a banner over it would only
+  // repeat it, so it just sounds.
+  if (route.name === NOTIFICATION_CENTER_ROUTE) {
+    playSound(normalized)
+    return
+  }
   const payload = applyBannerNotificationPrefs(normalized, phoneSettings)
   const result = pushHeadsUpNotification(payload)
   if (!result || result.playSound !== false) playSound(payload)
@@ -380,7 +364,12 @@ const deliverNotification = raw => {
 const pushNotification = raw => {
   if (isUiLoading.value) {
     pendingNotifications.push(raw)
-    if (pendingNotifications.length > MAX_PENDING_SIZE) pendingNotifications.splice(0, pendingNotifications.length - MAX_PENDING_SIZE)
+    if (pendingNotifications.length > MAX_PENDING_SIZE) {
+      // The cap drops the oldest first; the leaving career's count shrinks with them.
+      const dropped = pendingNotifications.length - MAX_PENDING_SIZE
+      pendingNotifications.splice(0, dropped)
+      heldFromLeavingCareer = Math.max(0, heldFromLeavingCareer - dropped)
+    }
     return
   }
   deliverNotification(raw)
@@ -389,12 +378,6 @@ const pushNotification = raw => {
 const clearAll = () => {
   queue.value.forEach(item => item.timeoutId && window.clearTimeout(item.timeoutId))
   queue.value = []
-}
-
-const updateTime = data => {
-  if (!data) return
-  timeString.value = String(data)
-  sessionStorage.setItem(PHONE_TIME_KEY, String(data))
 }
 
 const handlePhoneLayoutData = data => {
@@ -412,23 +395,6 @@ function expireDndIfNeeded() {
 
 const updateViewportWidth = () => {
   viewportWidth.value = window.innerWidth
-}
-
-const refreshCareerStatus = () => {
-  if (!lua.overhaul_career_career?.isActive) return
-  lua.overhaul_career_career.isActive().then(active => {
-    isCareer.value = !!active
-    sessionStorage.setItem(PHONE_IS_CAREER_KEY, String(active))
-    if (!active || !lua.overhaul_career_ui_uiUtils?.getCareerStatusData) return
-    return lua.overhaul_career_ui_uiUtils.getCareerStatusData()
-  }).then(data => {
-    const money = data != null ? data?.money ?? null : null
-    careerMoney.value = money
-    sessionStorage.setItem(PHONE_MONEY_KEY, money != null ? String(money) : "")
-  }).catch(() => {
-    careerMoney.value = null
-    sessionStorage.setItem(PHONE_MONEY_KEY, "")
-  })
 }
 
 watch(() => route.name, () => {
@@ -452,13 +418,6 @@ watch(() => queue.value.length, (len, prevLen) => {
     window.clearInterval(phoneOpenCheckId)
     phoneOpenCheckId = null
   }
-  if (len > 0 && !careerStatusInterval) {
-    refreshCareerStatus()
-    careerStatusInterval = window.setInterval(refreshCareerStatus, 5000)
-  } else if (len === 0 && careerStatusInterval) {
-    window.clearInterval(careerStatusInterval)
-    careerStatusInterval = null
-  }
 })
 
 onMounted(async () => {
@@ -468,31 +427,27 @@ onMounted(async () => {
   events.on("OverhaulNotificationOpen", openNewest)
   events.on("OverhaulNotificationDismiss", dismissNewest)
   events.on("PhoneLockNotification", pushNotification)
-  events.on("phone_time_update", updateTime)
   events.on("phoneLayoutData", handlePhoneLayoutData)
+  stopWithdrawing = onNotificationCenterRemoved(withdrawCleared)
+  events.on("PhoneNotificationCenterCareer", onCareerChange)
   // vueEventBus and bridge.events are the same emitter.
   bridge.events.on("rlsCareerLoadingOverlay", onRlsCareerLoading)
   bridge.events.on("racingTeamProxyTeamLoading", onProxyTeamLoading)
 
-  await safeLua(() => lua.extensions?.load?.("overhaul_phone_apps_time"), "PhoneLockNotificationOverlay: optional call")
+  loadNotificationApps()
+  keepNotificationCenterFor(await safeLua(() => lua.overhaul_career_saveSystem?.getCurrentProfile?.(), "PhoneLockNotificationOverlay: current career"))
   await safeLua(() => lua.extensions?.load?.("overhaul_phone_apps_layout"), "PhoneLockNotificationOverlay: optional call")
-  lua.overhaul_phone_apps_time?.requestTime?.()
   lua.overhaul_phone_apps_layout?.requestLayout?.()
-  refreshCareerStatus()
-
   dndCheckInterval = window.setInterval(expireDndIfNeeded, 15000)
 })
 
 onBeforeUnmount(() => {
+  stopWithdrawing?.()
   clearAll()
   pendingNotifications.length = 0
   if (phoneOpenCheckId) {
     window.clearInterval(phoneOpenCheckId)
     phoneOpenCheckId = null
-  }
-  if (careerStatusInterval) {
-    window.clearInterval(careerStatusInterval)
-    careerStatusInterval = null
   }
   if (dndCheckInterval) {
     window.clearInterval(dndCheckInterval)
@@ -502,7 +457,7 @@ onBeforeUnmount(() => {
   events.off("OverhaulNotificationOpen", openNewest)
   events.off("OverhaulNotificationDismiss", dismissNewest)
   events.off("PhoneLockNotification", pushNotification)
-  events.off("phone_time_update", updateTime)
+  events.off("PhoneNotificationCenterCareer", onCareerChange)
   events.off("phoneLayoutData", handlePhoneLayoutData)
   bridge.events.off("rlsCareerLoadingOverlay", onRlsCareerLoading)
   bridge.events.off("racingTeamProxyTeamLoading", onProxyTeamLoading)
@@ -510,6 +465,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped lang="scss">
+@use '@/styles/rls_career_overhaul/modules/career/styles/rlsHouse.scss' as *;
 @use '@/styles/rls_career_overhaul/modules/career/styles/_phone-notification-text.scss' as phone-notif;
 
 .phone-lock-root {
@@ -559,133 +515,17 @@ onBeforeUnmount(() => {
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
-.phone-status-bar {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.5em 1em 0.6em;
-  min-height: 36px;
-  z-index: 10;
-  pointer-events: none;
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0) 100%);
-    pointer-events: none;
-    z-index: -1;
-  }
-}
-
-.status-bar-cell {
-  display: flex;
-  align-items: center;
-  min-height: 28px;
-}
-
-.status-bar-left {
-  justify-content: flex-start;
-  flex: 1;
-  min-width: 0;
-}
-
-.status-bar-center {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  flex-shrink: 0;
-}
-
-.status-bar-right {
-  justify-content: flex-end;
-  flex: 1;
-  min-width: 0;
-}
-
-.status-right-pill {
-  display: flex;
-  align-items: center;
-  height: 24px;
-  padding: 0 0.6em;
-  background: rgba(0, 0, 0, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-}
-
-.dynamic-island {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 80px;
-  max-width: 140px;
-  height: 24px;
-  padding: 0 0.75em;
-  background: #000;
-  border-radius: 12px;
-  flex-shrink: 0;
-}
-
-.dynamic-island-label {
-  font-size: 0.8em;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.65);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.status-time {
-  display: inline-flex;
-  align-items: flex-end;
-  font-size: 1.2em;
-  font-weight: 500;
-  line-height: 1;
-  margin-left: 0.5em;
-}
-
-.status-time-period {
-  font-size: 0.6em;
-  font-weight: 400;
-  margin-left: 0.25em;
-}
-
-.status-cash {
-  font-size: 0.95em;
-  font-weight: 500;
-  color: #fff;
-}
-
-.status-back {
-  display: flex;
-  align-items: center;
-  gap: 0.5em;
-  height: 24px;
-  padding: 0 0.75em;
-  line-height: 1;
-  background: rgba(0, 0, 0, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  outline: none;
-  cursor: default;
-  pointer-events: none;
-  font-size: 14px;
-  font-weight: 500;
-  color: #fff;
-}
-
 .phone-lock-stack {
+  position: relative;
+  z-index: 11;
   display: flex;
   flex-direction: column;
-  gap: 8px;
   width: 100%;
   max-width: 100%;
   min-width: 0;
   box-sizing: border-box;
-  // Match status bar horizontal inset so cards align with header pills.
-  padding: 14px 1em 0;
-  overflow: hidden;
+  // Inset like the open phone's banner, which drops over its status bar.
+  padding: 8px 8px 0;
 }
 
 .phone-lock-peek-enter-active,
@@ -704,6 +544,15 @@ onBeforeUnmount(() => {
   transition: opacity 0.25s ease, transform 0.3s ease;
   max-width: 100%;
   min-width: 0;
+}
+
+// A leaving banner steps out of the flow at once, so the next one takes its place without a jump.
+// Left and right match the stack's side padding.
+.phone-lock-card.phone-lock-row-leave-active {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  width: auto;
 }
 
 .phone-lock-row-enter-from {
@@ -730,112 +579,40 @@ onBeforeUnmount(() => {
 }
 
 .phone-lock-card {
-  pointer-events: auto;
-  display: flex;
-  align-items: stretch;
-  gap: 10px;
-  width: 100%;
+  @include phone-notif.phone-notif-card;
   max-width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-  padding: 10px 12px;
-  border-radius: 14px;
-  background: rgba(15, 17, 22, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #f7f1e8;
+  border-radius: 18px;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
-  font-size: 0.78em;
-  line-height: 1.25;
-  cursor: pointer;
-  text-align: left;
+  // Controller focus is the phone-wide ring from overhaulFocus.scss (every [role="button"] in the phone).
+}
 
-  &.focus-visible {
-    outline: 2px solid rgba(125, 211, 252, 0.55);
-    outline-offset: 1px;
+// Room under a stack for its peeking edges.
+.phone-lock-card--edges-1 { margin-bottom: 7px; }
+.phone-lock-card--edges-2 { margin-bottom: 13px; }
+
+@include phone-notif.phone-notif-stack-edges('.phone-lock-card__edge');
+
+// Reduced motion: the peek and its cards fade in place, with no slide, bounce or reflow motion.
+@media (prefers-reduced-motion: reduce) {
+  .phone-lock-peek-enter-active,
+  .phone-lock-peek-leave-active,
+  .phone-lock-row-enter-active,
+  .phone-lock-row-leave-active {
+    transition: opacity 0.16s ease;
   }
-}
 
-.phone-lock-card__body {
-  @include phone-notif.phone-notif-body;
-}
+  .phone-lock-peek-enter-from,
+  .phone-lock-peek-leave-to {
+    transform: scale(var(--phone-lock-scale, 1));
+  }
 
-.phone-lock-card__source {
-  @include phone-notif.phone-notif-source-line;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: #ffc978;
-  font-size: 0.72em;
-}
+  .phone-lock-row-enter-from,
+  .phone-lock-row-leave-to {
+    transform: none;
+  }
 
-.phone-lock-card__message {
-  @include phone-notif.phone-notif-clamped-text(3);
-  color: rgba(247, 241, 232, 0.94);
-  font-weight: 600;
-}
-
-.phone-lock-card__message--simple {
-  font-size: 1em;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  -webkit-line-clamp: 2;
-}
-
-.phone-lock-card__meta {
-  @include phone-notif.phone-notif-clamped-text(2);
-  font-weight: 600;
-  font-size: 0.85em;
-  line-height: 1.25;
-  color: rgba(247, 241, 232, 0.6);
-}
-
-.phone-lock-card--success .phone-lock-card__source,
-.phone-lock-card--rep .phone-lock-card__source {
-  color: #69d48f;
-}
-
-.phone-lock-card--warning .phone-lock-card__source,
-.phone-lock-card--invite .phone-lock-card__source {
-  color: #ffc978;
-}
-
-.phone-lock-card--dakar .phone-lock-card__source {
-  color: #e0703a;
-}
-
-.phone-lock-card--error .phone-lock-card__source {
-  color: #ff8a8a;
-}
-
-.phone-lock-card--racing {
-  align-items: stretch;
-}
-
-.phone-lock-card__racing {
-  gap: 2px;
-}
-
-.phone-lock-card__headline {
-  @include phone-notif.phone-notif-clamped-text(2);
-  font-weight: 800;
-  font-size: 0.95em;
-  letter-spacing: 0.03em;
-  color: #ffc978;
-}
-
-.phone-lock-card__sub {
-  @include phone-notif.phone-notif-clamped-text(2);
-  font-size: 0.88em;
-  font-weight: 600;
-  color: rgba(247, 241, 232, 0.94);
-}
-
-.phone-lock-card__app {
-  @include phone-notif.phone-notif-source-line;
-  font-size: 0.68em;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: rgba(247, 241, 232, 0.5);
+  .phone-lock-row-move {
+    transition: none;
+  }
 }
 </style>

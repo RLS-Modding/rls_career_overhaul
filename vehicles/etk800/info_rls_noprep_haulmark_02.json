@@ -1,0 +1,25 @@
+{
+  "Configuration": "Logan Braddock - No Prep",
+  "Description": "Coal Courier. Tier 1 racer. Highway no-prep quarter-mile: 12.013s at 121.94mph. Haulmark Racing.",
+  "Author": "Haulmark Performance",
+  "Name": "Logan Braddock",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 10.141209704401,
+    "time_1_4": 12.013312453748,
+    "time_1_8": 7.9053618709339,
+    "time_330": 5.2756939154651,
+    "time_60": 2.0230741725102,
+    "velAt_1_4": 54.513062618804,
+    "velAt_1_8": 43.144445641121
+  },
+  "Reaction Time": 0.33346909611349,
+  "dragTimesRevalidated": true,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m"
+}

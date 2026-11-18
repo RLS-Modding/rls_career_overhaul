@@ -11,8 +11,11 @@ local config = {
   approachSpeedFraction = 0.45,
   boardDurationS = 0.58, boardTimeoutS = 1.05,
   boardCollisionM = 0.35, boardStallM = 1.05,
-  entryCloseClearanceM = 0.28, entryPocketLengthM = 0.46,
-  entryStepClearanceM = 0.31, entryStepArriveM = 0.10, entryStepTimeoutS = 1.80,
+  -- The walking body is a 0.351 m collision ring at waist and window height, so doorway
+  -- targets stay outside it. Leave braking room before contact with the swung panel.
+  doorwayContactM = 0.55, entryStepStallS = 0.35, entryStepStallM = 0.05,
+  entryCloseClearanceM = 0.42, entryPocketLengthM = 0.46,
+  entryStepClearanceM = 0.42, entryStepArriveM = 0.10, entryStepTimeoutS = 1.80,
   doorWaitClearanceM = 0.52, doorProbeIntervalS = 0.08,
   doorFallbackOpenS = 0.16, doorSwingSettleS = 0.28, doorOpenTimeoutS = 2.2,
   doorCloseDelayS = 0.10, doorCloseFinishS = 0.18,

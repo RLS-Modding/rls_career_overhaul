@@ -1,0 +1,57 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Configuration": "Ivan Hamilton - Stu Leonard",
+  "Description": "Blacktop Engineering: bluebuck, 291 CUI 'Fleet-Power' V8 Engine, Stage 4 Supercharger + 350 kW nitrous, 4-Speed Automatic Drag Transmission. Healthy qualifying pass 8.832010 s; identical saved-build confirmation 8.831872 s. West Coast quarter mile. Two passes do not establish all-condition repeatability. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Author": "RLS / Blacktop Engineering",
+  "Config Type": "Custom",
+  "Years": {
+    "min": 1962,
+    "max": 1962
+  },
+  "Transmission": "Automatic",
+  "Fuel Type": "Gasoline",
+  "Drivetrain": "RWD",
+  "Motorsport": {
+    "version": 1,
+    "id": "bluebuck/rls_stu_blacktop_04",
+    "configId": "rls_stu_blacktop_04",
+    "model": "bluebuck",
+    "config": "/vehicles/bluebuck/rls_stu_blacktop_04.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "sourcePack": "rls_stu_leonard",
+    "driverId": "darius_kane",
+    "driverName": "Ivan Hamilton",
+    "builder": "blacktop",
+    "classIds": [
+      "stu_leonard_850"
+    ],
+    "approvedClassIds": [
+      "stu_leonard_850"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "7b17f9cbd9429c73c642beecebbd0177a00c67520dd2058d3f60820080a46580",
+    "traits": {
+      "transmission": "Automatic",
+      "drivetrain": "RWD",
+      "years": {
+        "min": 1962,
+        "max": 1962
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.8318719059705,
+      "runId": "STU-065",
+      "evidenceConfigSHA256": "7575fa1f2d0e2047be8b6eefb8a5d7309e28cb3a0d33dcd020500cc0996e40aa",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/stu-leonard/final-metadata.json",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    }
+  }
+}

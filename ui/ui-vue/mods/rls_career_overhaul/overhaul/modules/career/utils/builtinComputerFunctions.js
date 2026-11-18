@@ -56,6 +56,22 @@ export const BUILTIN_COMPUTER_FUNCTIONS = [
     "routeTarget": "overhaul.computer.repair"
   },
   {
+    "id": "rls-vehicleExport",
+    "namespace": "rls",
+    "icon": "export",
+    "label": "Export configuration",
+    "entry": "vehicle",
+    "order": 95,
+    "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/vehicleExport/VehicleExportView.vue",
+    "availability": {
+      "starterVehicle": true
+    },
+    "navigation": {
+      "canLeave": "overhaul_vehicles_configExport.canLeaveComputer",
+      "back": "overhaul_vehicles_configExport.backToComputer"
+    }
+  },
+  {
     "id": "sleep",
     "icon": "night",
     "routeTarget": "sleep-menu"

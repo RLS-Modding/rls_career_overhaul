@@ -1,6 +1,7 @@
 -- Owns installed-part category matching, hardware caches and device baseline capture.
 -- Read part matching, category cache construction, then device contexts and public bindings.
 local M = {}
+local powertrainCapacity = require('vehicle/overhaul/powertrainCapacity')
 
 function M.create(inputs)
   local runtime, config, parts = inputs.runtime, inputs.config, inputs.parts
@@ -338,6 +339,7 @@ function M.create(inputs)
     entry.base.maxAV = device.maxAV or 0
     -- onReset precedes powertrain.reset; recapturing bases would compound scaling.
     local scaledBase = device.rlsMaintenanceScaledBase
+    local originalLockTorque = powertrainCapacity.originalLockTorque(device, type(scaledBase) == 'table' and scaledBase.lockTorque or nil)
     if type(scaledBase) ~= "table" then
       scaledBase = {
         originalMaxTorqueLimit = device.maxTorqueLimit or math.huge,
@@ -346,7 +348,7 @@ function M.create(inputs)
         friction = device.friction,
         dynamicFriction = device.dynamicFriction,
         gearRatioChangeRate = device.gearRatioChangeRate,
-        lockTorque = device.lockTorque,
+        lockTorque = originalLockTorque,
         clutchFreePlay = device.clutchFreePlay
       }
       device.rlsMaintenanceScaledBase = scaledBase

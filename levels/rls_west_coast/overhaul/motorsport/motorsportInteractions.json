@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "stripId": "alderStrip_main",
+  "spectate": {
+    "name": "dragSpectate",
+    "position": [-163.740784, -167.281784, 120.425194],
+    "rotationMatrix": [-0.589539528, 0.807739317, 0, 7.06148171e-08, 5.15391889e-08, -0.999999821, -0.807739258, -0.589539528, -8.74227624e-08],
+    "rotation": [0.3203359544, 0.6303849220, -0.6303847432, 0.3203358948],
+    "scale": [2.37898898, 2.22396231, 1.80513668]
+  },
+  "registration": {
+    "name": "dragRegistration",
+    "sitesFile": "/levels/rls_west_coast/facilities/motorsportRegistration.sites.json",
+    "parkingSpotName": "dragRegistration",
+    "nearbyRadius": 30
+  }
+}

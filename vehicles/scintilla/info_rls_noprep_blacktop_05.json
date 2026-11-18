@@ -1,0 +1,26 @@
+{
+  "Configuration": "Arden Vale - No Prep",
+  "Description": "Silver Velocity. Tier 4 racer. Highway no-prep quarter-mile: 9.370s at 156.84mph. Blacktop Engineering. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Blacktop Engineering",
+  "Name": "Arden Vale",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 7.9222625076502,
+    "time_1_4": 9.3697595891255,
+    "time_1_8": 6.2067295951927,
+    "time_330": 4.1912408179062,
+    "time_60": 1.6306165062031,
+    "velAt_1_4": 70.112600907301,
+    "velAt_1_8": 55.925052461869
+  },
+  "Reaction Time": 0.27216382080389,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

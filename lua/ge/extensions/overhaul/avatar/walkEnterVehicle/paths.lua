@@ -100,8 +100,9 @@ function M.new(inputs)
     return #lower >= 3 and lower or nil
   end
 
-  local function getCollisionHull(vehId, pathZ)
+  local function getCollisionHull(vehId, pathZ, includeDoors)
     local envelope = runtimeState.collisionEnvelopes[vehId]
+    if includeDoors and envelope and envelope.doorway then envelope = envelope.doorway end
     if not envelope or type(envelope.nodeIds) ~= "table" or #envelope.nodeIds < 3 then
       return nil, envelope
     end
@@ -200,8 +201,8 @@ function M.new(inputs)
     return result
   end
 
-  local function vehicleClearance2D(point, vehId, margin)
-    local hull, envelope = getCollisionHull(vehId, point.z)
+  local function vehicleClearance2D(point, vehId, margin, includeDoors)
+    local hull, envelope = getCollisionHull(vehId, point.z, includeDoors)
     if hull then
       local clearance = hullSignedClearance2D(point, hull)
       return clearance - (margin or 0), "collisionHull", hull, envelope
@@ -367,6 +368,21 @@ function M.new(inputs)
 
   -- Collision requests ----------------------------------------------------------------------------
 
+  local function doorwayEnvelope(vehId)
+    local data = core_vehicle_manager and core_vehicle_manager.getVehicleData(vehId)
+    local nodes = {}
+    for _, triangle in pairs(data and data.vdata and data.vdata.triangles or {}) do
+      if triangle.triangleType ~= 2 then
+        for _, nodeId in ipairs({triangle.id1, triangle.id2, triangle.id3}) do nodes[nodeId] = true end
+      end
+    end
+    local nodeIds = {}
+    for nodeId in pairs(nodes) do nodeIds[#nodeIds + 1] = nodeId end
+    -- Routing excludes panels that would block their own doorway. The final
+    -- approach needs their live positions so it can stop before loading glass.
+    return #nodeIds >= 3 and {nodeIds = nodeIds} or nil
+  end
+
   local function requestCollisionEnvelope(veh, force)
     if not veh or veh:getJBeamFilename() == "unicycle" then return nil end
     local vehId = veh:getId()
@@ -381,6 +397,7 @@ function M.new(inputs)
       pending = true,
       requestedAt = os.clock(),
       model = veh:getJBeamFilename(),
+      doorway = doorwayEnvelope(vehId),
       -- Retain usable topology while refreshed live triangles arrive from the vehicle VM.
       nodeIds = existing and existing.nodeIds or nil,
       nodeCount = existing and existing.nodeCount or nil,
@@ -413,6 +430,7 @@ function M.new(inputs)
       pending = false,
       receivedAt = os.clock(),
       model = existing and existing.model or nil,
+      doorway = existing and existing.doorway or nil,
       nodeIds = data.nodeIds,
       nodeCount = #data.nodeIds,
       triangleCount = tonumber(data.triangleCount) or 0,
@@ -583,9 +601,7 @@ function M.new(inputs)
 
     local entry = vec3(doorCenter.x, doorCenter.y, pathZ or doorCenter.z)
     entry = entry + outward * 0.08
-    -- The Nine needs extra doorway clearance to avoid its wide running-board triangles.
-    local entryClearance = veh:getJBeamFilename() == "nine" and 0.42 or inputs.config.entryStepClearanceM
-    entry = pushOutsideVehicle2D(entry, veh:getId(), entryClearance)
+    entry = pushOutsideVehicle2D(entry, veh:getId(), inputs.config.entryStepClearanceM)
     entry.z = pathZ or entry.z
     return entry
   end
@@ -599,8 +615,7 @@ function M.new(inputs)
     local longOffset = math.max((tonumber(doorSpan) or 0.60) * 0.82, inputs.config.entryPocketLengthM)
     local pocket = vec3(doorCenter.x, doorCenter.y, pathZ or doorCenter.z)
       + fwd * (longOffset * safeSign)
-    local pocketClearance = veh:getJBeamFilename() == "nine" and 0.42 or inputs.config.entryCloseClearanceM
-    pocket = pushOutsideVehicle2D(pocket, veh:getId(), pocketClearance)
+    pocket = pushOutsideVehicle2D(pocket, veh:getId(), inputs.config.entryCloseClearanceM)
     pocket.z = pathZ or pocket.z
     return pocket
   end

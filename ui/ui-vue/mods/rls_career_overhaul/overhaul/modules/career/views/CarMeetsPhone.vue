@@ -25,14 +25,41 @@
       </nav>
 
       <template v-if="socialSection === 'mail'">
-        <div v-if="!invites.length" class="empty-card">
+        <div v-if="!invites.length && !streetMeet" class="empty-card">
           <h2>No Mail</h2>
           <p>Car meet invites will appear here when they arrive.</p>
         </div>
 
-        <div v-if="invites.length" class="section-block">
+        <div v-if="invites.length || streetMeet" class="section-block">
           <div class="section-title">Car Meet Invites</div>
           <div class="invite-list">
+            <article v-if="streetMeet" class="expand-card" :class="{ expanded: streetMeetOpen }">
+              <button
+                type="button"
+                class="expand-row"
+                :aria-expanded="streetMeetOpen"
+                @click="streetMeetOpen = !streetMeetOpen">
+                <span>
+                  <strong>{{ streetMeet.typeName }}</strong>
+                  <small>{{ streetMeet.clubName }}</small>
+                </span>
+                <em>{{ streetMeet.racing ? "Racing" : streetMeet.open ? "Live" : streetMeet.openTime }}</em>
+              </button>
+
+              <div v-if="streetMeetOpen" class="expand-detail">
+                <div class="info-row"><span>Location</span><strong>{{ streetMeet.location }}</strong></div>
+                <div class="info-row"><span>Club</span><strong>{{ streetMeet.clubName }}</strong></div>
+                <div class="info-row"><span>Format</span><strong>Heads-up, {{ streetMeetDistance }}</strong></div>
+                <div class="info-row"><span>Status</span><strong>{{ streetMeet.status }}</strong></div>
+                <div class="phone-action-buttons">
+                  <BngButton @click="openClubScreen(streetMeet.screen)" accent="secondary">Club</BngButton>
+                  <BngButton @click="routeStreetMeet" accent="main">{{ streetMeetRouted ? "Route Set" : "Set Route" }}</BngButton>
+                  <BngButton @click="rsvpStreetMeet" :disabled="streetMeet.attending" accent="secondary">{{ streetMeet.attending ? "RSVP’d" : "RSVP" }}</BngButton>
+                  <BngButton v-if="streetMeet.devAccess" @click="goToStreetRace" accent="secondary">Go to race</BngButton>
+                </div>
+                <small v-if="streetMeet.devAccess">Enter intended car</small>
+              </div>
+            </article>
             <article
               v-for="invite in invites"
               :key="invite.id"
@@ -77,7 +104,46 @@
             </article>
           </div>
         </div>
-      </template>
+        <section v-if="overview.devTools" class="debug-panel" :class="{ open: devOpen }">
+            <button type="button" class="dev-toggle" @click.stop="devOpen = !devOpen" @mousedown.stop>
+              <svg viewBox="0 0 24 24" class="chev"><path d="M9 6l6 6-6 6"/></svg>
+              Developer tools
+            </button>
+            <div v-if="devOpen" class="dev-body">
+            <div class="debug-rep-control">
+              <BngButton @click="adjustRep(-debugRepStep)" accent="secondary">-</BngButton>
+              <span class="debug-rep-label">Rep</span>
+              <BngButton @click="adjustRep(debugRepStep)" accent="secondary">+</BngButton>
+            </div>
+            <div class="debug-grid two">
+              <BngButton @click="generateInvite()" accent="main">Invite</BngButton>
+              <BngButton @click="accelerateInvite" accent="main">Accelerate Invite</BngButton>
+            </div>
+            <div class="debug-type-grid">
+              <BngButton
+                v-for="type in debugInviteTypes"
+                :key="type.key"
+                @click="generateInvite(type.key)"
+                accent="secondary">
+                {{ type.label }}
+              </BngButton>
+            </div>
+            <div class="debug-grid two">
+              <BngButton @click="clearInvites" accent="secondary">Clear</BngButton>
+              <BngButton @click="dumpState" accent="secondary">Dump</BngButton>
+            </div>
+            <div class="debug-title debug-subtitle">Street Drag</div>
+            <label class="debug-raid-toggle">
+              <input :checked="forceRaid" type="checkbox" @change="forceRaid = $event.target.checked">
+              Force a raid when the next meet closes
+            </label>
+            <div class="debug-grid two">
+              <BngButton @click="raceInvite" accent="main">Race Invite</BngButton>
+              <BngButton @click="clearRace" accent="secondary">Clear Race</BngButton>
+            </div>
+            </div>
+          </section>
+</template>
 
       <template v-else-if="socialSection === 'clubs'">
         <div class="section-block">
@@ -277,7 +343,24 @@
     </section>
 
     <section v-else class="tab-panel">
-      <article v-if="activeInvite" class="detail-card">
+      <article v-if="streetMeetLive" class="detail-card">
+        <div class="detail-head">
+          <h2>{{ streetMeet.typeName }}</h2>
+          <span class="chip">{{ streetMeet.racing ? "racing" : "live" }}</span>
+        </div>
+        <div class="info-row"><span>Location</span><strong>{{ streetMeet.location }}</strong></div>
+        <div class="info-row"><span>Club</span><strong>{{ streetMeet.clubName }}</strong></div>
+        <div class="info-row"><span>Format</span><strong>Heads-up, {{ streetMeetDistance }}</strong></div>
+        <div class="info-row"><span>Status</span><strong>{{ streetMeet.status }}</strong></div>
+        <div class="phone-action-buttons">
+          <BngButton @click="openClubScreen(streetMeet.screen)" accent="secondary">Club</BngButton>
+          <BngButton @click="routeStreetMeet" accent="main">{{ streetMeetRouted ? "Route Set" : "Set Route" }}</BngButton>
+                  <BngButton @click="rsvpStreetMeet" :disabled="streetMeet.attending" accent="secondary">{{ streetMeet.attending ? "RSVP’d" : "RSVP" }}</BngButton>
+                  <BngButton v-if="streetMeet.devAccess" @click="goToStreetRace" accent="secondary">Go to race</BngButton>
+        </div>
+        <small v-if="streetMeet.devAccess">Enter intended car</small>
+      </article>
+<article v-if="activeInvite" class="detail-card">
         <div class="detail-head">
           <h2>{{ activeInvite.typeName || activeInvite.type }}</h2>
           <span class="chip">{{ currentMeet?.phase || "waiting" }}</span>
@@ -329,6 +412,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from "vue"
 import { BngButton, ACCENTS } from "@/common/components/base"
 import { lua, useBridge } from "@/bridge"
+import { run } from "@/bridge/libs/Lua"
 import { formatMoney as formatAmount } from "../utils/units.js"
 
 const { events } = useBridge()
@@ -376,8 +460,19 @@ const meetOffersAvailable = computed(() => offerMeetTypes.includes(currentMeet.v
 const saleOffersAvailable = computed(() => meetOffersAvailable.value && !!saleData.value)
 const historySceneEvents = computed(() => asArray(historyDetail.value?.sceneEvents))
 const historyFreeroamTimes = computed(() => asArray(historyDetail.value?.freeroamTimes))
+const streetMeet = computed(() => overview.value.streetMeet || null)
+const streetMeetLive = computed(() => !!(streetMeet.value && (streetMeet.value.open || streetMeet.value.racing)))
+const streetMeetDistance = computed(() => {
+  const m = Number(streetMeet.value?.distance || 0)
+  return Math.abs(m - 201.168) < 1 ? "1/8 mile" : Math.abs(m - 402.336) < 1 ? "1/4 mile" : Math.abs(m - 804.672) < 1 ? "1/2 mile" : Math.round(m) + " m"
+})
+const streetMeetOpen = ref(false)
+const streetMeetRouted = ref(false)
+watch(() => streetMeet.value?.id, () => {
+  streetMeetRouted.value = false
+})
 const socialTiles = computed(() => [
-  { id: "mail", label: "Mail", count: invites.value.length },
+  { id: "mail", label: "Mail", count: invites.value.length + (streetMeet.value ? 1 : 0) },
   { id: "clubs", label: "Clubs", count: joinedClubCount.value },
   { id: "popularity", label: "Popularity", count: popularityVehicles.value.length },
   { id: "history", label: "History", count: historyVehicles.value.length },
@@ -529,10 +624,56 @@ const formatRep = value => {
   return amount.toFixed(1)
 }
 
+const debugRepStep = 10
+const debugInviteTypes = [
+  { key: "SHOWCASE", label: "Show" },
+  { key: "CLUB", label: "Club" },
+  { key: "STREET_CRUISE", label: "Cruise" },
+  { key: "BAZAAR", label: "Bazaar" },
+  { key: "ELITE", label: "Elite" },
+]
+
+const generateInvite = async typeKey => {
+  updateOverview(await (typeKey
+    ? lua.overhaul_career_carmeets_carmeets.debugGenerateInviteOfType(typeKey)
+    : lua.overhaul_career_carmeets_carmeets.debugGenerateInvite()))
+}
+
+const adjustRep = async amount => {
+  updateOverview(await lua.overhaul_career_carmeets_carmeets.debugAdjustReputation(amount))
+}
+
+const clearInvites = async () => {
+  updateOverview(await lua.overhaul_career_carmeets_carmeets.debugClearInvites())
+}
+
+const accelerateInvite = async () => {
+  updateOverview(await lua.overhaul_career_carmeets_carmeets.debugAccelerateInvite())
+}
+
+const dumpState = async () => {
+  updateOverview(await lua.overhaul_career_carmeets_carmeets.debugDumpState())
+}
+
+const devOpen = ref(false)
+const forceRaid = ref(false)
+
+const raceInvite = async () => {
+  await run("overhaul_career_economy_streetKnights.debugRaceInvite", [forceRaid.value], {})
+  lua.overhaul_career_carmeets_carmeets.requestRSVPData()
+}
+
+const clearRace = async () => {
+  await run("overhaul_career_economy_streetKnights.debugClearRace", [], {})
+  lua.overhaul_career_carmeets_carmeets.requestRSVPData()
+}
+
 const joinClub = async clubId => {
   clubData.value = await lua.overhaul_career_carmeets_carmeets.joinClub(clubId)
   updateOverview(await lua.overhaul_career_carmeets_carmeets.checkAvailableMeets())
 }
+
+const openClubScreen = screen => lua.extensions.ui_router.navigate(screen)
 
 const leaveClub = async clubId => {
   clubData.value = await lua.overhaul_career_carmeets_carmeets.leaveClub(clubId)
@@ -581,6 +722,18 @@ const cancelRSVP = async () => {
 
 const setRoute = () => {
   lua.overhaul_career_carmeets_carmeets.setRoute()
+}
+
+const rsvpStreetMeet = async () => {
+  await run("overhaul_career_economy_streetKnights.rsvpMeet", [], {})
+}
+
+const goToStreetRace = async () => {
+  await run("overhaul_career_economy_streetKnights.debugGoToRace", [], {})
+}
+
+const routeStreetMeet = async () => {
+  streetMeetRouted.value = !!(await run("overhaul_career_economy_streetKnights.routeToMeet", [], {}))
 }
 
 const openSaleOffers = () => {
@@ -1173,5 +1326,104 @@ button.club-tile-row.focus-visible {
 
 
 
+
+.debug-raid-toggle { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.debug-grid.two { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.debug-panel {
+  padding: 12px;
+  background: #1a2029;
+}
+
+.debug-subtitle {
+  margin-top: 12px;
+}
+
+.dev-toggle {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 0.2em 0;
+  font: inherit;
+  font-size: 0.78em;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+}
+
+.dev-toggle:hover {
+  color: #fca5a5;
+}
+
+.chev {
+  width: 0.8em;
+  height: 0.8em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.15s;
+}
+
+.debug-panel.open .dev-toggle .chev {
+  transform: rotate(90deg);
+}
+
+.dev-body {
+  padding-top: 6px;
+}
+
+.debug-rep-control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.debug-rep-label {
+  min-width: 52px;
+  border-radius: 999px;
+  padding: 0.45em 0.8em;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(244, 240, 234, 0.86);
+  font-size: 0.78em;
+  font-weight: 800;
+  text-align: center;
+}
+
+.debug-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.debug-grid.two {
+  grid-template-columns: 1fr 1fr;
+}
+
+.debug-grid.one {
+  grid-template-columns: 1fr;
+}
+
+.debug-type-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.debug-type-grid :deep(.bng-button) {
+  min-width: 0;
+  padding-left: 3px;
+  padding-right: 3px;
+  font-size: 0.72em;
+}
 
 </style>

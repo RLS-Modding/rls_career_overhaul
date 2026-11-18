@@ -2,7 +2,8 @@
   "_comment": "Part/metadata rules for traffic eligibility. Evaluated once per model/config (cached). Mods can ship compatible configs by avoiding these patterns.",
   "rejectConfigTypes": [
     "Frame",
-    "joesJunkshell"
+    "joesJunkshell",
+    "StreetKnights"
   ],
   "rejectTrafficConfigTypes": [
     "Police"

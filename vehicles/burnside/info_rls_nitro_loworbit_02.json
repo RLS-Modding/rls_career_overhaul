@@ -1,0 +1,92 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Configuration": "Josie Jennings - Spray and Pray",
+  "Description": "Driver: Josie Jennings. Builder: Low Orbit Garage. Low Orbit Garage: Copper 1950s stripped hot rod. 423 CUI Ultra-Thrust OHV V8, quad carburetors and Stage 4 Race block; naturally aspirated with nitrous from second gear. 3-speed automatic. Three-pass development result at West Coast: 8.889 s. Spray and Pray class. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Transmission": "Automatic",
+  "Drivetrain": "RWD",
+  "Years": {
+    "min": 1952,
+    "max": 1953
+  },
+  "Power": 1549,
+  "Weight": 1948,
+  "Induction Type": "NA + N2O",
+  "Motorsport": {
+    "version": 1,
+    "id": "burnside/rls_nitro_loworbit_02",
+    "configId": "rls_nitro_loworbit_02",
+    "model": "burnside",
+    "config": "/vehicles/burnside/rls_nitro_loworbit_02.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "dominic_toretto",
+    "driverName": "Josie Jennings",
+    "builder": "Low Orbit Garage",
+    "classIds": [
+      "spray_and_pray"
+    ],
+    "approvedClassIds": [
+      "spray_and_pray"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "37e1557d8f62dd60b435f6d99ce892434d8afbd8c5ef6e17c72910fe335ecdf2",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "3-speed automatic",
+      "induction": "Naturally aspirated + nitrous",
+      "nitrous": true,
+      "years": {
+        "min": 1952,
+        "max": 1953
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "burnside_sparetire",
+          "part": "burnside_sparetire",
+          "typeHint": null
+        },
+        {
+          "slot": "tire_F_15x4",
+          "part": "tire_F_27.5_4_15_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_15x9",
+          "part": "tire_R_28_9_15_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "burnside_rollcage",
+          "part": "burnside_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.8885617473988,
+      "runId": null,
+      "evidenceConfigSHA256": "fb0ded57697542b5e398d47859f2ba0bc96f85ba4e04914ef3cdc49205750485",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/nitrous/final-results.json",
+      "acceptedConfig": "outputs/nitrous/accepted/rls_nitro_loworbit_02/rls_nitro_loworbit_02.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_nitrous_builders"
+  }
+}

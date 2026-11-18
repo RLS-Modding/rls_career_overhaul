@@ -703,6 +703,7 @@ local function driveUsingPath(arg)
               * r, the width of the path built using the scripted trajectory at the corresponding node
               * vl, roadSpeedLimit for the corresponding node. If this value is specified and routeSpeedMode is set to 'legal', vl will act as an upper bound for the speed profile
               * v, speed value for the corresponding node. If this value is specified the ai is forced to reach it at the corresponding node, skipping awareness and routeSpeedLimit (if they are enabled)
+  * script.loopStartIndex: Optional index where subsequent laps begin, after the one-time launch approach.
 
   -- Optional Arguments --
   * wpSpeeds: Type: (key/value pairs, key: "node_name", value: speed, number in m/s)
@@ -801,9 +802,11 @@ local function driveUsingPath(arg)
       local pathMap = require('graphpath').newGraphpath() -- create a dummy graph
 
       local scrCount = #arg.script
-      if routeLoop.noOfLaps > 1 and arg.script[scrCount].x == arg.script[1].x and arg.script[scrCount].y == arg.script[1].y and arg.script[scrCount].z == arg.script[1].z then
-        routeLoop.loopPath = true
-      end
+      local loopStartIndex = tonumber(arg.script.loopStartIndex) or 1
+      if loopStartIndex < 1 or loopStartIndex >= scrCount or loopStartIndex % 1 ~= 0 then loopStartIndex = 1 end
+      local loopStart = arg.script[loopStartIndex]
+      routeLoop.loopPath = routeLoop.noOfLaps > 1 and arg.script[scrCount].x == loopStart.x
+        and arg.script[scrCount].y == loopStart.y and arg.script[scrCount].z == loopStart.z or nil
 
       local path = table.new(scrCount, 0)
       aiState.speedProfile = table.new(0, scrCount)
@@ -818,7 +821,7 @@ local function driveUsingPath(arg)
       end
 
       if routeLoop.loopPath then
-        tableInsert(path, path[1])
+        tableInsert(path, path[loopStartIndex])
       end
 
       -- add the nodes and edges to the dummy graph

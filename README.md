@@ -2,11 +2,11 @@
 
 Build a career around the way you like to drive. Race, deliver cargo, run businesses, work shifts, buy and build cars, or take a different route through police work and off-road events.
 
-**v2.8.0 Public Release · BeamNG.drive 0.40.3**
+**v2.8.1 Public Release · BeamNG.drive 0.40.5**
 
-[Download v2.8.0](https://github.com/RLS-Modding/rls_career_overhaul/releases/latest) · [Getting started](https://github.com/RLS-Modding/rls_career_overhaul/wiki/Installation) · [Wiki](https://github.com/RLS-Modding/rls_career_overhaul/wiki) · [Report a bug](https://github.com/RLS-Modding/rls_career_overhaul/issues)
+[Download v2.8.1](https://github.com/RLS-Modding/rls_career_overhaul/releases/latest) · [Getting started](https://github.com/RLS-Modding/rls_career_overhaul/wiki/Installation) · [Wiki](https://github.com/RLS-Modding/rls_career_overhaul/wiki) · [Report a bug](https://github.com/RLS-Modding/rls_career_overhaul/issues)
 
-![RLS West Coast](ui/modules/whatsnew/2.8.0_public/west-coast.jpg)
+![Drag launch at the strip](ui/modules/whatsnew/2.8.1/drag-launch.jpg)
 
 ## Your career
 
@@ -22,24 +22,23 @@ Overhaul has its own career mode, saves and RLS West Coast map. Start a new care
 
 Available jobs, facilities and events depend on your map, equipment and career progress.
 
-## What's new in v2.8.0
+## What's new in v2.8.1
 
-- Separate career mode and a clearer path for importing older RLS saves.
-- Refreshed phone apps, controller navigation and shortcut setup.
-- Wallet, expanded financial history and a redesigned Pause Home.
-- Better delivery progress, pickups, shifts and map travel.
-- Improved garage, engine, auction and repair flows.
-- Four rotating autosaves and stronger save recovery.
-- Lighter menus, less background processing and long-session cleanup.
-- Updated Dakar controls and a smoother compass.
+- **Motorsport Events:** sanctioned drag weekends with staging, qualifying, eliminations and spectator betting across 19 classes and four leagues.
+- **No Prep Knights:** street racing for cash or pink slips, with title defenses, win-backs and the new Belasco Sewer venue.
+- **Fuel & Ignition:** tune fuel maps, mixture, spark and boost. Rich or late-spark tunes now light up the exhaust with afterfire, and over-fuelled diesels roll coal under load.
+- **Fuel grades:** pick Regular, Premium, E85, M100 or Nitro 90 and fill two tanks separately.
+- **Builds and work:** drag tires and injection hardware, Racing Team dyno and Pit Fuel, portable builds, and smoother Job Broker routes.
+- **West Coast and phone:** the new Drift Playground course, Notification Center and smoother weather and daylight.
+- Plus a large round of fixes for saves, insurance, deliveries, garages and menus.
 
-[Read the full changelog](https://github.com/RLS-Modding/rls_career_overhaul/releases/tag/v2.8.0).
+[Read the full changelog](https://github.com/RLS-Modding/rls_career_overhaul/releases/tag/v2.8.1).
 
-![Jobs and passenger work](ui/modules/whatsnew/2.8.0_public/bus.jpg)
+![No Prep Knights street racing](ui/modules/whatsnew/2.8.1/no-prep.jpg)
 
 ## Install
 
-1. Download **`rls_career_overhaul_v2.8.0.zip`** from the [release Assets](https://github.com/RLS-Modding/rls_career_overhaul/releases/latest).
+1. Download **`rls_career_overhaul_v2.8.1.zip`** from the [release Assets](https://github.com/RLS-Modding/rls_career_overhaul/releases/latest).
 2. In the BeamNG launcher, open **Manage User Folder → Open in Explorer**. Use the user folder for the profile you actually play.
 3. Put the ZIP in its `mods` folder. Leave it zipped.
 4. Remove or disable older Overhaul copies, including unpacked copies. Enable the new version in the Mod Manager and restart the game after changing versions.

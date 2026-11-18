@@ -1,0 +1,11 @@
+{
+  "minCashWagerMoney": 250,
+  "maxCashWagerMoney": 2000,
+  "cashWagerStepMoney": 250,
+  "maxCashIncreaseMoney": 250,
+  "maxCashDiscountMoney": 500,
+  "counterConcessionFraction": 0.5,
+  "patienceCount": 3,
+  "refusalPatienceCostCount": 1,
+  "repeatedRefusalPatienceCostCount": 2
+}

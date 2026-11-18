@@ -1,0 +1,25 @@
+{
+  "Configuration": "Silas Flint - No Prep",
+  "Description": "Patina Lantern. Tier 3 racer. Highway no-prep quarter-mile: 10.886s at 132.01mph. Iron Lantern Garage.",
+  "Author": "Iron Lantern Garage",
+  "Name": "Silas Flint",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 9.1731577231073,
+    "time_1_4": 10.88578719007,
+    "time_1_8": 7.1433909470888,
+    "time_330": 4.7431704789453,
+    "time_60": 1.7515400742151,
+    "velAt_1_4": 59.01575958251,
+    "velAt_1_8": 47.127493303865
+  },
+  "Reaction Time": 0.30005133371389,
+  "dragTimesRevalidated": true,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m"
+}

@@ -1,0 +1,87 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Configuration": "Connor Hayes - Spray and Pray",
+  "Description": "Driver: Connor Hayes. Builder: Low Orbit Garage. Low Orbit Garage: Cream 1970s street machine with a stripped drag interior. 448 CUI Thunder Eight V8, twin four-barrel carburetors and Stage 4 Race block; naturally aspirated with nitrous from second gear. 4-speed automatic. Three-pass development result at West Coast: 8.545 s. Spray and Pray class. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Transmission": "Automatic",
+  "Drivetrain": "RWD",
+  "Years": {
+    "min": 1973,
+    "max": 1975
+  },
+  "Power": 1327,
+  "Weight": 1768,
+  "Induction Type": "NA + N2O",
+  "Motorsport": {
+    "version": 1,
+    "id": "moonhawk/rls_nitro_loworbit_01",
+    "configId": "rls_nitro_loworbit_01",
+    "model": "moonhawk",
+    "config": "/vehicles/moonhawk/rls_nitro_loworbit_01.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "memphis_raines",
+    "driverName": "Connor Hayes",
+    "builder": "Low Orbit Garage",
+    "classIds": [
+      "spray_and_pray"
+    ],
+    "approvedClassIds": [
+      "spray_and_pray"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "eda52ca9309a1bb8c7e1c9f037fea4294d55c5c0ffa9de6e8700d4cdb8750c15",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "4-speed automatic",
+      "induction": "Naturally aspirated + nitrous",
+      "nitrous": true,
+      "years": {
+        "min": 1973,
+        "max": 1975
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x4",
+          "part": "tire_F_27.5_4_15_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_15x12_alt",
+          "part": "tire_R_29_12_15_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "moonhawk_rollcage",
+          "part": "moonhawk_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.5445411015579,
+      "runId": null,
+      "evidenceConfigSHA256": "7e9113f07d46382b7082e0fe610f402114a63e4fb8f71fa90553afa287eb02d2",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/nitrous/final-results.json",
+      "acceptedConfig": "outputs/nitrous/accepted/rls_nitro_loworbit_01/rls_nitro_loworbit_01.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_nitrous_builders"
+  }
+}

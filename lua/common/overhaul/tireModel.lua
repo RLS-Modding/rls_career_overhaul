@@ -35,6 +35,11 @@ local DEFAULT_WET_GRIP_MULTIPLIERS = {
   drag = 0.72,
 }
 
+-- Load shared calibration once, outside the wheel update path.
+local tireGripManifest = require("common/overhaul/tireGripManifest")
+local COLD_GRIP_REFERENCE_C = tireGripManifest.coldReferenceTemperatureC
+local COLD_GRIP_MULTIPLIERS = tireGripManifest.coldGripMultiplierByCompound
+
 local WET_CAPABLE_IDENTIFIERS = {
   "standard", "touring", "allseason", "all_season", "eco", "rally", "offroad",
   "off_road", "allterrain", "all_terrain", "winter", "snow", "mud",
@@ -197,8 +202,9 @@ function M.combineWearComponents(distanceWear, slipWear, loadMultiplier)
          max(tonumber(slipWear) or 0, 0)
 end
 
-function M.gripMultiplier(remaining, temperatureC, workingTemperatureC)
-  local peakTemperatureGrip = 1.01
+function M.gripMultiplier(remaining, temperatureC, workingTemperatureC, compound)
+  local coldGrip = COLD_GRIP_MULTIPLIERS[compound]
+  local peakTemperatureGrip = coldGrip and 1 or 1.01
   local temperatureDeviationReferenceC = 130
   local temperatureLossExponent = 1.3
   local temperatureLossGain = 0.12
@@ -212,9 +218,18 @@ function M.gripMultiplier(remaining, temperatureC, workingTemperatureC)
 
   local tread = clamp(remaining, 0, 1)
   local working = max(tonumber(workingTemperatureC) or 85, 1)
-  local distance = math.abs((tonumber(temperatureC) or working) - working)
+  local temperature = tonumber(temperatureC) or working
+  local distance = math.abs(temperature - working)
   local temperatureGrip = peakTemperatureGrip - clamp((distance / temperatureDeviationReferenceC) ^
     temperatureLossExponent * temperatureLossGain, 0, maximumTemperatureLoss)
+  if coldGrip and temperature < working then
+    -- Replace the generic cold penalty, rather than stacking it. Smoothstep joins
+    -- the cold floor to exactly normal grip at the existing working temperature.
+    local coldReference = min(COLD_GRIP_REFERENCE_C, working - 1)
+    local warmup = clamp((temperature - coldReference) / (working - coldReference), 0, 1)
+    warmup = warmup * warmup * (3 - 2 * warmup)
+    temperatureGrip = coldGrip + (1 - coldGrip) * warmup
+  end
   local wearGrip = baseTreadGrip + remainingTreadBlend * math.sqrt(tread)
   return clamp(temperatureGrip * wearGrip, minimumGripMultiplier, maximumGripMultiplier)
 end

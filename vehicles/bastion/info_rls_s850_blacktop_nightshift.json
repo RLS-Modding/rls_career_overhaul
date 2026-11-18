@@ -1,0 +1,89 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Configuration": "Finn Emerson - Super Stick",
+  "Description": "Driver: Finn Emerson. Builder: Blacktop Engineering. Blacktop Engineering: Deep graphite full-interior street sleeper. 6.5L V8 Engine; Turbocharger; nitrous Yes. 6-speed H-pattern manual. First clean qualifying West Coast quarter-mile: 8.802 s. Custom Super Stick build. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Drivetrain": "RWD",
+  "Transmission": "Manual",
+  "Fuel Type": "Gasoline",
+  "Induction Type": "Turbo + N2O",
+  "Years": {
+    "min": 2016,
+    "max": 2022
+  },
+  "Value": 150000,
+  "Power": 1817,
+  "Weight": 2204,
+  "Motorsport": {
+    "version": 1,
+    "id": "bastion/rls_s850_blacktop_nightshift",
+    "configId": "rls_s850_blacktop_nightshift",
+    "model": "bastion",
+    "config": "/vehicles/bastion/rls_s850_blacktop_nightshift.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "darius_kane",
+    "driverName": "Finn Emerson",
+    "builder": "Blacktop Engineering",
+    "classIds": [
+      "super_stick"
+    ],
+    "approvedClassIds": [
+      "super_stick"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "e809a6b9c22289dea5126958ac569ea989917e83ad7dce26e0be8e27fc6bb221",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "6-speed H-pattern manual",
+      "induction": "Turbocharger",
+      "nitrous": true,
+      "years": {
+        "min": 2016,
+        "max": 2022
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_18x5",
+          "part": "tire_F_28_4_5_18_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_18x12_alt",
+          "part": "tire_R_28_13_5_18_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "bastion_rollcage",
+          "part": "bastion_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.802161449143,
+      "runId": "S850-011",
+      "evidenceConfigSHA256": "745a7ad98f09b22335c8f6f6334134d56544baa826bb4612c3a0e845968cc6a7",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/stick850/final-results.json",
+      "acceptedConfig": "outputs/stick850/accepted/rls_s850_blacktop_nightshift/rls_s850_blacktop_nightshift.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_stickshift850"
+  }
+}

@@ -2,6 +2,7 @@
 -- derby.lua creates one instance per load with its event state table, so a reloaded derby never shares state with the old load.
 
 local capabilities = require("overhaul/lib/platform/capabilities")
+local condition = require("overhaul/lib/vehicles/condition")
 local lib = {}
 
 function lib.create(ownerServices)
@@ -122,31 +123,6 @@ function lib.create(ownerServices)
     end
   end
 
-  local function resetPartConditionsToNew(partConditions)
-    for _, condition in pairs(partConditions) do
-      if type(condition) == "table" then
-        condition.integrityValue = 1
-        condition.integrityState = nil
-        condition.visualValue = 1
-        condition.visualState = nil
-      end
-    end
-  end
-
-  local function repairPartConditions(vehicleInfo)
-    local repaired = false
-    if overhaul_career_repair_insurance then
-      repaired = pcall(function()
-        overhaul_career_repair_insurance.repairPartConditions({
-          partConditions = vehicleInfo.partConditions,
-          paintRepair = true,
-          inventoryId = derbyState.playerInventoryId,
-        })
-      end)
-    end
-    if not repaired then resetPartConditionsToNew(vehicleInfo.partConditions) end
-  end
-
   local function findOwnCarObject()
     local vehId = overhaul_career_garage_inventory
         and overhaul_career_garage_inventory.getVehicleIdFromInventoryId(derbyState.playerInventoryId)
@@ -155,46 +131,55 @@ function lib.create(ownerServices)
   end
 
   -- Tries an instant repair, then a respawn from the inventory, then pushes the part conditions to the live car.
-  local function reloadRepairedVehicle(vehicleInfo)
+  local function reloadRepairedVehicle(vehicleInfo, prepareRepair, isCurrent)
+    local inventoryId = vehicleInfo.id
+    local completed = false
+    local function onRepaired(success)
+      if completed then return end
+      completed = true
+      if success == false or (isCurrent and not isCurrent()) then return end
+      derby.saveCareerProgress("winner repair")
+      ui_message("Your car has been fully repaired.", 5, "demoWinnerRepair", "check")
+    end
     local didReload = false
     if overhaul_career_repair_insurance then
       didReload = pcall(function()
-        overhaul_career_repair_insurance.startRepairInstant(vehicleInfo, function(success)
-          if success == false then return end
-          derby.saveCareerProgress("winner repair")
-        end, true)
+        overhaul_career_repair_insurance.startRepairInstant(vehicleInfo, onRepaired, true, prepareRepair)
       end)
     end
     if not didReload and overhaul_career_garage_inventory then
       didReload = pcall(function()
-        overhaul_career_garage_inventory.spawnVehicle(derbyState.playerInventoryId, 2, function(success)
-          if success == false then return end
-          derby.saveCareerProgress("winner repair")
-        end)
+        overhaul_career_garage_inventory.spawnVehicle(inventoryId, 2, onRepaired, nil, nil,
+          {prepareReplacement = prepareRepair})
       end)
     end
     if not didReload then
       local vehObj = findOwnCarObject()
-      if vehObj and core_vehicleBridge then
+      if vehObj and core_vehicleBridge and (not prepareRepair or prepareRepair()) then
         core_vehicleBridge.executeAction(vehObj, "initPartConditions", vehicleInfo.partConditions, 0, 1, 1)
       end
     end
   end
 
-  local function finishRepair(vehicleInfo, partConditions)
-    vehicleInfo.partConditions = partConditions or vehicleInfo.partConditions or {}
-    repairPartConditions(vehicleInfo)
-    if overhaul_career_repair_damageManager then
-      pcall(function()
-        overhaul_career_repair_damageManager.clearDamageState(derbyState.playerInventoryId)
-      end)
+  local function finishRepair(vehicleInfo, partConditions, inventoryId)
+    local function isCurrent()
+      return overhaul_career_career.isActive()
+        and overhaul_career_garage_inventory.getVehicles()[inventoryId] == vehicleInfo
     end
-    if overhaul_career_garage_inventory then
-      pcall(function()
-        overhaul_career_garage_inventory.setVehicleDirty(derbyState.playerInventoryId)
-      end)
+    if not isCurrent() then return end
+    local prepared = false
+    local function prepareRepair()
+      if not isCurrent() then return false end
+      if prepared then return true end
+      -- Replacement captures the outgoing car first; repairing earlier is overwritten by that capture.
+      vehicleInfo.partConditions = vehicleInfo.partConditions or partConditions or {}
+      condition.repairVehicle({partConditions = vehicleInfo.partConditions, paintRepair = true, inventoryId = inventoryId})
+      prepared = true
+      return true
     end
-    reloadRepairedVehicle(vehicleInfo)
+    if not overhaul_career_garage_inventory.getVehicleIdFromInventoryId(inventoryId)
+      and not prepareRepair() then return end
+    reloadRepairedVehicle(vehicleInfo, prepareRepair, isCurrent)
   end
 
   local function repairWinningOwnCar()
@@ -210,18 +195,18 @@ function lib.create(ownerServices)
     end
     if not overhaul_career_career.isActive() or not core_vehicleBridge then return false end
     local vehicles = overhaul_career_garage_inventory.getVehicles()
-    local vehicleInfo = vehicles and vehicles[derbyState.playerInventoryId]
+    local inventoryId = derbyState.playerInventoryId
+    local vehicleInfo = vehicles and vehicles[inventoryId]
     if not vehicleInfo then return false end
 
     local vehObj = findOwnCarObject()
     if vehObj then
       core_vehicleBridge.requestValue(vehObj, function(response)
-        finishRepair(vehicleInfo, response and response.result or vehicleInfo.partConditions)
+        finishRepair(vehicleInfo, response and response.result or vehicleInfo.partConditions, inventoryId)
       end, "getPartConditions")
     else
-      finishRepair(vehicleInfo, vehicleInfo.partConditions)
+      finishRepair(vehicleInfo, vehicleInfo.partConditions, inventoryId)
     end
-    ui_message("Your car has been fully repaired.", 5, "demoWinnerRepair", "check")
     return true
   end
 

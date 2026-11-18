@@ -3,6 +3,7 @@
 local M = {}
 
 local common = require('vehicle/overhaul/maintenance/common')
+local powertrainCapacity = require('vehicle/overhaul/powertrainCapacity')
 local getLimitStressFactor = require('vehicle/overhaul/maintenance/limitStress')
 local limitStressFractions = {
   rpmRampStart = 0.72, loadRampStart = 0.8, heatRampStart = 0.65,
@@ -203,7 +204,7 @@ local function resetDeviceRuntime(device, base, includeDamage)
     device.gearRatioChangeRate = base.gearRatioChangeRate
   end
   if base.lockTorque ~= nil then
-    device.lockTorque = base.lockTorque
+    device.lockTorque = powertrainCapacity.lockTorqueBase(device, base.lockTorque)
   end
   if base.clutchFreePlay ~= nil then
     device.clutchFreePlay = base.clutchFreePlay
@@ -526,6 +527,7 @@ end
 local function applyGearboxRuntime(entry, derived, symptom)
   local device = entry.device
   local base = entry.base or {}
+  local previousLockTorque = device.lockTorque
   resetDeviceRuntime(device, base)
   local frictionCoef = derived.frictionCoef
   local dynamicFrictionCoef = derived.dynamicFrictionCoef
@@ -567,8 +569,11 @@ local function applyGearboxRuntime(entry, derived, symptom)
     if symptom == 'slip' then
       lockTorqueCoef = common.clamp(lockTorqueCoef * 0.92, 0.78, 1)
     end
-    device.lockTorque = base.lockTorque * lockTorqueCoef
+    local sizedBase = powertrainCapacity.lockTorqueBase(device, base.lockTorque)
+    device.lockTorque = sizedBase * lockTorqueCoef
   end
+  if device.type == 'dctGearbox' and device.lockTorque ~= previousLockTorque and
+      device.calculateInertia then device:calculateInertia() end
 end
 
 local function applyClutchRuntime(entry, derived, symptom)
@@ -595,7 +600,7 @@ local function applyClutchRuntime(entry, derived, symptom)
   end
 
   if base.lockTorque ~= nil and device.lockTorque ~= nil then
-    device.lockTorque = base.lockTorque * lockTorqueCoef
+    device.lockTorque = powertrainCapacity.lockTorqueBase(device, base.lockTorque) * lockTorqueCoef
   end
   if base.clutchFreePlay ~= nil and device.clutchFreePlay ~= nil then
     device.clutchFreePlay = base.clutchFreePlay * common.clamp(freePlayCoef, 1, 5.0)
@@ -659,7 +664,10 @@ local function clearFailureRuntime(context)
   end
 
   for _, entry in ipairs(context.gearboxes or {}) do
+    local previousLockTorque = entry.device.lockTorque
     resetDeviceRuntime(entry.device, entry.base or {}, true)
+    if entry.device.type == 'dctGearbox' and entry.device.lockTorque ~= previousLockTorque and
+        entry.device.calculateInertia then entry.device:calculateInertia() end
   end
 
   for _, entry in ipairs(context.clutches or {}) do

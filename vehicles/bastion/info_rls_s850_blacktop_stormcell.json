@@ -1,0 +1,89 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Configuration": "Gavin Fairchild - Super Stick",
+  "Description": "Driver: Gavin Fairchild. Builder: Blacktop Engineering. Blacktop Engineering: Ice-blue stripped turbo strip car. 5.7L V8 Engine; Turbocharger; nitrous Yes. 6-speed H-pattern manual. First clean qualifying West Coast quarter-mile: 8.526 s. Custom Super Stick build. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Drivetrain": "RWD",
+  "Transmission": "Manual",
+  "Fuel Type": "Gasoline",
+  "Induction Type": "Turbo + N2O",
+  "Years": {
+    "min": 2016,
+    "max": 2022
+  },
+  "Value": 150000,
+  "Power": 1613,
+  "Weight": 2017,
+  "Motorsport": {
+    "version": 1,
+    "id": "bastion/rls_s850_blacktop_stormcell",
+    "configId": "rls_s850_blacktop_stormcell",
+    "model": "bastion",
+    "config": "/vehicles/bastion/rls_s850_blacktop_stormcell.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "caleb_reece",
+    "driverName": "Gavin Fairchild",
+    "builder": "Blacktop Engineering",
+    "classIds": [
+      "super_stick"
+    ],
+    "approvedClassIds": [
+      "super_stick"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "d2914ebad3054bebb6bd0d90b028d47a180fa2e0a04c5057acd59f002449570c",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "6-speed H-pattern manual",
+      "induction": "Turbocharger",
+      "nitrous": true,
+      "years": {
+        "min": 2016,
+        "max": 2022
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_18x5",
+          "part": "tire_F_28_4_5_18_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_18x12_alt",
+          "part": "tire_R_28_13_5_18_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "bastion_rollcage",
+          "part": "bastion_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.5261739265248,
+      "runId": "S850-026",
+      "evidenceConfigSHA256": "3ecbe675a0b1dca42f07b303ee76d07edafebaa5b80fcda1a02034b09eed929d",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/stick850/final-results.json",
+      "acceptedConfig": "outputs/stick850/accepted/rls_s850_blacktop_stormcell/rls_s850_blacktop_stormcell.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_stickshift850"
+  }
+}

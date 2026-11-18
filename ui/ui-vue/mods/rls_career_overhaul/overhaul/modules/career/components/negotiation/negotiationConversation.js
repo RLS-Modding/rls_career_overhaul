@@ -4,7 +4,8 @@
 
 // Chat bubbles for NegotiationChatWindow, built from the offer history. Vehicle negotiations get the other
 // party's words from Lua on each of their turns (entry.line = { text, pre, post }, chosen per seller type);
-// hosts that send no lines (real estate) keep the default wording below.
+// hosts that send no lines (real estate) keep the default wording below. A turn of mine with line.text
+// (the Street Knights boss challenge) is said as written, without a price.
 
 // Varied wording so the thread reads like a conversation; [before, after] around the price.
 const THEIR_COUNTER = [["How about ", "?"], ["Best I can do is ", "."], ["I could do ", "."], ["Meet me at ", "."], ["", " and we have a deal."]]
@@ -46,6 +47,10 @@ export function buildConversation({ history, quote, awaitingOpening, amISelling,
     const amount = mine ? Number(h.myOffer) : Number(h?.theirOffer)
     const entryStatus = String(h?.negotiationStatus || "")
     if (mine) {
+      if (h.line?.text) {
+        out.push({ key: `m${i}`, from: "me", text: h.line.text, amount: null })
+        return
+      }
       if (entryStatus === "accepted") {
         out.push({ key: `m${i}`, from: "me", pre: "Deal at ", amount, post: ".", tone: "deal" })
       } else {

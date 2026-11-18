@@ -1,0 +1,25 @@
+{
+  "Configuration": "Milo Brant - No Prep",
+  "Description": "Midnight Authority. Tier 3 racer. Highway no-prep quarter-mile: 10.277s at 153.03mph. Blacktop Engineering.",
+  "Author": "Blacktop Engineering",
+  "Name": "Milo Brant",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 8.7791840015746,
+    "time_1_4": 10.276789479088,
+    "time_1_8": 6.9523886041075,
+    "time_330": 4.7094876892677,
+    "time_60": 1.8246189018529,
+    "velAt_1_4": 68.409378381681,
+    "velAt_1_8": 51.556859388985
+  },
+  "Reaction Time": 0.28585155013841,
+  "dragTimesRevalidated": true,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m"
+}

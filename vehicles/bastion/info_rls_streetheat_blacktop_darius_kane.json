@@ -1,0 +1,80 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Name": "Damon Voss",
+  "Configuration": "Damon Voss - Street Heat",
+  "Description": "Driver: Damon Voss. Builder: Blacktop Engineering. Graphite twin-turbo automatic sedan, understated full-interior street sleeper. Sport tires at all four corners. Alder quarter-mile: 10.129 s at 141.2 mph. Two healthy timed passes and a straight-line braking check. Tuning-only index compliance confirmed on 2026-10-26: 3 legal native passes, fastest 10.586056 s. Saved-build mean 10.863198 s. Parts and paint unchanged.",
+  "Config Type": "Custom",
+  "Author": "RLS Modding",
+  "Drivetrain": "RWD",
+  "Transmission": "Automatic",
+  "Years": {
+    "min": 2016,
+    "max": 2022
+  },
+  "Weight": 2212.558965,
+  "Motorsport": {
+    "version": 1,
+    "id": "bastion/rls_streetheat_blacktop_darius_kane",
+    "configId": "rls_streetheat_blacktop_darius_kane",
+    "model": "bastion",
+    "config": "/vehicles/bastion/rls_streetheat_blacktop_darius_kane.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "darius_kane",
+    "driverName": "Damon Voss",
+    "builder": "Blacktop Engineering",
+    "leagueId": "street_kings",
+    "classIds": [
+      "street_heat"
+    ],
+    "approvedClassIds": [
+      "street_heat"
+    ],
+    "eligibilityStatus": "Tuning-only compliance validated by 3 clean native passes across both Alder lanes; fastest 10.586056 seconds.",
+    "sourceConfigSHA256": "7a80d24cb42ee9841398a62e0ba5ecef2fc12d974b73e05c1498dcb4cbe7a988",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "8-speed auto",
+      "induction": "Turbo",
+      "nitrous": false,
+      "years": {
+        "min": 2016,
+        "max": 2022
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_20x11",
+          "part": "tire_F_305_35_20_sport",
+          "typeHint": "sport"
+        },
+        {
+          "slot": "tire_R_20x11",
+          "part": "tire_R_305_35_20_sport",
+          "typeHint": "sport"
+        }
+      ],
+      "selectedRollCageParts": [],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 10.863198351389665,
+      "runId": "COMPLIANCE-20261026-rls_streetheat_blacktop_darius_kane",
+      "evidenceConfigSHA256": "7a80d24cb42ee9841398a62e0ba5ecef2fc12d974b73e05c1498dcb4cbe7a988",
+      "configHashMatches": true,
+      "status": "recorded-pass-matching-config"
+    },
+    "provenance": {
+      "metadata": "outputs/street-heat/final-results.json",
+      "acceptedConfig": "outputs/street-heat/accepted/rls_streetheat_blacktop_darius_kane/rls_streetheat_blacktop_darius_kane.pc",
+      "tuningEvidence": "/settings/motorsportEvents/complianceEvidence-20261026.json"
+    },
+    "sourcePack": "rls_street_heat"
+  }
+}

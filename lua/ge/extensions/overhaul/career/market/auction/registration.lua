@@ -268,6 +268,8 @@ function registration.create(deps)
     if not lot or lot.purchaseResolved or lot.wonInventoryId then
       return false
     end
+    local configs=require('overhaul/lib/platform/capabilities').get('noPrepConfigOwnership')
+    if configs and configs.isEventConfig(lot.config) then return false end
     lot.purchaseResolved = true
     lot.pendingPurchase = nil
 
@@ -299,7 +301,7 @@ function registration.create(deps)
     local captured = require("overhaul/lib/finance/metadata").capture(
       {category = "purchase", finance = finance}, recorded and recorded.time, -price)
     if recorded then
-      recorded.finance = captured
+      require("overhaul/lib/finance/metadata").updateReceipt(recorded, captured)
     end
     finance.vehicleKey, finance.vehicleName = captured.vehicleKey, captured.vehicleName
     if not overhaul_career_garage_inventory.moveVehicleToGarage(inventoryId) then
@@ -357,6 +359,8 @@ function registration.create(deps)
     end
 
     if lot.highestBidder == 'player' then
+      local configs=require('overhaul/lib/platform/capabilities').get('noPrepConfigOwnership')
+      if configs and configs.isEventConfig(lot.config) then deps.bidding.beginLotExitThenNext(lot);return end
       if not deps.bidding.hasGarageSpaceForPurchase() then
         lot.outcome = 'voided'
         deps.bidding.setBidHint('No free garage slot. The win was voided.', 5)

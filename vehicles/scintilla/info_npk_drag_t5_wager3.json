@@ -1,0 +1,33 @@
+{
+  "Name": "SCINTILLA / No Prep Knights",
+  "Configuration": "No Prep Knights - Tier 5 racer 3",
+  "Value": 120000,
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Description": "Dedicated No Prep Knights drag build and paint scheme.",
+  "Drag Times": {
+    "time_1000": 6.6210000738502,
+    "time_1_4": 7.7355000860989,
+    "time_1_8": 5.3055000565946,
+    "time_330": 3.7080000378191,
+    "time_60": 1.579500015825,
+    "velAt_1_4": 91.963738722232,
+    "velAt_1_8": 72.003058852753
+  },
+  "Reaction Time": 0.26650000363588,
+  "Drivetrain": "AWD",
+  "Transmission": "Sequential",
+  "Fuel Type": "Gasoline",
+  "Years": {
+    "max": 2022,
+    "min": 2020
+  },
+  "dragConfigVersion": 3,
+  "dragFitmentVersion": 3,
+  "dragTimesRevalidated": false
+}

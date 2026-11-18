@@ -8,6 +8,10 @@
 -- Vehicle catalog validation and quarantine for one shopping instance.
 -- Read blacklist rules, validation counters and shapes, catalog copying, then saved-listing repair.
 local M = {}
+local vehicleListFilter = require("overhaul/lib/market/vehicleListFilter")
+
+-- One stable list so the list filter's per-list cache is built once.
+local FACTORY_CONFIG_TYPE = {"Factory"}
 
 function M.new(inputs)
   local service = {}
@@ -255,9 +259,8 @@ function M.new(inputs)
     end
 
     local aggregates = type(vehicleInfo.aggregates) == "table" and vehicleInfo.aggregates or {}
-    local configTypes = type(aggregates["Config Type"]) == "table" and aggregates["Config Type"] or {}
     local vehicleTypes = type(aggregates.Type) == "table" and aggregates.Type or {}
-    local isFactory = vehicleInfo["Config Type"] == "Factory" or configTypes.Factory == true
+    local isFactory = vehicleListFilter.matchesAny(vehicleInfo, "Config Type", FACTORY_CONFIG_TYPE)
     local isCar = vehicleInfo.Type == "Car" or vehicleTypes.Car == true
     return isFactory and isCar
   end

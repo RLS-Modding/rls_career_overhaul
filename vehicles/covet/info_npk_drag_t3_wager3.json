@@ -1,0 +1,33 @@
+{
+  "Name": "COVET / No Prep Knights",
+  "Configuration": "No Prep Knights - Tier 3 racer 3",
+  "Value": 55000,
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Description": "Dedicated No Prep Knights drag build and paint scheme.",
+  "Drag Times": {
+    "time_1000": 7.7810001783073,
+    "time_1_4": 9.1860002093017,
+    "time_1_8": 6.1245001405478,
+    "time_330": 4.1500000953674,
+    "time_60": 1.6400000378489,
+    "velAt_1_4": 72.353232806964,
+    "velAt_1_8": 58.299811993994
+  },
+  "Reaction Time": 0.25050000473857,
+  "Drivetrain": "FWD",
+  "Transmission": "Automatic",
+  "Fuel Type": "Gasoline",
+  "Years": {
+    "max": 1992,
+    "min": 1986
+  },
+  "dragConfigVersion": 3,
+  "dragFitmentVersion": 3,
+  "dragTimesRevalidated": false
+}

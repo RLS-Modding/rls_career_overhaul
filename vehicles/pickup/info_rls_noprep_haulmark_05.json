@@ -1,0 +1,26 @@
+{
+  "Configuration": "Cole Serrano - No Prep",
+  "Description": "Silverline Runner. Tier 2 racer. Highway no-prep quarter-mile: 11.971s at 113.47mph. Haulmark Racing. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Haulmark Racing",
+  "Name": "Cole Serrano",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 9.9767023833974,
+    "time_1_4": 11.970871244929,
+    "time_1_8": 7.6365483055195,
+    "time_330": 4.944834928082,
+    "time_60": 1.7302470061149,
+    "velAt_1_4": 50.727557332102,
+    "velAt_1_8": 41.374431898564
+  },
+  "Reaction Time": 0.29794057626749,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

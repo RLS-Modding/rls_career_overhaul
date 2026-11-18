@@ -1,0 +1,337 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Name": "Dante Moretti",
+  "Configuration": "Dante Moretti - Street Heat",
+  "Description": "Driver: Dante Moretti. Builder: Low Orbit Garage. Current inspected build: 4-speed H-pattern manual; RWD; Supercharger; nitrous Yes. ETs are historical estimates; current-build qualification is separately recorded from an assessor-accepted quarter-mile result (10.5-11.25 s original class window).",
+  "Config Type": "Custom",
+  "Author": "RLS Modding",
+  "Drivetrain": "RWD",
+  "Transmission": "Manual",
+  "Years": {
+    "max": 1975,
+    "min": 1973
+  },
+  "Motorsport": {
+    "version": 1,
+    "id": "moonhawk/rls_streetheat_loworbit_dominic_toretto",
+    "configId": "rls_streetheat_loworbit_dominic_toretto",
+    "model": "moonhawk",
+    "config": "/vehicles/moonhawk/rls_streetheat_loworbit_dominic_toretto.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "dominic_toretto",
+    "driverName": "Dante Moretti",
+    "builder": "Low Orbit Garage",
+    "leagueId": "street_kings",
+    "classIds": [
+      "street_heat"
+    ],
+    "approvedClassIds": [
+      "street_heat"
+    ],
+    "eligibilityStatus": "Roster approval retained. Current build has separate assessor-accepted quarter-mile qualification evidence; recorded historical ETs remain historical estimates.",
+    "sourceConfigSHA256": "09c63f5cbed9b593345acc3777b1ffc3c078739eaf3f4c7f832b0a3a64352571",
+    "traits": {
+      "configId": "moonhawk/rls_streetheat_loworbit_dominic_toretto",
+      "diesel": false,
+      "drivetrain": "RWD",
+      "manual": true,
+      "model": "moonhawk",
+      "nitrous": true,
+      "rollCage": false,
+      "sportTires": true,
+      "supercharger": true,
+      "tireFriction": {
+        "complete": true,
+        "source": "compiled-tread-nodes",
+        "wheels": [
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "FL"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "FR"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "RL"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "RR"
+          }
+        ]
+      },
+      "tireFrictionCoefMax": 1,
+      "tireType": "sport",
+      "tireTypes": [
+        "sport"
+      ],
+      "tires": [
+        {
+          "part": "tire_f_235_60_15_alt_sport",
+          "slot": "/moonhawk_frame/moonhawk_suspension_f/wheel_f_5/tire_f_15x8_alt/tire_f_235_60_15_alt_sport",
+          "source": "installed-part-label",
+          "type": "sport"
+        },
+        {
+          "part": "tire_r_255_55_15_sport",
+          "slot": "/moonhawk_frame/moonhawk_suspension_r/wheel_r_5/tire_r_15x9/tire_r_255_55_15_sport",
+          "source": "installed-part-label",
+          "type": "sport"
+        }
+      ],
+      "truck": false,
+      "turbocharger": false,
+      "year": 1975,
+      "transmission": "4-speed H-pattern manual",
+      "induction": "Supercharger",
+      "years": {
+        "max": 1975,
+        "min": 1973
+      }
+    },
+    "equipment": {
+      "evidence": "Hash-matched live class inspection and installed-parts tree; no new timing approval is asserted.",
+      "selectedTires": [
+        {
+          "slot": "/moonhawk_frame/moonhawk_suspension_f/wheel_f_5/tire_f_15x8_alt/tire_f_235_60_15_alt_sport",
+          "part": "tire_f_235_60_15_alt_sport",
+          "typeHint": "sport",
+          "source": "installed-part-label"
+        },
+        {
+          "slot": "/moonhawk_frame/moonhawk_suspension_r/wheel_r_5/tire_r_15x9/tire_r_255_55_15_sport",
+          "part": "tire_r_255_55_15_sport",
+          "typeHint": "sport",
+          "source": "installed-part-label"
+        }
+      ],
+      "selectedRollCageParts": [],
+      "rollCage": false,
+      "tireFriction": {
+        "complete": true,
+        "source": "compiled-tread-nodes",
+        "wheels": [
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "FL"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "FR"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "RL"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "RR"
+          }
+        ]
+      },
+      "nitrous": {
+        "addedPower": 50,
+        "cutInRPM": 4000,
+        "minimumGear": 2,
+        "purgeValves_nodes": [
+          88,
+          92
+        ],
+        "addedPowerUnits": "kW"
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 11.42510092821,
+      "runId": "SH-20261020-075929",
+      "evidenceConfigSHA256": "eb0b937fb513dcfc6c266f67378293fc25ace2176f76c9fea431422b0e77acbf",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/street-heat/final-results.json",
+      "acceptedConfig": "outputs/street-heat/accepted/rls_streetheat_loworbit_dominic_toretto/rls_streetheat_loworbit_dominic_toretto.pc",
+      "indexRecoveryMetadata": {
+        "sourceProofFile": "outputs/drag-rebuild-20261028/continuation-ledger/attempts/28a225f49e6d0d107d788ae14e97ee7b02b42b49e58ff8ab54984d48e95334bc.json",
+        "sourceProofSHA256": "28a225f49e6d0d107d788ae14e97ee7b02b42b49e58ff8ab54984d48e95334bc",
+        "attemptId": "moonhawk__rls_streetheat_loworbit_dominic_toretto-L1-P1-index-recovery-03-924f87f3",
+        "configSHA256": "09c63f5cbed9b593345acc3777b1ffc3c078739eaf3f4c7f832b0a3a64352571",
+        "evidenceScope": "Hardware declarations only; historical ET receipts and class approvals retained. PC identity is guarded; native/VFS dependency freshness and performance are not certified here."
+      }
+    },
+    "sourcePack": "rls_street_heat",
+    "currentQualification": {
+      "schema": "rls.index-recovery.current-qualification/1",
+      "status": "assessor-accepted",
+      "originalKey": "moonhawk/rls_streetheat_loworbit_dominic_toretto",
+      "testedKey": "moonhawk/rls_streetheat_loworbit_dominic_toretto",
+      "configSHA256": "09c63f5cbed9b593345acc3777b1ffc3c078739eaf3f4c7f832b0a3a64352571",
+      "quarterMileSeconds": 11.182195939052,
+      "attemptId": "moonhawk__rls_streetheat_loworbit_dominic_toretto-L1-P1-index-recovery-03-924f87f3",
+      "capturedAt": "2026-10-28T19:17:45Z",
+      "classId": "street_heat",
+      "lower": 10.5,
+      "upper": 11.25,
+      "classProof": {
+        "classEntryAllowed": true,
+        "classId": "street_heat",
+        "classResultAllowed": true,
+        "leagueId": "street_kings",
+        "lower": 10.5,
+        "nitrousAddedPower": 50,
+        "nitrousMinimumGear": 2,
+        "traits": {
+          "configId": "moonhawk/rls_streetheat_loworbit_dominic_toretto",
+          "diesel": false,
+          "drivetrain": "RWD",
+          "manual": true,
+          "model": "moonhawk",
+          "nitrous": true,
+          "rollCage": false,
+          "sportTires": true,
+          "supercharger": true,
+          "tireFriction": {
+            "complete": true,
+            "source": "compiled-tread-nodes",
+            "wheels": [
+              {
+                "frictionCoefMax": 1,
+                "frictionCoefMin": 1,
+                "nodeCount": 32,
+                "slidingFrictionCoefMax": 1,
+                "slidingFrictionCoefMin": 1,
+                "source": "compiled-tread-nodes",
+                "wheel": "FL"
+              },
+              {
+                "frictionCoefMax": 1,
+                "frictionCoefMin": 1,
+                "nodeCount": 32,
+                "slidingFrictionCoefMax": 1,
+                "slidingFrictionCoefMin": 1,
+                "source": "compiled-tread-nodes",
+                "wheel": "FR"
+              },
+              {
+                "frictionCoefMax": 1,
+                "frictionCoefMin": 1,
+                "nodeCount": 32,
+                "slidingFrictionCoefMax": 1,
+                "slidingFrictionCoefMin": 1,
+                "source": "compiled-tread-nodes",
+                "wheel": "RL"
+              },
+              {
+                "frictionCoefMax": 1,
+                "frictionCoefMin": 1,
+                "nodeCount": 32,
+                "slidingFrictionCoefMax": 1,
+                "slidingFrictionCoefMin": 1,
+                "source": "compiled-tread-nodes",
+                "wheel": "RR"
+              }
+            ]
+          },
+          "tireFrictionCoefMax": 1,
+          "tireType": "sport",
+          "tireTypes": [
+            "sport"
+          ],
+          "tires": [
+            {
+              "part": "tire_f_235_60_15_alt_sport",
+              "slot": "/moonhawk_frame/moonhawk_suspension_f/wheel_f_5/tire_f_15x8_alt/tire_f_235_60_15_alt_sport",
+              "source": "installed-part-label",
+              "type": "sport"
+            },
+            {
+              "part": "tire_r_255_55_15_sport",
+              "slot": "/moonhawk_frame/moonhawk_suspension_r/wheel_r_5/tire_r_15x9/tire_r_255_55_15_sport",
+              "source": "installed-part-label",
+              "type": "sport"
+            }
+          ],
+          "truck": false,
+          "turbocharger": false,
+          "year": 1975
+        },
+        "upper": 11.25
+      },
+      "health": {
+        "status": "no-observed-faults",
+        "engineFaults": [],
+        "maxTurboPsi": null,
+        "capViolation": false,
+        "telemetryDropped": 0
+      },
+      "physical": {
+        "issues": [],
+        "newBroken": [],
+        "deformed": [],
+        "partDamage": [],
+        "triggered": [],
+        "damageDelta": 6.228805542,
+        "scope": "Sparse getBeamDeformation delta >0.01, broken beam IDs, tires, part damage and native trigger changes. beamstate.damage/energy delta is reported, not treated as damage proof."
+      },
+      "source": {
+        "status": "current-in-covered-sources",
+        "scope": "Saved repository source list and compiled chosen parts only; native/game/VFS dependencies and runtime cache are not certified. Additional current inventory is not evidence of historical changes."
+      },
+      "evidence": {
+        "assessmentFile": "outputs/drag-rebuild-20261028/index-recovery/latest.json",
+        "assessmentSHA256": "03d04ab7739919d0e455f3afaf7e9e794f200f4698433f6cbffa1f7acd663b89",
+        "rawFile": "outputs/drag-rebuild-20261028/continuation-ledger/attempts/28a225f49e6d0d107d788ae14e97ee7b02b42b49e58ff8ab54984d48e95334bc.json",
+        "rawSHA256": "28a225f49e6d0d107d788ae14e97ee7b02b42b49e58ff8ab54984d48e95334bc",
+        "ledgerFile": "outputs/drag-rebuild-20261028/continuation-ledger/latest.json",
+        "ledgerSHA256": "a05efb2449df6019312ea0c14ae689f46be53147fa47dd7024f788869686f80b"
+      },
+      "scope": "One assessor-accepted current-build quarter-mile result in the original index through index+0.75 window. Health and source coverage retain the assessor/ledger scope; no repeatability guarantee or complete native/VFS certification. Historical performance and approval remain separate."
+    }
+  },
+  "Weight": 1835.098453,
+  "Induction Type": "Supercharger + N2O"
+}

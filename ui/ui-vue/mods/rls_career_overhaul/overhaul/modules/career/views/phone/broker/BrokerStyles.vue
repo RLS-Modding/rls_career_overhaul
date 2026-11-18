@@ -436,7 +436,7 @@ export default {}
 }
 .filter-actions[data-broker-scope] { display: flex; gap: 0.5em; margin-top: 0.5em;
 }
-.filter-actions .primary[data-broker-scope] { flex: 1;
+.filter-actions .primary[data-broker-scope] { flex: 1; font-variant-numeric: tabular-nums;
 }
 .picker-field[data-broker-scope] { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 0.6em; width: 100%; text-align: left; padding: 0.7em 0.8em 0.6em; border-radius: 0.45em; background: var(--panel); font-weight: 400;
 }

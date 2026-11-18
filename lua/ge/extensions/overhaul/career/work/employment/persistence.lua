@@ -120,6 +120,15 @@ end
 
 local function addCacheApi(api, inputs)
   local hiring, lifecycle, runtime, shared, state = inputs.hiring, inputs.lifecycle, inputs.runtime, inputs.shared, inputs.state
+  local pendingInactivityClock
+
+  api.resumeEmploymentInactivityClock = function(nowWorldMinute)
+    if not pendingInactivityClock or nowWorldMinute == nil then return end
+    if pendingInactivityClock.mapId == state.activeMapId and pendingInactivityClock.orgId == state.employerOrgId then
+      state.lastWorkWorldMinute = nowWorldMinute - shared.inactivityFireWorldMinutes() + pendingInactivityClock.remaining
+    end
+    pendingInactivityClock = nil
+  end
 
   api.flushEmploymentCache = function()
     if not state.activeMapId or state.activeMapId == "" then
@@ -129,6 +138,15 @@ local function addCacheApi(api, inputs)
     if not mapId or mapId == "" then return end
     local pendingApplication = state.pendingApplications and state.pendingApplications[1]
     if state.employerOrgId then
+      local previous = state.employments[mapId]
+      local remaining = previous and previous.inactivityRemainingWorldMinutes
+      local now = shared.nowWorldMinutes()
+      local lastWork = tonumber(state.lastWorkWorldMinute or state.hiredWorldMinute)
+      if pendingInactivityClock and pendingInactivityClock.mapId == mapId then
+        remaining = pendingInactivityClock.remaining
+      elseif mapId == shared.currentMapId() and now ~= nil and lastWork then
+        remaining = math.max(0, shared.inactivityFireWorldMinutes() - math.max(0, now - lastWork))
+      end
       state.employments[mapId] = {
         employerOrgId = state.employerOrgId,
         homeFacId = state.homeFacId,
@@ -136,6 +154,7 @@ local function addCacheApi(api, inputs)
         lastWorkAt = state.lastWorkAt or state.hiredAt,
         hiredWorldMinute = state.hiredWorldMinute,
         lastWorkWorldMinute = state.lastWorkWorldMinute or state.hiredWorldMinute,
+        inactivityRemainingWorldMinutes = remaining,
         pendingApplications = state.pendingApplications or {},
         shift = state.shift,
         escrow = state.escrow or { money = 0, legs = {} },
@@ -167,7 +186,19 @@ local function addCacheApi(api, inputs)
     overhaul_career_saveSystem.saveCurrent()
   end
 
+  api.prepareMapTravel = function(currentMap, nextMap)
+    if currentMap ~= state.activeMapId or currentMap == nextMap then return end
+    api.resumeEmploymentInactivityClock(shared.nowWorldMinutes())
+    api.flushEmploymentCache()
+    local employment = state.employments[currentMap]
+    local remaining = employment and tonumber(employment.inactivityRemainingWorldMinutes)
+    if remaining ~= nil then
+      pendingInactivityClock = {mapId = currentMap, orgId = state.employerOrgId, remaining = remaining}
+    end
+  end
+
   api.clearEmploymentCache = function()
+    pendingInactivityClock = nil
     state.employerOrgId = nil
     state.homeFacId = nil
     state.hiredAt = nil
@@ -184,12 +215,14 @@ local function addCacheApi(api, inputs)
 
   api.loadEmploymentCache = function(mapId, skipFlush)
     mapId = mapId or shared.currentMapId()
+    local changingMap = state.activeMapId ~= mapId
     if state.activeMapId and state.activeMapId ~= mapId then
       if not skipFlush then
         api.flushEmploymentCache()
       end
       hiring.clearOfferedListings()
     end
+    pendingInactivityClock = nil
     state.activeMapId = mapId
     if not mapId or mapId == "" then
       api.clearEmploymentCache()
@@ -203,6 +236,13 @@ local function addCacheApi(api, inputs)
       state.lastWorkAt = employment.lastWorkAt or employment.hiredAt
       state.hiredWorldMinute = employment.hiredWorldMinute
       state.lastWorkWorldMinute = employment.lastWorkWorldMinute or employment.hiredWorldMinute
+      local remaining = tonumber(employment.inactivityRemainingWorldMinutes)
+      if remaining == nil and changingMap then remaining = shared.inactivityFireWorldMinutes() end
+      if remaining ~= nil then
+        employment.inactivityRemainingWorldMinutes = math.max(0, math.min(shared.inactivityFireWorldMinutes(), remaining))
+        pendingInactivityClock = {mapId = mapId, orgId = state.employerOrgId,
+          remaining = employment.inactivityRemainingWorldMinutes}
+      end
       state.pendingApplications = employment.pendingApplications or {}
       state.shift = employment.shift
       state.escrow = employment.escrow or { money = 0, legs = {} }
@@ -231,6 +271,7 @@ local function addCacheApi(api, inputs)
 
   api.touchLastWorkAt = function()
     if not lifecycle.isEmployed() then return end
+    pendingInactivityClock = nil
     state.lastWorkAt = shared.nowSim()
     local nowWorldMinute = shared.nowWorldMinutes()
     if nowWorldMinute ~= nil then

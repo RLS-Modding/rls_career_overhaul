@@ -1,0 +1,87 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Configuration": "June Ashford - Bedtime Bullies",
+  "Description": "Driver: June Ashford. Builder: Low Orbit Garage. Low Orbit Garage: Teal extended-wheelbase sport utility experiment. 5.5L V8, Stage 2 supercharger, Stage 4 Race block; Supercharger; nitrous Yes. 6-speed automatic. Bedtime Bullies: first clean West Coast quarter-mile in the 9.500-10.000 second window: 9.550 s. Tuning-only index compliance confirmed on 2026-10-26: 4 legal native passes, fastest 9.596329 s. Saved-build mean 9.610588 s. Parts and paint unchanged. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Drivetrain": "AWD",
+  "Transmission": "Automatic",
+  "Years": {
+    "min": 1992,
+    "max": 1998
+  },
+  "Power": 1344,
+  "Weight": 2561,
+  "Motorsport": {
+    "version": 1,
+    "id": "roamer/rls_bedtime_loworbit_04",
+    "configId": "rls_bedtime_loworbit_04",
+    "model": "roamer",
+    "config": "/vehicles/roamer/rls_bedtime_loworbit_04.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "roman_pearce",
+    "driverName": "June Ashford",
+    "builder": "Low Orbit Garage",
+    "classIds": [
+      "bedtime_bullies"
+    ],
+    "approvedClassIds": [
+      "bedtime_bullies"
+    ],
+    "leagueId": "street_kings",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "9c02833734f096a38a7d27fc1db9d5a156f32ae67940c162f0cf25ce2a2861ee",
+    "traits": {
+      "drivetrain": "AWD",
+      "transmission": "6-speed automatic",
+      "induction": "Supercharger",
+      "nitrous": true,
+      "years": {
+        "min": 1992,
+        "max": 1998
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_R_17x9",
+          "part": "tire_R_255_60_17_sport",
+          "typeHint": "sport"
+        },
+        {
+          "slot": "pickup_sparetire",
+          "part": "pickup_sparetire_5l",
+          "typeHint": null
+        },
+        {
+          "slot": "tire_F_17x9",
+          "part": "tire_F_255_60_17_sport",
+          "typeHint": "sport"
+        }
+      ],
+      "selectedRollCageParts": [],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.610587816454025,
+      "runId": "COMPLIANCE-20261026-rls_bedtime_loworbit_04",
+      "evidenceConfigSHA256": "e53b6929ef5b204a0daf155bab892153159d906c084e008d91a203b9f9eb3dbe",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/bedtime/final-results.json",
+      "acceptedConfig": "outputs/bedtime/accepted/rls_bedtime_loworbit_04/rls_bedtime_loworbit_04.pc",
+      "tuningEvidence": "/settings/motorsportEvents/complianceEvidence-20261026.json",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_bedtime_bullies"
+  }
+}

@@ -894,7 +894,7 @@ function M.markPhoneTutorialComplete()
 end
 
 function M.forceStartPhoneTutorial()
-  if not overhaul_shell_extensionManager.isDevKeyValid() then
+  if not overhaul_shell_extensionManager.isDevKeyValid(true) then
     return false
   end
   cancelPhoneTutorialStart()

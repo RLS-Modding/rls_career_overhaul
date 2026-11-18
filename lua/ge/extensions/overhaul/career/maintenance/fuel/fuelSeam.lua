@@ -122,6 +122,12 @@ function M.create()
     return true
   end
 
+  function fuelSeam.setReturnContext(value) pendingBizReturn = deepcopy(value) end
+  function fuelSeam.getReturnContext() return deepcopy(pendingBizReturn) end
+  function fuelSeam.releaseToFuelSystem()
+    businessCtx, targetVehObjId, pendingBizReturn = nil, nil, nil
+  end
+
   function fuelSeam.showStationPrices()
     overhaul_world_fuel_fuelPrice.setDisplayPrices()
   end
@@ -221,6 +227,7 @@ function M.create()
       facility = {
         id = SHOP_STATION_ID,
         name = "Shop Stockpile",
+        energyTypes = {"gasoline", "premium", "e85", "diesel", "electricEnergy"},
       },
     }
     startTransaction(syntheticStation)

@@ -108,6 +108,7 @@ function installer.new(inputs)
       if slotName and slotName ~= "" then
         local chosenPartName = (partName == "" or not partName) and "" or partName
         parentNode.children[slotName] = {
+          id = slotName,
           chosenPartName = chosenPartName,
           path = slotPath,
           children = {},
@@ -370,6 +371,7 @@ function installer.new(inputs)
         for _, tank in ipairs(data[1]) do
           if tank.energyType ~= "n2o" then
             storedFuelLevels[tank.name] = {
+              rlsFuelTank = overhaul_career_maintenance_fuelSystem and overhaul_career_maintenance_fuelSystem.captureTankForRebuild(vehObj:getID(), tank),
               currentEnergy = tank.currentEnergy,
               maxEnergy = tank.maxEnergy,
               energyType = tank.energyType,
@@ -408,7 +410,9 @@ function installer.new(inputs)
           newFuelAmount = math.max(newFuelAmount, minFuel)
 
           if canContinue and not canContinue() then return end
-          core_vehicleBridge.executeAction(vehObj, 'setEnergyStorageEnergy', tank.name, newFuelAmount)
+          if not (overhaul_career_maintenance_fuelSystem and overhaul_career_maintenance_fuelSystem.restoreTankAfterRebuild(vehObj, stored)) then
+            core_vehicleBridge.executeAction(vehObj, 'setEnergyStorageEnergy', tank.name, newFuelAmount)
+          end
         end
       end
     end, 'energyStorage')

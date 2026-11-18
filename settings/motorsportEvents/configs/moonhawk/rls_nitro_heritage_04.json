@@ -1,0 +1,73 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "moonhawk/rls_nitro_heritage_04",
+    "configId": "rls_nitro_heritage_04",
+    "model": "moonhawk",
+    "config": "/vehicles/moonhawk/rls_nitro_heritage_04.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "tobey_marshall",
+    "driverName": "Chloe Hamilton",
+    "builder": "Heritage Speed",
+    "classIds": [
+      "spray_and_pray"
+    ],
+    "approvedClassIds": [
+      "spray_and_pray"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "edba99b34101447379ad1ab1b0fc933286c265385f15fef55a8db0f5763d45d6",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "4-speed automatic",
+      "induction": "Naturally aspirated + nitrous",
+      "nitrous": true,
+      "years": {
+        "min": 1973,
+        "max": 1975
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x4",
+          "part": "tire_F_27.5_4_15_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_15x12_alt",
+          "part": "tire_R_29_12_15_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "moonhawk_rollcage",
+          "part": "moonhawk_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.4172757923396,
+      "runId": null,
+      "evidenceConfigSHA256": "ef7123c946b2f5ddfbc1f409896f8d0021fc72e31ebdaadaff35e0a927c250c3",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/nitrous/final-results.json",
+      "acceptedConfig": "outputs/nitrous/accepted/rls_nitro_heritage_04/rls_nitro_heritage_04.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_nitrous_builders"
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "pickup/rls_bedtime_blacktop_03",
+    "configId": "rls_bedtime_blacktop_03",
+    "model": "pickup",
+    "config": "/vehicles/pickup/rls_bedtime_blacktop_03.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "marcus_cross",
+    "driverName": "Marshall Crowe",
+    "builder": "Blacktop Engineering",
+    "classIds": [
+      "bedtime_bullies"
+    ],
+    "approvedClassIds": [
+      "bedtime_bullies"
+    ],
+    "leagueId": "street_kings",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "f364082196f1e66782ccc0d2dfbf49ce6a6b509f6479c73a8770bbe3c1091b66",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "4-speed automatic",
+      "induction": "Supercharger",
+      "nitrous": true,
+      "years": {
+        "min": 1998,
+        "max": 2003
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x8_alt",
+          "part": "tire_F_235_60_15_alt_sport",
+          "typeHint": "sport"
+        },
+        {
+          "slot": "tire_R_15x8_alt",
+          "part": "tire_R_26_8_15_alt_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.6289212540021,
+      "runId": "BB-048",
+      "evidenceConfigSHA256": "efeb76f6becab5c0fc801d759356c5b98525cfc1737f6c68753461cb2cdc76d5",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/bedtime/final-results.json",
+      "acceptedConfig": "outputs/bedtime/accepted/rls_bedtime_blacktop_03/rls_bedtime_blacktop_03.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_bedtime_bullies"
+  }
+}

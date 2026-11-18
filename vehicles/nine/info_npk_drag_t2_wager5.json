@@ -1,0 +1,33 @@
+{
+  "Name": "NINE / No Prep Knights",
+  "Configuration": "No Prep Knights - Tier 2 racer 5",
+  "Value": 35000,
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Description": "Dedicated No Prep Knights drag build and paint scheme.",
+  "Drag Times": {
+    "time_1000": 7.351500146091,
+    "time_1_4": 9.0720001794398,
+    "time_1_8": 5.5130001083016,
+    "time_330": 3.5560000650585,
+    "time_60": 1.2485000155866,
+    "velAt_1_4": 57.051487724327,
+    "velAt_1_8": 55.753897280345
+  },
+  "Reaction Time": 0.20000000298023,
+  "Drivetrain": "RWD",
+  "Transmission": "Automatic",
+  "Fuel Type": "Gasoline",
+  "Years": {
+    "max": 1934,
+    "min": 1933
+  },
+  "dragConfigVersion": 3,
+  "dragFitmentVersion": 3,
+  "dragTimesRevalidated": false
+}

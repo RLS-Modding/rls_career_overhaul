@@ -7,8 +7,12 @@ distributed under the GNU Affero General Public License, version 3. The full
 license is included in `tyre-thermals-AGPL-3.0.txt`.
 
 RLS integration was introduced on 2026-07-31. This version also includes
-vehicle-provider memory and idle-work changes dated 2026-10-19. These are
-source-history modification dates, not dates of the original author's work.
+vehicle-provider memory and idle-work changes dated 2026-10-19, and compound-specific
+cold grip for race and drag tires dated 2026-10-29, and direct tire-slot identity
+resolution for namespaced parts dated 2026-11-04, and truck tire-slot and
+shared-ancestor identity resolution dated 2026-11-09, and rolling-tire slot
+boundaries and physical-part report revisions dated 2026-11-10. These are source-history
+modification dates, not dates of the original author's work.
 
 RLS modifications include provider arbitration, Maintenance Mode and burnout
 gating, part-bound persistent condition, towing/trailer exclusions, revised

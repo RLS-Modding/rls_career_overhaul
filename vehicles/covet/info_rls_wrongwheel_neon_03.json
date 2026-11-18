@@ -1,0 +1,90 @@
+{
+  "isAuxiliary": true,
+  "Configuration": "Serena Sutton - Wrong-Wheel Drive",
+  "Description": "Driver: Serena Sutton. Builder: Neon Works. Neon cyan stripped high-RPM turbo hatch, restrained second-gear spray First healthy native Alder quarter-mile in the 9.50–10.00 bracket: 9.649 s. FWD, no first-gear nitrous. Tuning-only index compliance confirmed on 2026-10-26: 3 legal native passes, fastest 9.670257 s. Saved-build mean 9.707826 s. Parts and paint unchanged. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Drivetrain": "FWD",
+  "Transmission": "Sequential",
+  "Population": -1,
+  "Value": 65000,
+  "Name": "Serena Sutton",
+  "Author": "RLS Modding",
+  "Years": {
+    "max": 1992,
+    "min": 1986
+  },
+  "Power": 870,
+  "Weight": 1198,
+  "Motorsport": {
+    "version": 1,
+    "id": "covet/rls_wrongwheel_neon_03",
+    "configId": "rls_wrongwheel_neon_03",
+    "model": "covet",
+    "config": "/vehicles/covet/rls_wrongwheel_neon_03.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "ryan_cooper",
+    "driverName": "Serena Sutton",
+    "builder": "Neon Works",
+    "leagueId": "street_kings",
+    "classIds": [
+      "wrong_wheel_drive"
+    ],
+    "approvedClassIds": [
+      "wrong_wheel_drive"
+    ],
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "72008242625ae2999947bc17e822bef71be676b541dd1cb79213c8a1d6b40ae1",
+    "traits": {
+      "drivetrain": "FWD",
+      "transmission": "5-speed Sequential",
+      "induction": "Turbo",
+      "nitrous": true,
+      "years": {
+        "max": 1992,
+        "min": 1986
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_13x7",
+          "part": "tire_F_24.5_8_13_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_13x5",
+          "part": "tire_R_165_70_13_sport",
+          "typeHint": "sport"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "covet_rollcage",
+          "part": "covet_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.707826407919567,
+      "runId": "COMPLIANCE-20261026-rls_wrongwheel_neon_03",
+      "evidenceConfigSHA256": "efa159765caf165fd9d5a967f9c7f61897799637d5934e8e05224c968b791bff",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/wrongwheel/final-results.json",
+      "acceptedConfig": "outputs/wrongwheel/accepted/rls_wrongwheel_neon_03/rls_wrongwheel_neon_03.pc",
+      "tuningEvidence": "/settings/motorsportEvents/complianceEvidence-20261026.json",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_wrongwheel_drive"
+  }
+}

@@ -27,6 +27,7 @@ export const ACQUISITIONS = Object.freeze({
   "phone.travelJournal": Object.freeze({ extensions: ["overhaul_phone_travelJournal"], release: [] }),
   "phone.weather": Object.freeze({ extensions: ["overhaul_world_weather"], release: [], stateOwner: "overhaul_world_weather" }),
   "phone.offroadRecovery": Object.freeze({ extensions: ["overhaul_jobs_recovery"], release: [], stateOwner: "overhaul_jobs_recovery" }),
+  "phone.motorsportEvents": Object.freeze({ extensions: ["overhaul_phone_apps_motorsportEvents"], release: [] }),
   "activity.beamEats": Object.freeze({ extensions: ["overhaul_jobs_beamEats"], release: [] }),
   "activity.facilityWork": Object.freeze({ extensions: ["overhaul_jobs_facilityWork"], release: [] }),
   "career.employment": Object.freeze({ extensions: ["overhaul_career_work_employment"], release: [] }),

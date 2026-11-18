@@ -1,0 +1,26 @@
+{
+  "Configuration": "Nell Mercer - No Prep",
+  "Description": "Blue Lunchbreak. Tier 5 racer. Highway no-prep quarter-mile: 8.592s at 172.36mph. Corner Shop Motors. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Corner Shop Motors",
+  "Name": "Nell Mercer",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 7.2699610366245,
+    "time_1_4": 8.592264259752,
+    "time_1_8": 5.7025596180762,
+    "time_330": 3.8583775225602,
+    "time_60": 1.4513892881393,
+    "velAt_1_4": 77.050848709416,
+    "velAt_1_8": 61.656609832386
+  },
+  "Reaction Time": 0.23427185255442,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

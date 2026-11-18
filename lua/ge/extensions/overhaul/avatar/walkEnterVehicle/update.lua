@@ -103,7 +103,7 @@ function M.new(inputs)
       return
     end
     local clr, envelopeSource, collisionHull, collisionEnvelope = parts.paths.vehicleClearance2D(
-      pos, runtimeState.approach.vehId, 0
+      pos, runtimeState.approach.vehId, 0, true
     )
     parts.paths.noteCollisionEnvelope(runtimeState.approach, envelopeSource, collisionHull, collisionEnvelope)
     if envelopeSource ~= "none" then
@@ -118,7 +118,7 @@ function M.new(inputs)
     local refProgress, boardP, cameraOnlyBoard, endpointReached = advanceBoardingProgress(
       veh, unicycle, pos, boardLook, dt, refDist
     )
-    local collided = clr <= inputs.config.boardCollisionM
+    local collided = clr <= inputs.config.doorwayContactM
     local stalled = runtimeState.approach.boardT > 0.4
       and refDist < inputs.config.boardStallM
       and refProgress < 0.025

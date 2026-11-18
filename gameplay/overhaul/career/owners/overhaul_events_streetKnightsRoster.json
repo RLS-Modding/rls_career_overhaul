@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_events_streetKnightsRoster",
+  "order": 452,
+  "module": "overhaul/events/streetKnightsRoster",
+  "scopes": [
+    {
+      "id": "bootManual",
+      "order": 4
+    }
+  ]
+}

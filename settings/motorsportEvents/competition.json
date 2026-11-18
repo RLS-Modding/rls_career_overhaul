@@ -1,0 +1,183 @@
+{
+  "version": 1,
+  "defaultEventId": "drag_weekend",
+  "leagues": [
+    {
+      "id": "slra",
+      "name": "SLRA",
+      "fee": 1500,
+      "rules": [
+        {
+          "trait": "rollCage",
+          "equals": true,
+          "message": "A roll cage is required for a pass below 9.50 seconds (Nine exempt).",
+          "whenElapsedBelow": 9.5,
+          "exceptModels": [
+            "nine"
+          ],
+          "exceptConfigs": [
+            "burnside/rls_stu_loworbit_04"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pro_league",
+      "name": "Pro League",
+      "fee": 2500,
+      "rules": [],
+      "equipment": {
+        "rollCageRequired": true
+      }
+    },
+    {
+      "id": "street_kings",
+      "name": "Street Kings",
+      "fee": 800,
+      "rules": [
+        {
+          "trait": "rollCage",
+          "equals": true,
+          "message": "A roll cage is required for a pass below 9.50 seconds (Nine exempt).",
+          "whenElapsedBelow": 9.5,
+          "exceptModels": [
+            "nine"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "outlaw_drag",
+      "name": "Outlaw Drag League",
+      "fee": 500,
+      "rules": []
+    }
+  ],
+  "categories": {
+    "open": [],
+    "fwd": [
+      {
+        "trait": "drivetrain",
+        "equals": "FWD",
+        "message": "This class requires FWD."
+      }
+    ],
+    "rwd": [
+      {
+        "trait": "drivetrain",
+        "equals": "RWD",
+        "message": "This class requires RWD."
+      }
+    ],
+    "awd": [
+      {
+        "trait": "drivetrain",
+        "equals": "AWD",
+        "message": "This class requires AWD."
+      }
+    ],
+    "pre1980": [
+      {
+        "trait": "year",
+        "lessThan": 1980
+      }
+    ],
+    "pre1950": [
+      {
+        "trait": "year",
+        "lessThan": 1950
+      }
+    ],
+    "manual": [
+      {
+        "trait": "manual",
+        "equals": true,
+        "message": "This class requires manual."
+      }
+    ],
+    "diesel": [
+      {
+        "trait": "diesel",
+        "equals": true,
+        "message": "This class requires diesel."
+      }
+    ],
+    "nitrous": [
+      {
+        "trait": "nitrous",
+        "equals": true,
+        "message": "This class requires nitrous."
+      }
+    ],
+    "trucks": [
+      {
+        "trait": "truck",
+        "equals": true,
+        "message": "This class requires a utility vehicle."
+      }
+    ]
+  },
+  "events": [
+    {
+      "id": "drag_weekend",
+      "name": "{venue} Drag Championship",
+      "opponentCount": 20,
+      "qualifyingAttempts": 3,
+      "qualifyingFieldSize": 16,
+      "qualifyingCompression": true,
+      "finalsFieldSize": 8,
+      "earlyHeatBudget": 18,
+      "passIntervalSeconds": 15,
+      "maxPassIntervalSeconds": 60,
+      "stages": {
+        "registration": {
+          "day": 1,
+          "label": "Registration",
+          "minuteOfDay": 480
+        },
+        "qualifying": {
+          "day": 1,
+          "label": "Qualifying",
+          "minuteOfDay": 600
+        },
+        "eliminations": {
+          "day": 2,
+          "label": "Eliminations",
+          "minuteOfDay": 600
+        },
+        "finals": {
+          "day": 2,
+          "label": "Championship rounds",
+          "minuteOfDay": 600
+        }
+      },
+      "prizes": {
+        "version": 2,
+        "referenceLeagueId": "pro_league",
+        "winner": 20000,
+        "runnerUp": 15000,
+        "third": 10000,
+        "topTen": 2000,
+        "participation": 0
+      },
+      "schedule": {
+        "version": 1,
+        "qualifyingGroupMinutes": 30,
+        "eliminationRoundMinutes": 45,
+        "turnaroundMinutes": 10,
+        "venueActivityRadius": 1500
+      }
+    }
+  ],
+  "rotation": {
+    "enabled": true,
+    "eventId": "drag_weekend",
+    "leagueIds": [
+      "slra",
+      "pro_league",
+      "street_kings",
+      "outlaw_drag"
+    ],
+    "offerMinuteOfDay": 480
+  }
+}

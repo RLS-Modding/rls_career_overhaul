@@ -347,7 +347,7 @@ local function startRentalOnceStopped()
     end
     if playerVeh:getVelocity():length() < STOPPED_SPEED then
         if startRental() then
-            core_vehicleBridge.executeAction(playerVeh, "setFreeze", true)
+            require('overhaul/lib/vehicles/freeze').set('overhaul_career_garage_studioRentals_studioRentals', stagedRental, true)
             isParked = true
         end
     end
@@ -526,6 +526,7 @@ local function onOverhaulVehicleAccessRestored(inventoryId, reason)
     local vehicle = (overhaul_career_garage_inventory.getVehicles() or {})[inventoryId] or {}
     addNotice({kind = "returned", studioName = studioName(vehicle.studioRentalLocation), vehicleName = vehicle.niceName})
 end
+
 
 M.onBeamNGTrigger = onBeamNGTrigger
 M.onCareerActivated = onCareerActivated

@@ -1,0 +1,26 @@
+{
+  "Configuration": "Mason Ward - No Prep",
+  "Description": "Cobalt Wedge. Tier 3 racer. Highway no-prep quarter-mile: 10.758s at 132.02mph. Heritage Speed. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Heritage Speed",
+  "Name": "Mason Ward",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 9.0523220236595,
+    "time_1_4": 10.757948791066,
+    "time_1_8": 7.0085345536868,
+    "time_330": 4.6254596803113,
+    "time_60": 1.6417980699366,
+    "velAt_1_4": 59.016210231465,
+    "velAt_1_8": 46.863460314853
+  },
+  "Reaction Time": 0.27530546488881,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

@@ -1,0 +1,91 @@
+{
+  "isAuxiliary": true,
+  "Configuration": "Hazel Morgan - Bedtime Bullies",
+  "Description": "Driver: Hazel Morgan. Builder: Haulmark Racing. Haulmark Racing: Olive long-bed farm pickup with cream trim and an open work bed. 6.9L naturally aspirated V8; Naturally aspirated; nitrous Yes. 4-speed automatic. Bedtime Bullies: first clean West Coast quarter-mile in the 9.500-10.000 second window: 9.863 s. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Transmission": "Automatic",
+  "Drivetrain": "RWD",
+  "Config Type": "Custom",
+  "Population": -1,
+  "Value": 60000,
+  "Power": 1239,
+  "Weight": 2233,
+  "Years": {
+    "min": 1992,
+    "max": 1997
+  },
+  "Motorsport": {
+    "version": 1,
+    "id": "pickup/rls_bedtime_haulmark_01",
+    "configId": "rls_bedtime_haulmark_01",
+    "model": "pickup",
+    "config": "/vehicles/pickup/rls_bedtime_haulmark_01.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "bo_darrow",
+    "driverName": "Hazel Morgan",
+    "builder": "Haulmark Racing",
+    "classIds": [
+      "bedtime_bullies"
+    ],
+    "approvedClassIds": [
+      "bedtime_bullies"
+    ],
+    "leagueId": "street_kings",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "ccbd984a332c02d06fabd2e89a684559181673a848636f9660320927ac880cd7",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "4-speed automatic",
+      "induction": "Naturally aspirated",
+      "nitrous": true,
+      "years": {
+        "min": 1992,
+        "max": 1997
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x8_alt",
+          "part": "tire_F_235_60_15_alt_sport",
+          "typeHint": "sport"
+        },
+        {
+          "slot": "tire_R_15x14",
+          "part": "tire_R_31_14_15_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "pickup_rollcage",
+          "part": "pickup_rollcage"
+        },
+        {
+          "slot": "pickup_rollcage_bedbars",
+          "part": "pickup_rollcage_bedbars"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.8629426088594,
+      "runId": "BB-002",
+      "evidenceConfigSHA256": "eff8f673648767fa9852acf93dcf325b9934a079ac596eb8d0bee335142616cb",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/bedtime/final-results.json",
+      "acceptedConfig": "outputs/bedtime/accepted/rls_bedtime_haulmark_01/rls_bedtime_haulmark_01.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_bedtime_bullies"
+  }
+}

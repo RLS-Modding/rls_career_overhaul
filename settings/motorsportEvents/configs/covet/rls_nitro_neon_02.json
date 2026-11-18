@@ -1,0 +1,73 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "covet/rls_nitro_neon_02",
+    "configId": "rls_nitro_neon_02",
+    "model": "covet",
+    "config": "/vehicles/covet/rls_nitro_neon_02.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "han_lue",
+    "driverName": "Oliver Nolan",
+    "builder": "Neon Works",
+    "classIds": [
+      "spray_and_pray"
+    ],
+    "approvedClassIds": [
+      "spray_and_pray"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "4f9d87d8518c057b416365e339510ee10d054e67307fc64bd9986d5771aac39e",
+    "traits": {
+      "drivetrain": "FWD",
+      "transmission": "5-speed sequential",
+      "induction": "Naturally aspirated + nitrous",
+      "nitrous": true,
+      "years": {
+        "min": 1986,
+        "max": 1992
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_13x7",
+          "part": "tire_F_24.5_8_13_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_13x5",
+          "part": "tire_R_165_70_13_sport",
+          "typeHint": "sport"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "covet_rollcage",
+          "part": "covet_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.8675129699,
+      "runId": null,
+      "evidenceConfigSHA256": "1a3a2e058e37c524e5f73fc09500d3efd90ae614c1938c3f9bab82b0873a1751",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/nitrous/final-results.json",
+      "acceptedConfig": "outputs/nitrous/accepted/rls_nitro_neon_02/rls_nitro_neon_02.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_nitrous_builders"
+  }
+}

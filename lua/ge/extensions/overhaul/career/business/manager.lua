@@ -562,12 +562,23 @@ local function buildSaleSettlementQuote(businessType, businessId, business)
   }
 end
 
+local function saleBlockReason(businessType, businessId)
+  local blocked = bundles.saleBlockReason(bundles.forBusiness(businessType, businessId))
+  if blocked then return blocked end
+  if businessType == 'racingTeam' then
+    local dyno = capabilities.peek('businessSession')
+    if dyno and dyno.isBusinessSessionBusy and dyno.isBusinessSessionBusy(businessId) then
+      return 'Finish the active dyno session before selling the Racing Team business.'
+    end
+  end
+end
+
 local function getSaleSettlementQuote(businessType, businessId)
   if not businessType or not businessId then return {success = false, error = "missing_business"} end
   if not isPurchasedBusiness(businessType, businessId) then return {success = false, error = "not_owned"} end
   local business = overhaul_world_facilities.getFacility(businessType, businessId)
   if not business then return {success = false, error = "business_not_found"} end
-  local blocked = bundles.saleBlockReason(bundles.forBusiness(businessType, businessId))
+  local blocked = saleBlockReason(businessType, businessId)
   if blocked then return {success = false, error = "bundle_in_use", message = blocked} end
   return buildSaleSettlementQuote(businessType, businessId, business)
 end
@@ -627,7 +638,7 @@ local function sellBusiness(businessType, businessId, expectedQuote)
       quote = quote
     }
   end
-  local blocked = bundles.saleBlockReason(bundles.forBusiness(businessType, businessId))
+  local blocked = saleBlockReason(businessType, businessId)
   if blocked then return {success = false, error = "bundle_in_use", message = blocked} end
 
   local proceedsAfterAccountDebt = math.max(0, quote.grossProceeds - quote.negativeAccountDebt)

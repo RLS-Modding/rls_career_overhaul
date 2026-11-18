@@ -13,7 +13,7 @@ local geCallback = require('vehicle/overhaul/geCallback')
 
 local tireModel = require("common/overhaul/tireModel")
 
-local PROVIDER_VERSION = "1.3.5"
+local PROVIDER_VERSION = "1.3.7"
 local REPORT_INTERVAL = 2
 local TELEMETRY_INTERVAL = 0.2
 local BASE_DISTANCE_WEAR_PER_METER = 1.4912e-9
@@ -50,6 +50,7 @@ local framesSinceReport = 1
 local telemetrySession = tostring(obj:getID()) .. ":" .. tostring(os.clock())
 
 local function sendTelemetry(payload)
+  payload.stateRevision = tonumber(context.stateRevision) or 0
   telemetrySequence = telemetrySequence + 1
   payload.session = telemetrySession
   payload.sequence = telemetrySequence
@@ -74,23 +75,40 @@ local function wheelConfig(index)
   return v and v.data and v.data.wheels and v.data.wheels[index] or {}
 end
 
-local function activeTirePartForWheel(wheelName)
+local function activeTirePartForWheel(wheelName, wheelPartPath)
   local wheelAxle = string.sub(string.upper(tostring(wheelName or "")), 1, 1)
-  local bestPath, bestName, bestScore
+  local lowerWheelPath = string.lower(tostring(wheelPartPath or ""))
+  local bestPath, bestName, bestScore, bestSharedPathLength
   for path, partName in pairs(v and v.data and v.data.activeParts or {}) do
     local lowerPath = string.lower(tostring(path))
     local lowerName = string.lower(tostring(partName))
-    if string.sub(lowerName, 1, 5) == "tire_" then
+    -- Namespaced tires can be selected directly below a native tire slot.
+    -- Child skins are deeper in the path and must not become the tire identity.
+    local slot = string.match(lowerPath, "/([^/]+)/[^/]+$") or ""
+    local selectedInTireSlot = string.sub(slot, 1, 5) == "tire_" or string.find(slot, "_tire_", 1, true) ~= nil
+    if string.sub(lowerName, 1, 5) == "tire_" or selectedInTireSlot then
       local score = 1
+      local sharedPathLength = 0
+      -- Truck pressure wheels live in a zero-value wheel-data sibling of the tire.
+      -- Their shared ancestry also distinguishes tandem axles with the same tire type.
+      for boundary in string.gmatch(lowerWheelPath, "()/") do
+        local prefix = string.sub(lowerWheelPath, 1, boundary)
+        if string.sub(lowerPath, 1, boundary) ~= prefix then break end
+        sharedPathLength = boundary
+      end
       if wheelAxle == "F" and (string.find(lowerName, "tire_f", 1, true) or
-                                string.find(lowerPath, "/wheel_f", 1, true)) then
+                                string.find(lowerPath, "tire_f", 1, true) or
+                                string.find(lowerPath, "wheel_f", 1, true)) then
         score = score + 10
       elseif wheelAxle ~= "F" and (string.find(lowerName, "tire_r", 1, true) or
-                                    string.find(lowerPath, "/wheel_r", 1, true)) then
+                                    string.find(lowerPath, "tire_r", 1, true) or
+                                    string.find(lowerPath, "wheel_r", 1, true)) then
         score = score + 10
       end
-      if not bestScore or score > bestScore then
+      if not bestScore or sharedPathLength > bestSharedPathLength or
+          (sharedPathLength == bestSharedPathLength and score > bestScore) then
         bestPath, bestName, bestScore = tostring(path), tostring(partName), score
+        bestSharedPathLength = sharedPathLength
       end
     end
   end
@@ -398,7 +416,7 @@ local function cacheRotator(index, rotator)
   end
   local cfg = wheelConfig(index)
   cached = cached or {baseline = thermalBaseline(index)}
-  local tirePartPath, tirePartName = activeTirePartForWheel(rotator.name or cfg.name)
+  local tirePartPath, tirePartName = activeTirePartForWheel(rotator.name or cfg.name, cfg.partPath or rotator.partPath)
   cached.name = tostring(rotator.name or cfg.name or index)
   cached.width = tonumber(cfg.tireWidth or rotator.tireWidth) or 0.205
   cached.radius = tonumber(rotator.radius or cfg.radius) or 0.3
@@ -498,7 +516,8 @@ local function applyTireWearAndGrip(
 
   local temperature = averageTemperature(state)
   if cached.gripRemaining ~= state.remaining or cached.gripTemperature ~= temperature then
-    cached.conditionGrip = tireModel.gripMultiplier(state.remaining, temperature, state.workingTemperature)
+    cached.conditionGrip = tireModel.gripMultiplier(
+      state.remaining, temperature, state.workingTemperature, cached.staticCompound)
     cached.gripRemaining, cached.gripTemperature = state.remaining, temperature
   end
   return cached.conditionGrip
@@ -638,13 +657,14 @@ local function reportState(force)
     if api then ok, state = pcall(api.getState) end
     local payload = type(state) == "table" and deepcopy(state) or {}
     payload.provider = info
+    payload.stateRevision = tonumber(context.stateRevision) or 0
     payload.wheels = payload.wheels or {}
     obj:queueGameEngineLua(geCallback.command("receiveVehicleState", tostring(obj:getID()) .. "," .. serialize(payload)))
     lastProviderKey = providerKey
     return
   end
 
-  local payload = {provider = info, wheels = {}}
+  local payload = {provider = info, wheels = {}, stateRevision = tonumber(context.stateRevision) or 0}
   if selectedProvider == "bundled" then
     for index, state in pairs(wheelStates) do
       local cached = wheelCache[index] or {}
@@ -730,7 +750,7 @@ function M.getRlsTireProviderInfo()
 end
 
 function M.getRlsTireState()
-  local result = {provider = providerInfo(), wheels = {}}
+  local result = {provider = providerInfo(), wheels = {}, stateRevision = tonumber(context.stateRevision) or 0}
   for index, state in pairs(wheelStates) do
     local cached = wheelCache[index] or {}
     table.insert(result.wheels, {
@@ -744,6 +764,7 @@ end
 
 function M.getRlsTireTelemetry()
   local result = {
+    stateRevision = tonumber(context.stateRevision) or 0,
     provider = providerInfo(),
     enabled = context.enabled == true,
     roadWetness = context.roadWetness,

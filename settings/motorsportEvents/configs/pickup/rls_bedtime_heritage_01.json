@@ -1,0 +1,78 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "pickup/rls_bedtime_heritage_01",
+    "configId": "rls_bedtime_heritage_01",
+    "model": "pickup",
+    "config": "/vehicles/pickup/rls_bedtime_heritage_01.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "jack_rourke",
+    "driverName": "Isla Pearson",
+    "builder": "Heritage Speed",
+    "classIds": [
+      "bedtime_bullies"
+    ],
+    "approvedClassIds": [
+      "bedtime_bullies"
+    ],
+    "leagueId": "street_kings",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "72df44bfc4b3ce3dda214f50d291888205bb9d929e5e6259dd7c35c424ea1390",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "5-speed manual",
+      "induction": "Supercharger",
+      "nitrous": true,
+      "years": {
+        "min": 1992,
+        "max": 1997
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x8_alt",
+          "part": "tire_F_235_60_15_alt_sport",
+          "typeHint": "sport"
+        },
+        {
+          "slot": "tire_R_15x14",
+          "part": "tire_R_31_14_15_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "pickup_rollcage",
+          "part": "pickup_rollcage"
+        },
+        {
+          "slot": "pickup_rollcage_bedbars",
+          "part": "pickup_rollcage_bedbars"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.703387870491067,
+      "runId": "COMPLIANCE-20261026-rls_bedtime_heritage_01",
+      "evidenceConfigSHA256": "9bc727345c8712f77e34130e0a66e7a8c759dad868f4878cbccf9052a351e7b5",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/bedtime/final-results.json",
+      "acceptedConfig": "outputs/bedtime/accepted/rls_bedtime_heritage_01/rls_bedtime_heritage_01.pc",
+      "tuningEvidence": "/settings/motorsportEvents/complianceEvidence-20261026.json",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_bedtime_bullies"
+  }
+}

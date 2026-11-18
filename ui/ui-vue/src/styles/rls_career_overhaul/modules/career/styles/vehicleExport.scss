@@ -1,0 +1,48 @@
+/* RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+ * Copyright (C) RLS Modding
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
+// Shared by the export panel and its away-from-the-computer overlay, so both speak one status language.
+// Import inside a scoped <style lang="scss"> block, after rlsHouse.
+// A state that has something to say opens with a status block: a title in the tone's colour on a
+// tinted ground, then one line of text. No label above the title and no marker beside it: the title
+// and the tone carry the status.
+// A tone class sets --tone-ink and --tone-fill. The values follow the house staging-lights direction:
+//   wait (blue): the game is working, nothing to do     go (green): done
+//   warn (amber): needs a look: a result with gaps, or a question     stop (red): blocked until you act
+//   idle (grey): a step that has not started         ask (plain): a neutral outcome, such as a cancelled export
+
+.tone-wait { --tone-ink: #b9dcff; --tone-fill: rgba(127, 191, 255, 0.14); }
+.tone-go { --tone-ink: var(--ok-ink); --tone-fill: rgba(74, 222, 128, 0.13); }
+.tone-warn { --tone-ink: #fcd34d; --tone-fill: rgba(251, 191, 36, 0.14); }
+.tone-stop { --tone-ink: var(--bad); --tone-fill: rgba(248, 113, 113, 0.15); }
+.tone-idle { --tone-ink: var(--muted); --tone-fill: var(--panel); }
+.tone-ask { --tone-ink: inherit; --tone-fill: var(--panel-2); }
+
+.export-status { display: grid; gap: var(--space-1); padding: var(--inset); border-radius: var(--radius-panel); background: var(--tone-fill); }
+.status-title { margin: 0; color: var(--tone-ink); font-size: 1.3em; font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; }
+.status-text { margin: 0; max-width: 46em; color: var(--muted); font-size: 0.92em; font-weight: 600; line-height: 1.4; overflow-wrap: anywhere; text-wrap: pretty; }
+// No word is left alone on a last line.
+.hint { text-wrap: pretty; }
+// Secondary detail under a message, such as the names of missing parts.
+.status-text.detail { color: var(--faint); font-size: 0.8em; }
+// The step count sits on the title's line, on the right.
+.status-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-4); min-width: 0; }
+.step-count { flex: 0 0 auto; color: var(--tone-ink); font-size: 0.92em; font-weight: 700; font-variant-numeric: tabular-nums; }
+// Waiting is blue: the shared loader takes the tone instead of the action orange. It sits on a row of
+// its own under the status, on the same left edge, with its caption beside it.
+.house-loader.session-loader { --accent: var(--tone-ink); flex-direction: row; justify-content: flex-start; gap: var(--space-3); padding: 0; text-align: left; }
+.session-loader :deep(.house-loader__mark) { font-size: 0.6em; }
+.session-loader :deep(.house-loader__label) { color: var(--muted); font-size: 0.92em; font-weight: 600; }
+// Where the status and the steps already say what is happening, the loader carries no sentence of its own.
+.session-loader :deep(.house-loader__label:empty) { display: none; }
+
+// A block of rows parted by hairlines: label on the left, value on the right in the tone's colour.
+.export-block { margin: 0; padding: 0 var(--inset); border-radius: var(--radius-panel); background: var(--panel); list-style: none; }
+.content-row { display: flex; align-items: baseline; gap: var(--space-3); min-width: 0; margin: 0; padding: var(--space-3) 0 var(--space-2); border-bottom: 1px solid var(--line); font-size: 0.92em; font-weight: 600; }
+.content-row:last-child { border-bottom: 0; }
+.content-label { flex: 1 1 auto; min-width: 0; }
+.content-value { flex: 0 0 auto; color: var(--tone-ink); font-weight: 700; text-align: right; }
+// Steps are a real sequence, so they are numbered: a plain numeral, no marker around it.
+.step-number { flex: 0 0 1.2em; color: var(--faint); font-variant-numeric: tabular-nums; }

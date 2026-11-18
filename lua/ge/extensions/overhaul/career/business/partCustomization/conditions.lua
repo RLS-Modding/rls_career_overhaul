@@ -59,10 +59,10 @@ function installer.new(inputs)
     for _, part in ipairs(session.replacementParts or {}) do
       if part.slotPath and part.partName and part.partName ~= '' and candidate[part.slotPath] == part.partName then
         local stored
-        if part.fromInventory and overhaul_career_business_partInventory then
-          local inventory = overhaul_career_business_partInventory.getInventory()
-          local owned = inventory and inventory[part.partId]
-          if owned and owned.name == part.partName and tostring(owned.businessId) == tostring(session.businessId) then
+        if part.fromInventory then
+          local owned = require('overhaul/lib/parts/storage').get({isPersonal = session.isPersonal,
+            businessId = session.businessId}, part.partId)
+          if owned and owned.name == part.partName then
             stored = owned.partCondition
           end
         end

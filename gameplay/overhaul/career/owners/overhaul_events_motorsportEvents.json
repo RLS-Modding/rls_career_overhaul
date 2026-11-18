@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_events_motorsportEvents",
+  "order": 95,
+  "module": "overhaul/events/motorsportEvents",
+  "scopes": [
+    {
+      "id": "freeroamEvents",
+      "order": 95
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Name": "Lucas Mackenzie",
+  "Configuration": "Lucas Mackenzie - Pro All-Motor",
+  "Description": "Neon Works. Naturally aspirated competition build; drag tires on both axles, lights, doors, hood and glass retained. Tested healthy at Alder: 8.977 s quarter-mile. Manual; 801 engine hp, 1318 kg. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Induction Type": "NA",
+  "Drivetrain": "RWD",
+  "Transmission": "Manual",
+  "Power": 801,
+  "Weight": 1318,
+  "Years": {
+    "max": 1994,
+    "min": 1990
+  },
+  "Motorsport": {
+    "version": 1,
+    "id": "bx/rls_pam_neon_03",
+    "configId": "rls_pam_neon_03",
+    "model": "bx",
+    "config": "/vehicles/bx/rls_pam_neon_03.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "ryan_cooper",
+    "driverName": "Lucas Mackenzie",
+    "builder": "Neon Works",
+    "classIds": [
+      "pro_motor"
+    ],
+    "approvedClassIds": [
+      "pro_motor"
+    ],
+    "leagueId": "pro_league",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "2b454c23987e16ae51a19ae60126973f6f02c7602810638143bb107fa98ce73a",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "Manual",
+      "induction": "Naturally aspirated",
+      "nitrous": false,
+      "years": {
+        "max": 1994,
+        "min": 1990
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x4",
+          "part": "tire_F_26_4_15_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_15x10",
+          "part": "tire_R_26_10_15_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "bx_rollcage",
+          "part": "bx_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.9766678600296,
+      "runId": "PAM-017",
+      "evidenceConfigSHA256": "ac0abd689b6fecd2e5aebc82bf6a9c5a12fe38ca34a7ae256bdf74659276ff9a",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/pro-allmotor/final-metadata.json",
+      "acceptedConfig": "outputs/pro-allmotor/accepted/rls_pam_neon_03/rls_pam_neon_03.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_pro_allmotor"
+  }
+}

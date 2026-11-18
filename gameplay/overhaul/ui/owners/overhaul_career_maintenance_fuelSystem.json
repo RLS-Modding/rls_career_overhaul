@@ -1,0 +1,9 @@
+{
+  "id": "overhaul_career_maintenance_fuelSystem",
+  "order": 100,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "other",
+    "namespaceOrder": 445
+  }
+}

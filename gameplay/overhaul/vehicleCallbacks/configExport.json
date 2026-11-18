@@ -1,0 +1,18 @@
+{
+  "id": "configExport",
+  "callbacks": [
+    {
+      "id": "configExportResult",
+      "extension": "overhaul_vehicles_configExport",
+      "fn": "onWorkerResult",
+      "guard": "function"
+    },
+    {
+      "id": "configExportReset",
+      "extension": "overhaul_vehicles_configExport",
+      "fn": "resetWorkerVehicle",
+      "guard": "function"
+    }
+  ],
+  "order": 120
+}

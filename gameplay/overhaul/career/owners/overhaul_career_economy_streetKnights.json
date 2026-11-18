@@ -1,0 +1,19 @@
+{
+  "id": "overhaul_career_economy_streetKnights",
+  "order": 450,
+  "module": "overhaul/career/economy/streetKnights",
+  "scopes": [],
+  "modulePolicy": {
+    "privateFolders": [
+      "overhaul/career/economy/streetKnights/"
+    ]
+  },
+  "inputActions": {
+    "order": 12,
+    "path": "/lua/ge/extensions/core/input/actions/rls_streetKnights.json",
+    "actions": [
+      "streetKnightsOpen",
+      "streetKnightsAbandon"
+    ]
+  }
+}

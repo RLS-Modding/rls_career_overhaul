@@ -568,11 +568,11 @@ end
 -- Vehicles, money and records --------------------------------------------------------------------
 
 local function installVehicleRecords(api)
-  function api.rollVehicleFromFilter(filterId)
+  function api.rollVehicleFromFilter(filterId, salesDealerId)
     local gen = overhaul_career_logistics_generator
     if not gen then return nil end
     local stub = {
-      vehicle = { filterId = filterId },
+      vehicle = { filterId = filterId, salesDealerId = salesDealerId },
       locations = {},
       data = { type = "vehicle" },
     }
@@ -590,6 +590,8 @@ local function installVehicleRecords(api)
       label = veh.name or (cfg and cfg.Name) or veh.model,
       thumbnail = (cfg and cfg.preview) or "/ui/images/appDefault.png",
       filterId = filterId,
+      mileage = salesDealerId and veh.mileage or nil,
+      salesDealerId = salesDealerId,
       filterName = (filter and filter.filterName) or filterId,
       unlockTag = filter and filter.unlockTag or nil,
     }
@@ -649,6 +651,8 @@ local function installVehicleRecords(api)
       thumbnail = veh.thumbnail,
       filterId = veh.filterId,
       filterName = veh.filterName,
+      mileage = veh.mileage,
+      salesDealerId = veh.salesDealerId,
       destFacId = veh.destFacId,
       destFacName = veh.destFacName,
       destPsPath = veh.destPsPath,

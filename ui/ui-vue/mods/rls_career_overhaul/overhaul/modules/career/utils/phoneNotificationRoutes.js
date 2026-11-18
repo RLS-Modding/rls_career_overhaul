@@ -59,3 +59,18 @@ export async function installAppFromNotification(lua, payload) {
     return false
   }
 }
+
+// Opens what a notification points at, installing its app first when it asks for that; with no route
+// of its own it opens the installed app. Returns true only when something opened: no destination, a
+// failed install or a refused navigation all return false, so callers keep the notification (in the
+// Notification Center) for another try.
+export async function openNotification(item, { lua, router, navigate }) {
+  const installAppId = getNotificationInstallAppId(item)
+  const route = resolveNotificationRoute(item) || APP_ROUTES_BY_ID[installAppId] || null
+  if (!route && !installAppId) return false
+  const installed = await installAppFromNotification(lua, item)
+  if (installAppId && !installed) return false
+  if (!route) return false
+  const result = await navigate(router, route)
+  return result?.success !== false
+}

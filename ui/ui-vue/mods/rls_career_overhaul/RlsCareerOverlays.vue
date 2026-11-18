@@ -57,4 +57,5 @@ onBeforeUnmount(() => document.body.classList.remove("overhaul-controller-ui"))
 
 <style lang="scss">
 @use "@/styles/rls_career_overhaul/modules/career/styles/overhaulFocus.scss";
+@use "@/styles/rls_career_overhaul/modules/career/styles/phoneForcedColors.scss";
 </style>

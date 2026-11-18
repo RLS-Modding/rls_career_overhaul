@@ -1,0 +1,56 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Configuration": "June Keaton - Stu Leonard",
+  "Description": "Low Orbit Garage: burnside, 423 CUI 'Ultra-Thrust' OHV V8 Engine, Stage 4 Supercharger + 300 kW nitrous, 3-Speed Automatic Drag Transmission. Stock roll cage fitted. Class eligibility confirmed by clean paired native passes in both lanes on 2026-10-26; earlier red-light findings remain recorded separately. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Years": {
+    "min": 1954,
+    "max": 1954
+  },
+  "Drivetrain": "RWD",
+  "Fuel Type": "Gasoline",
+  "Author": "RLS / loworbit",
+  "Motorsport": {
+    "version": 1,
+    "id": "burnside/rls_stu_loworbit_02",
+    "configId": "rls_stu_loworbit_02",
+    "model": "burnside",
+    "config": "/vehicles/burnside/rls_stu_loworbit_02.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "sourcePack": "rls_stu_leonard",
+    "driverId": "letty_ortiz",
+    "driverName": "June Keaton",
+    "builder": "loworbit",
+    "classIds": [
+      "stu_leonard_850"
+    ],
+    "approvedClassIds": [
+      "stu_leonard_850"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "bf84fb2bc791c5e4693369b2f21dcfe30ac53145d07d5b02239fb4b6574d7546",
+    "traits": {
+      "drivetrain": "RWD",
+      "years": {
+        "min": 1954,
+        "max": 1954
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.95562612348515,
+      "runId": "REPAIR-20261026-G-rls_stu_loworbit_02",
+      "evidenceConfigSHA256": "0d3c44aaccab7f27182cf9e94042615281ded16e0c26b8bb433ffc0e42a8a1fd",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/stu-leonard/final-metadata.json",
+      "repairEvidence": "/settings/motorsportEvents/approvalEvidence-20261026.json",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    }
+  }
+}

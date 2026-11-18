@@ -1,4 +1,4 @@
--- Default player-seat visibility and job-owned passenger drawing, with layouts retained between claims.
+-- Empty-seat visibility and job-owned passenger drawing, with layouts retained between claims.
 -- Read seat ownership, layouts and meshes, claims and slot filling, update, then public API and hooks.
 local M = {}
 M.dependencies = {'overhaul_vehicles_legacyDriverSeat'}
@@ -473,8 +473,8 @@ end
 -- Default visibility -----------------------------------------------------------------------------
 
 -- Whole-vehicle fades and part highlights reset mesh alpha after the stock seat
--- system has hidden empty seats. Reassert the player default after those writes;
--- live dummy claims, seated passengers and job layouts explicitly opt in.
+-- system has hidden empty seats. Hide empty seats again after those writes;
+-- occupied seats keep stock rendering, including the player's first-person head mask.
 local playerMeshes = {}
 local function isPlayerVehicle(id)
   if not id then return false end
@@ -506,7 +506,7 @@ local function onVehicleVisible(id)
     local allowed = {}
     local api = gameplay_seatOccupants
     for _, seat in ipairs(api and api.getSeats and api.getSeats(id) or {}) do
-      if seat.occupantType == 'dummy' or (seat.occupantType == 'player' and not seat.isDriver) then
+      if seat.occupantType == 'dummy' or seat.occupantType == 'player' then
         allowed[seat.seatId] = true
       end
     end
@@ -521,7 +521,7 @@ end
 
 -- Stock seat rendering also runs in an asynchronous cargo reply after camera
 -- changes and rebuilds. Queue one ping after that event's handlers have run, so
--- its reply restores our default after the stock reply, without an idle hook.
+-- empty seats are hidden again after the stock reply, without an idle hook.
 local function restoreAfterSeatSync(id)
   if not id or id == -1 or pendingVisibility[id] or not isPlayerVehicle(id) then return end
   if not core_jobsystem or not core_vehicleBridge then return end

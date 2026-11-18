@@ -20,6 +20,7 @@
       <div v-for="(place, index) in places" :key="index" class="fact money">
         <span class="fact-key">{{ place.label }}</span>
         <span class="fact-value"><BngIcon class="cur" :type="icons.beamCurrency" />{{ formatMoney(place.value) }}</span>
+        <span v-if="playerPayoutMultiplier < 1" class="race-offer-card__xp">Race myself: <BngIcon class="cur" :type="icons.beamCurrency" />{{ formatMoney(place.playerValue) }}</span>
         <span v-if="Number(place.xp) > 0" class="race-offer-card__xp">{{ formatXp(place.xp) }} XP</span>
       </div>
     </div>
@@ -64,6 +65,10 @@ const props = defineProps({
   declining: {
     type: Boolean,
     default: false
+  },
+  playerPayoutMultiplier: {
+    type: Number,
+    default: 1
   },
   driverName: {
     type: String,
@@ -152,7 +157,7 @@ const places = computed(() => {
     { label: "1st", value: offer.payoutFirst, xp: offer.xpFirst },
     { label: "2nd", value: offer.payoutSecond, xp: offer.xpSecond },
     { label: "3rd", value: offer.payoutThird, xp: offer.xpThird }
-  ]
+  ].map(place => ({ ...place, playerValue: Math.floor(Number(place.value) * props.playerPayoutMultiplier) }))
 })
 
 // number only: the template puts the game currency glyph in front

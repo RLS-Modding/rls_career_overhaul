@@ -1,0 +1,73 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "barstow/rls_s850_heritage_blue_note",
+    "configId": "rls_s850_heritage_blue_note",
+    "model": "barstow",
+    "config": "/vehicles/barstow/rls_s850_heritage_blue_note.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "jack_rourke",
+    "driverName": "Cameron Bradford",
+    "builder": "Heritage Speed",
+    "classIds": [
+      "super_stick"
+    ],
+    "approvedClassIds": [
+      "super_stick"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "d958c5015797074b4c219d2fc6fa232684af86c9f8aab81e2d6492055f3b23b2",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "5-speed H-pattern manual",
+      "induction": "Supercharger",
+      "nitrous": true,
+      "years": {
+        "min": 1969,
+        "max": 1971
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x4",
+          "part": "tire_F_26_4_15_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_15x10",
+          "part": "tire_R_26_10_15_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "barstow_rollcage",
+          "part": "barstow_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.8909088875741,
+      "runId": "S850-003",
+      "evidenceConfigSHA256": "176afc953c6907ea109c3bfaa95b29ba674b10649d1be64f3227d3ea733b6125",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/stick850/final-results.json",
+      "acceptedConfig": "outputs/stick850/accepted/rls_s850_heritage_blue_note/rls_s850_heritage_blue_note.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_stickshift850"
+  }
+}

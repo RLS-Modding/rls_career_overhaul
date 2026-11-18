@@ -313,6 +313,17 @@ export const BUILTIN_PHONE_ROUTES = [
     "ownerKind": "phone"
   },
   {
+    "name": "phone-motorsport-events",
+    "path": "phone-motorsport-events",
+    "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneMotorsportEvents.vue",
+    "uiOrder": 190,
+    "luaOrder": 190,
+    "backTarget": "phone-main",
+    "id": "phone-motorsport-events",
+    "ownerId": "motorsport-events",
+    "ownerKind": "phone"
+  },
+  {
     "name": "phone-obd-scanner",
     "path": "phone-obd-scanner",
     "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneObdScanner.vue",
@@ -443,7 +454,7 @@ export const BUILTIN_PHONE_ROUTES = [
     "uiOrder": 97,
     "luaOrder": 50,
     "backTarget": "phone-notification-settings",
-    "title": "Lock screen",
+    "title": "Closed phone",
     "id": "phone-notification-lock-screen",
     "ownerId": "settings",
     "ownerKind": "phone"
@@ -457,6 +468,18 @@ export const BUILTIN_PHONE_ROUTES = [
     "backTarget": "phone-notification-settings",
     "title": "Do not disturb",
     "id": "phone-notification-dnd",
+    "ownerId": "settings",
+    "ownerKind": "phone"
+  },
+  {
+    "name": "phone-notification-center",
+    "path": "phone-notification-center",
+    "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneNotificationCenter.vue",
+    "uiOrder": 109,
+    "luaOrder": 69,
+    "backTarget": "phone-main",
+    "title": "Notifications",
+    "id": "phone-notification-center",
     "ownerId": "settings",
     "ownerKind": "phone"
   },
@@ -568,6 +591,7 @@ export const BUILTIN_PHONE_APP_NAMES = {
   "logistics": "Job Broker",
   "market-watch": "Market Watch",
   "marketplace": "Marketplace",
+  "motorsport-events": "Motorsport Events",
   "obd-scanner": "OBD Scanner",
   "offroad-recovery": "Off-Road Recovery",
   "quarry": "Quarry",

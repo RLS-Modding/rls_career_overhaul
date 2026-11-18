@@ -239,24 +239,16 @@ local function installGroundClearance(api, inputs)
       return
     end
     general.requestUpdateContainerWeights()
-    general.updateContainerWeights(function(data)
+    general.updateContainerWeights(function(data, release)
       local maxDelay = 0
       for _, delay in pairs(data or {}) do
         maxDelay = math.max(maxDelay, tonumber(delay) or 0)
-      end
-      local function unfreeze()
-        for id, _ in pairs(data or {}) do
-          local veh = scenetree.findObjectById(id)
-          if veh then
-            pcall(core_vehicleBridge.executeAction, veh, "setFreeze", false)
-          end
-        end
       end
       core_jobsystem.create(function(job)
         if maxDelay > 0 then
           job.sleep(math.max(maxDelay, 1) + 0.5)
         end
-        unfreeze()
+        release()
         job.sleep(0.6)
         if onSettled then onSettled() end
       end)

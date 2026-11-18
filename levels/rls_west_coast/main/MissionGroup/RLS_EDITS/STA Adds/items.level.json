@@ -38,6 +38,7 @@
 {"name":"Dirt Oval Tuning Tent","class":"SimGroup","__parent":"STA Adds"}
 {"name":"Rubber Band Tuning Tent","class":"SimGroup","__parent":"STA Adds"}
 {"name":"driftLoopTuningTent","class":"SimGroup","__parent":"STA Adds","hidden":true}
+{"name":"driftLoop","class":"SimGroup","__parent":"STA Adds"}
 {"name":"dragFuelStationDecor","class":"SimGroup","__parent":"STA Adds"}
 {"name":"mudDragLane","class":"SimGroup","__parent":"STA Adds"}
 {"name":"mudDragFence","class":"SimGroup","__parent":"STA Adds"}

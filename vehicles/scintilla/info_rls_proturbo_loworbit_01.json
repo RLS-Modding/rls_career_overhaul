@@ -1,0 +1,84 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Configuration": "Naomi Caldwell - Pro Turbo",
+  "Description": "Copper endurance-style HD sequential drag coupe. Pro League / Pro Turbo. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Drivetrain": "RWD",
+  "Transmission": "SQ",
+  "Years": {
+    "min": 2020,
+    "max": 2022
+  },
+  "Motorsport": {
+    "version": 1,
+    "id": "scintilla/rls_proturbo_loworbit_01",
+    "configId": "rls_proturbo_loworbit_01",
+    "model": "scintilla",
+    "config": "/vehicles/scintilla/rls_proturbo_loworbit_01.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "memphis_raines",
+    "driverName": "Naomi Caldwell",
+    "builder": "Low Orbit Garage",
+    "classIds": [
+      "pro_turbo"
+    ],
+    "approvedClassIds": [
+      "pro_turbo"
+    ],
+    "leagueId": "pro_league",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "2766f241606ce85a338b4d8d6cac2eb68fb69c24099066d51c5c47cb69180570",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "6-speed sequential",
+      "induction": "Turbocharger",
+      "nitrous": false,
+      "years": {
+        "min": 2020,
+        "max": 2022
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_18x5",
+          "part": "tire_F_28_4_5_18_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_18x12_alt",
+          "part": "tire_R_28_13_5_18_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "scintilla_rollcage_hardtop",
+          "part": "scintilla_rollcage_hardtop"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 7.3154058094835,
+      "runId": "PT-003",
+      "evidenceConfigSHA256": "b949e4dacbd686cfb7cfe9fbbb7f183a95ce171efec4c46a9125faff274a5d06",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/pro-turbo/final-results.json",
+      "acceptedConfig": "outputs/pro-turbo/accepted/rls_proturbo_loworbit_01/rls_proturbo_loworbit_01.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_pro_turbo"
+  }
+}

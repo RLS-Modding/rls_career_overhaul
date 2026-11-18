@@ -4,6 +4,7 @@
 local lib = {}
 
 function lib.create(inputs)
+  local inventory = inputs.inventory or overhaul_career_garage_inventory
   local parts, state, session = inputs.parts, inputs.dynoState, inputs.dynoSession
 
   local function restoreDisplacedVehicle(dt)
@@ -12,7 +13,7 @@ function lib.create(inputs)
       state.displacedAge = nil
       return
     end
-    local id = overhaul_career_garage_inventory.getVehicleIdFromInventoryId(session.inventoryId)
+    local id = inventory.getVehicleIdFromInventoryId(session.inventoryId)
     local veh = id and getObjectByID(id)
     if not parts.vehicle.isDisplacedFromDyno(veh) then
       state.displacedAge = nil

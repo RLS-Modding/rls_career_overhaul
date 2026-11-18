@@ -1,0 +1,57 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Configuration": "Dahlia Carter - Stu Leonard",
+  "Description": "Heritage Speed: barstow, 353 CUI 'Super-Thrust' V8 Engine, Stage 3 Supercharger + 230 kW nitrous, 4-Speed Automatic Drag Transmission. Healthy qualifying pass 8.917848 s; identical saved-build confirmation 8.878232 s. West Coast quarter mile. Two passes do not establish all-condition repeatability. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Transmission": "Automatic",
+  "Drivetrain": "RWD",
+  "Fuel Type": "Gasoline",
+  "Years": {
+    "min": 1969,
+    "max": 1969
+  },
+  "Value": 65000,
+  "Motorsport": {
+    "version": 1,
+    "id": "barstow/rls_stu_heritage_01",
+    "configId": "rls_stu_heritage_01",
+    "model": "barstow",
+    "config": "/vehicles/barstow/rls_stu_heritage_01.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "sourcePack": "rls_stu_leonard",
+    "driverId": "karol_monroe",
+    "driverName": "Dahlia Carter",
+    "builder": "heritage",
+    "classIds": [
+      "stu_leonard_850"
+    ],
+    "approvedClassIds": [
+      "stu_leonard_850"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "99d210c42828e8430270d53c3a30f9a48838b238d4ff10d32b1eb1aa026a968d",
+    "traits": {
+      "transmission": "Automatic",
+      "drivetrain": "RWD",
+      "years": {
+        "min": 1969,
+        "max": 1969
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.8782317544517,
+      "runId": "STU-008",
+      "evidenceConfigSHA256": "08c7fca8b865c544ff01c569cf61e82f0a4a586ec1f1fe81e218b3798f106163",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/stu-leonard/final-metadata.json",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    }
+  }
+}

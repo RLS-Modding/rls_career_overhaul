@@ -8,6 +8,12 @@ core_input_categories.rlsCareerOverhaul = {
 
 -- core_modmanager temporarily wraps extensions.load while executing modScript.
 -- Defer so the extension manager captures BeamNG's real loader; it loads everything else.
+-- local parkedMaterials = '/art/shapes/motorsport/parked_vehicles/main.materials.json'
+-- if loadJsonMaterialsFile and FS:fileExists(parkedMaterials) then
+--   local ok, error = pcall(loadJsonMaterialsFile, parkedMaterials)
+--   if not ok then log('E', 'motorsportEvents', 'Parked-car material preload: ' .. tostring(error)) end
+-- end
+
 core_jobsystem.create(function(job)
   job.sleep(0.25)
   setExtensionUnloadMode("overhaul_shell_extensionManager", "manual")

@@ -703,11 +703,20 @@ function installer.new(inputs)
     if not parts or not session then
       return false
     end
+    local removedSlots = {}
     for _, part in ipairs(parts) do
       if part.emptyPlaceholder or part.partName == "" or not part.partName then
-        if not slotAllowsRemoval(session, part.slotPath or "", vehicleData) then
-          return true
-        end
+        removedSlots[part.slotPath or ""] = true
+      end
+    end
+    for slotPath in pairs(removedSlots) do
+      -- Mandatory children leave with their parent; only topmost removals need validation.
+      local parentPath = slotPath:match("(.+/)[^/]+/$")
+      while parentPath and not removedSlots[parentPath] do
+        parentPath = parentPath:match("(.+/)[^/]+/$")
+      end
+      if not parentPath and not slotAllowsRemoval(session, slotPath, vehicleData) then
+        return true
       end
     end
     return false

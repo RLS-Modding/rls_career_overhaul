@@ -1,0 +1,43 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "barstow/rls_stu_heritage_04",
+    "configId": "rls_stu_heritage_04",
+    "model": "barstow",
+    "config": "/vehicles/barstow/rls_stu_heritage_04.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "sourcePack": "rls_stu_leonard",
+    "driverId": "tobey_marshall",
+    "driverName": "Derek Conway",
+    "builder": "heritage",
+    "classIds": [
+      "stu_leonard_850"
+    ],
+    "approvedClassIds": [
+      "stu_leonard_850"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "6bc9807e93da05af349fdf854955e9cd45a8349497678ea43253de912b71f2c9",
+    "traits": {
+      "drivetrain": "RWD",
+      "years": {
+        "min": 1970,
+        "max": 1970
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.9687283508027,
+      "runId": "STU-069",
+      "evidenceConfigSHA256": "3651f8c98269e95e6c5f0f61180d638f893da806e19d2f47530a0e5a0cc495bd",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/stu-leonard/final-metadata.json",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    }
+  }
+}

@@ -3,15 +3,18 @@
 local M = {}
 
 -- Requires ----------------------------------------------------------------------------------------
+local serializedTable = require('overhaul/lib/save/serializedTable')
 
 -- SaveStore keys over the files this module writes (metadata only).
 require("overhaul/lib/save/store").registerKeys({
+  {key = "migration.superchargers", owner = "overhaul_career_saveMigration", files = {"career/rls_career/superchargers.json"}, phase = "profile", required = true},
   {key = "migration.layoutMarker", owner = "overhaul_career_saveMigration", files = {"career/rls_career/partRenames040.json"}, phase = "profile", required = true},
   {key = "migration.manifest", owner = "overhaul_career_saveMigration", files = {"career/rls_career/legacyMigration.json"}, phase = "profile", required = true},
 })
 
 local partMigration = require("overhaul/lib/save/partMigration040")
 local migrationShapes = require("overhaul/lib/save/migrationShapes")
+local superchargerMigration = require("overhaul/lib/save/superchargerMigration")
 
 -- Config ------------------------------------------------------------------------------------------
 
@@ -20,6 +23,7 @@ local MANIFEST_PATH = "/career/rls_career/legacyMigration.json"
 local REPORT_PATH = "/career/rls_career/legacyMigrationReport.json"
 local PART_RENAME_MARKER_PATH = "/career/rls_career/partRenames040.json"
 local PART_RENAME_VERSION = 3
+local SUPERCHARGER_MARKER_PATH = "/career/rls_career/superchargers.json"
 -- Saves at this version may predate the 0.40 part renames, so the layout marker decides.
 local LAYOUT_RENAME_SAVE_VERSION = 64
 -- A sold garage pays this share of its market value.
@@ -36,6 +40,7 @@ local activeMigrationPlan
 local appliedThisSession = {}
 -- Set once the current profile's part-rename marker has been checked.
 local partRenamesDoneForSession = false
+local superchargersDoneForSession = false
 -- Warnings collected by one applyPartRenames pass; nil outside that pass.
 local partMigrationWarnings
 
@@ -46,10 +51,22 @@ local function isSaveLayoutCurrent(savePath)
   return type(marker) == "table" and (tonumber(marker.version) or 0) >= PART_RENAME_VERSION
 end
 
+local function isSuperchargerContentCurrent(savePath)
+  local marker = require("overhaul/lib/save/sourcePaths").readJson(savePath .. SUPERCHARGER_MARKER_PATH)
+  return type(marker) == "table" and (tonumber(marker.version) or 0) >= superchargerMigration.version
+end
+
+local function requiresSuperchargerMigration(savePath)
+  if isSuperchargerContentCurrent(savePath) then return false end
+  local plan = superchargerMigration.readPlan(savePath)
+  return not plan or #plan.changes > 0
+end
+
 local function requiresSaveMigration(savePath, info)
   local version = type(info) == "table" and tonumber(info.version)
   local target = overhaul_career_saveSystem.getSaveSystemVersion()
-  return version ~= nil and (version < target or (version == LAYOUT_RENAME_SAVE_VERSION and not isSaveLayoutCurrent(savePath)))
+  return version ~= nil and (version < target or (version == LAYOUT_RENAME_SAVE_VERSION and not isSaveLayoutCurrent(savePath))
+    or (version <= target and requiresSuperchargerMigration(savePath)))
 end
 
 local function splitSavePath(savePath)
@@ -381,7 +398,12 @@ local function readSaveInfoFields(report, savePath, profile, info)
     and report.sourceVersion <= LAYOUT_RENAME_SAVE_VERSION
     and not isSaveLayoutCurrent(savePath)
   report.requiresMigration = requiresSaveMigration(savePath, info)
+  report.requiresSuperchargerMigration = report.sourceVersion ~= nil and report.sourceVersion <= report.targetVersion
+    and requiresSuperchargerMigration(savePath)
   report.sourceLabel = report.sourceVersion == LAYOUT_RENAME_SAVE_VERSION and "RLS 0.39 save" or ("Legacy Career v" .. tostring(report.sourceVersion))
+  report.contentOnlyMigration = report.requiresSuperchargerMigration and not report.requiresLayoutMigration
+    and report.sourceVersion == report.targetVersion
+  if report.contentOnlyMigration then report.sourceLabel = "Current Career content" end
   report.targetLabel = "0.40"
   report.migrationLabel = report.sourceLabel .. " → " .. report.targetLabel
 end
@@ -389,7 +411,7 @@ end
 -- A prepared plan counts only for the current save version and with the layout marker in place.
 local function markPreparedMigration(report, savePath, profile)
   local prepared = jsonReadFile(savePath .. MANIFEST_PATH)
-  if type(prepared) == "table" and prepared.targetVersion == report.targetVersion and isSaveLayoutCurrent(savePath) then
+  if type(prepared) == "table" and prepared.targetVersion == report.targetVersion and isSaveLayoutCurrent(savePath) and not requiresSuperchargerMigration(savePath) then
     report.preparedMigration = true
     report.defaultTargetProfile = profile
   end
@@ -490,6 +512,13 @@ local function buildLegacySavePreflight(profile, specificSaveFolder, sourceSaveP
   checkSavedInventory(report, savePath)
   scanLegacyVehicleRecords(report, savePath)
   scanLegacyGarageOwnership(report, savePath)
+  if report.requiresSuperchargerMigration then
+    local _, issues = superchargerMigration.readPlan(savePath)
+    for _, issue in ipairs(issues or {}) do
+      report.canMigrate = false
+      addIssue(report, "blocker", "supercharger." .. issue.code, "Supercharger conversion needs review", issue.subject)
+    end
+  end
 
   if report.requiresMigration then
     addIssue(
@@ -649,7 +678,7 @@ local function cashOutPartInventory(targetSavePath, appliedLookup, sellParts, ap
   local partInventoryPath = targetSavePath .. "/career/partInventory.json"
   local partInventoryJson = jsonReadFile(partInventoryPath)
   if type(partInventoryJson) == "table" and type(partInventoryJson[1]) == "string" then
-    local decoded, partInventory = pcall(deserialize, partInventoryJson[1])
+    local decoded, partInventory = pcall(serializedTable.decode, partInventoryJson[1])
     if not decoded or type(partInventory) ~= "table" then
       return 0, 0, "The copied part inventory could not be decoded."
     end
@@ -930,6 +959,10 @@ local function selectCashOutGarages(options, vehiclePolicy, knownGarageIds)
 end
 
 local function selectLegacyMigrationCashOut(report, options)
+  if report.contentOnlyMigration then
+    return {vehiclePolicy = "preserve", cashOutVehicleIds = {}, cashOutGarageIds = {},
+      unavailableIds = {}, cashOutLookup = {}, sellParts = false}
+  end
   local knownIds = {}
   local unavailableIds = {}
   for _, vehicle in ipairs(report.vehicles) do
@@ -974,6 +1007,13 @@ end
 
 -- Part renames ------------------------------------------------------------------------------------
 
+local function writeSuperchargerMarker(savePath, writer)
+  writer = writer or overhaul_career_saveSystem.getSaveWriter()
+  local dir = savePath .. "/career/rls_career"
+  if not writer.exists(dir) then writer.mkdir(dir, true) end
+  return writer.json(savePath .. SUPERCHARGER_MARKER_PATH, {version = superchargerMigration.version}, true)
+end
+
 local function writePartRenameMarker(savePath, writer)
   writer = writer or overhaul_career_saveSystem.getSaveWriter()
   local dir = savePath .. "/career/rls_career"
@@ -988,29 +1028,55 @@ end
 
 local function runPartRenames(savePath, summary)
   if type(savePath) ~= "string" or savePath == "" then return false end
-  if isSaveLayoutCurrent(savePath) then return true end
+  local needsLayout = not isSaveLayoutCurrent(savePath)
+  local needsSuperchargers = not isSuperchargerContentCurrent(savePath)
+  if not needsLayout and not needsSuperchargers then return true end
 
   local inventoryPath = savePath .. "/career/partInventory.json"
   local inventoryJson = jsonReadFile(inventoryPath)
   local inventory = {}
   if FS:fileExists(inventoryPath) then
     if type(inventoryJson) ~= "table" or type(inventoryJson[1]) ~= "string" then return false end
-    inventory = deserialize(inventoryJson[1])
+    inventory = serializedTable.decode(inventoryJson[1])
     if type(inventory) ~= "table" then return false end
   end
   local originalInventory = serialize(inventory)
   local beforeInventory = deepcopy(inventory)
 
-  local updates = {}
+  local updates, vehicles = {}, {}
+  local packageUpdate
   local vehicleFiles = FS:findFiles(savePath .. "/career/vehicles/", "*.json", 0, false, false)
   table.sort(vehicleFiles)
   for _, file in ipairs(vehicleFiles) do
     local vehicle = jsonReadFile(file)
     if type(vehicle) ~= "table" then return false end
     vehicle.id = vehicle.id or tonumber(file:match("(%d+)%.json$"))
-    if partMigration.migrateVehicleParts040(vehicle, inventory, partMigrationWarning) then updates[#updates + 1] = {file, vehicle} end
+    if needsLayout and partMigration.migrateVehicleParts040(vehicle, inventory, partMigrationWarning) then updates[#updates + 1] = {file, vehicle} end
+    vehicles[#vehicles + 1] = vehicle
   end
-  partMigration.migrateLooseParts040(inventory, partMigrationWarning)
+  if needsLayout then partMigration.migrateLooseParts040(inventory, partMigrationWarning) end
+  if needsSuperchargers then
+    local packages, packageError = superchargerMigration.readPackages(savePath)
+    local plan, issues
+    if packageError then issues = packageError
+    else plan, issues = superchargerMigration.plan(vehicles, inventory, packages) end
+    if not plan then
+      summary.superchargerBlockers = issues
+      for _, issue in ipairs(issues) do partMigrationWarning(issue.code .. ": " .. issue.subject) end
+      return false -- Nothing has been written; preserve every source asset.
+    end
+    local layoutUpdates = {}
+    for _, update in ipairs(updates) do layoutUpdates[update[1]] = true end
+    updates = {}
+    for index, vehicle in ipairs(plan.vehicles) do
+      if layoutUpdates[vehicleFiles[index]] or plan.changedVehicles[tostring(vehicle.id)] then
+        updates[#updates + 1] = {vehicleFiles[index], vehicle}
+      end
+    end
+    inventory = plan.inventory
+    if plan.changedPackages then packageUpdate = plan.packages end
+    summary.superchargersMigrated = #plan.changes
+  end
   summary.vehiclesMigrated = #updates
   migrationShapes.countPartChanges(inventory, beforeInventory, summary)
 
@@ -1025,8 +1091,10 @@ local function runPartRenames(savePath, summary)
       return false
     end
   end
+  if packageUpdate and not overhaul_career_saveSystem.jsonWriteFileSafe(savePath .. superchargerMigration.packagePath, packageUpdate, true) then return false end
   if #updates > 0 then log("I", LOG_TAG, string.format("Migrated 0.39 parts on %d vehicle(s) in %s", #updates, savePath)) end
-  return writePartRenameMarker(savePath) ~= false
+  if needsLayout and writePartRenameMarker(savePath) == false then return false end
+  return not needsSuperchargers or writeSuperchargerMarker(savePath) ~= false
 end
 
 -- Returns whether the layout pass succeeded, plus its summary; errors inside the pass are rethrown.
@@ -1059,6 +1127,18 @@ end
 local function preprocessCopiedFolder(folderSavePath, report, selection)
   if not FS:directoryExists(folderSavePath) then
     return nil, "The copied save could not be prepared safely."
+  end
+
+  if report.contentOnlyMigration then
+    local folderInfo = jsonReadFile(folderSavePath .. "/info.json")
+    if not folderInfo or tonumber(folderInfo.version) ~= report.targetVersion or not isSaveLayoutCurrent(folderSavePath) then
+      return nil, "An older autosave needs a separate layout migration before this content-only conversion."
+    end
+    local called, ok, summary = pcall(applyPartRenames, folderSavePath)
+    if not called or not ok then return nil, "The copied supercharger assets could not be converted safely." end
+    return {layoutReport = summary,
+      vehicle = {appliedVehicleIds = {}, vehicleValue = 0, partValue = 0, soldPartCount = 0, totalValue = 0},
+      garage = {appliedGarageIds = {}, garageValue = 0, grossGarageValue = 0, mortgageBalanceCleared = 0, relocatedVehicleCount = 0}}
   end
 
   local vehicleResult, vehicleError = preprocessVehicleCashOut(folderSavePath, selection.cashOutVehicleIds, selection.sellParts)
@@ -1257,6 +1337,7 @@ end
 local function getPreparedMigration(profile, specificSaveFolder)
   local savePath = getSavePath(profile, specificSaveFolder)
   if not savePath then return nil end
+  if requiresSuperchargerMigration(savePath) then return nil end
   if appliedThisSession[savePath] then
     return deepcopy(appliedThisSession[savePath]), savePath
   end
@@ -1302,7 +1383,11 @@ M.getLegacySavePreflight = getLegacySavePreflight
 M.getSourceSavePreflight = getSourceSavePreflight
 M.requiresSaveMigration = requiresSaveMigration
 M.isSaveLayoutCurrent = isSaveLayoutCurrent
-M.stampCurrentLayout = writePartRenameMarker
+M.stampCurrentLayout = function(savePath, writer)
+  -- Called only for newly created careers; existing saves use the checked pass.
+  return writePartRenameMarker(savePath, writer) ~= false and writeSuperchargerMarker(savePath, writer) ~= false
+end
+M.isSuperchargerContentCurrent = isSuperchargerContentCurrent
 M.applyPartRenames = applyPartRenames
 
 -- Public API: prepare and apply -------------------------------------------------------------------
@@ -1321,11 +1406,14 @@ M.takePendingLegacySaveMigration = takePendingLegacySaveMigration
 
 local function onOverhaulSetProfile(savePath)
   partRenamesDoneForSession = false
+  superchargersDoneForSession = false
   if type(savePath) ~= "string" or savePath == "" then return end
   if not FS:fileExists(savePath .. "/info.json") then
     partRenamesDoneForSession = writePartRenameMarker(savePath) ~= false
+    superchargersDoneForSession = writeSuperchargerMarker(savePath) ~= false
   else
     partRenamesDoneForSession = isSaveLayoutCurrent(savePath)
+    superchargersDoneForSession = partRenamesDoneForSession and not requiresSuperchargerMigration(savePath)
   end
 end
 
@@ -1334,6 +1422,9 @@ local function onOverhaulSaveCurrentProfile(currentSavePath, _, writer)
   -- Carry the current layout marker when autosaves rotate.
   if partRenamesDoneForSession and type(currentSavePath) == "string" then
     pcall(writePartRenameMarker, currentSavePath, writer)
+  end
+  if superchargersDoneForSession and type(currentSavePath) == "string" then
+    writeSuperchargerMarker(currentSavePath, writer)
   end
   if type(activeMigrationPlan) ~= "table" then return end
 
@@ -1345,6 +1436,7 @@ end
 local function onOverhaulBeforeSetProfile()
   activeMigrationPlan = nil
   appliedThisSession = {}
+  superchargersDoneForSession = false
 end
 
 M.onOverhaulSetProfile = onOverhaulSetProfile

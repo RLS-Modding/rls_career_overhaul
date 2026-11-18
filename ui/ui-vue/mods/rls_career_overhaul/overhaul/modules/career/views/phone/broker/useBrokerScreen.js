@@ -11,7 +11,7 @@ import { openPhoneRoute } from '../../../utils/phoneNavigation'
 import { useEvents } from '@/services/events'
 import { BngIcon, icons } from '@/common/components/base'
 import { useBridge } from '@/bridge'
-import { brokerLocationOptions, brokerRadiusOptions, groupBrokerRows, groupedOfferCount, markets as fallbackMarkets, brokerOfferRows, isLocked, accessReasons, requirementProgress, fitBadge, offerBadges, offerTimeLeft, unlockLevel, jobTimeline, usePhoneBrokerStore } from '../../../stores/phoneBrokerStore'
+import { brokerLocationOptions, brokerRadiusOptions, groupBrokerRows, groupedOfferCount, markets as fallbackMarkets, isLocked, accessReasons, requirementProgress, fitBadge, offerBadges, offerTimeLeft, unlockLevel, jobTimeline, usePhoneBrokerStore } from '../../../stores/phoneBrokerStore'
 import { callModLua } from '../../../utils/installLuaBridgeFallbacks'
 import { useActionFocus } from '../../../composables/useActionFocus.js'
 import { acquireScope } from '../../../utils/luaScopes'
@@ -31,6 +31,11 @@ export function useBrokerScreen() {
   usePhoneScreen({ title: () => heading.value, onBack: back, expanded: () => s.expanded })
   const markets = computed(() => Object.values(s.data.markets || {}).length ? Object.values(s.data.markets) : fallbackMarkets)
   const jobsTab = ref('loads')
+  watch(() => [s.data.restricted, s.view, jobsTab.value], ([restricted, view]) => {
+    if (!restricted) return
+    if (view !== 'jobs' && view !== 'loaners') { s.view = 'jobs'; s.selected = null }
+    jobsTab.value = 'loads'
+  }, {flush: 'sync'})
   const expandedJobStacks = ref(new Set())
   const isJobStack = row => s.view === 'jobs' && row.groupCount > 1
   const stackExpanded = row => expandedJobStacks.value.has(row.groupKey || row.id)
@@ -51,7 +56,7 @@ export function useBrokerScreen() {
   }
   const focusView = usePhoneViewFocus(screenRef, () => `${s.view}:${s.availability}:${jobsTab.value}:${s.selected || ''}`, root => s.selected ? root?.querySelector('.detail-pane') : root?.querySelector('.load-list, .market-grid, .loaners') || root)
   function changeTab(delta) {
-    const tabs = ['markets', 'jobs', 'loaners']
+    const tabs = s.data.restricted ? ['jobs', 'loaners'] : ['markets', 'jobs', 'loaners']
     const index = Math.max(0, tabs.indexOf(s.view))
     s.selected = null; s.view = tabs[(index + delta + tabs.length) % tabs.length]
   }
@@ -70,13 +75,13 @@ export function useBrokerScreen() {
     if (!id) return
     const request = ++previewRequest
     routeLoading.value = true
-    try { const r = await callModLua('overhaul_phone_apps_logistics.requestRoutePreview', id); if (request === previewRequest) routePreview.value = r && r.legs ? r : null }
+    try { const r = await callModLua('overhaul_phone_apps_logistics.requestRoutePreview', id); if (request === previewRequest) routePreview.value = Array.isArray(r?.legs) ? r : null }
     catch { if (request === previewRequest) routePreview.value = null }
     finally { if (request === previewRequest) routeLoading.value = false }
   }
   async function loadPlanPreview() {
     planLoading.value = true
-    try { const r = await callModLua('overhaul_phone_apps_logistics.requestPlanPreview'); planPreview.value = r && r.legs ? r : null }
+    try { const r = await callModLua('overhaul_phone_apps_logistics.requestPlanPreview'); planPreview.value = Array.isArray(r?.legs) ? r : null }
     catch { planPreview.value = null }
     finally { planLoading.value = false }
   }
@@ -110,8 +115,8 @@ export function useBrokerScreen() {
   const marketName = computed(() => markets.value.find(m => m.id === s.market)?.name || 'All work')
   const heading = computed(() => s.data.employed && s.data.employerName ? `Employed at ${s.data.employerName}` : s.view === 'markets' ? 'Find work' : s.view === 'jobs' ? 'My Loads' : s.view === 'loaners' ? 'Loaners' : marketName.value)
   const activeJobs = computed(() => s.data.jobs.filter(j => !['complete', 'cancelled'].includes(j.status)))
-  const availableCount = computed(() => brokerOfferRows(s.rows).length)
-  const lockedCount = computed(() => brokerOfferRows(s.rows, 'locked').length)
+  const availableCount = computed(() => s.availableRows.length)
+  const lockedCount = computed(() => s.lockedRows.length)
   // Available loads sit under a heading for their pickup, with the distance to
   // it, instead of naming it in every card. Each pickup's loads stay together; the pickup with the first load
   // in the chosen sort leads, and loads keep that sort inside their pickup.
@@ -127,7 +132,7 @@ export function useBrokerScreen() {
   }
   const visibleRows = computed(() => {
     if (s.view === 'jobs') return groupBrokerJobs([...activeJobs.value].sort((a, b) => Number(jobTimeline(a)[1].done) - Number(jobTimeline(b)[1].done)), row => jobTimeline(row)[1].done)
-    const rows = brokerOfferRows(s.rows, s.availability)
+    const rows = s.availability === 'locked' ? s.lockedRows : s.availableRows
     return groupsByPickup.value ? keepPickupsTogether(rows) : rows
   })
   // The heading for a pickup's first load: its name, and the pickup's distance
@@ -169,13 +174,21 @@ export function useBrokerScreen() {
     if (s.view === 'jobs') return s.selectedRow || null
     return visibleRows.value.find(r => r.id === s.selected || r.groupOfferIds?.includes(s.selected)) || null
   })
-  const filterCount = computed(() => Number(!!s.filter.radius)
-    + Number(!!s.filter.subtype)
-    + Number(!!s.filter.arrangement)
-    + Number(!!s.filter.trailers.length)
-    + Number(!!s.filter.pickupFac)
-    + Number(!!s.filter.destFac)
-    + Number(s.market === 'all' && !!s.filter.markets?.length))
+  const activeFilters = computed(() => {
+    const filters = []
+    const location = id => (s.data.offers || []).find(row => row.origin?.facId === id)?.from || id
+    if (s.scope) filters.push({ key: 'scope', label: `Pickup: ${location(s.scope)}` })
+    if (s.filter.search) filters.push({ key: 'search', label: `Search: ${s.filter.search}` })
+    if (s.filter.radius) filters.push({ key: 'radius', label: `Within ${dist(s.filter.radius)}` })
+    if (s.filter.pickupFac) filters.push({ key: 'pickupFac', label: `Pickup: ${location(s.filter.pickupFac)}` })
+    if (s.filter.destFac) filters.push({ key: 'destFac', label: `Delivery: ${destLocationOptions.value.find(option => option.value === s.filter.destFac)?.label || s.filter.destFac}` })
+    if (s.filter.subtype) filters.push({ key: 'subtype', label: cargoOptions.find(option => option.value === s.filter.subtype)?.label || s.filter.subtype })
+    if (s.filter.arrangement) filters.push({ key: 'arrangement', label: arrangementOptions.find(option => option.value === s.filter.arrangement)?.label || s.filter.arrangement })
+    if (s.filter.trailers.length) filters.push({ key: 'trailers', label: `Trailer: ${s.filter.trailers.join(', ')}` })
+    if (s.filter.markets?.length) filters.push({ key: 'markets', label: s.filter.markets.map(id => markets.value.find(market => market.id === id)?.name || id).join(', ') })
+    return filters
+  })
+  const filterCount = computed(() => activeFilters.value.length)
   const trailerTypes = computed(() => [...new Set(s.data.offers.filter(r => (s.market === 'all' || r.market === s.market) && r.trailerType).map(r => r.trailerType))].sort())
   const pickupLocationOptions = computed(() => brokerLocationOptions(s.data.offers || [], s.market, 'pickup'))
   const destLocationOptions = computed(() => brokerLocationOptions(s.data.offers || [], s.market, 'delivery'))
@@ -274,7 +287,7 @@ export function useBrokerScreen() {
     return out
   })
 
-  function legDistance(stop) { const leg = (s.data.route?.legs || []).find(l => l.stopId === stop.id); return leg && leg.distance != null ? dist(leg.distance) : '—' }
+  function legDistance(stop) { const legs = Array.isArray(s.data.route?.legs) ? s.data.route.legs : []; const leg = legs.find(l => l.stopId === stop.id); return leg && leg.distance != null ? dist(leg.distance) : '—' }
   function statusName(value) { return ({ reserved: 'Reserved', active: 'In progress', complete: 'Delivered' })[value] || value }
   function rememberScroll() { if (listEl.value) s.scrolls[s.view + ':' + s.market + ':' + s.availability] = listEl.value.scrollTop }
   async function closeDetail(returnGroupKey = null) {
@@ -552,7 +565,7 @@ export function useBrokerScreen() {
   function isSaved(row) { return Object.values(s.data.plans).some(p => p.id === row.id || p.offerId === row.id) }
   function stopJob(stop) { return s.data.jobs.find(j => j.id === stop.jobId) || s.data.plans[stop.jobId] }
   function openStop(stop) { const row = stopJob(stop); if (!row) return; s.selected = row.id; jobsTab.value = 'loads'; if (row.status) s.action('navigate', { id: row.id, leg: stop.kind, stopId: stop.id }) }
-  function back() { if (confirmingAbandon.value) { confirmingAbandon.value = false; return true } if (s.selected) { closeDetail(); return true } if (s.view !== 'markets') { s.view = 'markets'; return true } return false }
+  function back() { if (confirmingAbandon.value) { confirmingAbandon.value = false; return true } if (s.selected) { closeDetail(); return true } if (!s.data.restricted && s.view !== 'markets') { s.view = 'markets'; return true } return false }
   let isUnmounted = false
   let brokerRevision = null
   let brokerEventVersion = 0
@@ -592,9 +605,10 @@ export function useBrokerScreen() {
     await refreshBroker()
     if (isUnmounted) return
     const context = s.data.openContext || {}
-    if (context.facility) { s.scope = context.facility; s.chooseMarket('all'); s.expanded = true }
+    if (context.facility) s.openFacility(context.facility)
     if (context.depot) { s.view = 'loaners'; s.expanded = true }
     if (context.tab === 'jobs') { s.view = 'jobs'; s.expanded = true }
+    if (context.tab === 'loads') { s.view = 'loads'; s.expanded = true }
     // Harness / deep links: open expanded, on a market, on a view, or with a load selected.
     if (context.market) s.chooseMarket(context.market)
     if (['loads', 'jobs', 'loaners', 'markets'].includes(context.view)) s.view = context.view
@@ -603,7 +617,7 @@ export function useBrokerScreen() {
     if (context.routeTab) jobsTab.value = 'route'
     if (context.expanded) s.expanded = true
     refreshTimer = setInterval(() => refreshBroker(true), 10000)
-    if (route.query.facility) { s.scope = String(route.query.facility); s.chooseMarket('all'); s.expanded = true }
+    if (route.query.facility) s.openFacility(String(route.query.facility))
     if (route.query.depot) { s.view = 'loaners'; s.expanded = true }
   })
   onUnmounted(() => {
@@ -615,6 +629,6 @@ export function useBrokerScreen() {
     callModLua('overhaul_phone_apps_logistics.closeBrokerScreen').catch(() => {})
   })
 
-  return { back, startHere, isJobStack, stackExpanded, toggleJobStack, isLocked, accessReasons, requirementProgress, fitBadge, offerBadges, offerTimeLeft, jobTimeline, unlockHeading, levelReason, requirementText, stageHeading, groupsByPickup, pickupHeading, openRequirements, availableCount, lockedCount, focusView, screenRef, changeTab, ref, BngIcon, icons, groupedOfferCount, markets, RouteMap, s, route, openEmployment, listEl, jobsTab, container, selectedCars, confirmingAbandon, rowLimit, filtersOpen, rowImage, routePreview, routeLoading, planPreview, planLoading, renderedRows, containerLoading, containerError, cargoOptions, arrangementOptions, sortOptions, working, marketName, heading, activeJobs, visibleRows, selectedListRow, filterCount, trailerTypes, pickupLocationOptions, destLocationOptions, effectiveRadius, radiusDropdownItems, marketIcon, marketImage, loadCount, money, rate, dist, isMarketFilterActive, tableColumns, setColumnSort, columnSortActive, toggleMarketFilter, capacityText, fact, pct, payOf, detailFacts, legDistance, statusName, rememberScroll, closeDetail, select, refreshContainers, reserveAmount, reserveGroup, reserveMax, reserveSlots, stepReserve, reserveSelected, showLoader, slotsOf, pickupParcels, parcelBoxes, boxByKey, loadVehicle, boxIndex, boxCap, boxHeld, boxUse, boxLeft, canMove, share, boxLabel, autoSplit, cycleBox, pickupGroups, groupLoad, groupStuck, groupSplits, toggleGroup, stepGroup, loadParcels, loadStep, selectedJobIds, abandonFine, cancelReservation, abandon, collect, nextStep, toggleCar, toggleTrailer, isSaved, stopJob, openStop, refreshBroker }
+  return { back, startHere, isJobStack, stackExpanded, toggleJobStack, isLocked, accessReasons, requirementProgress, fitBadge, offerBadges, offerTimeLeft, jobTimeline, unlockHeading, levelReason, requirementText, stageHeading, groupsByPickup, pickupHeading, openRequirements, availableCount, lockedCount, focusView, screenRef, changeTab, ref, BngIcon, icons, groupedOfferCount, markets, RouteMap, s, route, openEmployment, listEl, jobsTab, container, selectedCars, confirmingAbandon, rowLimit, filtersOpen, rowImage, routePreview, routeLoading, planPreview, planLoading, renderedRows, containerLoading, containerError, cargoOptions, arrangementOptions, sortOptions, working, marketName, heading, activeJobs, visibleRows, selectedListRow, activeFilters, filterCount, trailerTypes, pickupLocationOptions, destLocationOptions, effectiveRadius, radiusDropdownItems, marketIcon, marketImage, loadCount, money, rate, dist, isMarketFilterActive, tableColumns, setColumnSort, columnSortActive, toggleMarketFilter, capacityText, fact, pct, payOf, detailFacts, legDistance, statusName, rememberScroll, closeDetail, select, refreshContainers, reserveAmount, reserveGroup, reserveMax, reserveSlots, stepReserve, reserveSelected, showLoader, slotsOf, pickupParcels, parcelBoxes, boxByKey, loadVehicle, boxIndex, boxCap, boxHeld, boxUse, boxLeft, canMove, share, boxLabel, autoSplit, cycleBox, pickupGroups, groupLoad, groupStuck, groupSplits, toggleGroup, stepGroup, loadParcels, loadStep, selectedJobIds, abandonFine, cancelReservation, abandon, collect, nextStep, toggleCar, toggleTrailer, isSaved, stopJob, openStop, refreshBroker }
 
 }

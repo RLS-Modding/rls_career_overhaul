@@ -1,0 +1,80 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Name": "Levi Maddox",
+  "Configuration": "Levi Maddox - Street Heat",
+  "Description": "Driver: Levi Maddox. Builder: Haulmark Racing. Red AWD 2.5L turbo DCT wagon: practical cargo body with stronger street torque. Sport tires at all four corners. Alder quarter-mile: 10.578 s at 129.6 mph. Two healthy timed passes and a straight-line braking check. Tuning-only index compliance confirmed on 2026-10-26: 3 legal native passes, fastest 10.632879 s. Saved-build mean 10.645907 s. Parts and paint unchanged.",
+  "Config Type": "Custom",
+  "Author": "RLS Modding",
+  "Drivetrain": "AWD",
+  "Transmission": "DCT",
+  "Years": {
+    "max": 2014,
+    "min": 2009
+  },
+  "Weight": 1503.699215,
+  "Motorsport": {
+    "version": 1,
+    "id": "sunburst2/rls_streetheat_haulmark_luke_darrow",
+    "configId": "rls_streetheat_haulmark_luke_darrow",
+    "model": "sunburst2",
+    "config": "/vehicles/sunburst2/rls_streetheat_haulmark_luke_darrow.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "luke_darrow",
+    "driverName": "Levi Maddox",
+    "builder": "Haulmark Racing",
+    "leagueId": "street_kings",
+    "classIds": [
+      "street_heat"
+    ],
+    "approvedClassIds": [
+      "street_heat"
+    ],
+    "eligibilityStatus": "Tuning-only compliance validated by 3 clean native passes across both Alder lanes; fastest 10.632879 seconds.",
+    "sourceConfigSHA256": "0b2e4f86066e876708d0e526d131ed3197188c413144562f577dc1ed3bf1a2d3",
+    "traits": {
+      "drivetrain": "AWD",
+      "transmission": "6-speed DCT",
+      "induction": "Turbo",
+      "nitrous": false,
+      "years": {
+        "max": 2014,
+        "min": 2009
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_18x8",
+          "part": "tire_F_235_40_18_sport",
+          "typeHint": "sport"
+        },
+        {
+          "slot": "tire_R_18x8",
+          "part": "tire_R_235_40_18_sport",
+          "typeHint": "sport"
+        }
+      ],
+      "selectedRollCageParts": [],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 10.645906995731332,
+      "runId": "COMPLIANCE-20261026-rls_streetheat_haulmark_luke_darrow",
+      "evidenceConfigSHA256": "0b2e4f86066e876708d0e526d131ed3197188c413144562f577dc1ed3bf1a2d3",
+      "configHashMatches": true,
+      "status": "recorded-pass-matching-config"
+    },
+    "provenance": {
+      "metadata": "outputs/street-heat/final-results.json",
+      "acceptedConfig": "outputs/street-heat/accepted/rls_streetheat_haulmark_luke_darrow/rls_streetheat_haulmark_luke_darrow.pc",
+      "tuningEvidence": "/settings/motorsportEvents/complianceEvidence-20261026.json"
+    },
+    "sourcePack": "rls_street_heat"
+  }
+}

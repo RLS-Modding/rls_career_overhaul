@@ -1,0 +1,7 @@
+{
+  "windowSeconds": 10,
+  "oddsScaleSeconds": 0.2,
+  "houseMarginRatio": 0.07,
+  "minimumWinProbabilityRatio": 0.07,
+  "maximumWinProbabilityRatio": 0.93
+}

@@ -3,6 +3,7 @@
 local lib = {}
 
 function lib.create(inputs)
+  local inventory = inputs.inventory or overhaul_career_garage_inventory
   local dynoState = inputs.dynoState
 
   -- Saved pull history -----------------------------------------------------------------------------
@@ -256,6 +257,8 @@ function lib.create(inputs)
 
   local function canPayAmount(amount)
     if amount <= 0 then return true end
+    local business = inputs.vehicleAccess and inputs.vehicleAccess.canPay(amount)
+    if business ~= nil then return business end
     return overhaul_career_economy_payment.canPay(getMoneyPrice(amount)) == true
   end
 
@@ -268,6 +271,9 @@ function lib.create(inputs)
     if amount <= 0 then
       return true
     end
+    local business = inputs.vehicleAccess and inputs.vehicleAccess.pay(amount,
+      require('overhaul/lib/finance/metadata').tag({label = label}, category or 'service'), context)
+    if business ~= nil then return business end
     if not canPayAmount(amount) then
       return false
     end
@@ -283,6 +289,8 @@ function lib.create(inputs)
     if amount <= 0 then
       return true
     end
+    local business = inputs.vehicleAccess and inputs.vehicleAccess.refund(amount, label or 'Dyno refund', context)
+    if business ~= nil then return business end
     -- Refunds run from the unload and level-end hooks, where the payment module may already be gone.
     if not overhaul_career_economy_payment then
       return false
@@ -339,6 +347,14 @@ function lib.create(inputs)
       return {ok = false, required = false, message = "Business ownership is still loading."}
     end
     local fee = policy.fee
+    local owner = inputs.vehicleAccess and inputs.vehicleAccess.owners[inventoryId]
+    if owner then
+      local quote = overhaul_career_business_fleet.getFleetInsuranceRepairQuote(owner.businessId, owner.vehicleId)
+      if not quote or quote.needsRepair then
+        return {ok = false, required = false, message = 'Repair the team vehicle at its Racing Team garage before using the dyno.'}
+      end
+      return clearRepairQuote(inventoryId, fee)
+    end
     local finite = overhaul_career_repair_finiteDamage
 
     local assessment = finite.assess(inventoryId)
@@ -390,7 +406,7 @@ function lib.create(inputs)
   end
 
   local function getRepairQuoteForUi(inventoryId)
-    local vehicle = overhaul_career_garage_inventory.getVehicles()[inventoryId]
+    local vehicle = inventory.getVehicles()[inventoryId]
     local policy = currentPolicy()
     -- Inventory conditions can be repaired in place, so table identity is not a damage revision.
     local damageState = {

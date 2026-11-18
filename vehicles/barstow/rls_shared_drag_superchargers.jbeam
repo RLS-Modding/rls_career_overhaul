@@ -1,0 +1,965 @@
+{
+  "rls_barstow_intake_v8_big_stage4_supercharger": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "Stage 4 Supercharger",
+      "value": 26500
+    },
+    "slotType": "barstow_intake_v8_big",
+    "supercharger": {
+      "whineLoopEvent": "event:>Vehicle>Forced_Induction>Supercharger_02>supercharger",
+      "whineVolumePerPSI": 0.018,
+      "whinePitchPer10kRPM": 0.74,
+      "maxRPM": 15000,
+      "clutchEngageRPM": 0,
+      "pressureRatePSI": 250,
+      "pressurePSIPer1kRPM": 5.2,
+      "crankLossPer1kRPM": 0.075,
+      "type": "roots",
+      "lobes": 3,
+      "twistedLobes": true,
+      "boostController": [
+        [
+          0,
+          0.2
+        ],
+        [
+          100,
+          1
+        ]
+      ]
+    },
+    "mainEngine": {
+      "supercharger": "supercharger",
+      "instantAfterFireSound": "event:>Vehicle>Afterfire>v8_crossflow_02>muffled>race_single",
+      "sustainedAfterFireSound": "event:>Vehicle>Afterfire>v8_crossflow_02>muffled>race_multi",
+      "shiftAfterFireSound": "event:>Vehicle>Afterfire>v8_crossflow_02>muffled>race_shift",
+      "$*instantAfterFireCoef": 3,
+      "$*sustainedAfterFireCoef": 1.5,
+      "$+idleRPMRoughness": 250,
+      "$+idleRPM": 150,
+      "$+particulates": 0.018,
+      "starterThrottleKillTime": 1.5,
+      "deformGroups_supercharger": [
+        "mainEngine_supercharger"
+      ]
+    },
+    "soundConfig": {
+      "$+maxLoadMix": 0.2,
+      "$+intakeMuffling": -0.46,
+      "$+offLoadGain": 0.05,
+      "$+eqHighGain": 6
+    },
+    "soundConfigExhaust": {
+      "$+maxLoadMix": 0.2,
+      "$+minLoadMix": 0,
+      "$+offLoadGain": 0
+    },
+    "vehicleController": {
+      "revMatchThrottle": 0.2
+    },
+    "flexbodies": [
+      [
+        "mesh",
+        "[group]:",
+        "nonFlexMaterials"
+      ],
+      [
+        "barstow_intake_blower",
+        [
+          "barstow_engine"
+        ]
+      ],
+      [
+        "barstow_belt_blower",
+        [
+          "barstow_engine"
+        ]
+      ]
+    ],
+    "props": [
+      [
+        "func",
+        "mesh",
+        "idRef:",
+        "idX:",
+        "idY:",
+        "baseRotation",
+        "rotation",
+        "translation",
+        "min",
+        "max",
+        "offset",
+        "multiplier"
+      ],
+      [
+        "throttle",
+        "barstow_supercharger_throttle",
+        "sch1r",
+        "sch1l",
+        "sch2r",
+        {
+          "x": 90,
+          "y": 0,
+          "z": 0
+        },
+        {
+          "x": -90,
+          "y": 0,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "radiatorFanSpin",
+        "barstow_pulley_supercharger_large",
+        "e2r",
+        "e2l",
+        "e4r",
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        -360,
+        360,
+        0,
+        1
+      ],
+      [
+        "radiatorFanSpin",
+        "barstow_engine_v8_353_pulley1_extension",
+        "e2r",
+        "e2l",
+        "e4r",
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        -360,
+        360,
+        0,
+        1
+      ],
+      [
+        "radiatorFanSpin",
+        "barstow_engine_v8_353_pulley3_extension",
+        "e2r",
+        "e2l",
+        "e4r",
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        -360,
+        360,
+        0,
+        1
+      ]
+    ],
+    "nodes": [
+      [
+        "id",
+        "posX",
+        "posY",
+        "posZ"
+      ],
+      {
+        "frictionCoef": 0.5
+      },
+      {
+        "nodeMaterial": "|NM_METAL"
+      },
+      {
+        "selfCollision": false
+      },
+      {
+        "collision": true
+      },
+      {
+        "nodeWeight": 4.94
+      },
+      {
+        "engineGroup": "engine_intake"
+      },
+      [
+        "sch1r",
+        -0.18,
+        -1.45,
+        1.07
+      ],
+      [
+        "sch1l",
+        0.18,
+        -1.45,
+        1.07
+      ],
+      [
+        "sch2r",
+        -0.18,
+        -1.05,
+        1.05
+      ],
+      [
+        "sch2l",
+        0.18,
+        -1.05,
+        1.05
+      ],
+      {
+        "engineGroup": ""
+      },
+      {
+        "group": ""
+      }
+    ],
+    "beams": [
+      [
+        "id1:",
+        "id2:"
+      ],
+      {
+        "deformLimitExpansion": 1.2
+      },
+      {
+        "beamType": "|NORMAL",
+        "beamLongBound": 1,
+        "beamShortBound": 1
+      },
+      {
+        "beamSpring": 1536268,
+        "beamDamp": 155.4
+      },
+      {
+        "beamDeform": 52650,
+        "beamStrength": "FLT_MAX"
+      },
+      {
+        "deformGroup": "mainEngine_supercharger",
+        "deformationTriggerRatio": 0.001
+      },
+      [
+        "sch1r",
+        "sch1l"
+      ],
+      [
+        "sch2r",
+        "sch2l"
+      ],
+      [
+        "sch1r",
+        "sch2r"
+      ],
+      [
+        "sch1l",
+        "sch2l"
+      ],
+      [
+        "sch2r",
+        "sch1l"
+      ],
+      [
+        "sch2l",
+        "sch1r"
+      ],
+      {
+        "beamDeform": 36450,
+        "beamStrength": "FLT_MAX"
+      },
+      [
+        "sch1r",
+        "e3r"
+      ],
+      [
+        "sch1r",
+        "e3l"
+      ],
+      [
+        "sch1r",
+        "e4r"
+      ],
+      [
+        "sch1r",
+        "e4l"
+      ],
+      [
+        "sch1l",
+        "e3r"
+      ],
+      [
+        "sch1l",
+        "e3l"
+      ],
+      [
+        "sch1l",
+        "e4r"
+      ],
+      [
+        "sch1l",
+        "e4l"
+      ],
+      [
+        "sch2r",
+        "e3r"
+      ],
+      [
+        "sch2r",
+        "e3l"
+      ],
+      [
+        "sch2r",
+        "e4r"
+      ],
+      [
+        "sch2r",
+        "e4l"
+      ],
+      [
+        "sch2l",
+        "e3r"
+      ],
+      [
+        "sch2l",
+        "e3l"
+      ],
+      [
+        "sch2l",
+        "e4r"
+      ],
+      [
+        "sch2l",
+        "e4l"
+      ],
+      {
+        "deformGroup": "",
+        "deformationTriggerRatio": ""
+      },
+      {
+        "beamPrecompression": 1,
+        "beamType": "|NORMAL",
+        "beamLongBound": 1,
+        "beamShortBound": 1
+      }
+    ],
+    "triangles": [
+      [
+        "id1:",
+        "id2:",
+        "id3:"
+      ],
+      {
+        "group": "barstow_supercharger"
+      },
+      [
+        "sch1r",
+        "sch1l",
+        "sch2l"
+      ],
+      [
+        "sch1r",
+        "sch2l",
+        "sch2r"
+      ],
+      {
+        "group": ""
+      }
+    ],
+    "slots": [
+      [
+        "type",
+        "default",
+        "description"
+      ],
+      [
+        "rls_barstow_intake_v8_big_stage4_pulley",
+        "rls_barstow_intake_v8_big_stage4_pulley_5",
+        "Supercharger Drive Pulley",
+        {
+          "coreSlot": true
+        }
+      ]
+    ]
+  },
+  "rls_barstow_intake_v8_big_stage4_pulley_1": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "1.00:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_barstow_intake_v8_big_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 1
+    }
+  },
+  "rls_barstow_intake_v8_big_stage4_pulley_2": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "1.20:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_barstow_intake_v8_big_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 1.2
+    }
+  },
+  "rls_barstow_intake_v8_big_stage4_pulley_3": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "1.40:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_barstow_intake_v8_big_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 1.4
+    }
+  },
+  "rls_barstow_intake_v8_big_stage4_pulley_4": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "1.60:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_barstow_intake_v8_big_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 1.6
+    }
+  },
+  "rls_barstow_intake_v8_big_stage4_pulley_5": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "1.80:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_barstow_intake_v8_big_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 1.8
+    }
+  },
+  "rls_barstow_intake_v8_stage4_supercharger": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "Stage 4 Supercharger",
+      "value": 26500
+    },
+    "slotType": "barstow_intake_v8",
+    "supercharger": {
+      "whineLoopEvent": "event:>Vehicle>Forced_Induction>Supercharger_02>supercharger",
+      "whineVolumePerPSI": 0.018,
+      "whinePitchPer10kRPM": 0.74,
+      "maxRPM": 12000,
+      "clutchEngageRPM": 0,
+      "pressureRatePSI": 250,
+      "pressurePSIPer1kRPM": 9,
+      "crankLossPer1kRPM": 0.1,
+      "type": "roots",
+      "lobes": 4,
+      "twistedLobes": true,
+      "boostController": [
+        [
+          0,
+          0.2
+        ],
+        [
+          100,
+          1
+        ]
+      ]
+    },
+    "mainEngine": {
+      "supercharger": "supercharger",
+      "instantAfterFireSound": "event:>Vehicle>Afterfire>v8_crossflow_02>muffled>race_single",
+      "sustainedAfterFireSound": "event:>Vehicle>Afterfire>v8_crossflow_02>muffled>race_multi",
+      "shiftAfterFireSound": "event:>Vehicle>Afterfire>v8_crossflow_02>muffled>race_shift",
+      "$*instantAfterFireCoef": 4,
+      "$*sustainedAfterFireCoef": 1.66,
+      "$+idleRPM": 250,
+      "$+idleRPMRoughness": 350,
+      "$+particulates": 0.018,
+      "starterThrottleKillTime": 1.6,
+      "deformGroups_supercharger": [
+        "mainEngine_supercharger"
+      ]
+    },
+    "soundConfig": {
+      "$+maxLoadMix": 0.2,
+      "$+intakeMuffling": -0.46,
+      "$+offLoadGain": 0.05,
+      "$+eqHighGain": 6
+    },
+    "soundConfigExhaust": {
+      "$+maxLoadMix": 0.2,
+      "$+minLoadMix": 0,
+      "$+offLoadGain": 0
+    },
+    "vehicleController": {
+      "revMatchThrottle": 0.2
+    },
+    "flexbodies": [
+      [
+        "mesh",
+        "[group]:",
+        "nonFlexMaterials"
+      ],
+      [
+        "barstow_intake_blower",
+        [
+          "barstow_engine"
+        ]
+      ],
+      [
+        "barstow_belt_blower",
+        [
+          "barstow_engine"
+        ]
+      ]
+    ],
+    "props": [
+      [
+        "func",
+        "mesh",
+        "idRef:",
+        "idX:",
+        "idY:",
+        "baseRotation",
+        "rotation",
+        "translation",
+        "min",
+        "max",
+        "offset",
+        "multiplier"
+      ],
+      [
+        "throttle",
+        "barstow_supercharger_throttle",
+        "sch1r",
+        "sch1l",
+        "sch2r",
+        {
+          "x": 90,
+          "y": 0,
+          "z": 0
+        },
+        {
+          "x": -90,
+          "y": 0,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "radiatorFanSpin",
+        "barstow_pulley_supercharger_large",
+        "e2r",
+        "e2l",
+        "e4r",
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        -360,
+        360,
+        0,
+        1
+      ],
+      [
+        "radiatorFanSpin",
+        "barstow_engine_v8_353_pulley1_extension",
+        "e2r",
+        "e2l",
+        "e4r",
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        -360,
+        360,
+        0,
+        1
+      ],
+      [
+        "radiatorFanSpin",
+        "barstow_engine_v8_353_pulley3_extension",
+        "e2r",
+        "e2l",
+        "e4r",
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        -360,
+        360,
+        0,
+        1
+      ]
+    ],
+    "nodes": [
+      [
+        "id",
+        "posX",
+        "posY",
+        "posZ"
+      ],
+      {
+        "frictionCoef": 0.5
+      },
+      {
+        "nodeMaterial": "|NM_METAL"
+      },
+      {
+        "selfCollision": false
+      },
+      {
+        "collision": true
+      },
+      {
+        "nodeWeight": 4.94
+      },
+      {
+        "engineGroup": "engine_intake"
+      },
+      [
+        "sch1r",
+        -0.18,
+        -1.45,
+        1.07
+      ],
+      [
+        "sch1l",
+        0.18,
+        -1.45,
+        1.07
+      ],
+      [
+        "sch2r",
+        -0.18,
+        -1.05,
+        1.05
+      ],
+      [
+        "sch2l",
+        0.18,
+        -1.05,
+        1.05
+      ],
+      {
+        "engineGroup": ""
+      },
+      {
+        "group": ""
+      }
+    ],
+    "beams": [
+      [
+        "id1:",
+        "id2:"
+      ],
+      {
+        "deformLimitExpansion": 1.2
+      },
+      {
+        "beamType": "|NORMAL",
+        "beamLongBound": 1,
+        "beamShortBound": 1
+      },
+      {
+        "beamSpring": 1536268,
+        "beamDamp": 155.4
+      },
+      {
+        "beamDeform": 52650,
+        "beamStrength": "FLT_MAX"
+      },
+      {
+        "deformGroup": "mainEngine_supercharger",
+        "deformationTriggerRatio": 0.001
+      },
+      [
+        "sch1r",
+        "sch1l"
+      ],
+      [
+        "sch2r",
+        "sch2l"
+      ],
+      [
+        "sch1r",
+        "sch2r"
+      ],
+      [
+        "sch1l",
+        "sch2l"
+      ],
+      [
+        "sch2r",
+        "sch1l"
+      ],
+      [
+        "sch2l",
+        "sch1r"
+      ],
+      {
+        "beamDeform": 36450,
+        "beamStrength": "FLT_MAX"
+      },
+      [
+        "sch1r",
+        "e3r"
+      ],
+      [
+        "sch1r",
+        "e3l"
+      ],
+      [
+        "sch1r",
+        "e4r"
+      ],
+      [
+        "sch1r",
+        "e4l"
+      ],
+      [
+        "sch1l",
+        "e3r"
+      ],
+      [
+        "sch1l",
+        "e3l"
+      ],
+      [
+        "sch1l",
+        "e4r"
+      ],
+      [
+        "sch1l",
+        "e4l"
+      ],
+      [
+        "sch2r",
+        "e3r"
+      ],
+      [
+        "sch2r",
+        "e3l"
+      ],
+      [
+        "sch2r",
+        "e4r"
+      ],
+      [
+        "sch2r",
+        "e4l"
+      ],
+      [
+        "sch2l",
+        "e3r"
+      ],
+      [
+        "sch2l",
+        "e3l"
+      ],
+      [
+        "sch2l",
+        "e4r"
+      ],
+      [
+        "sch2l",
+        "e4l"
+      ],
+      {
+        "deformGroup": "",
+        "deformationTriggerRatio": ""
+      },
+      {
+        "beamPrecompression": 1,
+        "beamType": "|NORMAL",
+        "beamLongBound": 1,
+        "beamShortBound": 1
+      }
+    ],
+    "triangles": [
+      [
+        "id1:",
+        "id2:",
+        "id3:"
+      ],
+      {
+        "group": "barstow_supercharger"
+      },
+      [
+        "sch1r",
+        "sch1l",
+        "sch2l"
+      ],
+      [
+        "sch1r",
+        "sch2l",
+        "sch2r"
+      ],
+      {
+        "group": ""
+      }
+    ],
+    "slots": [
+      [
+        "type",
+        "default",
+        "description"
+      ],
+      [
+        "rls_barstow_intake_v8_stage4_pulley",
+        "rls_barstow_intake_v8_stage4_pulley_5",
+        "Supercharger Drive Pulley",
+        {
+          "coreSlot": true
+        }
+      ]
+    ]
+  },
+  "rls_barstow_intake_v8_stage4_pulley_1": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "0.75:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_barstow_intake_v8_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 0.75
+    }
+  },
+  "rls_barstow_intake_v8_stage4_pulley_2": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "1.04:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_barstow_intake_v8_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 1.04
+    }
+  },
+  "rls_barstow_intake_v8_stage4_pulley_3": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "1.20:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_barstow_intake_v8_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 1.2
+    }
+  },
+  "rls_barstow_intake_v8_stage4_pulley_4": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "1.40:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_barstow_intake_v8_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 1.4
+    }
+  },
+  "rls_barstow_intake_v8_stage4_pulley_5": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "1.50:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_barstow_intake_v8_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 1.5
+    }
+  },
+  "rls_barstow_intake_v8_stage4_pulley_6": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "1.65:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_barstow_intake_v8_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 1.65
+    }
+  }
+}

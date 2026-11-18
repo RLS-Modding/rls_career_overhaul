@@ -141,14 +141,15 @@ export function offerBadges(row, logisticsTime) {
 export function brokerOfferRows(rows, tab = 'available') {
   const visible = rows.filter(row => isLocked(row) === (tab === 'locked'))
   const order = new Map(visible.map((row, index) => [row.id, index]))
-  // Never merge rows with different eligibility, equipment, presence or expiry.
-  const buckets = new Map()
+  // The broker owns display equivalence, including eligibility, fit and expiry.
+  const groups = new Map()
   for (const row of visible) {
-    const key = JSON.stringify([row.access, row.lockedReason, !!row.atPickup, row.offerExpiresAt, row.modifiers, row.timed, row.fragile])
-    if (!buckets.has(key)) buckets.set(key, [])
-    buckets.get(key).push(row)
+    const key = row.offerGroup ?? row.id
+    const group = groups.get(key)
+    if (group) { group.groupCount++; group.groupOfferIds.push(row.id) }
+    else groups.set(key, { ...row, groupCount: 1, groupOfferIds: [row.id] })
   }
-  return [...buckets.values()].flatMap(group => groupBrokerRows(group)).sort((a, b) =>
+  return [...groups.values()].sort((a, b) =>
     (tab === 'locked' ? unlockLevel(a) - unlockLevel(b) : 0)
     || Number(!!b.atPickup) - Number(!!a.atPickup)
     || order.get(a.id) - order.get(b.id))
@@ -170,9 +171,21 @@ export const usePhoneBrokerStore = defineStore('overhaulPhoneBroker', () => {
   // resultCount restarts the message timer when the same message repeats.
   const scope = ref(''), message = ref(''), resultCount = ref(0), pending = ref(false), loaded = ref(false), containers = ref([])
   const preferences = reactive({ last: null, filters: {} })
+  const facilityFilters = ref(null)
   const scrolls = reactive({})
-  const filter = computed(() => preferences.filters[market.value] || defaults())
-  const rows = computed(() => filterOffers(data.value.offers || [], market.value, filter.value, scope.value))
+  const filterFor = id => facilityFilters.value
+    ? { ...defaults(), sort: preferences.filters[id]?.sort || defaults().sort, ...facilityFilters.value[id] }
+    : { ...defaults(), ...preferences.filters[id] }
+  const filter = computed(() => filterFor(market.value))
+  const marketRows = id => filterOffers(data.value.offers || [], id, filterFor(id), scope.value)
+  const rows = computed(() => marketRows(market.value))
+  const availableRows = computed(() => brokerOfferRows(rows.value))
+  const lockedRows = computed(() => brokerOfferRows(rows.value, 'locked'))
+  const marketCount = id => groupedOfferCount(marketRows(id))
+  function hasMarketFilters(id) {
+    return !!scope.value || Object.entries(filterFor(id)).some(([key, value]) =>
+      key !== 'sort' && (Array.isArray(value) ? value.length > 0 : !!value))
+  }
   const selectedRow = computed(() => selected.value == null ? undefined
     : [...(data.value.jobs || []), ...(data.value.offers || []), ...Object.values(data.value.plans || {})].find(r => r.id === selected.value))
   let preferencesLoaded = false, profileKey
@@ -190,6 +203,9 @@ export const usePhoneBrokerStore = defineStore('overhaulPhoneBroker', () => {
     releaseRequest()
     latestRequestId = undefined
     message.value = ''
+    // A facility entry belongs to one opening of the screen, not the saved board.
+    scope.value = ''
+    facilityFilters.value = null
   }
   function receive(payload) {
     if (!payload) return
@@ -212,8 +228,10 @@ export const usePhoneBrokerStore = defineStore('overhaulPhoneBroker', () => {
     // Keep the envelope reactive for action locks without proxying every row.
     for (const key of ['offers', 'jobs', 'stops', 'loaners', 'rentals']) payload[key] = markRaw(Object.values(payload[key] || {}))
     payload.plans = markRaw(payload.plans || {})
-    for (const job of [...payload.offers, ...payload.jobs]) job.vehicles = Object.values(job.vehicles || {})
+    payload.route = { ...payload.route, legs: Array.isArray(payload.route?.legs) ? payload.route.legs : [] }
+    for (const job of [...payload.offers, ...payload.jobs, ...Object.values(payload.plans)]) job.vehicles = Object.values(job.vehicles || {})
     if (profileKey !== payload.profile) { rehydrate(); preferencesLoaded = false; profileKey = payload.profile; selected.value = null; scope.value = ''; view.value = 'markets'; availability.value = 'available' }
+    if (data.value.map !== payload.map) { scope.value = ''; facilityFilters.value = null }
     if (data.value.busy && payload.busy === false) message.value = ''
     data.value = payload; loaded.value = true
     if (payload.busy === false && payload.requestId === latestRequestId) releaseRequest()
@@ -273,13 +291,27 @@ export const usePhoneBrokerStore = defineStore('overhaulPhoneBroker', () => {
   }
   function chooseMarket(id) {
     market.value = id; view.value = 'loads'; selected.value = null; availability.value = 'available'
+    if (facilityFilters.value) return
     preferences.last = id; preferences.filters[id] = { ...defaults(), ...preferences.filters[id] }
     savePreferences()
   }
+  function openFacility(facility) {
+    // Inspect is a temporary, unfiltered pickup board. Preserve saved browsing.
+    facilityFilters.value = {}
+    scope.value = facility
+    chooseMarket('all')
+    expanded.value = true
+  }
   function updateFilter(key, value) {
+    if (facilityFilters.value) { facilityFilters.value[market.value] = { ...filter.value, [key]: value }; return }
     preferences.filters[market.value] = { ...defaults(), ...filter.value, [key]: value }; savePreferences()
   }
-  function resetFilters() { preferences.filters[market.value] = defaults(); savePreferences() }
+  function resetFilters() {
+    scope.value = ''
+    if (facilityFilters.value) { facilityFilters.value[market.value] = { ...defaults(), sort: filter.value.sort }; return }
+    preferences.filters[market.value] = defaults()
+    savePreferences()
+  }
   function receiveResult(result) {
     if (result?.requestId !== latestRequestId) return
     stateVersion++
@@ -290,5 +322,5 @@ export const usePhoneBrokerStore = defineStore('overhaulPhoneBroker', () => {
     releaseRequest(result)
   }
   return { data, availability, view, market, selected, expanded, scope, message, resultCount, pending, loaded, containers, preferences, scrolls,
-    filter, rows, selectedRow, receive, refresh, action, chooseMarket, updateFilter, resetFilters, receiveResult, rehydrate }
+    filter, rows, availableRows, lockedRows, marketCount, hasMarketFilters, selectedRow, receive, refresh, action, chooseMarket, openFacility, updateFilter, resetFilters, receiveResult, rehydrate }
 })

@@ -182,11 +182,55 @@ function part.new(inputs)
     return true
   end
 
+  local dynoReplacements = setmetatable({}, {__mode = 'k'})
+  fleetState.dynoReplacements = dynoReplacements
+  local function replaceVehicleForDyno(businessId, vehicleId, config, conditions, onReady, prepare)
+    businessId = inputs.normalizeBusinessId(businessId)
+    vehicleId = tonumber(vehicleId) or vehicleId
+    local record = inputs.getVehicleById(businessId, vehicleId)
+    local oldId = inputs.getSpawnedVehicleId(businessId, vehicleId)
+    local oldObject = oldId and getObjectByID(oldId)
+    if not record or not oldObject or type(config) ~= 'table' or type(conditions) ~= 'table'
+      or not overhaul_career_business_manager.isPurchasedBusiness('racingTeam', businessId) then
+      if onReady then onReady(false, 'Team vehicle is unavailable.') end
+      return nil
+    end
+    local model = record.model or record.model_key or (record.vehicleConfig and record.vehicleConfig.model_key)
+    local profile = overhaul_career_saveSystem.getCurrentProfile()
+    if not model or (prepare and prepare() == false) then return nil end
+    local token = {}
+    dynoReplacements[record] = token
+    local object = core_vehicles.replaceVehicle(model, {config = deepcopy(config), autoEnterVehicle = false,
+      keepLoaded = true, cling = false}, oldObject)
+    if not object then if onReady then onReady(false, 'Team vehicle replacement failed.') end; return nil end
+    local id = object:getID()
+    fleetState.spawnedBusinessVehicles[businessId][vehicleId] = id
+    object:queueLuaCommand("extensions.load('overhaulDamageState')")
+    overhaul_career_maintenance_tireSystem.registerBusinessVehicle(businessId, vehicleId, id)
+    local function isCurrent()
+      return dynoReplacements[record] == token and getObjectByID(id) == object
+        and profile == overhaul_career_saveSystem.getCurrentProfile()
+        and inputs.getVehicleById(businessId, vehicleId) == record and inputs.getSpawnedVehicleId(businessId, vehicleId) == id
+    end
+    core_vehicleBridge.requestValue(object, function()
+      if not isCurrent() then return end
+      if not inputs.businessPartConditions.applyInitPartConditions(object, conditions, tonumber(record.mileage) or 0, 1, 1) then
+        if onReady then onReady(false, 'Team vehicle conditions could not be restored.') end
+        return
+      end
+      core_vehicleBridge.requestValue(object, function()
+        if isCurrent() and onReady then onReady(true) end
+      end, 'ping')
+    end, 'ping')
+    return object
+  end
+
   return {
     applyPartConditionsForVehicle = applyPartConditionsForVehicle,
     getPartConditionApplyOpts = getPartConditionApplyOpts,
     primeFleetRepairSnapshots = primeFleetRepairSnapshots,
     repairSpawnedBusinessVehicle = repairSpawnedBusinessVehicle,
+    replaceVehicleForDyno = replaceVehicleForDyno,
     requestFleetRepairBaseline = requestFleetRepairBaseline,
     sameFleetDamageState = sameFleetDamageState,
     sampleFleetRepairBaseline = sampleFleetRepairBaseline,

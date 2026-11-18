@@ -372,7 +372,7 @@
                   <div class="objective-sub">{{ sponsor.warningIssued ? 'Warning active' : sponsor.probation ? 'Qualify once to activate bonus' : 'Keep requirement satisfied' }}</div>
                 </div>
               </div>
-              <div v-if="sponsor.warningIssued" class="warning-panel">
+              <div v-if="sponsor.warningIssued && !sponsor.warningAcknowledged" class="warning-panel">
                 Warning active. Complete an event in {{ formatMinutes(displayRemaining(sponsor.checkMinutesRemaining)) }} to keep the sponsor.
                 <button class="inline-action" :disabled="actionBusy" @click="acknowledgeSponsorWarning(sponsor.id)">Acknowledge Warning</button>
               </div>

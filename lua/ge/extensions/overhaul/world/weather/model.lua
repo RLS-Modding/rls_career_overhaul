@@ -21,6 +21,7 @@ local DAYLIGHT_END_MINUTE = 1200
 local CONDITION_ORDER = {"clear", "partlyCloudy", "overcast", "drizzle", "rain", "storm"}
 local CONDITION_INDEX = {}
 for i, name in ipairs(CONDITION_ORDER) do CONDITION_INDEX[name] = i end
+local CONDITION_LABELS = {clear = "Clear", partlyCloudy = "Partly Cloudy", overcast = "Overcast", drizzle = "Drizzle", rain = "Rain", storm = "Storm"}
 
 local EFFECTS = {
   clear        = {fogAdd = 0,      sky = 1.00, sun = 1.00, ambient = 1.00, brightness = 1.00, rain = 0,    wetRough = 0,    wind = 0.04, tint = {1.00, 1.00, 1.00}},
@@ -31,13 +32,15 @@ local EFFECTS = {
   storm        = {fogAdd = 0.0070, sky = 0.28, sun = 0.01, ambient = 0.49, brightness = 0.19, rain = 3400, wetRough = 0.10, wind = 0.70, tint = {0.41, 0.46, 0.56}},
 }
 
+-- Native CloudLayer coverage uses the environment slider's 0..3 range, not a
+-- normalized percentage. Values below 1 leave large gaps even for wet weather.
 local CLOUD_COVER = {
   clear = 0,
-  partlyCloudy = 0.28,
-  overcast = 0.70,
-  drizzle = 0.78,
-  rain = 0.88,
-  storm = 0.95,
+  partlyCloudy = 0.85,
+  overcast = 2.1,
+  drizzle = 2.2,
+  rain = 2.5,
+  storm = 2.8,
 }
 
 local CONDITION_META = {
@@ -50,6 +53,8 @@ local CONDITION_META = {
 }
 
 local ALLOWED_DAY_LENGTH_MINUTES = {[30]=true,[45]=true,[60]=true,[90]=true,[120]=true}
+-- Conditions that put water on the road.
+local WET_CONDITIONS = {drizzle = true, rain = true, storm = true}
 local DEFAULT_MOISTURE_CONDITIONS = {overcast = true, drizzle = true, rain = true, storm = true}
 local DEFAULT_CLEARING_MORNING = {clear = true, partlyCloudy = true, overcast = true, drizzle = true}
 
@@ -262,6 +267,11 @@ function M.new(inputs)
 
   local function ensureHorizon()
     local state = runtime.state
+    local revision = runtime.profile.forecastRevision
+    if revision ~= nil and state.forecastProfileRevision ~= revision then
+      state.horizon = {}
+      state.forecastProfileRevision = revision
+    end
     local retained = {}
     for _, day in ipairs(state.horizon or {}) do
       local sameGen = (tonumber(day.generatorVersion) or 0) == generatorVersion
@@ -404,9 +414,11 @@ end
 
 M.CONDITION_ORDER = CONDITION_ORDER
 M.CONDITION_INDEX = CONDITION_INDEX
+M.CONDITION_LABELS = CONDITION_LABELS
 M.EFFECTS = EFFECTS
 M.CLOUD_COVER = CLOUD_COVER
 M.CONDITION_META = CONDITION_META
+M.WET_CONDITIONS = WET_CONDITIONS
 M.ALLOWED_DAY_LENGTH_MINUTES = ALLOWED_DAY_LENGTH_MINUTES
 
 M.clamp = clamp

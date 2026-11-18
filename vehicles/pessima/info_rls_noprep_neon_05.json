@@ -1,0 +1,26 @@
+{
+  "Configuration": "Seth Navarro - No Prep",
+  "Description": "Forest Frequency. Tier 4 racer. Highway no-prep quarter-mile: 9.543s at 174.22mph. Neon Works. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Neon Works",
+  "Name": "Seth Navarro",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 8.2336663605718,
+    "time_1_4": 9.5429894628112,
+    "time_1_8": 6.6573587146763,
+    "time_330": 4.7190516644143,
+    "time_60": 2.0014376069979,
+    "velAt_1_4": 77.883372258868,
+    "velAt_1_8": 59.477527424277
+  },
+  "Reaction Time": 0.24517383343553,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

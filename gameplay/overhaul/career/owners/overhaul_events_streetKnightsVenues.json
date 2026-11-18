@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_events_streetKnightsVenues",
+  "order": 451,
+  "module": "overhaul/events/streetKnightsVenues",
+  "scopes": [
+    {
+      "id": "children",
+      "order": 1,
+      "parent": "overhaul_career_economy_streetKnights"
+    }
+  ]
+}

@@ -26,7 +26,7 @@ local function scaleShopOverhead(amount)
 end
 
 local function debitBusinessAccount(businessId, amount, reason, description, allowNegativeBalance, category)
-  amount = math.floor(tonumber(amount) or 0)
+  amount = math.floor((tonumber(amount) or 0) * 100 + 0.5) / 100
   if amount <= 0 then
     return true
   end
@@ -484,7 +484,7 @@ local function tryDebitFleetVehicleCost(businessId, amount, reason, description,
   if not businessId then
     return false
   end
-  amount = math.floor(tonumber(amount) or 0)
+  amount = reason == "Fuel" and math.floor((tonumber(amount) or 0) * 100 + 0.5) / 100 or math.floor(tonumber(amount) or 0)
   if amount <= 0 then
     return true
   end

@@ -11,6 +11,15 @@ function installer.new(inputs)
 
   -- Pricing ----------------------------------------------------------------------------------------
 
+  function api.getPartsPaymentContext(businessId)
+    local _, businessType = inputs.resolveBusinessModule(businessId)
+    if not businessType or not overhaul_career_business_manager.isPurchasedBusiness(businessType, businessId) then return nil end
+    local account = overhaul_career_economy_bank.getBusinessAccount(businessType, businessId)
+    if not account then return nil end
+    return {businessId = businessId, businessType = businessType, accountId = account.id, label = account.name,
+      priceMultiplier = inputs.parts.partsTree.getPartSupplierDiscountMultiplier(businessId) * (1 + SALES_TAX_RATE)}
+  end
+
   local function priceCartParts(businessId, vehicle, parts)
     local obj = inputs.parts.vehicles.getBusinessVehicleObject(businessId, vehicle.vehicleId)
     local model = obj and obj:getJBeamFilename() or
@@ -19,6 +28,8 @@ function installer.new(inputs)
     local ioCtx = data and data.ioCtx
     local loaded = false
     local subtotal = 0
+    local storageOwner = {businessId = businessId,
+      isPersonal = inputs.parts.vehicles.isPersonalVehicleId(vehicle.vehicleId)}
     local ok, err = pcall(function()
       local slots, inventoryIds = {}, {}
       for _, part in ipairs(parts) do
@@ -28,9 +39,9 @@ function installer.new(inputs)
         slots[part.slotPath] = true
         local price = 0
         if part.fromInventory then
-          local inventory = overhaul_career_business_partInventory.getInventory()
-          local owned = inventory and inventory[part.partId]
-          assert(owned and tostring(owned.businessId) == tostring(businessId) and owned.name == part.partName
+          part.partId = tonumber(part.partId) or part.partId
+          local owned = require('overhaul/lib/parts/storage').get(storageOwner, part.partId)
+          assert(owned and owned.name == part.partName
             and owned.vehicleModel == model and not inventoryIds[part.partId], "Invalid inventory part")
           inventoryIds[part.partId] = true
         elseif part.partName ~= "" then
@@ -102,8 +113,8 @@ function installer.new(inputs)
     end
   end
 
-  local function syncPersonalInventoryConfig(businessId, vehicleIdStr, config)
-    local inventoryId = inputs.parts.vehicles.getInventoryIdFromPersonalVehicleId(vehicleIdStr, businessId)
+  local function syncPersonalInventoryConfig(businessId, vehicleIdStr, config, inventoryId)
+    inventoryId = inventoryId or inputs.parts.vehicles.getInventoryIdFromPersonalVehicleId(vehicleIdStr, businessId)
     if inventoryId then
       local inventoryVehicles = overhaul_career_garage_inventory.getVehicles()
       if inventoryVehicles and inventoryVehicles[inventoryId] then
@@ -135,7 +146,7 @@ function installer.new(inputs)
     syncPulledOutVehicles(businessId, vehicle)
   end
 
-  local function persistPurchasedPreviewConfigForVehicle(businessId, vehicle, vehicleIdStr, isPersonalVehicle, promoteSessionInitial)
+  local function persistPurchasedPreviewConfigForVehicle(businessId, vehicle, vehicleIdStr, isPersonalVehicle, promoteSessionInitial, inventoryId)
     local previewConfig = nil
     previewConfig = overhaul_career_business_partCustomization.getPreviewVehicleConfig(businessId)
     if not previewConfig then
@@ -153,7 +164,7 @@ function installer.new(inputs)
     vehicle.partList = partList
 
     if isPersonalVehicle then
-      syncPersonalInventoryConfig(businessId, vehicleIdStr, vehicle.config)
+      syncPersonalInventoryConfig(businessId, vehicleIdStr, vehicle.config, inventoryId)
     else
       syncPreviewConfigToFleet(businessId, vehicle)
     end
@@ -325,7 +336,12 @@ function installer.new(inputs)
 
   -- Settlement ---------------------------------------------------------------------------------------
 
-  local function finalizeCartPurchase(businessId, vehicle, saveHold, purchaseKey)
+  local PARTS_SETTLEMENT_STATE = {
+    pending = 'pending', settling = 'settling', applied = 'applied',
+    refunded = 'refunded', rejected = 'rejected', failed = 'failed'
+  }
+
+  local function finalizeCartPurchase(businessId, vehicle, saveHold, purchaseKey, personalInventoryId)
     saveHold.release()
     pendingCartPurchases[purchaseKey] = nil
     if not vehicle or not vehicle.vehicleId then
@@ -339,7 +355,7 @@ function installer.new(inputs)
     if isPersonalVehicle then
       overhaul_career_business_partCustomization.clearPreviewVehicle(businessId)
       overhaul_career_business_vehicleTuning.clearTuningDataCache()
-      local inventoryId = inputs.parts.vehicles.getInventoryIdFromPersonalVehicleId(vehicleIdStr, businessId)
+      local inventoryId = personalInventoryId or inputs.parts.vehicles.getInventoryIdFromPersonalVehicleId(vehicleIdStr, businessId)
       if inventoryId then
         overhaul_career_saveSystem.saveCurrent({inventoryId})
       end
@@ -354,7 +370,7 @@ function installer.new(inputs)
 
   local function persistPurchasePreviewConfig(purchase, promoteSessionInitial)
     persistPurchasedPreviewConfigForVehicle(purchase.businessId, purchase.vehicle, purchase.vehicleIdStr,
-      purchase.isPersonalVehicle, promoteSessionInitial)
+      purchase.isPersonalVehicle, promoteSessionInitial, purchase.inventoryId)
   end
 
   local function settleAppliedParts(purchase)
@@ -364,12 +380,33 @@ function installer.new(inputs)
     end
     commitPurchasedPartsInventoryForVehicle(businessId, vehicle, purchase.isPersonalVehicle, purchase.inventorySnapshot, purchase.parts)
     persistPurchasePreviewConfig(purchase, true)
+    if purchase.isPersonalVehicle then
+      local inventoryId = purchase.inventoryId
+      overhaul_career_parts_partInventory.updatePartsToMatchSpawnedVehicle(inventoryId, purchase.parts,
+        purchase.inventorySnapshot.partConditions)
+    end
     if not purchase.isPersonalVehicle then
       local module, businessType = inputs.resolveBusinessModule(businessId)
       if businessType == "racingTeam" and module and module.notifyBusinessVehiclePartsPurchased then
         module.notifyBusinessVehiclePartsPurchased(businessId, purchase.parts)
       end
     end
+  end
+
+  local function notifyPersonalPartsInstalled(purchase)
+    if not purchase.isPersonalVehicle then return end
+    local installedParts = {}
+    for _, part in ipairs(purchase.parts) do
+      installedParts[#installedParts + 1] = {name = part.partName, containingSlot = part.slotPath,
+        partPath = part.slotPath .. part.partName, fromInventory = part.fromInventory}
+    end
+    -- Listener failures must not turn a committed purchase into a failed settlement.
+    local function notify(hookName, ...)
+      local notified, err = pcall(extensions.hook, hookName, ...)
+      if not notified then log('E', 'businessComputer', hookName .. ' failed: ' .. tostring(err)) end
+    end
+    notify('onOverhaulPartShoppingPartsInstalled', purchase.inventoryId, installedParts)
+    notify('onOverhaulPartShoppingTransactionComplete')
   end
 
   local function refundRejectedParts(purchase)
@@ -386,27 +423,61 @@ function installer.new(inputs)
     end
   end
 
+  local function restorePartsPreview(purchase)
+    if not purchase.transaction.restore then return end
+    local restored, err = pcall(purchase.transaction.restore, purchase.vehicle.vars)
+    if not restored then
+      log('E', 'businessComputer', 'Cart rollback failed: ' .. tostring(err))
+      pcall(overhaul_career_business_partCustomization.clearPreviewVehicle, purchase.businessId)
+    end
+  end
+
+  -- Storage can change during replacement. Restore invalid selections before promoting the paid baseline.
+  local function validateAppliedPartsOrRestore(purchase)
+    if not purchase.isPersonalVehicle then return true end
+    local valid, err = pcall(function()
+      assert(purchase.inventoryId, "Missing personal vehicle inventory id")
+      overhaul_career_parts_partInventory.validateInstalledPartsForVehicle(purchase.inventoryId, purchase.parts)
+    end)
+    if valid then return true end
+    restorePartsPreview(purchase)
+    return false, tostring(err)
+  end
+
   -- Runs once: when the parts apply ok, the parts are committed; otherwise they are restored and refunded.
   local function settlePartsPurchase(purchase, ok)
-    if purchase.partsSettled then return end
-    purchase.partsSettled = true
+    if purchase.partsSettlementState ~= PARTS_SETTLEMENT_STATE.pending then return end
+    if ok and purchase.transaction.cancelled then return end
+    purchase.partsSettlementState = PARTS_SETTLEMENT_STATE.settling
+    local validationError
+    if ok then ok, validationError = validateAppliedPartsOrRestore(purchase) end
     local settled, err = pcall(ok and settleAppliedParts or refundRejectedParts, purchase)
     purchase.saveHold.release()
     pendingCartPurchases[purchase.purchaseKey] = nil
     if not settled then
-      purchase.settlementFailed, purchase.deferFinalize = true, false
+      purchase.partsSettlementState, purchase.waitingForParts = PARTS_SETTLEMENT_STATE.failed, false
       log('E', 'businessComputer', 'Cart settlement failed: ' .. tostring(err))
       guihooks.trigger('toastrMsg', {type = 'error', title = 'Purchase failed',
         msg = 'The purchase could not be settled. Please check the vehicle and account.'})
       return false
     end
+    if validationError then
+      purchase.partsSettlementState, purchase.waitingForParts = PARTS_SETTLEMENT_STATE.rejected, false
+      log('W', 'businessComputer', 'Cart parts rejected before settlement: ' .. tostring(validationError))
+      guihooks.trigger('toastrMsg', {type = 'warning', title = 'Parts refunded',
+        msg = 'The selected parts could not be installed. Any parts charge was refunded.'})
+      require('overhaul/lib/save/store').bind(overhaul_career_saveSystem).request('personal parts checkout rejected')
+      return false
+    end
     if ok then
-      if purchase.deferFinalize then
-        purchase.deferFinalize = false
-        finalizeCartPurchase(purchase.businessId, purchase.vehicle, purchase.saveHold, purchase.purchaseKey)
+      purchase.partsSettlementState = PARTS_SETTLEMENT_STATE.applied
+      notifyPersonalPartsInstalled(purchase)
+      if purchase.waitingForParts then
+        purchase.waitingForParts = false
+        finalizeCartPurchase(purchase.businessId, purchase.vehicle, purchase.saveHold, purchase.purchaseKey, purchase.inventoryId)
       end
     else
-      purchase.deferFinalize = false
+      purchase.partsSettlementState, purchase.waitingForParts = PARTS_SETTLEMENT_STATE.refunded, false
       overhaul_career_saveSystem.saveCurrent()
     end
   end
@@ -414,29 +485,26 @@ function installer.new(inputs)
   -- Applies the parts. Returns false when the sync reject already refunded a parts-only purchase.
   local function applyPartsToVehicle(purchase)
     local businessId, vehicle = purchase.businessId, purchase.vehicle
-    if not purchase.isPersonalVehicle then
-      purchase.inventorySnapshot = captureInventorySnapshot(vehicle)
-    end
+    purchase.inventorySnapshot = captureInventorySnapshot(vehicle)
 
     local function settleParts(ok)
       return settlePartsPurchase(purchase, ok)
     end
     purchase.transaction.cancel = function()
-      if purchase.partsSettled or purchase.transaction.cancelled then return false end
+      if purchase.partsSettlementState ~= PARTS_SETTLEMENT_STATE.pending or purchase.transaction.cancelled then return false end
       purchase.transaction.cancelled = true
-      local restored, err = true, nil
-      if purchase.transaction.restore then restored, err = pcall(purchase.transaction.restore, vehicle.vars) end
-      if not restored then
-        log('E', 'businessComputer', 'Cart rollback failed: ' .. tostring(err))
-        pcall(overhaul_career_business_partCustomization.clearPreviewVehicle, businessId)
-      end
+      restorePartsPreview(purchase)
       settleParts(false)
       return false
     end
     local partsApplied = inputs.parts.tuning.applyCartPartsToVehicle(businessId, vehicle.vehicleId, purchase.parts, settleParts, purchase.transaction)
-    if purchase.settlementFailed then return false end
-    if partsApplied and not purchase.partsSettled then
-      purchase.deferFinalize = true
+    if purchase.partsSettlementState == PARTS_SETTLEMENT_STATE.failed then return false end
+    if purchase.partsSettlementState == PARTS_SETTLEMENT_STATE.rejected and #purchase.tuning == 0 then
+      clearCachesForPurchase(purchase)
+      return false
+    end
+    if partsApplied and purchase.partsSettlementState == PARTS_SETTLEMENT_STATE.pending then
+      purchase.waitingForParts = true
     elseif not partsApplied and #purchase.tuning == 0 then
       -- Sync reject already ran onComplete(false) (refund). Do not finalize a failed parts-only purchase.
       clearCachesForPurchase(purchase)
@@ -461,8 +529,8 @@ function installer.new(inputs)
         inputs.parts.tuning.applyVehicleTuning(businessId, vehicle.vehicleId, purchase.tuningVars, nil)
       end
 
-      if not purchase.deferFinalize then
-        finalizeCartPurchase(businessId, vehicle, purchase.saveHold, purchase.purchaseKey)
+      if not purchase.waitingForParts then
+        finalizeCartPurchase(businessId, vehicle, purchase.saveHold, purchase.purchaseKey, purchase.inventoryId)
       end
     else
       log("W", "businessComputer", "purchaseCartItems: No active vehicle found for businessId=" .. tostring(businessId))
@@ -476,6 +544,10 @@ function installer.new(inputs)
     local vehicle = inputs.parts.vehicles.getActiveBusinessVehicle(businessId)
     if not vehicle or not vehicle.vehicleId then return nil end
     if not require('overhaul/lib/business/customizationAccess').allow(businessId, vehicle.vehicleId, vehicle) then return nil end
+    local vehicleIdStr = tostring(vehicle.vehicleId)
+    local isPersonalVehicle = inputs.parts.vehicles.isPersonalVehicleId(vehicleIdStr)
+    local inventoryId = isPersonalVehicle and inputs.parts.vehicles.getInventoryIdFromPersonalVehicleId(vehicleIdStr, businessId) or nil
+    if isPersonalVehicle and not inventoryId then return nil end
     local parts = deepcopy(cartData.parts or {})
     local tuning = cartData.tuning or {}
 
@@ -501,13 +573,16 @@ function installer.new(inputs)
       accountId = accountId,
       purchaseKey = purchaseKey,
       vehicle = vehicle,
+      vehicleIdStr = vehicleIdStr,
+      isPersonalVehicle = isPersonalVehicle,
+      inventoryId = inventoryId,
       parts = parts,
       tuning = tuning,
       tuningVars = tuningVars,
       partsSubtotal = partsSubtotal,
       totalCost = totalCost,
-      deferFinalize = false,
-      partsSettled = false,
+      waitingForParts = false,
+      partsSettlementState = PARTS_SETTLEMENT_STATE.pending,
     }
   end
 
@@ -532,7 +607,7 @@ function installer.new(inputs)
     reserveCartPurchase(purchase)
 
     local function failPurchase(err)
-      purchase.partsSettled, purchase.settlementFailed, purchase.deferFinalize = true, true, false
+      purchase.partsSettlementState, purchase.waitingForParts = PARTS_SETTLEMENT_STATE.failed, false
       purchase.saveHold.release()
       pendingCartPurchases[purchase.purchaseKey] = nil
       log('E', 'businessComputer', 'Cart purchase failed: ' .. tostring(err))
@@ -543,9 +618,6 @@ function installer.new(inputs)
     if not debited then failPurchase(debitResult); return false end
     if not debitResult then return false end
 
-    purchase.vehicleIdStr = tostring(purchase.vehicle.vehicleId)
-    purchase.isPersonalVehicle = inputs.parts.vehicles.isPersonalVehicleId(purchase.vehicleIdStr)
-
     local applied, result = pcall(applyCartToVehicle, purchase)
     if not applied then failPurchase(result); return false end
     if not result then return false end
@@ -553,7 +625,7 @@ function installer.new(inputs)
     if purchase.vehicle then
       clearCachesForPurchase(purchase)
     end
-    if not purchase.deferFinalize then
+    if not purchase.waitingForParts then
       purchase.saveHold.release()
       pendingCartPurchases[purchaseKey] = nil
     end

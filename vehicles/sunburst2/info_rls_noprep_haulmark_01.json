@@ -1,0 +1,26 @@
+{
+  "Configuration": "Levi Maddox - No Prep",
+  "Description": "Purple Dispatch. Tier 5 racer. Highway no-prep quarter-mile: 8.074s at 203.39mph. Haulmark Racing. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Haulmark Performance",
+  "Name": "Levi Maddox",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 6.9327213528482,
+    "time_1_4": 8.0741932248172,
+    "time_1_8": 5.5090971181729,
+    "time_330": 3.7784216592913,
+    "time_60": 1.4519424924236,
+    "velAt_1_4": 90.922129328029,
+    "velAt_1_8": 65.932868044781
+  },
+  "Reaction Time": 0.23877682652725,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

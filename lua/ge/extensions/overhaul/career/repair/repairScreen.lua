@@ -400,6 +400,13 @@ local function closeMenu()
   closeRepairMenu()
 end
 
+-- Compare the displayed monetary precision after the quote crosses the UI bridge.
+local function moneyCents(value)
+  local amount = tonumber(value)
+  if not amount or amount ~= amount or amount < 0 or amount == math.huge then return nil end
+  return math.floor(amount * 100 + 0.5)
+end
+
 local function resolveRepairQuote(invVehId, request)
   if repairSubmitted or not vehicleToRepairData or vehicleToRepairData.id ~= invVehId or type(request) ~= "table" then
     return nil, {success = false, reason = "invalidRepair"}
@@ -414,7 +421,8 @@ local function resolveRepairQuote(invVehId, request)
   if not choice or choice.disabled or choice.totalPrice == nil then
     return nil, {success = false, reason = "invalidChoice"}
   end
-  if tonumber(request.quotedPrice) ~= choice.totalPrice then
+  local quotedCents = moneyCents(request.quotedPrice)
+  if not quotedCents or quotedCents ~= moneyCents(choice.totalPrice) then
     ui_message("Repair quote changed. Review the updated price and confirm again.", 5, "warning")
     return nil, {success = false, reason = "quoteChanged"}
   end

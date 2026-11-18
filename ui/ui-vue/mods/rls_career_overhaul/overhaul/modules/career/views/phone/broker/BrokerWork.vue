@@ -5,7 +5,7 @@
 <template>
   <BrokerStyles />
         <div data-broker-scope v-if="s.view === 'loads' && (!s.selected || s.expanded)" class="toolbar">
-          <div data-broker-scope v-if="s.expanded" class="breadcrumb"><button data-broker-scope class="text-btn" @click="s.view = 'markets'">‹ Markets</button><button data-broker-scope v-if="s.scope" class="text-btn" @click="s.scope = ''">All pickups</button></div>
+          <div data-broker-scope v-if="s.expanded" class="breadcrumb"><button data-broker-scope class="text-btn" @click="s.view = 'markets'">‹ Markets</button></div>
           <div data-broker-scope class="toolbar-row">
             <input data-broker-scope :value="s.filter.search" v-bng-text-input bng-no-nav="true" placeholder="Search loads" aria-label="Search loads" @input="s.updateFilter('search', $event.target.value)" @keydown.stop @keyup.stop />
             <button data-broker-scope class="icon-btn" :aria-label="`Sort loads: ${sortOptions.find(option => option.value === s.filter.sort)?.label}`" aria-haspopup="dialog" :aria-expanded="sortOpen" @click="sortOpen = true"><BngIcon data-broker-scope :type="icons.sortAsc" /></button>
@@ -13,16 +13,16 @@
             <button data-broker-scope class="icon-btn" aria-label="Refresh loads" @click="refreshBroker"><BngIcon data-broker-scope :type="icons.restart" /></button>
             <BrokerExpand v-if="!s.expanded" />
           </div>
+          <BrokerFilterSummary />
         </div>
         <div data-broker-scope v-if="s.view === 'loads' && !s.selected" class="jobs-tabs" role="tablist" aria-label="Load availability">
           <button data-broker-scope data-fk="available" role="tab" :aria-selected="s.availability === 'available'" :class="{ active: s.availability === 'available' }" @click="s.availability = 'available'">Available <span data-broker-scope class="pill count">{{ availableCount }}</span></button>
           <button data-broker-scope data-fk="locked" role="tab" :aria-selected="s.availability === 'locked'" :class="{ active: s.availability === 'locked' }" @click="s.availability = 'locked'">Locked <span data-broker-scope class="pill count">{{ lockedCount }}</span></button>
         </div>
-        <div data-broker-scope v-if="s.view === 'jobs' && (!s.selected || s.expanded)" class="jobs-tabs"><button data-broker-scope :class="{ active: jobsTab === 'loads' }" @click="jobsTab = 'loads'">Loads<span data-broker-scope class="pill count">{{ activeJobs.length }}</span></button><button data-broker-scope :class="{ active: jobsTab === 'route' }" @click="jobsTab = 'route'; s.selected = null">Route plan</button><BrokerExpand v-if="!s.expanded" /></div>
+        <div data-broker-scope v-if="s.view === 'jobs' && (!s.selected || s.expanded)" class="jobs-tabs"><button data-broker-scope :class="{ active: jobsTab === 'loads' }" @click="jobsTab = 'loads'">Loads<span data-broker-scope class="pill count">{{ activeJobs.length }}</span></button><button data-broker-scope v-if="!s.data.restricted" :class="{ active: jobsTab === 'route' }" @click="jobsTab = 'route'; s.selected = null">Route plan</button><BrokerExpand v-if="!s.expanded" /></div>
         <BrokerRoutePlan @vue:mounted="focusView" v-if="s.view === 'jobs' && jobsTab === 'route' && !s.selected" />
         <div data-broker-scope v-else class="workarea" :class="{ 'has-detail': !!s.selectedRow }">
           <div data-broker-scope v-show="!s.selectedRow || s.expanded" ref="listEl" class="scroll load-list" v-bng-ui-nav-scroll @scroll="rememberScroll">
-            <button data-broker-scope v-if="s.view === 'loads' && s.scope && !s.expanded" class="text-btn scope-clear" @click="s.scope = ''">All pickups</button>
             <p data-broker-scope v-if="s.expanded" class="list-caption">{{ s.view === 'jobs' ? activeJobs.length : visibleRows.length }} loads <span data-broker-scope v-if="s.view === 'jobs'">{{ s.data.reservationCount }} reserved</span></p>
             <div data-broker-scope class="list-columns" role="row">
               <div data-broker-scope
@@ -73,7 +73,7 @@
               </HouseButton>
             </div>
             </template>
-            <button data-broker-scope v-if="renderedRows.length < visibleRows.length" class="browse-all" @click="rowLimit += 100">Show more loads</button><div data-broker-scope v-if="!visibleRows.length" class="empty"><p data-broker-scope>{{ s.view === 'jobs' ? 'No active loads.' : s.availability === 'locked' ? 'No locked loads match these filters.' : 'No available loads match these filters.' }}</p><button data-broker-scope v-if="s.view === 'loads'" @click="s.resetFilters">Reset filters</button></div>
+            <button data-broker-scope v-if="renderedRows.length < visibleRows.length" class="browse-all" @click="rowLimit += 100">Show more loads</button><div data-broker-scope v-if="!visibleRows.length" class="empty"><p data-broker-scope>{{ s.view === 'jobs' ? 'No active loads.' : s.availability === 'locked' ? 'No locked loads match these filters.' : 'No available loads match these filters.' }}</p><button data-broker-scope v-if="s.view === 'loads'" @click="s.resetFilters">Show all</button></div>
           </div>
 <BrokerDetails @vue:mounted="focusView" v-if="s.selectedRow" />
           <aside data-broker-scope v-else class="detail-placeholder" aria-label="Load details"><BngIcon data-broker-scope :type="icons.cardboardBox" /><h3 data-broker-scope>Select a load</h3><p data-broker-scope>Review the route, cargo and requirements here.</p><small data-broker-scope>{{ s.view === 'jobs' ? 'Manage your pickup and delivery.' : 'Reserve a load or save it to your route.' }}</small></aside>
@@ -94,6 +94,7 @@ import MoneyAmount from '../../../components/MoneyAmount.vue'
 import HouseButton from '../../../components/house/HouseButton.vue'
 import BrokerAccess from './BrokerAccess.vue'
 import BrokerStyles from './BrokerStyles.vue'
+import BrokerFilterSummary from './BrokerFilterSummary.vue'
 import BrokerExpand from './BrokerExpand.vue'
 import BrokerPickup from './BrokerPickup.vue'
 import PhoneLayer from '../../../components/phone/PhoneLayer.vue'

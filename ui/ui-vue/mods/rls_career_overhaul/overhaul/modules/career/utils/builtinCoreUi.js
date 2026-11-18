@@ -825,6 +825,22 @@ export default {
                   "depth": 1
                 }
               }
+            },
+            {
+              "name": "phone-no-prep-knights",
+              "path": "/overhaul/phone-no-prep-knights",
+              "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/PhoneNoPrepKnights.vue",
+              "owner": "overhaul_career_economy_streetKnights",
+              "meta": {
+                "uiApps": {
+                  "shown": false
+                },
+                "phone": {
+                  "depth": 1,
+                  "title": "No Prep Knights",
+                  "appId": "car-meet"
+                }
+              }
             }
           ]
         },
@@ -861,6 +877,30 @@ export default {
           "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/CardGames.vue",
           "meta": {
             "inWorldActivity": true,
+            "uiApps": {
+              "shown": false
+            }
+          }
+        },
+        {
+          "name": "overhaul.streetKnights",
+          "path": "street-knights",
+          "platformOrder": 120,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/StreetKnights.vue",
+          "owner": "overhaul_career_economy_streetKnights",
+          "meta": {
+            "uiApps": {
+              "shown": false
+            }
+          }
+        },
+        {
+          "name": "overhaul.streetChallenges",
+          "path": "street-challenges",
+          "platformOrder": 121,
+          "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/StreetChallenges.vue",
+          "owner": "overhaul_career_economy_streetChallenges",
+          "meta": {
             "uiApps": {
               "shown": false
             }
@@ -977,6 +1017,27 @@ export default {
       }
     },
     {
+      "id": "StreetKnightsHud",
+      "owner": "overhaul_career_economy_streetKnights",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/StreetKnightsHud.vue",
+      "mountOn": {
+        "event": "StreetKnightsHud"
+      }
+    },
+    {
+      "id": "MotorsportRegistrationOverlay",
+      "owner": "overhaul_events_motorsportEvents",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/MotorsportRegistrationOverlay.vue",
+      "mountOn": {
+        "event": "MotorsportRegistrationOpen"
+      }
+    },
+    {
+      "id": "MotorsportSpectatorOverlay",
+      "owner": "overhaul_events_motorsportEvents",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/MotorsportSpectatorOverlay.vue"
+    },
+    {
       "id": "CareerSaveIndicator",
       "owner": "overhaul_career_saveSystem",
       "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/CareerSaveIndicator.vue",
@@ -1009,6 +1070,42 @@ export default {
       },
       "resync": {
         "method": "overhaul_career_market_auction_auction.publishAuctionState"
+      }
+    },
+    {
+      "id": "VehicleExportSession",
+      "owner": "overhaul_vehicles_configExport",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/vehicleExport/VehicleExportSession.vue",
+      "mountOn": {
+        "event": "RlsVehicleExportJob",
+        "when": {
+          "sessionVisible": true
+        }
+      },
+      "resync": {
+        "method": "overhaul_vehicles_configExport.requestState"
+      }
+    },
+    {
+      "id": "FuelSystemPanel",
+      "owner": "overhaul_career_maintenance_fuelSystem",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/vehicleConfig/components/FuelSystemPanel.vue",
+      "mountOn": {
+        "event": "RlsFuelPanel",
+        "when": {
+          "open": true
+        }
+      }
+    },
+    {
+      "id": "OverhaulEventDisplay",
+      "owner": null,
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/eventDisplay/OverhaulEventDisplay.vue",
+      "mountOn": {
+        "event": "OverhaulEventDisplay",
+        "when": {
+          "visible": true
+        }
       }
     }
   ],

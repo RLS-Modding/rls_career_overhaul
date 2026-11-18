@@ -1,0 +1,56 @@
+{
+  "Configuration": "22ft Gooseneck Raised Hitch (Wood Planks 4200kg)",
+  "Description": "22ft Hydraulic tilt gooseneck trailer with a raised hitch, loaded with 4200kg of wood planks",
+  "Value": 19000,
+  "Weight": 6830,
+  "hasLoad": true,
+  "thumbnailConfig": {
+    "modelCamEnabled": false,
+    "configCamEnabled": false
+  },
+  "defaultMultiPaintSetup": {
+    "name": "rls_goose_wood_22_raised_hitch Multi Paint Setup",
+    "paint1": {
+      "baseColor": [
+        0.029999999329448,
+        0.059999998658895,
+        0.20000000298023,
+        1.2000000476837
+      ],
+      "class": "hidden",
+      "clearcoat": 0,
+      "clearcoatRoughness": 0,
+      "metallic": 0,
+      "name": "rls_goose_wood_22_raised_hitch Paint 1",
+      "roughness": 0.0700000003
+    },
+    "paint2": {
+      "baseColor": [
+        0.029999999329448,
+        0.059999998658895,
+        0.20000000298023,
+        1.2000000476837
+      ],
+      "class": "hidden",
+      "clearcoat": 0,
+      "clearcoatRoughness": 0,
+      "metallic": 0,
+      "name": "rls_goose_wood_22_raised_hitch Paint 2",
+      "roughness": 0.0700000003
+    },
+    "paint3": {
+      "baseColor": [
+        0.029999999329448,
+        0.059999998658895,
+        0.20000000298023,
+        1.2000000476837
+      ],
+      "class": "hidden",
+      "clearcoat": 0,
+      "clearcoatRoughness": 0,
+      "metallic": 0,
+      "name": "rls_goose_wood_22_raised_hitch Paint 3",
+      "roughness": 0.0700000003
+    }
+  }
+}

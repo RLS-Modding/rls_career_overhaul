@@ -4,7 +4,7 @@
 
 // The phone owns target eligibility; stock crossfire still owns movement and OK.
 // Inert is not a crossfire boundary, so mirror it to the stock opt-out attributes.
-const CONTROLS = 'button, input:not([type="hidden"]), textarea, select, a[href], [role="button"], [role="tab"], [role="checkbox"], [role="radio"], [role="switch"], [role="slider"]'
+const CONTROLS = 'button, input:not([type="hidden"]), textarea, select, a[href], [role="button"], [role="tab"], [role="checkbox"], [role="radio"], [role="switch"], [role="slider"], [role="region"][data-phone-scroll-target]'
 const CANDIDATES = `${CONTROLS}, [bng-nav-item], [tabindex], [ng-click], [ui-sref]`
 
 export function isPhoneControl(element) {
@@ -20,7 +20,10 @@ function isHidden(element, root) {
   for (let parent = element; parent; parent = parent.parentElement) {
     if (/(?:^|\s)[\w-]+-leave-(?:active|to)(?:\s|$)/.test(parent.className)) return true
     const style = getComputedStyle(parent)
-    if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') return true
+    // A control marked data-phone-reveal shows itself on hover or focus (a card's clear button), so it
+    // stays reachable while it is transparent.
+    const revealsOnFocus = () => parent === element && element.getAttribute('data-phone-reveal') !== null
+    if (style.display === 'none' || style.visibility === 'hidden' || (style.opacity === '0' && !revealsOnFocus())) return true
     // Scrollable lists retain their offscreen controls: crossfire reveals them.
     // Translated carousel pages inside a clipped viewport must stay out of nav.
     scrollX ||= /auto|scroll/.test(style.overflowX) && parent.scrollWidth > parent.clientWidth

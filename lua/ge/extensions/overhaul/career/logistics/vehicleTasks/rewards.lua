@@ -140,26 +140,28 @@ function part.new(inputs)
     return logisticsSkillXpEarned
   end
 
-  -- Each loaner organization takes its cut, unless employment already pays it on shift.
+  -- The loaner organizations take one cut between them: the largest, never more than the money earned so far.
+  -- Organizations whose cut employment already pays on shift get no row.
   local function addLoanerOrganisationCuts(breakdown, taskData, originalRewards, loanerOrgReputationReward)
+    local loanerCut = require("overhaul/lib/logistics/loanerCut")
+    local emp = overhaul_career_work_employment
+    local organizationIds = {}
     for organizationId, _ in pairs(taskData.loanerOrganisations or {}) do
-      local emp = overhaul_career_work_employment
       if not (emp and emp.usesEmploymentPayForOrg and emp.usesEmploymentPayForOrg(organizationId)) then
-        local organization = overhaul_world_organizations.getOrganization(organizationId)
-        local level = organization and organization.reputation and organization.reputation.level
-        local levelInfo = level and organization.reputationLevels and organization.reputationLevels[level+2]
-        local organizationCut = (levelInfo and levelInfo.loanerCut and levelInfo.loanerCut.value or 0.5)
-
-        local organizationElement = {
-          label = core_locales.contextTranslate("ui.career.delivery.breakdown.loanerOrganization", {cut = round(organizationCut * 100)}),
-          rewards = {money = -organizationCut * originalRewards.money},
-          simpleBreakdownType = "loaner",
-        }
-        organizationElement.rewards[organizationId.."Reputation"] = loanerOrgReputationReward
-
-        table.insert(breakdown, organizationElement)
+        organizationIds[organizationId] = true
       end
     end
+    local rows = loanerCut.breakdownRows({
+      organizationIds = organizationIds,
+      baseMoney = originalRewards.money,
+      moneyEarned = loanerCut.moneyEarned(originalRewards.money, breakdown),
+      getOrganization = function(id) return overhaul_world_organizations.getOrganization(id) end,
+      reputationFor = function() return loanerOrgReputationReward end,
+      label = function(cut)
+        return core_locales.contextTranslate("ui.career.delivery.breakdown.loanerOrganization", {cut = round(cut * 100)})
+      end,
+    })
+    for _, row in ipairs(rows) do table.insert(breakdown, row) end
   end
 
   -- The precision-parking row, or nil when the vehicle has no drop-off spot or no score. Money, logistics XP, skill XP and reputation each scale from the score's flat and percent bonuses.
@@ -394,7 +396,7 @@ function part.new(inputs)
       inventory.removeVehicle(id, true)
       return
     end
-    if veh then veh:delete() end
+    if veh then require('overhaul/lib/vehicles/removal').delete(veh) end
   end
 
   -- Completion and cleanup ------------------------------------------------------------------------

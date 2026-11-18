@@ -1,0 +1,26 @@
+{
+  "Configuration": "Cora Finch - No Prep",
+  "Description": "Slate Weekend. Tier 3 racer. Highway no-prep quarter-mile: 10.617s at 133.64mph. Coastline Automotive. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Coastline Automotive",
+  "Name": "Cora Finch",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 8.9224797960727,
+    "time_1_4": 10.617498425333,
+    "time_1_8": 6.9141615934948,
+    "time_330": 4.4984460631539,
+    "time_60": 1.5825238872714,
+    "velAt_1_4": 59.742536202596,
+    "velAt_1_8": 47.383657539493
+  },
+  "Reaction Time": 0.29074281156884,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

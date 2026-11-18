@@ -19,6 +19,16 @@
       }
     },
     {
+      "id": "no_prep_knights",
+      "name": "No Prep Knights",
+      "type": "special",
+      "requiredRep": 0,
+      "joinFee": 5000,
+      "screen": "phone-no-prep-knights",
+      "obligations": false,
+      "requirements": {}
+    },
+    {
       "id": "autobello_group",
       "name": "Autobello Group",
       "type": "brand",

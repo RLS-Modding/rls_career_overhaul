@@ -1,0 +1,84 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Name": "Eli Keaton",
+  "Configuration": "Eli Keaton - Street Heat",
+  "Description": "Driver: Eli Keaton. Builder: Low Orbit Garage. White high-output blower custom: an unexpected street racer retaining its classic cabin. Sport tires at all four corners. Alder quarter-mile: 10.987 s at 130.8 mph. Two healthy timed passes and a straight-line braking check.",
+  "Config Type": "Custom",
+  "Author": "RLS Modding",
+  "Drivetrain": "RWD",
+  "Transmission": "Manual",
+  "Years": {
+    "max": 1953,
+    "min": 1952
+  },
+  "Weight": 1923.504407,
+  "Motorsport": {
+    "version": 1,
+    "id": "burnside/rls_streetheat_loworbit_roman_pearce",
+    "configId": "rls_streetheat_loworbit_roman_pearce",
+    "model": "burnside",
+    "config": "/vehicles/burnside/rls_streetheat_loworbit_roman_pearce.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "roman_pearce",
+    "driverName": "Eli Keaton",
+    "builder": "Low Orbit Garage",
+    "leagueId": "street_kings",
+    "classIds": [
+      "street_heat"
+    ],
+    "approvedClassIds": [
+      "street_heat"
+    ],
+    "eligibilityStatus": "Assigned primary build class; approved from completed collection records and exact current config hash.",
+    "sourceConfigSHA256": "85085c4bcac3e3d05053c94a407a677411ff248d2f6dfccb478b20eef248061f",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "4-speed Manual",
+      "induction": "Supercharger",
+      "nitrous": false,
+      "years": {
+        "max": 1953,
+        "min": 1952
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "burnside_sparetire",
+          "part": "burnside_sparetire",
+          "typeHint": null
+        },
+        {
+          "slot": "tire_F_15x8_alt",
+          "part": "tire_F_235_60_15_alt_sport",
+          "typeHint": "sport"
+        },
+        {
+          "slot": "tire_R_15x9",
+          "part": "tire_R_255_60_15_sport",
+          "typeHint": "sport"
+        }
+      ],
+      "selectedRollCageParts": [],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 10.987018690335,
+      "runId": "SH-20261020-080448",
+      "evidenceConfigSHA256": "85085c4bcac3e3d05053c94a407a677411ff248d2f6dfccb478b20eef248061f",
+      "configHashMatches": true,
+      "status": "recorded-pass-matching-config"
+    },
+    "provenance": {
+      "metadata": "outputs/street-heat/final-results.json",
+      "acceptedConfig": "outputs/street-heat/accepted/rls_streetheat_loworbit_roman_pearce/rls_streetheat_loworbit_roman_pearce.pc"
+    },
+    "sourcePack": "rls_street_heat"
+  }
+}

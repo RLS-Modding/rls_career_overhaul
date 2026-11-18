@@ -1,0 +1,8 @@
+{
+  "id": "overhaul_vehicles_configExport",
+  "order": 119,
+  "module": "overhaul/vehicles/configExport",
+  "scopes": [{"id": "vehicleTools", "order": 30}],
+  "beforeUnload": "prepareForUnload",
+  "modulePolicy": {"career": false}
+}

@@ -7,7 +7,9 @@
     :title="headerTitle"
     back @back="close"
   >
-    <template #status>
+    <!-- The free slots count spans every garage, so it would contradict the note naming this full one;
+         the whole slot goes so the status card keeps no empty row -->
+    <template v-if="racingTeamBizId || !buyingUnavailableReason" #status>
       <span v-if="racingTeamBizId" class="status-note">
         Team funds <span class="status-money"><BngIcon :type="icons.beamCurrency" />{{ teamBalanceText }}</span>
       </span>
@@ -25,9 +27,22 @@
       class="shop"
       v-bng-scoped-nav="{ scopeId: 'vehicle-shopping', activateOnMount: true, preferAutoFocus: true, canDeactivate: shopBack }"
       v-bng-on-ui-nav:tab_l,tab_r="processTabInput">
-      <div v-if="tabs.length > 1" class="shop-tabs rls-house">
-        <BngBinding class="tab-hint" ui-event="tab_l" controller />
+      <div v-if="tabs.length > 1 || buyingUnavailableReason" class="shop-tabs rls-house">
+        <BngBinding v-if="tabs.length > 1" class="tab-hint" ui-event="tab_l" controller />
         <div class="seg bar" role="tablist" v-bng-blur="1">
+          <!-- Buying is off here until the garage has space: show the tab, disabled, with the reason beside it -->
+          <button
+            v-if="buyingUnavailableReason"
+            type="button"
+            role="tab"
+            bng-no-nav="true"
+            class="unavailable"
+            aria-selected="false"
+            aria-describedby="shop-buy-reason"
+            disabled
+          >
+            {{ buyVehicleTitle }}
+          </button>
           <button
             v-for="(tab, index) in tabs"
             :key="tab"
@@ -42,7 +57,8 @@
             {{ tab }}
           </button>
         </div>
-        <BngBinding class="tab-hint" ui-event="tab_r" controller />
+        <BngBinding v-if="tabs.length > 1" class="tab-hint" ui-event="tab_r" controller />
+        <span v-if="buyingUnavailableReason" id="shop-buy-reason" class="buy-reason">{{ buyingUnavailableReason }}</span>
       </div>
 
       <div v-if="activeTabName === buyVehicleTitle" class="buying-tab-content">
@@ -52,7 +68,7 @@
         </div>
       </div>
       <div v-else-if="activeTabName" class="marketplace-tab-content">
-        <VehicleMarketplace :racing-team-business-id="racingTeamBizId" />
+        <VehicleMarketplace :racing-team-business-id="racingTeamBizId" :origin-computer-id="originComputerId" />
       </div>
     </div>
   </ComputerWrapper>
@@ -116,6 +132,17 @@ const tabs = computed(() => {
     tabs.push(sellVehicleTitle)
   }
   return tabs
+})
+
+// Lua sends a reason only when this computer could buy but its garage is full.
+const buyingUnavailableReason = computed(() => {
+  if (tabs.value.includes(buyVehicleTitle) || !tabs.value.includes(sellVehicleTitle)) return ""
+  return vehicleShoppingStore.vehicleShoppingData.buyingUnavailableReason || ""
+})
+
+const originComputerId = computed(() => {
+  const id = vehicleShoppingStore.vehicleShoppingData.originComputerId
+  return id === undefined || id === null ? "" : String(id)
 })
 
 const props = defineProps({
@@ -347,6 +374,17 @@ useRouteReady({
     padding: 0.62em 1em 0.46em;
     white-space: nowrap;
   }
+}
+
+.shop-tabs .seg.bar button.unavailable {
+  color: var(--faint);
+  cursor: default;
+  opacity: 0.6;
+}
+.buy-reason {
+  color: var(--warn);
+  font-size: 0.88em;
+  font-weight: 600;
 }
 
 .buying-tab-content {

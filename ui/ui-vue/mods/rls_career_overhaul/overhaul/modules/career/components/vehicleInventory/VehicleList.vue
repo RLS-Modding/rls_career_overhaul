@@ -369,7 +369,7 @@ const isFunctionAvailable = (vehicle, buttonData) => {
     (buttonData.notForSaleRequired && vehicle.listedForSale) ||
     (buttonData.requireAtCurrentGarage && !vehicle.atCurrentGarage) ||
     (buttonData.requireAtDifferentGarage && vehicle.atCurrentGarage) ||
-    (!vehicle.atCurrentGarage && !currentGarageHasSpace.value && !hasGlobalGarageSpace.value)
+    (!isDeliverAction && !vehicle.atCurrentGarage && !currentGarageHasSpace.value && !hasGlobalGarageSpace.value)
   )
 }
 

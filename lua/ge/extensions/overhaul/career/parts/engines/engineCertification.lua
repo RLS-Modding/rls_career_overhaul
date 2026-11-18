@@ -5,6 +5,7 @@
 local M = {}
 
 local jbeamIO = require("jbeam/io")
+local recipeRules = require("overhaul/career/parts/engines/enginePackages/packages/recipes")
 -- Config -------------------------------------------------------------------------------------------
 
 local SAVE_VERSION = 3
@@ -455,6 +456,7 @@ local function completeJob(packageId, job)
   local certification = deepcopy(job.analysis)
   certification.status = job.status
   certification.recipeSignature = job.recipeSignature
+  certification.recipe = deepcopy(job.recipe)
   certification.completedAtActive = job.completedAtActive
   certification.fee = job.fee
   certification.shopId = job.shopId
@@ -505,7 +507,8 @@ end
 -- Why a package cannot start a stress test, or nil when it can.
 local function certificationBlocker(package, recipe)
   local prior = package.engineShopCertification
-  if prior and prior.analysisVersion == ANALYSIS_VERSION and prior.recipeSignature == recipe.signature and (prior.status == "passed" or prior.status == "failed") then
+  if prior and prior.analysisVersion == ANALYSIS_VERSION and prior.recipeSignature == recipe.signature
+      and (not prior.recipe or recipeRules.recipesMatch(prior.recipe, recipe)) and (prior.status == "passed" or prior.status == "failed") then
     return prior.status == "passed"
       and "This exact configuration already passed its stress test."
       or "This exact configuration already failed its stress test. Change the package before testing it again."
@@ -534,11 +537,11 @@ local function startPersonalCertification(packageId, shopId)
   }, "service", {vehicleRelated = false, locationId = shopId})) then return {success = false, message = "You cannot afford the stress-test fee."} end
   jobs[packageId] = {
     packageId = packageId, packageName = package.name, shopId = tostring(shopId or ""),
-    recipeSignature = recipe.signature, fee = fee, submittedAtActive = activeSeconds, readyAtActive = activeSeconds + CERTIFICATION_SECONDS,
+    recipeSignature = recipe.signature, recipe = deepcopy(recipe), fee = fee, submittedAtActive = activeSeconds, readyAtActive = activeSeconds + CERTIFICATION_SECONDS,
     status = "pending", completed = false, analysis = analysis
   }
   overhaul_career_parts_engines_enginePackages.setEngineShopCertification(packageId, {
-    status = "pending", recipeSignature = recipe.signature, submittedAtActive = activeSeconds,
+    status = "pending", recipeSignature = recipe.signature, recipe = deepcopy(recipe), submittedAtActive = activeSeconds,
     readyAtActive = activeSeconds + CERTIFICATION_SECONDS, fee = fee, shopId = tostring(shopId or "")
   })
   return {success = true, message = string.format("Stress test started for $%d. It will finish after 60 seconds.", fee)}

@@ -9,6 +9,7 @@
 -- Filter caches belong to this factory instance so extension reloads get fresh state.
 return function(REPO_FILTERS_FILE, REPO_SKILL_ATTRIBUTE_KEY, REPO_SKILL_MAX_LEVEL, REPO_SKILL_PATH_IDS)
   local skillLookup = require("overhaul/lib/progression/skillLookup")
+  local vehicleListFilter = require("overhaul/lib/market/vehicleListFilter")
   local repoVehicleFiltersCache = nil
   local repoVehicleFiltersByTag = nil
 
@@ -81,15 +82,7 @@ return function(REPO_FILTERS_FILE, REPO_SKILL_ATTRIBUTE_KEY, REPO_SKILL_MAX_LEVE
           if (minValue and value < minValue) or (maxValue and value > maxValue) then return false end
         else
           if type(parameters) ~= "table" then return false end
-          local passed = false
-          local aggregateValue = type(vehicleInfo.aggregates) == "table" and vehicleInfo.aggregates[filterName] or nil
-          for _, value in ipairs(parameters) do
-            if vehicleInfo[filterName] == value or (type(aggregateValue) == "table" and aggregateValue[value]) then
-              passed = true
-              break
-            end
-          end
-          if not passed then return false end
+          if not vehicleListFilter.matchesAny(vehicleInfo, filterName, parameters) then return false end
         end
       end
     end

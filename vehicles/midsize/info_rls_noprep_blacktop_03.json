@@ -1,0 +1,26 @@
+{
+  "Configuration": "Clayton Harker - No Prep",
+  "Description": "Scarlet Compact. Tier 1 racer. Highway no-prep quarter-mile: 12.790s at 113.97mph. Blacktop Engineering. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Blacktop Engineering",
+  "Name": "Clayton Harker",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 10.797381717402,
+    "time_1_4": 12.79016849224,
+    "time_1_8": 8.4557732456034,
+    "time_330": 5.6800228620223,
+    "time_60": 2.1126654136097,
+    "velAt_1_4": 50.949155069624,
+    "velAt_1_8": 40.823821508075
+  },
+  "Reaction Time": 0.33618038173072,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

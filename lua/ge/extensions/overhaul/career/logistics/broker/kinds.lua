@@ -37,6 +37,8 @@ local defaults = {
   vehicleDelivered = nop,
   vehicleAbandoned = nop,
   restoreOffer = nop,
+  -- Kinds may retain terminal records until their native settlement finishes.
+  retainsJob = function() return false end,
 }
 
 local function unavailable() return false, "This load type is unavailable. Restore its add-on to continue." end
@@ -78,6 +80,7 @@ local function build(spec)
     entry[k] = v
   end
   entry.id, entry.order, entry.levelBonus = spec.id, spec.order, spec.levelBonus ~= false
+  entry.markets = spec.markets or {}
   return entry
 end
 
@@ -92,7 +95,17 @@ local function validate(data)
   if data.levelBonus ~= nil and type(data.levelBonus) ~= "boolean" then
     return nil, "levelBonus must be true or false"
   end
-  return { id = data.id, order = data.order, handler = data.handler, levelBonus = data.levelBonus }
+  if data.markets ~= nil then
+    if type(data.markets) ~= "table" then return nil, "markets must be a list" end
+    for index, market in pairs(data.markets) do
+      if type(index) ~= "number" or index < 1 or index % 1 ~= 0 or index > #data.markets then
+        return nil, "markets must be a list"
+      end
+      if type(market) ~= "table" or not manifests.isNonEmptyString(market.id)
+          or not manifests.isNonEmptyString(market.name) then return nil, "markets need an id and name" end
+    end
+  end
+  return { id = data.id, order = data.order, handler = data.handler, levelBonus = data.levelBonus, markets = data.markets }
 end
 
 -- One registry per broker instance.
@@ -135,6 +148,21 @@ function M.new()
 
   -- Registered kinds in order, for the board and other per-kind sweeps.
   function self.list() return ordered end
+
+  -- New kinds may declare markets without editing the broker or its callers.
+  function self.markets()
+    local result, seen = {}, {}
+    local function append(markets)
+      for _, market in ipairs(markets) do
+        if not seen[market.id] then
+          result[#result + 1], seen[market.id] = market, true
+        end
+      end
+    end
+    append(require("overhaul/career/logistics/broker/brokerRules").markets)
+    for _, entry in ipairs(ordered) do append(entry.markets) end
+    return result
+  end
 
   local builtins = {}
   for _, spec in ipairs(BUILTIN_SPECS) do

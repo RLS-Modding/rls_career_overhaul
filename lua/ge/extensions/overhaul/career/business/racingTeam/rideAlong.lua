@@ -60,7 +60,7 @@ end
 
 local function unfreezePlayerVehicle(vehObj)
   if vehObj then
-    core_vehicleBridge.executeAction(vehObj, "setFreeze", false)
+    require('overhaul/lib/vehicles/freeze').setVehicle('overhaul_career_business_racingTeam_rideAlong', vehObj, false)
     vehObj:queueLuaCommand(UNLOCK_AI_DRIVEN_INPUTS)
   end
   local aiRacers = overhaul_events_aiRacers
@@ -167,7 +167,7 @@ function M.setVehicleFrozen(vehId, freeze)
   if not obj then
     return
   end
-  core_vehicleBridge.executeAction(obj, "setFreeze", freeze and true or false)
+  require('overhaul/lib/vehicles/freeze').setVehicle('overhaul_career_business_racingTeam_rideAlong', obj, freeze and true or false)
   if freeze and tonumber(vehId) == getPlayerVehId() then
     mVehicleFrozen = true
   elseif not freeze then

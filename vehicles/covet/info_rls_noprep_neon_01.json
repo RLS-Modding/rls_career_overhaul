@@ -1,0 +1,25 @@
+{
+  "Configuration": "Reid Colton - No Prep",
+  "Description": "Cyan Errand. Tier 1 racer. Highway no-prep quarter-mile: 12.402s at 118.37mph. Neon Works.",
+  "Author": "Neon Works",
+  "Name": "Reid Colton",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 10.476408414992,
+    "time_1_4": 12.402078034715,
+    "time_1_8": 8.2056106368551,
+    "time_330": 5.5217197601034,
+    "time_60": 2.1018263554418,
+    "velAt_1_4": 52.917149677766,
+    "velAt_1_8": 42.58553278412
+  },
+  "Reaction Time": 0.31100112930062,
+  "dragTimesRevalidated": true,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m"
+}

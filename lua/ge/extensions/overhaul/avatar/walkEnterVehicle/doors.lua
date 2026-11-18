@@ -321,7 +321,7 @@ local function findDriverDoorControls(veh, side)
   return triggerName, triggerCenter, hingeLongSign, doorSpan, hingeNodeId, triggerReferencePoint, controllerName
 end
 
-local function readDriverDoorSide(veh, driverNodeId, rightHandDoor)
+local function readDriverDoorSide(veh, driverNodeId, rightHandDrive, rightHandDoor)
   local driverWorldPos
   local driverLateral
   if driverNodeId ~= nil then
@@ -331,14 +331,16 @@ local function readDriverDoorSide(veh, driverNodeId, rightHandDoor)
       driverLateral = getLateralOffset(veh, driverWorldPos)
     end
   end
-  -- Scale confidence by body width so narrow center-seat and right-hand-drive vehicles keep the correct side.
+  -- Scale geometry confidence by body width for layouts without explicit right-side metadata.
   local halfWidth = getVehicleHalfWidth2D(veh)
   local driverSideThreshold = math.max(0.04, (halfWidth or 0.45) * 0.18)
-  local driverNodeDefinesSide = driverLateral
+  -- The reference origin can be offset or rolled; explicit right-side metadata is authoritative.
+  local driverNodeDefinesSide = not (rightHandDoor or rightHandDrive) and driverLateral
     and math.abs(driverLateral) > driverSideThreshold
   local side = driverNodeDefinesSide
     and (driverLateral < 0 and "R" or "L")
-    or (rightHandDoor and "R" or "L")
+    -- Occupant cameras can mark RHD without the legacy rightHandDoor flag.
+    or ((rightHandDoor or rightHandDrive) and "R" or "L")
   return driverWorldPos, driverLateral, halfWidth, driverSideThreshold, driverNodeDefinesSide, side
 end
 
@@ -346,7 +348,7 @@ local function findDriverDoorInfo(veh)
   if not veh then return nil end
   local driverNodeId, rightHandDrive, rightHandDoor = core_camera.getDriverData(veh)
   local driverWorldPos, driverLateral, halfWidth, driverSideThreshold, driverNodeDefinesSide, side = readDriverDoorSide(
-    veh, driverNodeId, rightHandDoor
+    veh, driverNodeId, rightHandDrive, rightHandDoor
   )
   local canonicalName = "door_" .. side
   local triggerName, triggerCenter, hingeLongSign, doorSpan, hingeNodeId, triggerReferencePoint, controllerName = findDriverDoorControls(

@@ -1,0 +1,73 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "covet/rls_nitro_haulmark_01",
+    "configId": "rls_nitro_haulmark_01",
+    "model": "covet",
+    "config": "/vehicles/covet/rls_nitro_haulmark_01.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "luke_hobson",
+    "driverName": "Nina Navarro",
+    "builder": "Haulmark Racing",
+    "classIds": [
+      "spray_and_pray"
+    ],
+    "approvedClassIds": [
+      "spray_and_pray"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "e02eee7449deb554111aec37fa0f2e09d4678f4f07e223fd65aded34cdec58e4",
+    "traits": {
+      "drivetrain": "FWD",
+      "transmission": "5-speed sequential",
+      "induction": "Naturally aspirated + nitrous",
+      "nitrous": true,
+      "years": {
+        "min": 1986,
+        "max": 1992
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_13x7",
+          "part": "tire_F_24.5_8_13_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_13x5",
+          "part": "tire_R_165_70_13_sport",
+          "typeHint": "sport"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "covet_rollcage",
+          "part": "covet_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.041077581666,
+      "runId": null,
+      "evidenceConfigSHA256": "6200d21359cdf3f64cf8ae150fcf6db2dd8261dfa4233de8abc332555eaf6f2d",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/nitrous/final-results.json",
+      "acceptedConfig": "outputs/nitrous/accepted/rls_nitro_haulmark_01/rls_nitro_haulmark_01.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_nitrous_builders"
+  }
+}

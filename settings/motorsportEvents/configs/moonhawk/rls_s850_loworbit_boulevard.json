@@ -1,0 +1,73 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "moonhawk/rls_s850_loworbit_boulevard",
+    "configId": "rls_s850_loworbit_boulevard",
+    "model": "moonhawk",
+    "config": "/vehicles/moonhawk/rls_s850_loworbit_boulevard.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "memphis_raines",
+    "driverName": "Eden Jennings",
+    "builder": "Low Orbit Garage",
+    "classIds": [
+      "super_stick"
+    ],
+    "approvedClassIds": [
+      "super_stick"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "fd79fb48a5a862bb7be829f72af4549bfd3279be29d7c49a73541d86ac88372e",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "5-speed H-pattern manual",
+      "induction": "Supercharger",
+      "nitrous": false,
+      "years": {
+        "min": 1976,
+        "max": 1978
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x4",
+          "part": "tire_F_27.5_4_15_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_15x12_alt",
+          "part": "tire_R_29_12_15_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "moonhawk_rollcage",
+          "part": "moonhawk_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.7316127699831,
+      "runId": "S850-028",
+      "evidenceConfigSHA256": "a2b42057d70b2f05e7267155b5372fc6ffcdf0b7a9675d6ee3db156175dec071",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/stick850/final-results.json",
+      "acceptedConfig": "outputs/stick850/accepted/rls_s850_loworbit_boulevard/rls_s850_loworbit_boulevard.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_stickshift850"
+  }
+}

@@ -131,7 +131,7 @@ end
 -- The live object provides only the model; the inventory record retains its config path.
 local function isCarrierVehicle(vehId, inventoryId)
   local object = be:getObjectByID(vehId)
-  local inventoryVehicle = overhaul_career_garage_inventory.getVehicle(inventoryId) or {}
+  local inventoryVehicle = inventoryId and overhaul_career_garage_inventory.getVehicle(inventoryId) or {}
   if object and object.getJBeamFilename and containsCarrierToken(object:getJBeamFilename()) then return true end
   return containsCarrierToken(inventoryVehicle.model) or containsCarrierToken(inventoryVehicle.config)
 end
@@ -955,6 +955,35 @@ end
 -- Public API --------------------------------------------------------------------------------------
 
 M.captureInventoryRelationships = captureInventoryRelationships
+function M.isVehicleCarriedBy(childId, carrierId)
+  local inventory = overhaul_career_garage_inventory
+  return inventory ~= nil and isCarrierVehicle(carrierId, inventory.getInventoryIdFromVehicleId(carrierId))
+    and isVehicleOnCarrier(childId, carrierId)
+end
+function M.getTransportVehicleIds(rootId, candidateIds)
+  rootId = tonumber(rootId)
+  if not rootId then return {} end
+  local members, changed = {[rootId] = true}, true
+  while changed do
+    changed = false
+    for _, pair in ipairs(core_vehicles and core_vehicles.attachedCouplers or {}) do
+      if members[pair[1]] ~= members[pair[2]] and (members[pair[1]] or members[pair[2]]) then
+        members[pair[1]], members[pair[2]], changed = true, true, true
+      end
+    end
+    for _, childId in ipairs(candidateIds or {}) do
+      if not members[childId] then
+        for carrierId in pairs(members) do
+          if M.isVehicleCarriedBy(childId, carrierId) then
+            members[childId], changed = true, true
+            break
+          end
+        end
+      end
+    end
+  end
+  return members
+end
 M.captureRelationshipBrakes = captureBrakeStates
 M.switchMap = switchMap
 M.getTravelBlockers = getTravelBlockers

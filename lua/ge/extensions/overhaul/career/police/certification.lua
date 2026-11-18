@@ -134,7 +134,7 @@ local function startCertification()
 
   overhaul_career_garage_inventory.setVehicleRole(inventoryId, assignmentData.role)
   overhaul_career_garage_inventory.delayVehicleAccess(inventoryId, assignmentData.time, string.format("%s_certification", assignmentData.role))
-  core_vehicleBridge.executeAction(be:getPlayerVehicle(0), 'setFreeze', true)
+  require('overhaul/lib/vehicles/freeze').set('overhaul_career_police_certification', be:getPlayerVehicleID(0), true)
   -- Vehicle deletion can invalidate cached SimObjects.
   certifiedVehicleId = be:getPlayerVehicleID(0)
 end

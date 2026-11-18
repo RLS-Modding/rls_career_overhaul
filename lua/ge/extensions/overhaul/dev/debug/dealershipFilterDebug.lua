@@ -50,6 +50,7 @@ local json
 local init = false
 
 local filterTime = 0
+local needsCareer = false
 
 local filterResults = {}
 local vehicleCounts = {}
@@ -60,6 +61,14 @@ local function doFilter(filter)
   filter = filter or lastFilter
   lastFilter = filter
 
+  -- Previews use the career's seller filter rules, so they need a loaded career.
+  local vehicleShopping = overhaul_career_market_vehicleShopping
+  needsCareer = not vehicleShopping
+  if needsCareer then
+    filterResults, amountResults = {}, {}
+    return
+  end
+
   local eligibleVehicles = util_configListGenerator.getEligibleVehicles(includeAux[0], includeLoads[0])
   local count = vehicleCount[0]
   if count == -1 then count = math.huge end
@@ -67,8 +76,9 @@ local function doFilter(filter)
   local timer = hptimer()
   local totalResultCount = 0
   amountResults = {}
+  local preview = vehicleShopping.previewSellerStock(filter, eligibleVehicles)
   for i = 1, sampleCount[0] do
-    filterResults = util_configListGenerator.getRandomVehicleInfos(filter, count, eligibleVehicles)
+    filterResults = preview.draw(count)
     for _, result in ipairs(filterResults) do
       local label = string.format("%s  -  %s", result.model_key, result.key)
       if not vehicleCounts[label] then
@@ -146,6 +156,10 @@ local function drawDebugMenu()
     im.InputInt("Vehs", vehicleCount)
     im.SameLine()
     im.Text(string.format("Took %dms", filterTime))
+    if needsCareer then
+      im.SameLine()
+      im.Text("Load a career to preview with its filter rules.")
+    end
 
     im.InputText("Search",search, 1280)
 

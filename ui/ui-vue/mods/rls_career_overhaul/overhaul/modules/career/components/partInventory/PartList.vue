@@ -73,7 +73,7 @@
 
 <script setup>
 import Accordion from "../PartsAccordion.vue"
-import { computed, ref, watch, watchEffect } from "vue"
+import { computed, onScopeDispose, ref, shallowRef, watch, watchEffect } from "vue"
 import { refocusIfLost } from "../../composables/useScreenEntryFocus"
 import { lua, useBridge } from "@/bridge"
 import { BngCard, BngPropVal, BngIcon, ACCENTS, icons, BngInput } from "@/common/components/base"
@@ -99,12 +99,35 @@ const immediateLimit = 15
 
 const groupBy = ref("location")
 
-const groups = ref([])
+// Display rows are replaced together; proxying every derived field costs a full-list update.
+const groups = shallowRef([])
 const accordionItems = ref({})
 const disableInstallButtons = ref(false)
 
 const expandedGroups = ref({})
 const readyGroups = ref({})
+const pendingTimers = new Set()
+const expansionTimers = new Map()
+let clearEntryFocus = () => {}
+
+const schedule = (callback, delayMs) => {
+  const timer = setTimeout(() => {
+    pendingTimers.delete(timer)
+    callback()
+  }, delayMs)
+  pendingTimers.add(timer)
+  return timer
+}
+const cancelTimer = timer => {
+  clearTimeout(timer)
+  pendingTimers.delete(timer)
+}
+onScopeDispose(() => {
+  for (const timer of pendingTimers) clearTimeout(timer)
+  pendingTimers.clear()
+  expansionTimers.clear()
+  clearEntryFocus()
+})
 
 // Lua sends the list once the route has mounted; until then show a wait line, not an empty card.
 const isInventoryLoaded = computed(() => partInventoryStore.partInventoryData?.partList != null)
@@ -115,6 +138,8 @@ const shownGroups = computed(() => isSearching.value ? groups.value.filter(group
 const setGroupExpanded = (groupId, state, focusOnCollapse = false) => {
   expandedGroups.value[groupId] = state
   if (!state) {
+    cancelTimer(expansionTimers.get(groupId))
+    expansionTimers.delete(groupId)
     delete readyGroups.value[groupId]
     if (focusOnCollapse) {
       const elm = document.querySelector(`[data-groupid="${groupId}"] > .bng-accitem-caption`)
@@ -124,12 +149,13 @@ const setGroupExpanded = (groupId, state, focusOnCollapse = false) => {
   }
   if (!(groupId in readyGroups.value)) {
     readyGroups.value[groupId] = false
-    setTimeout(() => {
+    expansionTimers.set(groupId, schedule(() => {
+      expansionTimers.delete(groupId)
       // only flip to ready if the group is still expanded
       if (expandedGroups.value[groupId]) {
         readyGroups.value[groupId] = true
       }
-    }, 100)
+    }, 100))
   }
 }
 
@@ -254,7 +280,7 @@ let entryMarked = false
 watch(groups, list => {
   if (entryMarked || !list.length) return
   entryMarked = true
-  setTimeout(() => {
+  schedule(() => {
     const first = document.querySelector(".part-inventory-card .part-groups .bng-accitem-caption")
     if (!first) return
     first.setAttribute("bng-scoped-nav-autofocus", "")
@@ -262,9 +288,15 @@ watch(groups, list => {
     if (!active || active === document.body || active.closest?.(".searchField")) refocusIfLost(() => first, { force: true })
     // drop the mark once the player has moved on from it (the route's scope activation can come
     // before or after this), or after a while at the latest
-    const drop = () => first.removeAttribute("bng-scoped-nav-autofocus")
+    const drop = () => {
+      first.removeAttribute("bng-scoped-nav-autofocus")
+      first.removeEventListener("focusout", drop)
+      cancelTimer(expiryTimer)
+      clearEntryFocus = () => {}
+    }
+    clearEntryFocus = drop
     first.addEventListener("focusout", drop, { once: true })
-    setTimeout(drop, 10000)
+    const expiryTimer = schedule(drop, 10000)
   }, 50)
 }, { flush: "post" })
 

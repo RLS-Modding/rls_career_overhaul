@@ -208,25 +208,32 @@ function ui.new(inputs)
     if filename:sub(-3) == '.pc' then return existingImage(filename:sub(1, -4) .. '.jpg') end
   end
 
+  local function onThumbnailReady()
+    if menuIsOpen and M.sendVehicleUpdatesToUi then M.sendVehicleUpdatesToUi() end
+  end
+
   local function getVehicleThumbnail(inventoryId)
     if not inventoryId then return end
     local vehicle = vehicles[inventoryId]
     if not vehicle then return end
-    -- A saved photo can outlive a config change. All inventory surfaces resolve
-    -- the selected config first, rather than presenting that old photo as current.
     local model = core_vehicles.getModel(vehicle.model) or {}
     local vehId = inventoryIdToVehId[inventoryId]
     local live = vehId and core_vehicle_manager.getVehicleData(vehId)
-    local configThumb = getConfigThumb(live and live.config or vehicle.config, model, vehicle.model)
-    if configThumb then return configThumb end
+    local config = live and live.config or vehicle.config
     local _, savePath = overhaul_career_saveSystem.getCurrentProfile()
     if savePath and savePath:sub(1, 1) ~= "/" then
       savePath = "/" .. savePath
     end
     local thumbnailPath = savePath and (savePath .. "/career/vehicles/" .. inventoryId .. ".jpg")
-    if not vehicle.defaultThumbnail and existingImage(thumbnailPath) then
-      return thumbnailPath
+    local savedPhoto = not vehicle.defaultThumbnail and existingImage(thumbnailPath)
+    if savedPhoto and vehicle.thumbnailConfig ~= nil
+      and vehicle.thumbnailConfig == require('overhaul/career/garage/inventory/thumbnail').configKey(config) then
+      return savedPhoto
     end
+    if live and M.ensureVehicleThumbnail then M.ensureVehicleThumbnail(inventoryId, onThumbnailReady) end
+    local configThumb = getConfigThumb(config, model, vehicle.model)
+    if configThumb then return configThumb end
+    if savedPhoto and vehicle.thumbnailConfig == nil then return savedPhoto end
     return model.model and existingImage(model.model.preview)
   end
 
@@ -415,7 +422,7 @@ function ui.new(inputs)
     vehicleData.sellPermission = permissionStatus("vehicleSelling", inventoryId)
     vehicleData.favoritePermission = permissionStatus("vehicleFavorite", inventoryId)
     vehicleData.storePermission = permissionStatus("vehicleStoring", inventoryId)
-    local garageHasSpace = currentGarageId and overhaul_career_garage_garageManager.isGarageSpace(currentGarageId)[1] or false
+    local garageHasSpace = currentGarageId and overhaul_career_garage_garageManager.isGarageSpace(currentGarageId, inventoryId)[1] or false
     local storeGarageHasSpace = currentGarageId and overhaul_career_garage_garageManager.isGarageSpace(currentGarageId, inventoryId)[1] or false
     local globalGarageHasSpace = helpers.hasFreeSlot()
     if vehicleData.storePermission.allow then
@@ -613,7 +620,8 @@ function ui.new(inputs)
       buttonData.callback = buttonData.callback or function() end
     end
 
-    -- Always open the inventory picker route; 4th arg is where Back returns (0.39).
+    -- Always open the inventory picker route; 4th arg is where Back returns (0.39): a route name, or a
+    -- function that reopens the previous screen itself.
     extensions.ui_router.navigate("overhaul.computer.vehicleInventory")
     helpers.updatePartConditionsOfSpawnedVehicles()
   end
@@ -627,6 +635,7 @@ function ui.new(inputs)
   end
 
   local function requestPickerExit()
+    if type(menuBackTarget) == "function" then return menuBackTarget() end
     return extensions.ui_router.navigate(menuBackTarget or "overhaul.computer")
   end
 
@@ -782,7 +791,13 @@ function ui.new(inputs)
     chooseButtonsData[buttonIndex].callback(inventoryId, repairPrevVeh)
   end
 
-  local function openInventoryMenuForChoosingListing()
+  -- The marketplace reopens at this computer after the listing is added or on Back, so the shop keeps its
+  -- computer (buy tab and tether) and a stale computer from an earlier menu is never reused.
+  local function openInventoryMenuForChoosingListing(originComputerId)
+    garageState.originComputerId = originComputerId
+    local function returnToMarketplace()
+      return overhaul_career_market_marketplace.openMenu(originComputerId)
+    end
     openMenu(
       {{
         callback = function(inventoryId)
@@ -800,7 +815,7 @@ function ui.new(inputs)
         storingEnabled = false,
         returnLoanerEnabled = false
       },
-      "overhaul.computer.vehicleShopping"
+      returnToMarketplace
     )
   end
 

@@ -1,0 +1,43 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "barstow/rls_stu_heritage_02",
+    "configId": "rls_stu_heritage_02",
+    "model": "barstow",
+    "config": "/vehicles/barstow/rls_stu_heritage_02.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "sourcePack": "rls_stu_leonard",
+    "driverId": "jack_rourke",
+    "driverName": "Damian Chandler",
+    "builder": "heritage",
+    "classIds": [
+      "stu_leonard_850"
+    ],
+    "approvedClassIds": [
+      "stu_leonard_850"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "d512b7a27944f5c4461ba160a473821ccc9e5379701c6b3a888ff791c994774e",
+    "traits": {
+      "drivetrain": "RWD",
+      "years": {
+        "min": 1970,
+        "max": 1970
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.8492882355375,
+      "runId": "STU-038",
+      "evidenceConfigSHA256": "8f6a6b412df4a804dd5d85f6008b82297556e3a0292b052f11fe270ff2ca29ec",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/stu-leonard/final-metadata.json",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    }
+  }
+}

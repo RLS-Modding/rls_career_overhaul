@@ -94,7 +94,7 @@ local function stopPull()
   if ramp then ramp.setEnabled(false) end
 end
 
-local function startPull()
+local function startPull(options)
   activate()
   if not controller or not controller.getController or not controller.loadControllerExternal then return end
   local ramp = controller.getController("overhaulDynoRamp")
@@ -102,7 +102,7 @@ local function startPull()
     ramp = controller.loadControllerExternal("overhaulDynoRamp", "overhaulDynoRamp")
     ownsRamp = ramp ~= nil
   end
-  if ramp then ramp.setEnabled(true) end
+  if ramp then ramp.setEnabled(true, options) end
 end
 
 local function release()

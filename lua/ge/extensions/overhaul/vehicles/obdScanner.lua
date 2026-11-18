@@ -1,3 +1,4 @@
+local saveStore = require('overhaul/lib/save/store')
 -- OBD installation, Pro Tuner licensing and saved tune values for the vehicle-side scanner.
 -- Read observation time/cache, licensing and tunes, vehicle monitoring, then public API and hooks.
 local M = {}
@@ -6,6 +7,9 @@ local vehicleCommands = require('overhaul/lib/vehicles/vehicleCommands')
 local capabilities = require("overhaul/lib/platform/capabilities")
 
 -- Config ------------------------------------------------------------------------------------------
+
+local fuelModel = require("common/rlsFuelModel")
+local fuelControl = require("common/rlsFuelControl")
 
 local APP_ID = "obd-scanner"
 local PRO_TUNER_LICENSE_PRICE = 5000
@@ -196,35 +200,6 @@ local function withProTunerAccess(state)
   state.enabled = true
   state.unlocked = proTunerUnlocked()
   return state
-end
-
-local function purchaseProTunerLicense()
-  if not careerActive() or hasProTunerLicense() then
-    return getProTunerState()
-  end
-  if not canAffordProTunerLicense() then
-    return getProTunerState()
-  end
-  if overhaul_career_economy_payment and type(overhaul_career_economy_payment.pay) == "function" then
-    if overhaul_career_economy_payment.pay(licensePriceTable(), require("overhaul/lib/finance/metadata").tag({ label = "Kapoow Racing PRO Tuner" }, "purchase", {vehicleRelated = false})) ~= true then
-      return getProTunerState()
-    end
-  elseif overhaul_career_economy_playerAttributes and type(overhaul_career_economy_playerAttributes.addAttributes) == "function" then
-    overhaul_career_economy_playerAttributes.addAttributes({ money = -PRO_TUNER_LICENSE_PRICE }, require("overhaul/lib/finance/metadata").tag({ label = "Kapoow Racing PRO Tuner" }, "purchase", {vehicleRelated = false}))
-  else
-    return getProTunerState()
-  end
-  proTunerLicense.purchased = true
-  proTunerLicense.purchasedAt = os.time()
-  -- Persist with the career save so money and license cannot diverge.
-  if overhaul_career_saveSystem and type(overhaul_career_saveSystem.saveCurrent) == "function" then
-    overhaul_career_saveSystem.saveCurrent()
-  end
-  local vehicle = currentPlayerVehicle()
-  if vehicle then
-    applyStoredProTuner(vehicle)
-  end
-  return getProTunerState()
 end
 
 -- Tune values -------------------------------------------------------------------------------------
@@ -473,7 +448,52 @@ currentPlayerVehicle = function()
   return vehicle, vehicle:getID()
 end
 
-getProTunerState = function()
+-- The engine whose boost the Fuels runtime cuts above (the car's only turbo).
+local function fuelBoostEngine(vehicleId)
+  local fuel = overhaul_career_maintenance_fuelSystem
+  local snapshot = fuel and type(fuel.getSnapshot) == "function" and fuel.getSnapshot(vehicleId)
+  local engines = type(snapshot) == "table" and snapshot.engines
+  if type(engines) ~= "table" then return nil end
+  local function hasBoost(engine)
+    return type(engine) == "table" and type(engine.profile) == "table" and tonumber(engine.profile.factoryBoostPsi) ~= nil
+  end
+  if hasBoost(engines.mainEngine) then return engines.mainEngine end
+  for _, engine in pairs(engines) do
+    if hasBoost(engine) then return engine end
+  end
+  return nil
+end
+
+-- Boost cut as the PRO Tuner shows it. `markerValue` places the cut on the
+-- boost slider's own scale: offset sliders count from factory boost, native
+-- absolute sliders show the pressure itself.
+local function proTunerBoostCut(vehicleId, desc, marginOverride)
+  local engine = fuelBoostEngine(vehicleId)
+  if not engine then return nil end
+  local factory = tonumber(engine.profile.factoryBoostPsi)
+  local margin = tonumber(marginOverride) or fuelModel.boostCutMargin(engine.state and engine.state.tune)
+  local marker
+  if desc.mode == "software" or desc.varName == "$rlsWastegateAdjustment" then
+    marker = margin
+  elseif string.lower(tostring(desc.unit or "psi")) == "psi" then
+    marker = factory + margin
+  end
+  return {
+    engine = engine.name,
+    editable = engine.boostCutEditable ~= false,
+    reason = engine.boostCutLockReason,
+    factoryPsi = factory,
+    marginPsi = margin,
+    cutPsi = factory + margin,
+    stockMarginPsi = fuelModel.constants.stockBoostCutMarginPsi,
+    minMarginPsi = fuelModel.constants.minBoostCutMarginPsi,
+    maxMarginPsi = fuelModel.constants.maxBoostCutMarginPsi,
+    step = 0.5,
+    markerValue = marker,
+  }
+end
+
+local function getProTunerStateBase(boostCutMarginOverride)
   if not proTunerUnlocked() then
     return withProTunerAccess({ available = false, recentPulls = {} })
   end
@@ -510,18 +530,48 @@ getProTunerState = function()
     available = true,
     mode = desc.mode,
     varName = desc.varName,
-    title = desc.title,
-    description = desc.description,
+    -- The PRO Tuner's own wording; native descriptions are written for the garage part.
+    title = "Boost",
+    description = desc.mode == "software" and desc.description or "Sets boost at your wastegate.",
     unit = desc.unit,
     min = minValue,
     max = maxValue,
     step = desc.step,
     value = value,
     openingPressurePsi = desc.openingPressurePsi,
+    boostCut = proTunerBoostCut(vehicleId, desc, boostCutMarginOverride),
     recentPulls = recentPulls,
   })
 end
 
+local function getProTunerState(boostCutMarginOverride)
+  local state=getProTunerStateBase(boostCutMarginOverride)
+  state.fuelControls={}
+  if not proTunerUnlocked() then return state end
+  local vehicle,id=currentPlayerVehicle()
+  local snapshot=vehicle and overhaul_career_maintenance_fuelSystem and overhaul_career_maintenance_fuelSystem.getSnapshot(id)
+  if snapshot then
+    for name,e in pairs(snapshot.engines or {}) do
+      local tune=e.effectiveTune or fuelControl.effective(e.state,e.profile).tune
+      local boost=e.boostSupported~=false and tune.boost or nil
+      state.fuelControls[#state.fuelControls+1]={engine=name,vehicleId=id,generation=snapshot.generation,revision=e.state.revision or 0,
+        afrTrim=tune.afrTrim or 0,afr=e.telemetry and e.telemetry.afr,targetAFR=e.telemetry and e.telemetry.targetAFR,
+        boost=boost,boostSupported=e.boostSupported,boostSupportReason=e.boostSupportReason,
+        control=e.control or fuelControl.status(e.state,e.profile),savedTune=fuelModel.copy(e.state.tune),
+        boostTargetPsi=e.telemetry and e.telemetry.boostTargetPsi,
+        injectorDuty=e.telemetry and e.telemetry.injectorDuty,pumpDuty=e.telemetry and e.telemetry.pumpDuty}
+    end
+    table.sort(state.fuelControls,function(a,b)return a.engine<b.engine end)
+  end
+  return state
+end
+local function setProTunerFuel(changes,expected)
+  if not proTunerUnlocked() then return {ok=false,message='PRO Tuner is locked'} end
+  local vehicle,id=currentPlayerVehicle()
+  if not vehicle or type(expected)~='table' or expected.vehicleId~=id or not overhaul_career_maintenance_fuelSystem then return {ok=false,message='Vehicle changed'} end
+  local ok,err=overhaul_career_maintenance_fuelSystem.setLiveTrim(id,expected.engine,changes,expected)
+  return {ok=ok,message=err}
+end
 local function setProTunerValue(value)
   if not proTunerUnlocked() then
     return getProTunerState()
@@ -553,6 +603,55 @@ local function setProTunerValue(value)
   return getProTunerState()
 end
 
+local function setProTunerBoostCut(margin)
+  if not proTunerUnlocked() then
+    return getProTunerState()
+  end
+  local vehicle, vehicleId = currentPlayerVehicle()
+  if not vehicle or not overhaul_career_maintenance_fuelSystem or type(overhaul_career_maintenance_fuelSystem.setBoostCut) ~= "function" then
+    return getProTunerState()
+  end
+  local desc = describePlayerBoostTune(vehicleId)
+  local cut = desc.available and proTunerBoostCut(vehicleId, desc)
+  if not cut or not cut.editable then
+    return getProTunerState()
+  end
+  margin = snapTuneValue(margin, cut.minMarginPsi, cut.maxMarginPsi, cut.step)
+  if not margin or not overhaul_career_maintenance_fuelSystem.setBoostCut(vehicleId, cut.engine, margin) then
+    return getProTunerState()
+  end
+  -- The vehicle confirms asynchronously; report the requested cut meanwhile.
+  return getProTunerState(margin)
+end
+
+local function purchaseProTunerLicense()
+  if not careerActive() or hasProTunerLicense() then
+    return getProTunerState()
+  end
+  if not canAffordProTunerLicense() then
+    return getProTunerState()
+  end
+  if overhaul_career_economy_payment and type(overhaul_career_economy_payment.pay) == "function" then
+    if overhaul_career_economy_payment.pay(licensePriceTable(), require("overhaul/lib/finance/metadata").tag({ label = "Kapoow Racing PRO Tuner" }, "purchase", {vehicleRelated = false})) ~= true then
+      return getProTunerState()
+    end
+  elseif overhaul_career_economy_playerAttributes and type(overhaul_career_economy_playerAttributes.addAttributes) == "function" then
+    overhaul_career_economy_playerAttributes.addAttributes({ money = -PRO_TUNER_LICENSE_PRICE }, require("overhaul/lib/finance/metadata").tag({ label = "Kapoow Racing PRO Tuner" }, "purchase", {vehicleRelated = false}))
+  else
+    return getProTunerState()
+  end
+  proTunerLicense.purchased = true
+  proTunerLicense.purchasedAt = os.time()
+  -- Persist with the career save so money and license cannot diverge.
+  if overhaul_career_saveSystem and type(overhaul_career_saveSystem.saveCurrent) == "function" then
+    saveStore.request("obdScanner:proTunerLicense")
+  end
+  local vehicle = currentPlayerVehicle()
+  if vehicle then
+    applyStoredProTuner(vehicle)
+  end
+  return getProTunerState()
+end
 -- Vehicle monitor ---------------------------------------------------------------------------------
 
 local function unloadVehicleMonitor(vehicleId)
@@ -705,6 +804,13 @@ M.onVehicleSpawned = onVehicleSpawned
 M.onOverhaulTuningApplied = onOverhaulTuningApplied
 M.onOverhaulExperimentalMaintenanceModeChanged = onOverhaulExperimentalMaintenanceModeChanged
 M.onPhoneAppInstallStateChanged = onPhoneAppInstallStateChanged
+M.ensureVehicleMonitor = ensureVehicleMonitor
+M.recordRecentObservations = recordRecentObservations
+M.getProTunerState = getProTunerState
+M.setProTunerValue = setProTunerValue
+M.setProTunerFuel = setProTunerFuel
+M.setProTunerBoostCut = setProTunerBoostCut
+M.purchaseProTunerLicense = purchaseProTunerLicense
 M.onOverhaulVehicleSaveFinished = onOverhaulVehicleSaveFinished
 
 return M

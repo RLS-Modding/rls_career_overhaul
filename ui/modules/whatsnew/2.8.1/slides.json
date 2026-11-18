@@ -1,0 +1,111 @@
+{
+  "label": "v2.8.1",
+  "continueLabel": "Continue",
+  "loadingLabel": "Loading career...",
+  "dontShowLabel": "Don't show again",
+  "slides": [
+    {
+      "kind": "intro",
+      "image": "dragway.jpg",
+      "eyebrow": "What's New",
+      "title": "RLS Career Overhaul v2.8.1",
+      "subtitle": "From the drag strip to the streets",
+      "contentsLabel": "Explore the update"
+    },
+    {
+      "image": "no-prep.jpg",
+      "textSide": "top-left",
+      "kicker": "Motorsport Events & No Prep Knights",
+      "title": "Stage up. Risk the keys.",
+      "summary": "Race a drag weekend at Alder, then chase pink slips after dark.",
+      "facts": [
+        "Pick from 19 classes in four leagues, including Outlaw Drag League",
+        "Stage at the tree, qualify, run eliminations or bet on heats",
+        "Join Car Meets: beat five bosses, defend your title or win back your car"
+      ]
+    },
+    {
+      "image": "drag-launch.jpg",
+      "textSide": "top-left",
+      "kicker": "Fuel & Ignition",
+      "title": "Tune it your way",
+      "summary": "See your tune at work with upgraded afterfire flames and rolling coal.",
+      "facts": [
+        "Set mixture, spark and boost, then save your tune maps",
+        "A rich mix or late spark can leave fuel to ignite in a hot exhaust",
+        "Diesels roll coal under load when the tune delivers more fuel than the air can burn",
+        "Pick Regular, Premium, E85, M100 or Nitro 90; fill two tanks separately"
+      ]
+    },
+    {
+      "image": "highway.jpg",
+      "textSide": "top-left",
+      "kicker": "Builds, garages & jobs",
+      "title": "Build it. Put it to work.",
+      "summary": "Fit your next drag build, or hop in a work truck and grab a new load.",
+      "facts": [
+        "Fit slicks, radials, front runners or wide front tires for FWD builds",
+        "Dyno and refuel Racing Team cars; export builds with their fuel setup",
+        "Job Broker routes new loads; BeamEats picks reachable drop-offs"
+      ]
+    },
+    {
+      "image": "drift-playground.jpg",
+      "textSide": "top-left",
+      "kicker": "West Coast & phone",
+      "title": "Drift and stay in the loop",
+      "summary": "Set a new best at Drift Playground, then swipe down on your phone to catch up.",
+      "facts": [
+        "Drift Playground replaces Drift Loop Remaster; five others get new goals",
+        "Notification Center groups missed invites, job offers and alerts by app",
+        "Watch rain and fog roll in gradually; the Weather app shows when rain is falling"
+      ]
+    },
+    {
+      "kind": "list",
+      "image": "phone.jpg",
+      "title": "Fixes and smaller changes",
+      "columns": [
+        {
+          "heading": "Racing and cars",
+          "items": [
+            "Cleaner staging and qualifying; withdraw an entry after a wreck",
+            "Fairer lane calls, steadier opponent launches and straight-line braking",
+            "Pink-slip prizes keep their value, upgrades, wear and gearbox mode",
+            "Smoother Racing Team finishes, payouts and garage deliveries",
+            "Correct tire fitment and wear; derby repairs restore popped tires",
+            "Reinstall certified engine packages in their original cars",
+            "Boost adapts to transmission swaps; clutch limits follow the tune",
+            "Better recovery for owned cars after physics failures"
+          ]
+        },
+        {
+          "heading": "Jobs and garages",
+          "items": [
+            "Rental trucks use bays they fit; flatbeds require fifth-wheel tractors",
+            "Work trailers unhitch at drop-off; manual recovery trucks shift after reloading",
+            "Loaner cuts apply once; cargo and return screens are more reliable",
+            "Company vehicle locks show the missing skill or reputation",
+            "Taxi rides recover from crashes and don't charge for paused time",
+            "Buy from storage garages with space; repairs count cars correctly",
+            "Dealer filters ignore case, and modern Bruckell stock can include the Ravix",
+            "Safer auction balances; fixes for Tuning Shop fuel charges and stored parts"
+          ]
+        },
+        {
+          "heading": "Menus, world and saves",
+          "items": [
+            "High Contrast keeps phone colours; profile search accepts typing",
+            "Phone balances and car values stay current; OBD clears repaired faults",
+            "Keep your driver model and door glass when entering cars",
+            "Map travel prefers marked parking; Linux imports and maps are more reliable",
+            "Large parts collections load; insurance keeps saving after a car sale",
+            "Failed saves show an error instead of leaving you stuck",
+            "Career weather no longer takes over Free Roam",
+            "Less background work during long sessions, saves and phone use"
+          ]
+        }
+      ]
+    }
+  ]
+}

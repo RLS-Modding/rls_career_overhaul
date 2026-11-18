@@ -1,0 +1,26 @@
+{
+  "Configuration": "Mae Rowan - No Prep",
+  "Description": "Steel Waltz. Tier 5 racer. Highway no-prep quarter-mile: 8.178s at 196.98mph. Iron Lantern Garage. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Iron Lantern Garage",
+  "Name": "Mae Rowan",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 7.0064024847213,
+    "time_1_4": 8.1783782633739,
+    "time_1_8": 5.5801915055547,
+    "time_330": 3.8817181298556,
+    "time_60": 1.535259080433,
+    "velAt_1_4": 88.056845380443,
+    "velAt_1_8": 67.31814765594
+  },
+  "Reaction Time": 0.23656139350172,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

@@ -17,6 +17,7 @@ const MOD_NAMESPACES = [
   "overhaul_phone_apps_freContracts",
   "overhaul_phone_apps_freeroamEvents",
   "overhaul_world_weather",
+  "overhaul_phone_apps_motorsportEvents",
   "overhaul_jobs_beamEats",
   "overhaul_jobs_facilityWork",
   "overhaul_career_work_employment",
@@ -84,6 +85,8 @@ const MOD_NAMESPACES = [
   "overhaul_career_market_valueCalculator",
   "overhaul_career_parts_vehiclePerformance",
   "overhaul_career_market_vehicleShopping",
+  "overhaul_career_economy_streetKnights",
+  "overhaul_career_economy_streetChallenges",
   "overhaul_jobs_cardGames_cardGames",
   "overhaul_jobs_quarry_quarry",
   "overhaul_jobs_recovery",
@@ -98,6 +101,9 @@ const MOD_NAMESPACES = [
   "overhaul_career_career",
   "overhaul_career_saveSystem",
   "overhaul_integration_services_garageMode",
+  "overhaul_events_motorsportEvents",
+  "overhaul_career_maintenance_fuelSystem",
+  "overhaul_vehicles_configExport",
   // </generated:namespaces>
 ]
 

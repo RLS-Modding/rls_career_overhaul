@@ -454,6 +454,10 @@ local function addAssignmentRouteApi(api, inputs)
   function api.routeCurrentAssignment()
     local shift = state.shift
     if not shift then return end
+    if shift.phase == "loopComplete" and shift.loopChoiceDeferred then
+      api.routeToYard()
+      return
+    end
     if routeCompanyVehicleEntry(equipment, shift) then return end
     if inputs.accidents.routeAccidentRecovery and inputs.accidents.routeAccidentRecovery() then
       return
@@ -594,6 +598,7 @@ local function addYardArrivalApi(api, inputs)
     local shift = state.shift
     if not shift then return end
     shift.phase = "loopComplete"
+    shift.loopChoiceDeferred = nil
     shift.awaitingLoopChoice = nil
     shift.returnLabel = opts.label or "Assignment complete"
     shift.returnSubtext = opts.subtext or "Take another job or end your day"

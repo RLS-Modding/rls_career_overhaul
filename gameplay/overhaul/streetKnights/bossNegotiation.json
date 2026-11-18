@@ -1,0 +1,23 @@
+{
+  "fairCarValueFraction": 0.5,
+  "minBossWinChance": 0.2,
+  "maxBossWinChance": 0.8,
+  "quickerTrustFraction": 0.5,
+  "maxCashBossValueFraction": 0.25,
+  "openingMarkupMinFactor": 1.15,
+  "openingMarkupMaxFactor": 1.45,
+  "minOpeningMarginMoney": 500,
+  "nightlyMoodFraction": 0.15,
+  "generousChance": 0.15,
+  "generousDiscountMinFraction": 0.3,
+  "generousDiscountMaxFraction": 0.6,
+  "straightMaxChance": 0.5,
+  "straightGapBossValueFraction": 0.15,
+  "luckyFloorPriceFraction": 0.75,
+  "luckyMaxChance": 0.5,
+  "patienceCount": 3,
+  "lowballPriceFraction": 0.5,
+  "concessionMinFraction": 0.3,
+  "concessionMaxFraction": 0.6,
+  "priceStepMoney": 100
+}

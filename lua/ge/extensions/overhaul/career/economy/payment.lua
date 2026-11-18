@@ -112,7 +112,8 @@ local function pay(price, reason, accountId, onRecorded)
   return true
 end
 
-local function reward(price, reason, fullReward, accountId)
+-- Wallet onRecorded runs after money/XP mutation, before attribute hooks; caller owns receipt persistence.
+local function reward(price, reason, fullReward, accountId, onRecorded)
   if accountId and overhaul_career_economy_bank then
     reason = reason or {}
     return overhaul_career_economy_bank.rewardToAccount(price, accountId, reason.label, reason.description,
@@ -123,7 +124,11 @@ local function reward(price, reason, fullReward, accountId)
   for currency, info in pairs(price) do
     change[currency] = info.amount
   end
-  overhaul_career_economy_playerAttributes.addAttributes(change, reason, fullReward)
+  if onRecorded ~= nil then
+    overhaul_career_economy_playerAttributes.addAttributes(change, reason, fullReward, onRecorded)
+  else
+    overhaul_career_economy_playerAttributes.addAttributes(change, reason, fullReward)
+  end
   return true
 end
 

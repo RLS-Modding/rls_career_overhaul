@@ -1,0 +1,60 @@
+{
+  "rls_miramar_engine_internals_dohc_stage4_block": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Heavy Duty Block", "value":21500},
+    "slotType": "miramar_engine_internals_dohc",
+    "mainEngine": {
+      "maxTorqueRating": 2200,
+      "maxOverTorqueDamage": 1000,
+      "cylinderWallTemperatureDamageThreshold": 175,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1700000,
+      "pistonRingDamageThreshold": 1700000,
+      "connectingRodDamageThreshold": 2200000,
+      "maxPhysicalRPM": 8500
+    }
+  },
+  "rls_miramar_engine_internals_dohc_stage4_performance": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Performance Block", "value":24000},
+    "slotType": "miramar_engine_internals_dohc",
+    "mainEngine": {
+      "torqueModMult": [
+        ["rpm", "torque"],
+        [0, 1],
+        [500, 0.66],
+        [1000, 0.72],
+        [1500, 0.8],
+        [2000, 0.852],
+        [2500, 0.8742857142857142],
+        [3000, 0.9072857142857144],
+        [3500, 0.9514285714285716],
+        [4000, 0.9964285714285714],
+        [4500, 1.053142857142857],
+        [5000, 1.1],
+        [5500, 1.1550000000000002],
+        [6000, 1.2100000000000002],
+        [6500, 1.309],
+        [7000, 1.4190000000000005],
+        [7500, 1.606],
+        [8000, 1.9250000000000005],
+        [8500, 2.365],
+        [9000, 3.245000000000001]
+      ],
+      "$+maxRPM": 1500,
+      "$*friction": 0.97,
+      "$*dynamicFriction": 0.97,
+      "$*inertia": 0.94,
+      "$*engineBrakeTorque": 1.35,
+      "$*instantAfterFireCoef": 1.3,
+      "$*sustainedAfterFireCoef": 1.3,
+      "maxTorqueRating": 2200,
+      "maxOverTorqueDamage": 1000,
+      "cylinderWallTemperatureDamageThreshold": 175,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1700000,
+      "pistonRingDamageThreshold": 1700000,
+      "connectingRodDamageThreshold": 2200000,
+      "maxPhysicalRPM": 8500
+    },
+    "vehicleController": {"clutchLaunchStartRPM":2000, "clutchLaunchTargetRPM":2900}
+  }
+}

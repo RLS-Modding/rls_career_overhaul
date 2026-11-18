@@ -1,0 +1,56 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Configuration": "Alexis Ackerman - Stu Leonard",
+  "Description": "Neon Works: autobello, 2.5L Water Cooled F4 Engine, Stage 3 Variable Boost Twin Turbochargers, Race 6-Speed Sequential Transaxle. Healthy qualifying pass 8.961329 s; identical saved-build confirmation 8.962933 s. West Coast quarter mile. Two passes do not establish all-condition repeatability.",
+  "Config Type": "Custom",
+  "Drivetrain": "RWD",
+  "Transmission": "Sequential",
+  "Induction Type": "Turbo",
+  "Fuel Type": "Gasoline",
+  "Years": {
+    "min": 1968,
+    "max": 1968
+  },
+  "Author": "RLS / Neon Works",
+  "Value": 120000,
+  "Motorsport": {
+    "version": 1,
+    "id": "autobello/rls_stu_neon_01",
+    "configId": "rls_stu_neon_01",
+    "model": "autobello",
+    "config": "/vehicles/autobello/rls_stu_neon_01.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "sourcePack": "rls_stu_leonard",
+    "driverId": "ryan_cooper",
+    "driverName": "Alexis Ackerman",
+    "builder": "neon",
+    "classIds": [
+      "stu_leonard_850"
+    ],
+    "approvedClassIds": [
+      "stu_leonard_850"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Accepted collection record matching the bundled config.",
+    "sourceConfigSHA256": "1226388e157405798afdb88119726a354321ea5290600e4cdb6c4a37bf316748",
+    "traits": {
+      "transmission": "Sequential",
+      "drivetrain": "RWD",
+      "years": {
+        "min": 1968,
+        "max": 1968
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.9629328929095,
+      "runId": "STU-014",
+      "evidenceConfigSHA256": "1226388e157405798afdb88119726a354321ea5290600e4cdb6c4a37bf316748",
+      "configHashMatches": true,
+      "status": "recorded-pass-matching-config"
+    },
+    "provenance": {
+      "metadata": "outputs/stu-leonard/final-metadata.json"
+    }
+  }
+}

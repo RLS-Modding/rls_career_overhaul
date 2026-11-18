@@ -11,17 +11,17 @@ local byte, find, gsub, sub = string.byte, string.find, string.gsub, string.sub
 local function isSequence(value)
   local n = #value
   if n == 0 then return false end
-  if next(value) == 1 and next(value, n) == nil then return true end
   local count = 0
-  for _ in pairs(value) do
+  for key in pairs(value) do
     count = count + 1
     if count > n then return false end
+    -- Dense array keys arrive in order; hash-part sequences need the range check.
+    if key ~= count and (type(key) ~= 'number' or key < 1 or key > n or key % 1 ~= 0) then
+      return false
+    end
   end
-  if count ~= n then return false end
-  for i = 1, n do
-    if value[i] == nil then return false end
-  end
-  return true
+  -- n distinct integer keys inside 1..n prove that no slot is missing.
+  return count == n
 end
 M.isSequence = isSequence
 

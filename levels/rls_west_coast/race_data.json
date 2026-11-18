@@ -1,26 +1,8 @@
 {
   "races":{
-    "tractorPull":{
-      "assets":[],
-      "lights":{},
-      "bestTime":30,
-      "label":"West Coast Tractor Pull",
-      "pullDistanceMeters":91.44,
-      "reward":500,
-      "sledPresets":[
-        {"id":"8000","label":"8,000 lb","baseReward":500,"parTimeSeconds":18},
-        {"id":"14000","label":"14,000 lb","baseReward":1000,"parTimeSeconds":22},
-        {"id":"20000","label":"20,000 lb","baseReward":2000,"parTimeSeconds":26},
-        {"id":"30000","label":"30,000 lb","baseReward":4000,"parTimeSeconds":30}
-      ],
-      "type":[
-        "pulling"
-      ]
-    },
     "beachCircuit":{
-      "assets":[],
-      "lights":{},
       "apexOffset":2,
+      "assets":[],
       "bestTime":40,
       "checkpointIndexs":[
         9,
@@ -38,6 +20,7 @@
       "displaySpeed":true,
       "hotlap":27,
       "label":"Beach Circuit",
+      "lights":{},
       "minCheckpointDistance":45,
       "reward":125,
       "type":[
@@ -46,7 +29,6 @@
     },
     "dirtCircuit":{
       "assets":[],
-      "lights":{},
       "bestTime":66,
       "checkpointIndexs":[
         3,
@@ -63,6 +45,7 @@
       ],
       "hotlap":60,
       "label":"Dirt Circuit",
+      "lights":{},
       "reward":300,
       "type":[
         "offroad"
@@ -70,29 +53,36 @@
     },
     "dirtOval":{
       "assets":[],
-      "lights":{},
       "bestTime":32,
       "checkpointRoad":[
         "dirtOval"
       ],
       "hotlap":29,
       "label":"Dirt Oval",
+      "lights":{},
       "reward":50,
       "type":[
         "oval"
       ]
     },
     "drag":{
-      "thumbnail":"facilities/images/drag_paddock.jpg",
       "assets":[],
-      "lights":{},
-      "dragStripId":"alderStrip_main",
-      "dragTreeType":".500",
-      "businessProof":{"supported":true,"timeUnit":"s","legacyTargetTimeUnit":"s","leaderboardLabels":["Drag Strip","Drag Strip (Hotlap)"]},
       "bestTime":12,
+      "businessProof":{
+        "leaderboardLabels":[
+          "Drag Strip",
+          "Drag Strip (Hotlap)"
+        ],
+        "legacyTargetTimeUnit":"s",
+        "supported":true,
+        "timeUnit":"s"
+      },
       "checkpoints":2,
       "displaySpeed":true,
+      "dragStripId":"alderStrip_main",
+      "dragTreeType":".500",
       "label":"Drag Strip",
+      "lights":{},
       "predictCoef":{
         "a":4.0050901705661,
         "b":4.6929807292723,
@@ -114,6 +104,7 @@
         "yearMin":1933
       },
       "reward":75,
+      "thumbnail":"facilities/images/drag_paddock.jpg",
       "tuningShop":{
         "commute":120,
         "decimalPlaces":1,
@@ -143,8 +134,10 @@
       ]
     },
     "dragHighway":{
-      "assets":["fre_start_dragHighwayasset0","fre_start_dragHighwayasset1"],
-      "lights":{},
+      "assets":[
+        "fre_start_dragHighwayasset0",
+        "fre_start_dragHighwayasset1"
+      ],
       "bestTime":20,
       "checkpointIndexs":{},
       "checkpointRoad":[
@@ -152,33 +145,31 @@
       ],
       "displaySpeed":true,
       "label":"No Prep Highway Drag",
+      "lights":{},
       "reward":75,
       "type":[
         "drag"
       ]
     },
-    "driftLoopRemaster":{
+    "driftLoopFRE":{
       "assets":[],
-      "lights":{},
-      "bestTime":60,
+      "bestTime":30,
       "checkpointIndexs":[
-        9,
-        15,
-        23,
-        32,
-        41,
-        45,
-        49,
-        56,
-        62,
-        65
+        4,
+        8,
+        13,
+        18,
+        22,
+        28,
+        31
       ],
       "checkpointRoad":[
-        "driftLoopRemaster"
+        "driftLoopFRE"
       ],
-      "driftGoal":31000,
+      "driftGoal":8000,
       "hotlap":54,
-      "label":"Drift Loop Remaster",
+      "label":"Drift Playground",
+      "lights":{},
       "reward":200,
       "timeout":10,
       "type":[
@@ -186,8 +177,10 @@
       ]
     },
     "hotrolledDrift":{
-      "assets":["fre_start_hotrolledDriftasset2","fre_start_hotrolledDriftasset3"],
-      "lights":{},
+      "assets":[
+        "fre_start_hotrolledDriftasset2",
+        "fre_start_hotrolledDriftasset3"
+      ],
       "bestTime":30,
       "checkpointIndexs":[
         6,
@@ -199,16 +192,19 @@
       "checkpointRoad":[
         "hotrolledDrift"
       ],
-      "driftGoal":8200,
+      "driftGoal":7200,
       "label":"Hotrolled Drift",
+      "lights":{},
       "reward":400,
       "type":[
         "drift"
       ]
     },
     "islandTouge":{
-      "assets":["fre_start_islandTougeasset3","fre_start_islandTougeasset4"],
-      "lights":{},
+      "assets":[
+        "fre_start_islandTougeasset3",
+        "fre_start_islandTougeasset4"
+      ],
       "bestTime":25,
       "checkpointIndexs":[
         7,
@@ -219,8 +215,9 @@
       "checkpointRoad":[
         "islandTouge"
       ],
-      "driftGoal":29000,
+      "driftGoal":4500,
       "label":"Island Touge Drift",
+      "lights":{},
       "reward":400,
       "type":[
         "drift"
@@ -228,7 +225,6 @@
     },
     "koh1":{
       "assets":[],
-      "lights":{},
       "bestTime":129,
       "checkpointIndexs":[
         8,
@@ -260,6 +256,7 @@
       ],
       "hotlap":115,
       "label":"Ultra4 Race 1",
+      "lights":{},
       "reward":800,
       "timeout":60,
       "type":[
@@ -267,8 +264,10 @@
       ]
     },
     "koh2":{
-      "assets":["fre_start_koh2asset0","fre_start_koh2asset1"],
-      "lights":{},
+      "assets":[
+        "fre_start_koh2asset0",
+        "fre_start_koh2asset1"
+      ],
       "bestTime":186,
       "checkpointIndexs":[
         6,
@@ -302,6 +301,7 @@
       ],
       "hotlap":175,
       "label":"Ultra4 Race 2",
+      "lights":{},
       "reward":1100,
       "timeout":60,
       "type":[
@@ -309,27 +309,31 @@
       ]
     },
     "mudDrag1":{
-      "assets":["fre_start_mudDrag1asset0"],
-      "lights":{},
+      "assets":[
+        "fre_start_mudDrag1asset0"
+      ],
       "bestTime":10,
       "checkpointRoad":[
         "mudDrag1"
       ],
       "label":"Mud Drag Easy",
+      "lights":{},
       "reward":50,
       "type":[
         "mudding"
       ]
     },
     "mudDrag2":{
-      "assets":["fre_start_mudDrag2asset0"],
-      "lights":{},
+      "assets":[
+        "fre_start_mudDrag2asset0"
+      ],
       "bestTime":16,
       "checkpointIndexs":{},
       "checkpointRoad":[
         "mudDrag2"
       ],
       "label":"Mud Drag Hard",
+      "lights":{},
       "reward":75,
       "type":[
         "mudding"
@@ -337,7 +341,6 @@
     },
     "quarryCircuit":{
       "assets":[],
-      "lights":{},
       "bestTime":35,
       "checkpointIndexs":[
         5,
@@ -353,15 +356,17 @@
       ],
       "hotlap":25,
       "label":"Quarry Circuit",
+      "lights":{},
       "reward":100,
       "type":[
         "rally"
       ]
     },
     "rally1":{
-      "assets":["fre_start_rally1asset0"],
-      "lights":{},
       "apexOffset":2,
+      "assets":[
+        "fre_start_rally1asset0"
+      ],
       "bestTime":71,
       "checkpointIndexs":[
         12,
@@ -380,15 +385,17 @@
         "rally1"
       ],
       "label":"Rally Stage 1",
+      "lights":{},
       "reward":150,
       "type":[
         "rally"
       ]
     },
     "rally2":{
-      "assets":["fre_start_rally2asset0"],
-      "lights":{},
       "apexOffset":2,
+      "assets":[
+        "fre_start_rally2asset0"
+      ],
       "bestTime":130,
       "checkpointIndexs":[
         8,
@@ -414,15 +421,19 @@
         "rally2"
       ],
       "label":"Rally Stage 2",
+      "lights":{},
       "reward":200,
       "type":[
         "rally"
       ]
     },
     "rally3":{
-      "assets":["fre_start_rally3asset0","fre_start_rally3asset1","fre_start_rally3asset2"],
-      "lights":{},
       "apexOffset":1,
+      "assets":[
+        "fre_start_rally3asset0",
+        "fre_start_rally3asset1",
+        "fre_start_rally3asset2"
+      ],
       "bestTime":149,
       "checkpointIndexs":[
         3,
@@ -456,14 +467,20 @@
         "rally3"
       ],
       "label":"Rally Stage 3",
+      "lights":{},
       "reward":250,
       "type":[
         "rally"
       ]
     },
     "rally4":{
-      "assets":["fre_start_rally4asset0","fre_start_rally4asset1","fre_start_rally4asset2","fre_start_rally4asset3","fre_start_rally4asset4"],
-      "lights":{},
+      "assets":[
+        "fre_start_rally4asset0",
+        "fre_start_rally4asset1",
+        "fre_start_rally4asset2",
+        "fre_start_rally4asset3",
+        "fre_start_rally4asset4"
+      ],
       "bestTime":97,
       "checkpointIndexs":[
         4,
@@ -489,14 +506,16 @@
         "rally4"
       ],
       "label":"Rally Stage 4 - Final",
+      "lights":{},
       "reward":250,
       "type":[
         "rally"
       ]
     },
     "redwoodDrift":{
-      "assets":["fre_start_redwoodDriftasset1"],
-      "lights":{},
+      "assets":[
+        "fre_start_redwoodDriftasset1"
+      ],
       "bestTime":60,
       "checkpointIndexs":[
         5,
@@ -511,16 +530,18 @@
       "checkpointRoad":[
         "redwoodDrift"
       ],
-      "driftGoal":30000,
+      "driftGoal":29000,
       "label":"Redwood Drift",
+      "lights":{},
       "reward":500,
       "type":[
         "drift"
       ]
     },
     "redwoodDriftR":{
-      "assets":["fre_start_redwoodDriftRasset1"],
-      "lights":{},
+      "assets":[
+        "fre_start_redwoodDriftRasset1"
+      ],
       "bestTime":60,
       "checkpointIndexs":[
         6,
@@ -536,16 +557,18 @@
       "checkpointRoad":[
         "redwoodDriftR"
       ],
-      "driftGoal":31000,
+      "driftGoal":30000,
       "label":"Redwood Drift Reverse",
+      "lights":{},
       "reward":500,
       "type":[
         "drift"
       ]
     },
     "rockClimbL":{
-      "assets":["fre_start_rockClimbLasset0"],
-      "lights":{},
+      "assets":[
+        "fre_start_rockClimbLasset0"
+      ],
       "bestTime":111,
       "checkpointIndexs":[
         4
@@ -555,6 +578,7 @@
       ],
       "damageFactor":1,
       "label":"Rock Crawl Long",
+      "lights":{},
       "reward":200,
       "timeout":60,
       "type":[
@@ -562,8 +586,9 @@
       ]
     },
     "rockClimbS":{
-      "assets":["fre_start_rockClimbSasset0"],
-      "lights":{},
+      "assets":[
+        "fre_start_rockClimbSasset0"
+      ],
       "bestTime":111,
       "checkpointIndexs":{},
       "checkpointRoad":[
@@ -571,6 +596,7 @@
       ],
       "damageFactor":1,
       "label":"Rock Crawl Short",
+      "lights":{},
       "reward":100,
       "timeout":60,
       "type":[
@@ -579,7 +605,6 @@
     },
     "rubberBand":{
       "assets":[],
-      "lights":{},
       "bestTime":68,
       "checkpointIndexs":[
         3,
@@ -594,6 +619,7 @@
       ],
       "hotlap":55,
       "label":"Rubberband Ridge",
+      "lights":{},
       "reward":300,
       "runningStart":true,
       "type":[
@@ -601,14 +627,17 @@
       ]
     },
     "sealbrikDrift":{
-      "assets":["fre_start_sealbrikDriftasset0","fre_start_sealbrikDriftasset1"],
-      "lights":{},
+      "assets":[
+        "fre_start_sealbrikDriftasset0",
+        "fre_start_sealbrikDriftasset1"
+      ],
       "bestTime":30,
       "checkpointRoad":[
         "sealbrikDrift"
       ],
-      "driftGoal":6500,
+      "driftGoal":7800,
       "label":"Sealbrik Drift",
+      "lights":{},
       "reward":300,
       "type":[
         "drift"
@@ -616,7 +645,6 @@
     },
     "toughTruckBeach":{
       "assets":[],
-      "lights":{},
       "bestTime":25,
       "checkpointIndexs":[
         6
@@ -625,6 +653,7 @@
         "toughTruckBeach"
       ],
       "label":"Tough Truck Beach Run",
+      "lights":{},
       "reward":200,
       "timeout":10,
       "type":[
@@ -632,13 +661,20 @@
       ]
     },
     "track":{
-      "assets":[],
-      "lights":{},
-      "businessProof":{"supported":true,"timeUnit":"s","legacyTargetTimeUnit":"s","leaderboardLabels":["Track","Track (Hotlap)"]},
       "altRoute":{
-        "businessProof":{"supported":true,"timeUnit":"s","legacyTargetTimeUnit":"s","eventId":"track_alt","legacyRaceType":"trackAlt","leaderboardLabels":["Short Track","Short Track (Hotlap)"]},
         "altInfo":"**Continue Left for Standard Track\nHair Pin Right for Short Track**",
         "bestTime":91,
+        "businessProof":{
+          "eventId":"track_alt",
+          "leaderboardLabels":[
+            "Short Track",
+            "Short Track (Hotlap)"
+          ],
+          "legacyRaceType":"trackAlt",
+          "legacyTargetTimeUnit":"s",
+          "supported":true,
+          "timeUnit":"s"
+        },
         "checkpointRoad":"trackalt",
         "hotlap":85,
         "label":"Short Track",
@@ -694,7 +730,17 @@
         }
       },
       "apexOffset":1,
+      "assets":[],
       "bestTime":129,
+      "businessProof":{
+        "leaderboardLabels":[
+          "Track",
+          "Track (Hotlap)"
+        ],
+        "legacyTargetTimeUnit":"s",
+        "supported":true,
+        "timeUnit":"s"
+      },
       "checkpointIndexs":{},
       "checkpointRoad":[
         "trackloop"
@@ -702,6 +748,7 @@
       "hotlap":125,
       "label":"Track",
       "lapCount":3,
+      "lights":{},
       "predictCoef":{
         "a":97.766325905867,
         "b":2.2121350753093,
@@ -750,6 +797,43 @@
       },
       "type":[
         "roadracing"
+      ]
+    },
+    "tractorPull":{
+      "assets":[],
+      "bestTime":30,
+      "label":"West Coast Tractor Pull",
+      "lights":{},
+      "pullDistanceMeters":91.44,
+      "reward":500,
+      "sledPresets":[
+        {
+          "baseReward":500,
+          "id":"8000",
+          "label":"8,000 lb",
+          "parTimeSeconds":18
+        },
+        {
+          "baseReward":1000,
+          "id":"14000",
+          "label":"14,000 lb",
+          "parTimeSeconds":22
+        },
+        {
+          "baseReward":2000,
+          "id":"20000",
+          "label":"20,000 lb",
+          "parTimeSeconds":26
+        },
+        {
+          "baseReward":4000,
+          "id":"30000",
+          "label":"30,000 lb",
+          "parTimeSeconds":30
+        }
+      ],
+      "type":[
+        "pulling"
       ]
     }
   }

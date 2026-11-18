@@ -1,0 +1,89 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Configuration": "Jordan Hughes - Spray and Pray",
+  "Description": "Driver: Jordan Hughes. Builder: Blacktop Engineering. Blacktop Engineering: Satin-black and cream two-tone pillarless fifties hot rod, with quad carburetors exposed through the native cut hood. 423 CUI Ultra-Thrust OHV V8 with native quad carburetors and dedicated Stage 4 Race Block; naturally aspirated with nitrous from second gear. 3-speed automatic. Three-pass development result at West Coast: 9.516 s. Spray and Pray class. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Drivetrain": "RWD",
+  "Transmission": "Automatic",
+  "Fuel Type": "Gasoline",
+  "Induction Type": "NA + N2O",
+  "Years": {
+    "min": 1952,
+    "max": 1953
+  },
+  "Value": 105000,
+  "Power": 1404,
+  "Weight": 1921,
+  "Motorsport": {
+    "version": 1,
+    "id": "burnside/rls_nitro_blacktop_04",
+    "configId": "rls_nitro_blacktop_04",
+    "model": "burnside",
+    "config": "/vehicles/burnside/rls_nitro_blacktop_04.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "caleb_reece",
+    "driverName": "Jordan Hughes",
+    "builder": "Blacktop Engineering",
+    "classIds": [
+      "spray_and_pray"
+    ],
+    "approvedClassIds": [
+      "spray_and_pray"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "8660bd070ba6d87766e6df77616132017de789944fe253ea7e0a9ade57e13e4b",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "3-speed automatic",
+      "induction": "Naturally aspirated + nitrous",
+      "nitrous": true,
+      "years": {
+        "min": 1952,
+        "max": 1953
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x4",
+          "part": "tire_F_27.5_4_15_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_15x9",
+          "part": "tire_R_28_9_15_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "burnside_rollcage",
+          "part": "burnside_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.5161038017132,
+      "runId": null,
+      "evidenceConfigSHA256": "5588a2c7d3ab2ad577355f03a7be6d1c3fe0d248a5b75e7848104ddc6751fc0c",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/nitrous/final-results.json",
+      "acceptedConfig": "outputs/nitrous/accepted/rls_nitro_blacktop_04/rls_nitro_blacktop_04.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_nitrous_builders"
+  }
+}

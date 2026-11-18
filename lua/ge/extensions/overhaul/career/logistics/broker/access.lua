@@ -1,5 +1,9 @@
 -- Projects kind requirements into admission and progress without owning unlock rules.
 local M = {}
+
+function M.canBrowse(employment)
+  return not employment.isApprenticeshipEnabled() or employment.getDeliveryLevel() >= 30
+end
 -- Unlock flag definitions give labels as keys or {txt, context} translation objects.
 local function labelText(label, translate)
   if type(label) == "table" then return translate(label.txt, label.context) end
@@ -10,7 +14,7 @@ function M.evaluate(requirements, branchInfo, translate)
   for _, requirement in ipairs(requirements or {}) do
     if requirement.unlocked == false then
       local definition = requirement.definition or {}
-      local branch = requirement.branch or "logistics"
+      local branch = requirement.branch or "careerSkills-logistics"
       local info = branchInfo(branch) or {}
       local need = definition.level
       local label = definition.lockedReason and definition.lockedReason.label

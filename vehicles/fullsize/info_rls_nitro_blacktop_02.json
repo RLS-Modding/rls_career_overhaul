@@ -1,0 +1,89 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Configuration": "Alexis Duncan - Spray and Pray",
+  "Description": "Driver: Alexis Duncan. Builder: Blacktop Engineering. Blacktop Engineering: Black-cherry stripped large sedan with dark trim, mesh grille, cowl hood and drag spoiler. 6.9 L V8 with native Race Intake and dedicated Stage 4 Race Block; naturally aspirated with nitrous from second gear. 4-speed automatic. Three-pass development result at West Coast: 8.551 s. Spray and Pray class. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Drivetrain": "RWD",
+  "Transmission": "Automatic",
+  "Fuel Type": "Gasoline",
+  "Induction Type": "NA + N2O",
+  "Years": {
+    "min": 1990,
+    "max": 1997
+  },
+  "Value": 115000,
+  "Power": 1561,
+  "Weight": 1858,
+  "Motorsport": {
+    "version": 1,
+    "id": "fullsize/rls_nitro_blacktop_02",
+    "configId": "rls_nitro_blacktop_02",
+    "model": "fullsize",
+    "config": "/vehicles/fullsize/rls_nitro_blacktop_02.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "darius_kane",
+    "driverName": "Alexis Duncan",
+    "builder": "Blacktop Engineering",
+    "classIds": [
+      "spray_and_pray"
+    ],
+    "approvedClassIds": [
+      "spray_and_pray"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "8d8e36ca6881db127a4a589513e1dc9ce1e7bc5c7bc4f87abc9a5a6e07410101",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "4-speed automatic",
+      "induction": "Naturally aspirated + nitrous",
+      "nitrous": true,
+      "years": {
+        "min": 1990,
+        "max": 1997
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x4",
+          "part": "tire_F_27.5_4_15_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_15x10",
+          "part": "tire_R_28_10_15_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "fullsize_rollcage",
+          "part": "fullsize_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.5510395734299,
+      "runId": null,
+      "evidenceConfigSHA256": "8cf189faf338307dfd1d829f0d5778294914f894a79d3fd5b2fdd132aa7dc5a5",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/nitrous/final-results.json",
+      "acceptedConfig": "outputs/nitrous/accepted/rls_nitro_blacktop_02/rls_nitro_blacktop_02.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_nitrous_builders"
+  }
+}

@@ -1,4 +1,5 @@
 {
+  "aiLaunchAdvanceMs": 150,
   "derivedEventDefaults": {
     "label": "Drag Strip",
     "type": ["drag"],

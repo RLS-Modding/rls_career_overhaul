@@ -7,11 +7,6 @@
       </BngCardHeading>
 
       <div v-if="!computerLoading" class="computer-actions scroll" v-bng-ui-nav-scroll>
-        <div class="action-header">
-          <div class="line left"></div>
-          <div class="title">Vehicle Management</div>
-          <div class="line right"></div>
-        </div>
         <div v-if="hasVehicles" class="vehicle-select-container">
           <div class="vehicle-hero">
             <div class="hero-photo" :class="{ locked: !!vehicleLock }">
@@ -115,11 +110,6 @@
           <p> Place a vehicle in your garage to access modify and manage it.</p>
         </div>
 
-        <div class="action-header" v-if="computerStore.generalComputerFunctions">
-          <div class="line left"></div>
-          <div class="title">General Computer Functions</div>
-          <div class="line right"></div>
-        </div>
         <div v-if="computerStore.generalComputerFunctions" class="general-functions-container">
           <div class="actions-list">
             <template v-for="(computerFunction, index) in computerStore.generalComputerFunctions"
@@ -155,11 +145,6 @@
           </div>
         </div>
 
-        <div class="action-header" v-if="computerStore.activityComputerFunctions?.length">
-          <div class="line left"></div>
-          <div class="title">Activities & Events</div>
-          <div class="line right"></div>
-        </div>
         <div class="activities-container" v-if="computerStore.activityComputerFunctions?.length">
           <div class="actions-list">
             <template v-for="(computerFunction, index) in computerStore.activityComputerFunctions"
@@ -495,38 +480,6 @@ onUnmounted(kill)
   flex-direction: column;
   gap: var(--space-2);
   padding-bottom: var(--space-2);
-}
-
-/* Section head: small faint caps + hairline rule (house .split-head / .caption) */
-.action-header {
-  display: flex;
-  align-items: center;
-  gap: 0.7em;
-  margin-top: 0.15em;
-
-  .title {
-    flex: 0 0 auto;
-    font-size: 0.78em;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    line-height: 1;
-    text-transform: uppercase;
-    color: var(--faint);
-    padding-top: 0.15em; /* Overpass caps sit high */
-  }
-  /* reset the house .line list-row styles; here it is only a rule */
-  .line {
-    display: block;
-    flex: 1 1 auto;
-    height: 1px;
-    min-width: 0;
-    padding: 0;
-    border: 0;
-    background: var(--line);
-    &.left {
-      display: none;
-    }
-  }
 }
 
 /* Vehicle showcase: big photo left; name, value, three fixed spec lines and the

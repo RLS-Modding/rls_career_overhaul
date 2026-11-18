@@ -14,6 +14,7 @@ local ROUTE_VEHICLE_LIST = "overhaul.computer.vehicleShopping.vehicles"
 local PRIVATE_SELLER_ID = "private"
 local POLICE_MESSAGE_SECONDS = 8
 local MAX_LOGGED_SHOP_IDS = 5
+local GARAGE_FULL_REASON = "%s has no free parking space, so you can't buy here."
 
 local REQUIRED_BINDINGS = {
   "applyPurchaseAdjustedMarketValue",
@@ -278,6 +279,8 @@ function M.new(inputs)
     data.selectedSellerId = state.selectedSellerId
     data.screenTag = state.shoppingScreenTag
     data.buyingAvailable = state.buyingAvailable
+    data.buyingUnavailableReason = state.buyingUnavailableReason
+    data.originComputerId = state.originComputerId
     data.marketplaceAvailable = state.marketplaceAvailable
     data.playerAttributes = overhaul_career_economy_playerAttributes.getAllAttributes()
     if state.rtBizId then addRacingTeamContext(data) else addPlayerInventoryContext(data) end
@@ -362,6 +365,22 @@ function M.new(inputs)
     return computer
   end
 
+  -- A computer that sets vehicleShop keeps that choice. Any other garage computer can buy while its
+  -- garage has a free parking space, and says why not when it is full.
+  local function buyingAccessAtComputer(computer)
+    if not computer then return true end
+    local configured = computer.functions and computer.functions.vehicleShop
+    if configured ~= nil then return configured == true end
+    local garageId = computer.garageId
+    if not garageId then return false end
+    local garageManager = overhaul_career_garage_garageManager
+    if garageManager.isGarageSpace(garageId)[1] then return true end
+    -- A garage listed for sale or no longer held has no parking to offer, so the reason would be wrong.
+    if garageManager.isGarageForSale(garageId) or not garageManager.isAccessibleGarage(garageId) then return false end
+    local garageName = garageManager.garageIdToName(garageId)
+    return false, string.format(GARAGE_FULL_REASON, garageName and _tr(garageName) or "This garage")
+  end
+
   -- TODO At this point, the part conditions of the previous vehicle should have already been saved. for example when entering the garage
   local function openShop(seller, originComputerId, screenTag)
     if seller and dependencies.isPoliceDealershipLocked(seller) then
@@ -385,7 +404,7 @@ function M.new(inputs)
     travelQuotes.request(state.vehiclesInShop)
     local computer = startShoppingTether()
     state.shoppingScreenTag = screenTag
-    state.buyingAvailable = (not computer or computer.functions.vehicleShop) and true or false
+    state.buyingAvailable, state.buyingUnavailableReason = buyingAccessAtComputer(computer)
     state.marketplaceAvailable = (overhaul_career_career.hasBoughtStarterVehicle() and not state.currentSeller) and true or false
     state.selectedSellerId = state.currentSeller
     navigateToVehicleListOrShopping(state.currentSeller, vehicleListParams)
@@ -831,16 +850,17 @@ function M.new(inputs)
     local vehicle = overhaul_career_garage_inventory.getVehicles()[inventoryId]
     -- The inventory record owns the year; shared dealer state may belong to another purchase.
     vehicle.year = tonumber(vehicle.year) or tonumber(os.date("%Y"))
-    vehicle.originalParts = {}
+    local originalParts = vehicle.originalParts
+    vehicle.originalParts = originalParts or {}
     local allSlotsInVehicle = { main = true }
     for _, part in pairs(newParts) do
       part.year = vehicle.year
-      vehicle.originalParts[part.containingSlot] = { name = part.name, value = part.value }
+      if not originalParts then vehicle.originalParts[part.containingSlot] = { name = part.name, value = part.value } end
       if part.description.slotInfoUi then
         for slot in pairs(part.description.slotInfoUi) do allSlotsInVehicle[slot] = true end
       end
     end
-    vehicle.changedSlots = {}
+    vehicle.changedSlots = vehicle.changedSlots or {}
 
     local pending = state.pendingPurchase
     if pending and pending.inventoryId == inventoryId then

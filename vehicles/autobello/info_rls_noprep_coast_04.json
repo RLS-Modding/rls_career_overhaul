@@ -1,0 +1,26 @@
+{
+  "Configuration": "Nora Quinn - No Prep",
+  "Description": "Earthbound Pocket. Tier 4 racer. Highway no-prep quarter-mile: 9.794s at 144.91mph. Coastline Automotive. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Coastline Automotive",
+  "Name": "Nora Quinn",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 8.2278943048577,
+    "time_1_4": 9.7938355553706,
+    "time_1_8": 6.377759431768,
+    "time_330": 4.2039618520511,
+    "time_60": 1.540982270019,
+    "velAt_1_4": 64.779123274345,
+    "velAt_1_8": 51.59365242611
+  },
+  "Reaction Time": 0.25095821135654,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

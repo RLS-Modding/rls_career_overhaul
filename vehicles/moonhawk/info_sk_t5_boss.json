@@ -1,0 +1,13 @@
+{
+  "Name": "Nightfall",
+  "Configuration": "sk_t5_boss",
+  "Value": 120000,
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": true
+  },
+  "Description": "KCG Moonhawk \u2014 No Prep Knights boss."
+}

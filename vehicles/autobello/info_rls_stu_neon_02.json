@@ -1,0 +1,56 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Configuration": "Amelia Aldridge - Stu Leonard",
+  "Description": "Neon Works: autobello, 2.0L Water Cooled F4 Engine, Stage 3 Variable Boost Twin Turbochargers + 200 kW nitrous, Race 6-Speed Manual Transaxle. Roster approval retained. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Years": {
+    "min": 1968,
+    "max": 1968
+  },
+  "Drivetrain": "RWD",
+  "Fuel Type": "Gasoline",
+  "Author": "RLS / Neon Works",
+  "Motorsport": {
+    "version": 1,
+    "id": "autobello/rls_stu_neon_02",
+    "configId": "rls_stu_neon_02",
+    "model": "autobello",
+    "config": "/vehicles/autobello/rls_stu_neon_02.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "sourcePack": "rls_stu_leonard",
+    "driverId": "eddie_easton",
+    "driverName": "Amelia Aldridge",
+    "builder": "neon",
+    "classIds": [
+      "stu_leonard_850"
+    ],
+    "approvedClassIds": [
+      "stu_leonard_850"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained after shared-hardware migration. Recorded ETs are historical estimates; the current build has not been retimed or revalidated.",
+    "sourceConfigSHA256": "9b5ee9bdf6a01c12b8b66e6578960ac6d79e6f2baf215ea902a9cce3607c5f3e",
+    "traits": {
+      "drivetrain": "RWD",
+      "years": {
+        "min": 1968,
+        "max": 1968
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.9222442330936,
+      "runId": "BEHAVIOR-20261025-rls_stu_neon_02",
+      "evidenceConfigSHA256": "2c25f36646ff9b31e4293b5f9ec293b603bff9d6b887c4b85377d22186fad41a",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/stu-leonard/final-metadata.json",
+      "approvalEvidence": "/settings/motorsportEvents/approvalEvidence-20261025.json",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    }
+  }
+}

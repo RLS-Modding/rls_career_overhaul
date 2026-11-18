@@ -1,0 +1,59 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Configuration": "Julian Jensen - Stu Leonard",
+  "Description": "Low Orbit Garage: burnside, 423 CUI 'Ultra-Thrust' OHV V8 Engine, Stage 4 Supercharger + 150 kW nitrous, 3-Speed Automatic Drag Transmission. Healthy qualifying pass 8.582969 s; identical saved-build confirmation 8.583245 s. West Coast quarter mile. Two passes do not establish all-condition repeatability. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Years": {
+    "min": 1954,
+    "max": 1954
+  },
+  "Config Type": "Custom",
+  "Body Style": "Coupe",
+  "Drivetrain": "RWD",
+  "Transmission": "Automatic",
+  "Fuel Type": "Gasoline",
+  "Induction Type": "Supercharger",
+  "defaultPaintName1": "Fiesta Yellow",
+  "Motorsport": {
+    "version": 1,
+    "id": "burnside/rls_stu_loworbit_01",
+    "configId": "rls_stu_loworbit_01",
+    "model": "burnside",
+    "config": "/vehicles/burnside/rls_stu_loworbit_01.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "sourcePack": "rls_stu_leonard",
+    "driverId": "dominic_toretto",
+    "driverName": "Julian Jensen",
+    "builder": "loworbit",
+    "classIds": [
+      "stu_leonard_850"
+    ],
+    "approvedClassIds": [
+      "stu_leonard_850"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained after shared-hardware migration. Recorded ETs are historical estimates; the current build has not been retimed or revalidated.",
+    "sourceConfigSHA256": "b9ffcc9b890af5b7e7fec980ebec3e53cc16db8571f6f2795b2911249d888ef0",
+    "traits": {
+      "transmission": "Automatic",
+      "drivetrain": "RWD",
+      "years": {
+        "min": 1954,
+        "max": 1954
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.5832453470713,
+      "runId": "STU-019",
+      "evidenceConfigSHA256": "a70afca014dc13fe378a2b10235f9a9683286ba2478e6740266f53720ca2a82c",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/stu-leonard/final-metadata.json",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    }
+  }
+}

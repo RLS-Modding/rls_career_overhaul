@@ -1,0 +1,89 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Configuration": "Chase Burke - Super Stick",
+  "Description": "Driver: Chase Burke. Builder: Heritage Speed. Heritage Speed: 423 ultra-HD/Stage 4 blower, period four-speed, 40 L fuel and restored rear bumper; dark oxblood with cream stripes.. 423 CUI 'Ultra-Thrust' V8 Engine; Supercharger; nitrous No. 4-speed H-pattern manual. First clean qualifying West Coast quarter-mile: 8.651 s. Custom Super Stick build. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Transmission": "Manual",
+  "Drivetrain": "RWD",
+  "Fuel Type": "Gasoline",
+  "Induction Type": "SC",
+  "Years": {
+    "min": 1969,
+    "max": 1971
+  },
+  "Value": 65000,
+  "Power": 1430,
+  "Weight": 1781,
+  "Motorsport": {
+    "version": 1,
+    "id": "barstow/rls_s850_heritage_iron_horse",
+    "configId": "rls_s850_heritage_iron_horse",
+    "model": "barstow",
+    "config": "/vehicles/barstow/rls_s850_heritage_iron_horse.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "nate_denver",
+    "driverName": "Chase Burke",
+    "builder": "Heritage Speed",
+    "classIds": [
+      "super_stick"
+    ],
+    "approvedClassIds": [
+      "super_stick"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "39016e77e63b878be0c85637c0c4cad8aba34d5811b1de0e8c5bda96ce94b78d",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "4-speed H-pattern manual",
+      "induction": "Supercharger",
+      "nitrous": false,
+      "years": {
+        "min": 1969,
+        "max": 1971
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x4",
+          "part": "tire_F_26_4_15_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_15x10",
+          "part": "tire_R_26_10_15_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "barstow_rollcage",
+          "part": "barstow_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.6514899179982,
+      "runId": "S850-045",
+      "evidenceConfigSHA256": "70535246f4f5165bb8dcbad629dbf24b5639b759f15ac47a37e57b8f87f0c40e",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/stick850/final-results.json",
+      "acceptedConfig": "outputs/stick850/accepted/rls_s850_heritage_iron_horse/rls_s850_heritage_iron_horse.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_stickshift850"
+  }
+}

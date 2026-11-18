@@ -45,6 +45,7 @@ const businessBalance = ref(0)
 const purchasing = ref(false)
 
 const sourceItems = computed(() => props.mode === "parts" ? cartStore.partsCart || [] : cartStore.tuningCart || [])
+const inventorySourceLabel = computed(() => sessionStore.pulledOutVehicle?.isPersonal ? "Personal inventory" : "Business inventory")
 const subtotal = computed(() => sourceItems.value.reduce((sum, item) => sum + (Number(item.price) || 0), 0))
 const taxes = computed(() => subtotal.value * 0.07)
 const cartData = computed(() => ({
@@ -59,7 +60,7 @@ const cartData = computed(() => ({
     itemId: item.id,
     slotPath: item.slotPath,
     varName: item.varName,
-    extraInfo: item.fromInventory ? "Business inventory" : undefined,
+    extraInfo: item.fromInventory ? inventorySourceLabel.value : undefined,
   })),
   taxes: taxes.value,
   total: subtotal.value + taxes.value,

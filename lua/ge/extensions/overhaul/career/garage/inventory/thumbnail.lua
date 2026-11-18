@@ -3,8 +3,25 @@
 -- and graphics pipeline during a transaction save.
 local M = {}
 
+function M.configKey(config)
+  local filename = type(config) == 'table' and config.partConfigFilename
+  if type(filename) ~= 'string' or filename == '' then return false end
+  return (filename:gsub('\\', '/'):gsub('^/+', ''))
+end
+
+function M.nextDirtyDate(previous, current)
+  local base = current:sub(1, -2)
+  if current:sub(-1) == 'Z' and type(previous) == 'string' and previous:sub(1, #base) == base then
+    local suffix = previous:sub(#base + 1)
+    local fraction = suffix:match('^%.(%d+)Z$')
+    if suffix == 'Z' or fraction then return base .. '.' .. (fraction or '') .. '1Z' end
+  end
+  return current
+end
+
 function M.capture(filename, camera, callback)
   local view
+  local suspendedBlur
   local finished = false
   local function warn(problem)
     pcall(function() log('W', 'inventory.thumbnail', tostring(problem)) end)
@@ -12,6 +29,12 @@ function M.capture(filename, camera, callback)
   local function finish(success)
     if finished then return end
     finished = true
+    if suspendedBlur then
+      local blur = suspendedBlur
+      suspendedBlur = nil
+      local restored, problem = pcall(function() blur:enable() end)
+      if not restored then success = false; warn(problem) end
+    end
     if view then
       local capturedView = view
       view = nil
@@ -44,7 +67,18 @@ function M.capture(filename, camera, callback)
     core_jobsystem.create(function(job)
       local captured, result = pcall(function()
         job.sleep(camera.screenshotDelay or 0.5)
+        local blur = scenetree.findObject('ScreenBlurFX')
+        if blur and blur:isEnabled() then
+          -- UI masks reach every view; keep lighting effects and suspend only blur for one frame.
+          suspendedBlur = blur
+          blur:disable()
+          job.sleep(0)
+        end
         if not view:saveToDisk(temporary) then return false end
+        if suspendedBlur then
+          suspendedBlur:enable()
+          suspendedBlur = nil
+        end
         local bitmap = GBitmap()
         if not bitmap:loadFile(temporary) then return false end
         bitmap:setFormat(10) -- GFXFormatR8G8B8, as in the stock thumbnail writer.

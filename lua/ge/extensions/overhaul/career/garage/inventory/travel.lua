@@ -316,19 +316,18 @@ function travelPart.new(inputs)
       and (restoreState.savedLocations[tostring(inventoryId)] or restoreState.savedLocations[inventoryId])
   end
 
-  local function deferCarriedNode(restoreState, node, relation, rootIsCurrent, inventoryId)
+  local function deferCarriedNode(restoreState, node, relation, inventoryId)
     if restoreState.pendingCarriedIds[inventoryId] then return end
     restoreState.pendingCarriedIds[inventoryId] = true
     restoreState.pendingCarried[#restoreState.pendingCarried + 1] = {
       node = node,
       relation = relation,
-      rootIsCurrent = rootIsCurrent,
     }
   end
 
   local function spawnChildren(node, spots, usedSpots, restoreState, carriedById)
     for _, child in ipairs(node.children or {}) do
-      inputs.travel.spawnNode(child, spots, usedSpots, false, restoreState, carriedById)
+      inputs.travel.spawnNode(child, spots, usedSpots, restoreState, carriedById)
     end
   end
 
@@ -341,11 +340,9 @@ function travelPart.new(inputs)
     return ok and (type(placed) ~= 'boolean' or placed)
   end
 
-  -- The entered vehicle arrives at the gate; other groups can use optional parking for more room.
-  local function placeRestoredVehicle(veh, inventoryId, location, spots, usedSpots, rootIsCurrent, restoreState, preserveShape)
+  local function placeRestoredVehicle(veh, inventoryId, location, spots, usedSpots, restoreState, preserveShape)
     if location then return teleportVehicle(veh, {pos = vec3(location.pos), rot = quat(location.rot)}, preserveShape) end
     local arrival = not restoreState.sessionRestore and (restoreState.arrival or levelData.recoverySpawn(restoreState.levelName))
-    if rootIsCurrent and teleportVehicle(veh, arrival, preserveShape) then return true end
     local spot = not restoreState.sessionRestore and inputs.travel.selectSpot(spots, usedSpots, veh:getID(), inventoryId)
     if spot then
       local placed, deferred = inputs.travel.placeVehicle(veh, spot, inventoryId, preserveShape)
@@ -354,20 +351,20 @@ function travelPart.new(inputs)
     return teleportVehicle(veh, arrival, preserveShape)
   end
 
-  function inputs.travel.spawnNode(node, spots, usedSpots, rootIsCurrent, restoreState, carriedById, forceIndependent)
+  function inputs.travel.spawnNode(node, spots, usedSpots, restoreState, carriedById, forceIndependent)
     local inventoryId = tonumber(node and node.inventoryId)
     if not inventoryId or not inputs.vehicles[inventoryId] then return nil end
     if restoreState.sessionRestore and not savedLocationOf(restoreState, inventoryId) then return nil end
     local relation = carriedById and carriedById[inventoryId]
     if relation and not forceIndependent then
-      deferCarriedNode(restoreState, node, relation, rootIsCurrent, inventoryId)
+      deferCarriedNode(restoreState, node, relation, inventoryId)
       return nil
     end
 
     local location = savedLocationOf(restoreState, inventoryId)
     local arrival = restoreState.arrival or levelData.recoverySpawn(restoreState.levelName)
     local spawnAt = location and location.pos and {pos = vec3(location.pos), rot = location.rot and quat(location.rot) or nil}
-      or (rootIsCurrent and arrival) or (spots and spots[1]) or arrival
+      or (spots and spots[1]) or arrival
     if not spawnAt then
       restoreState.spawnFailedIds[inventoryId] = true
       spawnChildren(node, spots, usedSpots, restoreState, carriedById)
@@ -382,7 +379,7 @@ function travelPart.new(inputs)
     end
     if existingVehId and inputs.M.deferVehiclePlacement then inputs.M.deferVehiclePlacement(inventoryId, veh:getID()) end
 
-    local placed, deferred = placeRestoredVehicle(veh, inventoryId, location, spots, usedSpots, rootIsCurrent, restoreState, forceIndependent)
+    local placed, deferred = placeRestoredVehicle(veh, inventoryId, location, spots, usedSpots, restoreState, forceIndependent)
     if placed then
       if not deferred then inputs.travel.finishVehiclePlacement(veh, inventoryId) end
       restoreState.placedInventoryIds[inventoryId] = true
@@ -456,7 +453,7 @@ function travelPart.new(inputs)
     if pending.relation.coupled then
       log("W", "career.inventory", "Map travel: hitch restore failed for " .. inventoryId .. "; using a separate spot")
     end
-    inputs.travel.spawnNode(pending.node, spots, usedSpots, pending.rootIsCurrent, restoreState, carriedById, true)
+    inputs.travel.spawnNode(pending.node, spots, usedSpots, restoreState, carriedById, true)
     if job then
       job.sleep(CARRIED_SETTLE_SECONDS)
       if not inputs.travel.isRestoreActive(restoreState) then return nil end
@@ -523,7 +520,7 @@ function travelPart.new(inputs)
       end
       if not madeProgress then
         local pending = table.remove(restoreState.pendingCarried, 1)
-        inputs.travel.spawnNode(pending.node, spots, usedSpots, pending.rootIsCurrent, restoreState, carriedById, true)
+        inputs.travel.spawnNode(pending.node, spots, usedSpots, restoreState, carriedById, true)
         if job then
           job.sleep(CARRIED_SETTLE_SECONDS)
           if not inputs.travel.isRestoreActive(restoreState) then return end
@@ -810,8 +807,7 @@ function travelPart.new(inputs)
     for _, group in ipairs(manifest.groups) do
       local tree = group and group.tree
       if tree then
-        local rootIsCurrent = inputs.state.vehicleToEnterId ~= nil and tonumber(tree.inventoryId) == inputs.state.vehicleToEnterId
-        inputs.travel.spawnNode(tree, spots, usedSpots, rootIsCurrent, restoreState, carriedById)
+        inputs.travel.spawnNode(tree, spots, usedSpots, restoreState, carriedById)
       end
     end
     settleRestoreProgress(restoreState)

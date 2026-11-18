@@ -259,16 +259,20 @@ function spawnPart.new(inputs)
     return vehicleData
   end
 
+  -- Replacing the player's vehicle while on foot would build the car inside the walking character, and the game
+  -- then takes the car's paint as the character's. On foot the car is spawned at the walker and entered instead.
   local function createSpawnedVehicle(inventoryId, replaceOption, vehicleModel, vehicleData)
     core_vehicle_manager.queueAdditionalVehicleData({spawnWithEngineRunning = false})
-    if replaceOption == 1 then
+    if replaceOption == 1 and not gameplay_walk.isWalking() then
       return core_vehicles.replaceVehicle(vehicleModel, vehicleData)
     elseif replaceOption == 2 then
       local oldVehId = inputs.inventoryIdToVehId[inventoryId]
       local oldVehObj = oldVehId and getObjectByID(oldVehId) or nil
       if oldVehObj then return core_vehicles.replaceVehicle(vehicleModel, vehicleData, oldVehObj) end
     end
-    vehicleData.autoEnterVehicle = false
+    vehicleData.autoEnterVehicle = replaceOption == 1
+    -- Like the replacement it stands in for, a car with no clear spot nearby stays where it is instead of being deleted.
+    if replaceOption == 1 then vehicleData.removeWhenNoPositionFound = false end
     return core_vehicles.spawnNewVehicle(vehicleModel, vehicleData)
   end
 

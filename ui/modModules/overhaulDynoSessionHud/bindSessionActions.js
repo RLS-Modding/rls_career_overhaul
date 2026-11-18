@@ -6,6 +6,10 @@ import { luaLiteral } from '../../ui-vue/mods/rls_career_overhaul/overhaul/modul
 import { api } from './presentation.js'
 
 export function bindSessionActions($scope, requestState, invalidateGraphModel) {
+  $scope.transmissionChoice = { holdGear: 0, lockup: false, loadPreset: 'standard' }
+  $scope.loadPresets = [{id:'light',label:'Light'},{id:'standard',label:'Standard'},{id:'heavy',label:'Heavy'}]
+  $scope.holdGearLabel = gear => 'Gear ' + gear.gear + ' (' + Number(gear.ratio).toFixed(3) + ':1)'
+
 
   function runLua(command, afterDelay) {
     const luaApi = api()
@@ -30,7 +34,11 @@ export function bindSessionActions($scope, requestState, invalidateGraphModel) {
   }
 
   $scope.armPull = function() {
-    runLua('overhaul_career_parts_dyno_dynoSession.startPull()', 100)
+    const choice = $scope.transmissionChoice
+    const transmission = $scope.state && $scope.state.transmission
+    const valid = transmission && transmission.supported && (transmission.gears || []).some(g => g.gear === choice.holdGear)
+    const options = {holdGear: valid ? choice.holdGear : 0, lockup: !!(valid && choice.lockup && transmission.lockupSupported), loadPreset: choice.loadPreset}
+    runLua('overhaul_career_parts_dyno_dynoSession.startPull(' + luaLiteral(options) + ')', 100)
   }
 
   $scope.openMaintenance = function() {

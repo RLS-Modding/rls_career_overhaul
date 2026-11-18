@@ -1,0 +1,73 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "pessima/rls_nitro_neon_03",
+    "configId": "rls_nitro_neon_03",
+    "model": "pessima",
+    "config": "/vehicles/pessima/rls_nitro_neon_03.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "ryan_cooper",
+    "driverName": "Felicity Mackenzie",
+    "builder": "Neon Works",
+    "classIds": [
+      "spray_and_pray"
+    ],
+    "approvedClassIds": [
+      "spray_and_pray"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "2bd572b5683c399b51dda025f6300232ad1c9d9d2008af2539f919d60ded10eb",
+    "traits": {
+      "drivetrain": "AWD",
+      "transmission": "6-speed sequential",
+      "induction": "Naturally aspirated + nitrous",
+      "nitrous": true,
+      "years": {
+        "min": 1988,
+        "max": 1991
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_17x9",
+          "part": "tire_F_245_35_17_race",
+          "typeHint": null
+        },
+        {
+          "slot": "tire_R_17x9",
+          "part": "tire_R_245_35_17_race",
+          "typeHint": null
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "pessima_rollcage",
+          "part": "pessima_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.8721891639311,
+      "runId": null,
+      "evidenceConfigSHA256": "ad4664a4c08b8be8bfc43e2da61d73e76ebf8236964283bcee938b015602063e",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/nitrous/final-results.json",
+      "acceptedConfig": "outputs/nitrous/accepted/rls_nitro_neon_03/rls_nitro_neon_03.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_nitrous_builders"
+  }
+}

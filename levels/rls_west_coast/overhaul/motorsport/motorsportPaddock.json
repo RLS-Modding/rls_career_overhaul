@@ -1,0 +1,35 @@
+{
+  "sitesFile": "/levels/rls_west_coast/facilities/dragEvent.sites.json",
+  "anchor": [
+    -230.62677,
+    -202.32663,
+    118.84
+  ],
+  "radius": 130,
+  "bounds": {
+    "minX": -350,
+    "maxX": -170,
+    "minY": -330,
+    "maxY": -185
+  },
+  "clearAreas": [],
+  "waitingSpot": {
+    "name": "Player waiting",
+    "pos": [
+      -203,
+      -228,
+      118.85
+    ],
+    "rot": [
+      0,
+      0,
+      -0.2540143430233,
+      0.96720039844513
+    ],
+    "scl": [
+      2.5,
+      6,
+      3
+    ]
+  }
+}

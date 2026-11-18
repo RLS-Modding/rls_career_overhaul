@@ -329,7 +329,7 @@ local function registerSaveFeatures()
       parts.persistence.ensureSaveDirectories(context.base, writer)
       return context.write(serializableStateFn())
     end,
-    restore = function(context) return context.read() end,
+    restore = function(context) return parts.persistence.withNumericGearKeys(context.read()) end,
   }))
   local function dispatch(context, operation, ...) return operation(context, ...) end
   saveFeatures.damage = assert(saveStore.feature('jobs.offroadRecoveryDamage', {

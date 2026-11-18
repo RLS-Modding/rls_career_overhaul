@@ -92,6 +92,7 @@ import { usePhoneMarketplaceListings } from '../../composables/usePhoneMarketpla
 import {
   avatarColour,
   avatarInitials,
+  buyMarketValue,
   marketDelta,
   mileageText,
   usePhoneMarketplaceMoney,
@@ -141,7 +142,7 @@ const feed = computed(() => {
         avatarBg: avatarColour(sellerName),
         askingText: money(asking),
         // buying: paying under estimated market is the good outcome
-        delta: marketDelta(asking, v.marketValue),
+        delta: marketDelta(asking, buyMarketValue(v)),
         canNegotiate: v.negotiationPossible !== false && !(Number(v.discountPercentage) > 0),
       }
     })

@@ -8,24 +8,12 @@ local M = {}
 
 -- Config ----------------------------------------------------------------------------------------
 
-local MIN_BET = 50
+local gamblingRules = require('overhaul/lib/progression/gambling')
+local MIN_BET = gamblingRules.minimum
 local RESHUFFLE_THRESHOLD = 0.5
 
-local GAMBLING_SKILL_ATTRIBUTE_KEY = "careerSkills-gambling"
-local GAMBLING_SKILL_XP_PER_DOLLAR_WIN = 9 / 130
-local GAMBLING_DEFAULT_MAX_BET = 1000
-local GAMBLING_BET_CAP_THRESHOLDS = {
-  { xp = 301000, cap = 50000 },
-  { xp = 225000, cap = 30000 },
-  { xp = 162000, cap = 25000 },
-  { xp = 113000, cap = 20000 },
-  { xp = 75000,  cap = 15000 },
-  { xp = 46000,  cap = 10000 },
-  { xp = 26000,  cap = 5000 },
-  { xp = 13000,  cap = 2500 },
-  { xp = 5300,   cap = 2000 },
-  { xp = 1400,   cap = 1500 },
-}
+local GAMBLING_SKILL_ATTRIBUTE_KEY = gamblingRules.attribute
+local GAMBLING_DEFAULT_MAX_BET = gamblingRules.defaultCap
 
 local RANKS = {"A","2","3","4","5","6","7","8","9","10","J","Q","K"}
 local SUITS = {"spades","hearts","clubs","diamonds"}
@@ -164,10 +152,7 @@ end
 local function getGamblingMaxBet()
   if not careerMoneyApplies() then return GAMBLING_DEFAULT_MAX_BET end
   local value = tonumber(overhaul_career_economy_playerAttributes.getAttributeValue(GAMBLING_SKILL_ATTRIBUTE_KEY)) or 0
-  for _, entry in ipairs(GAMBLING_BET_CAP_THRESHOLDS) do
-    if value >= entry.xp then return entry.cap end
-  end
-  return GAMBLING_DEFAULT_MAX_BET
+  return gamblingRules.maxBet(value)
 end
 
 local function computeCareerPayout(modeState)
@@ -279,12 +264,7 @@ local function careerTrySettle(modeState)
   if not session.gamblingSkillXpGranted then
     local charged = session.careerChargedThisRound or 0
     local net = payout - charged
-    local xp = 0
-    if net > 0 then
-      xp = math.floor(GAMBLING_SKILL_XP_PER_DOLLAR_WIN * net)
-    elseif net < 0 then
-      xp = math.floor(0.30 * GAMBLING_SKILL_XP_PER_DOLLAR_WIN * math.abs(net))
-    end
+    local xp = gamblingRules.xp(net)
     if xp > 0 then
       local change = {[GAMBLING_SKILL_ATTRIBUTE_KEY] = xp}
       local reason = {tags = {"cardGames", "gambling"}}

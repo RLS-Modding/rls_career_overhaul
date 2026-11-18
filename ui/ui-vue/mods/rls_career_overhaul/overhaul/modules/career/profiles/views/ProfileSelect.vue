@@ -55,8 +55,6 @@
           :challengeOptions="challengeFilterOptions"
           :setSortContainer="setSortContainer"
           :setFilterContainer="setFilterContainer"
-          @search-focus="onSearchFocus"
-          @search-blur="onSearchBlur"
           @toggle-sort="toggleSort"
           @select-sort="selectSort"
           @close-sort="closeSort"
@@ -187,7 +185,6 @@ import { returnFocusToOpener } from "../../composables/useScreenEntryFocus"
 import { useDropdown } from "../../composables/useDropdown.js"
 import { acquireScope } from '../../utils/luaScopes'
 import { safeLua } from '../../utils/safeLua.js'
-import { useCefTyping } from '../../composables/useCefTyping.js'
 import ProfileSelectToolbar from "./profileSelect/ProfileSelectToolbar.vue"
 import { useProfileFilters } from "./profileSelect/useProfileFilters.js"
 import { useProfileStrip } from "./profileSelect/useProfileStrip.js"
@@ -458,8 +455,6 @@ function onDropdownDocClick(event) {
   if (sortOpen.value) return
   onFilterDocClick(event)
 }
-
-const { onFocus: onSearchFocus, onBlur: onSearchBlur } = useCefTyping()
 
 let loadPreflightPending = false
 let migrationOpener = null

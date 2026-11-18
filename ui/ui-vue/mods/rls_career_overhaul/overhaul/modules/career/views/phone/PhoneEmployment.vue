@@ -73,7 +73,7 @@
               <div class="vehicle-copy">
                 <strong>{{ translateLabel(vehicle.name) }}</strong>
                 <span v-if="vehicle.available !== false" class="pill soft">Company vehicle</span>
-                <span v-else class="pill lock-pill" :title="vehicle.disableReason || vehicle.serviceUnlockLabel">{{
+                <span v-else class="pill lock-pill" :title="vehicle.disableReason">{{
                   vehicleUnlockText(vehicle)
                 }}</span>
               </div>
@@ -546,12 +546,10 @@ const skillStat = computed(() => {
 const availableRoleplayVehicles = computed(() =>
   (state.value.roleplaySetup?.vehicles || []).filter((v) => v && v.available !== false),
 );
+// Name the check that actually blocks the vehicle, never a requirement the player already meets.
+// Every locked row comes from serviceFleet.offers, which always sets lockReason with disableReason.
 function vehicleUnlockText(vehicle) {
-  if (vehicle?.serviceUnlockLabel) return vehicle.serviceUnlockLabel;
-  if (vehicle?.disableReason) return vehicle.disableReason;
-  const rep = Number(vehicle?.reputationLevel);
-  if (Number.isFinite(rep)) return `Rep Lv ${rep}`;
-  return "Locked";
+  return vehicle?.lockReason?.label || "Locked";
 }
 const splitSummary = (text) =>
   String(text || "")

@@ -1,0 +1,491 @@
+{
+  "version": 1,
+  "audit": "drag-driving-repair-20261026",
+  "method": "Production event controllers, direct native Alder lane spawns, paired copies of each build. Both lanes checked. No automatic retries. Configs and cooldown code unchanged.",
+  "limitations": "Seven targeted AI launch repairs across recorded controller revisions. B uses the original default recovery algorithm; C/D include optional recovery settings; O/P include stable NPC staging and forward-gear initialization. This is not a uniform fresh 180-build sweep or a paddock routing test.",
+  "sourceRevisions": {
+    "B": {
+      "lua/ge/extensions/overhaul/events/motorsportEvents/drag/laneZones.lua": "be0ee0729c9bd3f7ecae7fcbad3250a97cb0994ad1bfa183176cb7e01de0d547",
+      "lua/vehicle/extensions/overhaulMotorsportLaunch.lua": "57e57508c43cde7cffa681429fbb112e9d0e9199c2fc3473db7be25f0d64140d",
+      "lua/ge/extensions/overhaul/events/motorsportEvents/drag/staging.lua": "83daad73ceec094930f1129db0dd49bb60e6362da110d4e1f1fffe4630a6f6a2",
+      "lua/ge/extensions/overhaul/events/motorsportEvents/drag/classes.lua": "d60141ceb34aa601bb1535b81fef2ecfd17e405595dcade76a8d2bc5613ff20e",
+      "lua/ge/extensions/overhaul/events/motorsportEvents/drag/recovery.lua": "cf912da5ab871b79665fd31ee556adbf7121a18de22867c2187899a9a55a5eaf",
+      "lua/ge/extensions/overhaul/events/motorsportEvents/drag/approach.lua": "98ff3c873a5093abff033bc7400ce9d13ea023a102c4e59b9207a656c9cbb81b",
+      "lua/vehicle/extensions/overhaulMotorsportStagingHold.lua": "844ee87a22a5a186632b1c1edd9fc5149e9cb66e21c6d60829adede3d76e562c",
+      "lua/vehicle/extensions/overhaulMotorsportApproach.lua": "37974e9a78942faf2419cf8e8ae91c30cd6cb8cd518676886e5003736ef137b7",
+      "lua/vehicle/extensions/overhaulMotorsportCooldown.lua": "f7cba3699c96d8505e6ccf113994ba8931cf1e9a271e14029433e90f6d9a5fc4",
+      "settings/motorsportEvents/competition.json": "447953cf5079041e59efb5c2acd152dfe1c5cd1c5486685ad111bbb36910b7da",
+      "lua/vehicle/extensions/overhaulMotorsportStartup.lua": "8563549932b60b78eb3b282f8f0bb738b8d3783096342e3b6c04af34c066bef4",
+      "lua/ge/extensions/overhaul/events/motorsportEvents/drag/runner.lua": "61405e8b17d7009d4724cb06918a641e05315b0e9b8099e93a921fde5f95226c",
+      "lua/ge/extensions/overhaul/events/motorsportEvents/definitions.lua": "471747e20b0d89ac5001fc88b9ce5c4276f8e2860c6ab453695173429e1508ed"
+    },
+    "C": {
+      "lua/ge/extensions/overhaul/events/motorsportEvents/drag/laneZones.lua": "be0ee0729c9bd3f7ecae7fcbad3250a97cb0994ad1bfa183176cb7e01de0d547",
+      "lua/vehicle/extensions/overhaulMotorsportLaunch.lua": "784797c404a1867e1cfbda274671377412be61be116fec009e1b5dc299b9588c",
+      "lua/ge/extensions/overhaul/events/motorsportEvents/drag/staging.lua": "83daad73ceec094930f1129db0dd49bb60e6362da110d4e1f1fffe4630a6f6a2",
+      "lua/ge/extensions/overhaul/events/motorsportEvents/drag/classes.lua": "d60141ceb34aa601bb1535b81fef2ecfd17e405595dcade76a8d2bc5613ff20e",
+      "lua/ge/extensions/overhaul/events/motorsportEvents/drag/recovery.lua": "cf912da5ab871b79665fd31ee556adbf7121a18de22867c2187899a9a55a5eaf",
+      "lua/ge/extensions/overhaul/events/motorsportEvents/drag/approach.lua": "98ff3c873a5093abff033bc7400ce9d13ea023a102c4e59b9207a656c9cbb81b",
+      "lua/vehicle/extensions/overhaulMotorsportStagingHold.lua": "844ee87a22a5a186632b1c1edd9fc5149e9cb66e21c6d60829adede3d76e562c",
+      "lua/vehicle/extensions/overhaulMotorsportApproach.lua": "37974e9a78942faf2419cf8e8ae91c30cd6cb8cd518676886e5003736ef137b7",
+      "lua/vehicle/extensions/overhaulMotorsportCooldown.lua": "f7cba3699c96d8505e6ccf113994ba8931cf1e9a271e14029433e90f6d9a5fc4",
+      "settings/motorsportEvents/competition.json": "447953cf5079041e59efb5c2acd152dfe1c5cd1c5486685ad111bbb36910b7da",
+      "lua/vehicle/extensions/overhaulMotorsportStartup.lua": "8563549932b60b78eb3b282f8f0bb738b8d3783096342e3b6c04af34c066bef4",
+      "lua/ge/extensions/overhaul/events/motorsportEvents/drag/runner.lua": "1e157db146f547739eb8d026c6dd0d03532c7d719ed4badd0b83c9ec23ef778a",
+      "lua/ge/extensions/overhaul/events/motorsportEvents/definitions.lua": "471747e20b0d89ac5001fc88b9ce5c4276f8e2860c6ab453695173429e1508ed"
+    },
+    "D": {
+      "lua/ge/extensions/overhaul/events/motorsportEvents/drag/laneZones.lua": "be0ee0729c9bd3f7ecae7fcbad3250a97cb0994ad1bfa183176cb7e01de0d547",
+      "lua/vehicle/extensions/overhaulMotorsportLaunch.lua": "784797c404a1867e1cfbda274671377412be61be116fec009e1b5dc299b9588c",
+      "lua/ge/extensions/overhaul/events/motorsportEvents/drag/staging.lua": "83daad73ceec094930f1129db0dd49bb60e6362da110d4e1f1fffe4630a6f6a2",
+      "lua/ge/extensions/overhaul/events/motorsportEvents/drag/classes.lua": "d60141ceb34aa601bb1535b81fef2ecfd17e405595dcade76a8d2bc5613ff20e",
+      "lua/ge/extensions/overhaul/events/motorsportEvents/drag/recovery.lua": "cf912da5ab871b79665fd31ee556adbf7121a18de22867c2187899a9a55a5eaf",
+      "lua/ge/extensions/overhaul/events/motorsportEvents/drag/approach.lua": "98ff3c873a5093abff033bc7400ce9d13ea023a102c4e59b9207a656c9cbb81b",
+      "lua/vehicle/extensions/overhaulMotorsportStagingHold.lua": "844ee87a22a5a186632b1c1edd9fc5149e9cb66e21c6d60829adede3d76e562c",
+      "lua/vehicle/extensions/overhaulMotorsportApproach.lua": "37974e9a78942faf2419cf8e8ae91c30cd6cb8cd518676886e5003736ef137b7",
+      "lua/vehicle/extensions/overhaulMotorsportCooldown.lua": "f7cba3699c96d8505e6ccf113994ba8931cf1e9a271e14029433e90f6d9a5fc4",
+      "settings/motorsportEvents/competition.json": "447953cf5079041e59efb5c2acd152dfe1c5cd1c5486685ad111bbb36910b7da",
+      "lua/vehicle/extensions/overhaulMotorsportStartup.lua": "8563549932b60b78eb3b282f8f0bb738b8d3783096342e3b6c04af34c066bef4",
+      "lua/ge/extensions/overhaul/events/motorsportEvents/drag/runner.lua": "1e157db146f547739eb8d026c6dd0d03532c7d719ed4badd0b83c9ec23ef778a",
+      "lua/ge/extensions/overhaul/events/motorsportEvents/definitions.lua": "471747e20b0d89ac5001fc88b9ce5c4276f8e2860c6ab453695173429e1508ed"
+    },
+    "O": {
+      "lua/ge/extensions/overhaul/events/motorsportEvents/drag/laneZones.lua": "be0ee0729c9bd3f7ecae7fcbad3250a97cb0994ad1bfa183176cb7e01de0d547",
+      "lua/vehicle/extensions/overhaulMotorsportLaunch.lua": "784797c404a1867e1cfbda274671377412be61be116fec009e1b5dc299b9588c",
+      "lua/ge/extensions/overhaul/events/motorsportEvents/drag/staging.lua": "198f9096dfcaae6561cc152b1ae1f84c53d22282e03f18790f5b78e3c6398cfe",
+      "lua/ge/extensions/overhaul/events/motorsportEvents/drag/classes.lua": "d60141ceb34aa601bb1535b81fef2ecfd17e405595dcade76a8d2bc5613ff20e",
+      "lua/ge/extensions/overhaul/events/motorsportEvents/drag/recovery.lua": "cf912da5ab871b79665fd31ee556adbf7121a18de22867c2187899a9a55a5eaf",
+      "lua/ge/extensions/overhaul/events/motorsportEvents/drag/approach.lua": "98ff3c873a5093abff033bc7400ce9d13ea023a102c4e59b9207a656c9cbb81b",
+      "lua/vehicle/extensions/overhaulMotorsportStagingHold.lua": "d12e287ffc6e2bca77969a55cf469daee547e57d51b93e6e7294e4a6c39734c0",
+      "lua/vehicle/extensions/overhaulMotorsportApproach.lua": "37974e9a78942faf2419cf8e8ae91c30cd6cb8cd518676886e5003736ef137b7",
+      "lua/vehicle/extensions/overhaulMotorsportCooldown.lua": "f7cba3699c96d8505e6ccf113994ba8931cf1e9a271e14029433e90f6d9a5fc4",
+      "settings/motorsportEvents/competition.json": "447953cf5079041e59efb5c2acd152dfe1c5cd1c5486685ad111bbb36910b7da",
+      "lua/vehicle/extensions/overhaulMotorsportStartup.lua": "8563549932b60b78eb3b282f8f0bb738b8d3783096342e3b6c04af34c066bef4",
+      "lua/ge/extensions/overhaul/events/motorsportEvents/drag/runner.lua": "ee7fb160402b8c00bdac2003d94c5e3a6017d2e9d2af1a3a7d9e07533e9411b1",
+      "lua/ge/extensions/overhaul/events/motorsportEvents/definitions.lua": "471747e20b0d89ac5001fc88b9ce5c4276f8e2860c6ab453695173429e1508ed"
+    },
+    "P": {
+      "lua/ge/extensions/overhaul/events/motorsportEvents/drag/laneZones.lua": "be0ee0729c9bd3f7ecae7fcbad3250a97cb0994ad1bfa183176cb7e01de0d547",
+      "lua/vehicle/extensions/overhaulMotorsportLaunch.lua": "784797c404a1867e1cfbda274671377412be61be116fec009e1b5dc299b9588c",
+      "lua/ge/extensions/overhaul/events/motorsportEvents/drag/staging.lua": "198f9096dfcaae6561cc152b1ae1f84c53d22282e03f18790f5b78e3c6398cfe",
+      "lua/ge/extensions/overhaul/events/motorsportEvents/drag/classes.lua": "d60141ceb34aa601bb1535b81fef2ecfd17e405595dcade76a8d2bc5613ff20e",
+      "lua/ge/extensions/overhaul/events/motorsportEvents/drag/recovery.lua": "cf912da5ab871b79665fd31ee556adbf7121a18de22867c2187899a9a55a5eaf",
+      "lua/ge/extensions/overhaul/events/motorsportEvents/drag/approach.lua": "98ff3c873a5093abff033bc7400ce9d13ea023a102c4e59b9207a656c9cbb81b",
+      "lua/vehicle/extensions/overhaulMotorsportStagingHold.lua": "d12e287ffc6e2bca77969a55cf469daee547e57d51b93e6e7294e4a6c39734c0",
+      "lua/vehicle/extensions/overhaulMotorsportApproach.lua": "37974e9a78942faf2419cf8e8ae91c30cd6cb8cd518676886e5003736ef137b7",
+      "lua/vehicle/extensions/overhaulMotorsportCooldown.lua": "f7cba3699c96d8505e6ccf113994ba8931cf1e9a271e14029433e90f6d9a5fc4",
+      "settings/motorsportEvents/competition.json": "447953cf5079041e59efb5c2acd152dfe1c5cd1c5486685ad111bbb36910b7da",
+      "lua/vehicle/extensions/overhaulMotorsportStartup.lua": "8563549932b60b78eb3b282f8f0bb738b8d3783096342e3b6c04af34c066bef4",
+      "lua/ge/extensions/overhaul/events/motorsportEvents/drag/runner.lua": "ee7fb160402b8c00bdac2003d94c5e3a6017d2e9d2af1a3a7d9e07533e9411b1",
+      "lua/ge/extensions/overhaul/events/motorsportEvents/definitions.lua": "471747e20b0d89ac5001fc88b9ce5c4276f8e2860c6ab453695173429e1508ed"
+    }
+  },
+  "configs": [
+    {
+      "id": "bluebuck/rls_problown_haulmark_01",
+      "sourceConfigSHA256": "c644aaba057efbdee9b6cd3906b62eb5e19caeb3bbe4148a5889b8554f36d273",
+      "previousPerformance": {
+        "quarterMileSeconds": 7.9873101283925,
+        "runId": "BLOWN-077",
+        "evidenceConfigSHA256": "c644aaba057efbdee9b6cd3906b62eb5e19caeb3bbe4148a5889b8554f36d273",
+        "configHashMatches": true,
+        "status": "recorded-pass-matching-config"
+      },
+      "quarterMileMeanSeconds": 8.18470395094895,
+      "runs": [
+        {
+          "phase": "B",
+          "side": "right",
+          "quarterMileSeconds": 8.1924594410857,
+          "maxPitchDegrees": 2.6991816939195,
+          "maxCooldownLateralMeters": 0.89051610782957,
+          "stoppedAt": 29.704000717029,
+          "despawnedAt": 29.737500717863,
+          "absentAfterAudit": true,
+          "clean": true
+        },
+        {
+          "phase": "B",
+          "side": "left",
+          "quarterMileSeconds": 8.1828937864382,
+          "maxPitchDegrees": 2.7698256769308,
+          "maxCooldownLateralMeters": 0.77829845664627,
+          "stoppedAt": 30.042000727728,
+          "despawnedAt": null,
+          "absentAfterAudit": true,
+          "clean": true
+        },
+        {
+          "phase": "D",
+          "side": "left",
+          "quarterMileSeconds": 8.180106637351,
+          "maxPitchDegrees": 2.7482856114814,
+          "maxCooldownLateralMeters": 0.770361843339,
+          "stoppedAt": 29.66650056839,
+          "despawnedAt": 29.701000571251,
+          "absentAfterAudit": true,
+          "clean": true
+        },
+        {
+          "phase": "D",
+          "side": "right",
+          "quarterMileSeconds": 8.1833559389209,
+          "maxPitchDegrees": 2.8039305145364,
+          "maxCooldownLateralMeters": 0.89310094168917,
+          "stoppedAt": 29.701000571251,
+          "despawnedAt": null,
+          "absentAfterAudit": true,
+          "clean": true
+        }
+      ]
+    },
+    {
+      "id": "bluebuck/rls_problown_haulmark_04",
+      "sourceConfigSHA256": "b2ef8c429eeab879e822f10030136c8e56b9b9ff39fd9f1a178fedfad52558c6",
+      "previousPerformance": {
+        "quarterMileSeconds": 7.9883737184162,
+        "runId": "BLOWN-087",
+        "evidenceConfigSHA256": "b2ef8c429eeab879e822f10030136c8e56b9b9ff39fd9f1a178fedfad52558c6",
+        "configHashMatches": true,
+        "status": "recorded-pass-matching-config"
+      },
+      "quarterMileMeanSeconds": 8.159927902219726,
+      "runs": [
+        {
+          "phase": "B",
+          "side": "left",
+          "quarterMileSeconds": 8.163275287494,
+          "maxPitchDegrees": 2.8854932022329,
+          "maxCooldownLateralMeters": 0.74860297256566,
+          "stoppedAt": 29.407000657171,
+          "despawnedAt": 29.440000656992,
+          "absentAfterAudit": true,
+          "clean": true
+        },
+        {
+          "phase": "B",
+          "side": "right",
+          "quarterMileSeconds": 8.1614495404676,
+          "maxPitchDegrees": 2.8669978694322,
+          "maxCooldownLateralMeters": 0.90763918860347,
+          "stoppedAt": 29.641000658274,
+          "despawnedAt": null,
+          "absentAfterAudit": true,
+          "clean": true
+        },
+        {
+          "phase": "D",
+          "side": "left",
+          "quarterMileSeconds": 8.1550159434006,
+          "maxPitchDegrees": 2.7816525786858,
+          "maxCooldownLateralMeters": 0.76557040123657,
+          "stoppedAt": 29.795000625774,
+          "despawnedAt": null,
+          "absentAfterAudit": true,
+          "clean": true
+        },
+        {
+          "phase": "D",
+          "side": "right",
+          "quarterMileSeconds": 8.1599708375167,
+          "maxPitchDegrees": 2.7950248456139,
+          "maxCooldownLateralMeters": 0.91173564720467,
+          "stoppedAt": 29.795000625774,
+          "despawnedAt": null,
+          "absentAfterAudit": true,
+          "clean": true
+        }
+      ]
+    },
+    {
+      "id": "moonhawk/rls_problown_loworbit_01",
+      "sourceConfigSHA256": "bff9bc03323b79b1878dd099434f47c94b1b74144a6dfe2b4807ef84500bbfcf",
+      "previousPerformance": {
+        "quarterMileSeconds": 7.8349906742182,
+        "runId": "BLOWN-020",
+        "evidenceConfigSHA256": "bff9bc03323b79b1878dd099434f47c94b1b74144a6dfe2b4807ef84500bbfcf",
+        "configHashMatches": true,
+        "status": "recorded-pass-matching-config"
+      },
+      "quarterMileMeanSeconds": 7.83153808925825,
+      "runs": [
+        {
+          "phase": "B",
+          "side": "right",
+          "quarterMileSeconds": 7.855753087864,
+          "maxPitchDegrees": 1.6697705447461,
+          "maxCooldownLateralMeters": 1.0140637656567,
+          "stoppedAt": 35.527000773698,
+          "despawnedAt": null,
+          "absentAfterAudit": true,
+          "clean": true
+        },
+        {
+          "phase": "B",
+          "side": "left",
+          "quarterMileSeconds": 7.7704189169747,
+          "maxPitchDegrees": 1.102774272741,
+          "maxCooldownLateralMeters": 0.69008706597495,
+          "stoppedAt": 34.918000750244,
+          "despawnedAt": 34.951500751078,
+          "absentAfterAudit": true,
+          "clean": true
+        },
+        {
+          "phase": "D",
+          "side": "left",
+          "quarterMileSeconds": 7.852710545209,
+          "maxPitchDegrees": 1.665365127994,
+          "maxCooldownLateralMeters": 0.70944885072888,
+          "stoppedAt": 35.3700007312,
+          "despawnedAt": 35.403500732034,
+          "absentAfterAudit": true,
+          "clean": true
+        },
+        {
+          "phase": "D",
+          "side": "right",
+          "quarterMileSeconds": 7.8472698069853,
+          "maxPitchDegrees": 1.5938514399845,
+          "maxCooldownLateralMeters": 0.99709111199067,
+          "stoppedAt": 35.403500732034,
+          "despawnedAt": null,
+          "absentAfterAudit": true,
+          "clean": true
+        }
+      ]
+    },
+    {
+      "id": "barstow/rls_problown_heritage_03",
+      "sourceConfigSHA256": "7ee86a5a119457bd88091fe3ef2f96260b9ad671a7cf3ea7a22be97d44aa6c18",
+      "previousPerformance": {
+        "quarterMileSeconds": 7.9054314068202,
+        "runId": "BLOWN-060",
+        "evidenceConfigSHA256": "7ee86a5a119457bd88091fe3ef2f96260b9ad671a7cf3ea7a22be97d44aa6c18",
+        "configHashMatches": true,
+        "status": "recorded-pass-matching-config"
+      },
+      "quarterMileMeanSeconds": 7.89671276865075,
+      "runs": [
+        {
+          "phase": "B",
+          "side": "left",
+          "quarterMileSeconds": 7.8985557216801,
+          "maxPitchDegrees": 3.9132113479752,
+          "maxCooldownLateralMeters": 0.50061532717629,
+          "stoppedAt": 32.726000836119,
+          "despawnedAt": null,
+          "absentAfterAudit": true,
+          "clean": true
+        },
+        {
+          "phase": "B",
+          "side": "right",
+          "quarterMileSeconds": 7.8990741383394,
+          "maxPitchDegrees": 3.9541322204465,
+          "maxCooldownLateralMeters": 1.1532342588985,
+          "stoppedAt": 32.692500835285,
+          "despawnedAt": 32.726000836119,
+          "absentAfterAudit": true,
+          "clean": true
+        },
+        {
+          "phase": "D",
+          "side": "right",
+          "quarterMileSeconds": 7.8889951453457,
+          "maxPitchDegrees": 4.0134702879787,
+          "maxCooldownLateralMeters": 1.1418134219946,
+          "stoppedAt": 32.469500651583,
+          "despawnedAt": null,
+          "absentAfterAudit": true,
+          "clean": true
+        },
+        {
+          "phase": "D",
+          "side": "left",
+          "quarterMileSeconds": 7.9002260692378,
+          "maxPitchDegrees": 3.9241618373416,
+          "maxCooldownLateralMeters": 0.50567960347684,
+          "stoppedAt": 32.436500651762,
+          "despawnedAt": 32.469500651583,
+          "absentAfterAudit": true,
+          "clean": true
+        }
+      ]
+    },
+    {
+      "id": "scintilla/rls_problown_neon_03",
+      "sourceConfigSHA256": "1a546f3dc2923c0a6e25cf5048ce39aa616c158c90c9de4a8e037400a487d8c0",
+      "previousPerformance": {
+        "quarterMileSeconds": 7.9317684049023,
+        "runId": "BLOWN-070",
+        "evidenceConfigSHA256": "1a546f3dc2923c0a6e25cf5048ce39aa616c158c90c9de4a8e037400a487d8c0",
+        "configHashMatches": true,
+        "status": "recorded-pass-matching-config"
+      },
+      "quarterMileMeanSeconds": 8.1846904102128,
+      "runs": [
+        {
+          "phase": "C",
+          "side": "left",
+          "quarterMileSeconds": 8.2083683543963,
+          "maxPitchDegrees": 6.5249816174687,
+          "maxCooldownLateralMeters": 0.51934698180773,
+          "stoppedAt": 29.624500706792,
+          "despawnedAt": null,
+          "absentAfterAudit": true,
+          "clean": true
+        },
+        {
+          "phase": "C",
+          "side": "right",
+          "quarterMileSeconds": 8.2087954545709,
+          "maxPitchDegrees": 6.5560142107333,
+          "maxCooldownLateralMeters": 1.1219060859187,
+          "stoppedAt": 29.524500705302,
+          "despawnedAt": 29.557500705123,
+          "absentAfterAudit": true,
+          "clean": true
+        },
+        {
+          "phase": "D",
+          "side": "right",
+          "quarterMileSeconds": 8.1687064789456,
+          "maxPitchDegrees": 6.418388319497,
+          "maxCooldownLateralMeters": 1.1173661658304,
+          "stoppedAt": 29.989000666887,
+          "despawnedAt": null,
+          "absentAfterAudit": true,
+          "clean": true
+        },
+        {
+          "phase": "D",
+          "side": "left",
+          "quarterMileSeconds": 8.1528913529384,
+          "maxPitchDegrees": 6.6515815231811,
+          "maxCooldownLateralMeters": 0.52206192103398,
+          "stoppedAt": 29.821500662714,
+          "despawnedAt": 29.856000665575,
+          "absentAfterAudit": true,
+          "clean": true
+        }
+      ]
+    },
+    {
+      "id": "bluebuck/rls_problown_haulmark_03",
+      "sourceConfigSHA256": "73473ccba387ecd60a8d239be1cea46aa0ddb59dbbc512dcfda330e04a819e9d",
+      "previousPerformance": {
+        "quarterMileSeconds": 7.9530211606534,
+        "runId": "BLOWN-096",
+        "evidenceConfigSHA256": "73473ccba387ecd60a8d239be1cea46aa0ddb59dbbc512dcfda330e04a819e9d",
+        "configHashMatches": true,
+        "status": "recorded-pass-matching-config"
+      },
+      "quarterMileMeanSeconds": 8.579029548264275,
+      "runs": [
+        {
+          "phase": "C",
+          "side": "right",
+          "quarterMileSeconds": 8.5842235276525,
+          "maxPitchDegrees": 2.6429939921419,
+          "maxCooldownLateralMeters": 0.75872461139133,
+          "stoppedAt": 33.024500610307,
+          "despawnedAt": null,
+          "absentAfterAudit": true,
+          "clean": true
+        },
+        {
+          "phase": "C",
+          "side": "left",
+          "quarterMileSeconds": 8.6507744687783,
+          "maxPitchDegrees": 2.7298631806936,
+          "maxCooldownLateralMeters": 0.9212211367674,
+          "stoppedAt": 32.92350060679,
+          "despawnedAt": 32.957000607625,
+          "absentAfterAudit": true,
+          "clean": true
+        },
+        {
+          "phase": "D",
+          "side": "right",
+          "quarterMileSeconds": 8.5160335715531,
+          "maxPitchDegrees": 2.6416927382363,
+          "maxCooldownLateralMeters": 0.77388976517713,
+          "stoppedAt": 31.415000746027,
+          "despawnedAt": 31.448000745848,
+          "absentAfterAudit": true,
+          "clean": true
+        },
+        {
+          "phase": "D",
+          "side": "left",
+          "quarterMileSeconds": 8.5650866250732,
+          "maxPitchDegrees": 2.612464454957,
+          "maxCooldownLateralMeters": 0.91873451145801,
+          "stoppedAt": 31.448000745848,
+          "despawnedAt": null,
+          "absentAfterAudit": true,
+          "clean": true
+        }
+      ]
+    },
+    {
+      "id": "bluebuck/rls_problown_haulmark_02",
+      "sourceConfigSHA256": "a8d2a8dfaf2f591cb5bf49c6a515e51eb150891024bc33132955726024c88ae1",
+      "previousPerformance": {
+        "quarterMileSeconds": 7.9727658802743,
+        "runId": "BLOWN-084",
+        "evidenceConfigSHA256": "a8d2a8dfaf2f591cb5bf49c6a515e51eb150891024bc33132955726024c88ae1",
+        "configHashMatches": true,
+        "status": "recorded-pass-matching-config"
+      },
+      "quarterMileMeanSeconds": 8.188437171923875,
+      "runs": [
+        {
+          "phase": "O",
+          "side": "right",
+          "quarterMileSeconds": 8.1850027837512,
+          "maxPitchDegrees": 2.4327185479487,
+          "maxCooldownLateralMeters": 0.86470134272369,
+          "stoppedAt": 30.893500950187,
+          "despawnedAt": 30.900500950404,
+          "absentAfterAudit": true,
+          "clean": true
+        },
+        {
+          "phase": "O",
+          "side": "left",
+          "quarterMileSeconds": 8.1858400998149,
+          "maxPitchDegrees": 2.4255959441641,
+          "maxCooldownLateralMeters": 0.75618159921822,
+          "stoppedAt": 30.92350095138,
+          "despawnedAt": null,
+          "absentAfterAudit": true,
+          "clean": true
+        },
+        {
+          "phase": "P",
+          "side": "left",
+          "quarterMileSeconds": 8.1921237771317,
+          "maxPitchDegrees": 2.4182558987968,
+          "maxCooldownLateralMeters": 0.75479813933975,
+          "stoppedAt": 30.364000933245,
+          "despawnedAt": 30.370500933379,
+          "absentAfterAudit": true,
+          "clean": true
+        },
+        {
+          "phase": "P",
+          "side": "right",
+          "quarterMileSeconds": 8.1907820269977,
+          "maxPitchDegrees": 2.4147796562374,
+          "maxCooldownLateralMeters": 0.86845898742726,
+          "stoppedAt": 30.478000937961,
+          "despawnedAt": null,
+          "absentAfterAudit": true,
+          "clean": true
+        }
+      ]
+    }
+  ]
+}

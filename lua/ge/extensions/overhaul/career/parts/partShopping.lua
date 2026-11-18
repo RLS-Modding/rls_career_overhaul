@@ -404,11 +404,15 @@ local function updatePreviewVehicle(currentPartConditions)
   previewVehicle.config.partsTree = deepcopy(currentVehicleData.config.partsTree)
   previewVehicle.partList = flattenPartsTree(previewVehicle.config.partsTree)
   if currentPartConditions then
-    previewVehicle.partConditions = currentPartConditions
+    -- A rebuilt VE can reply before Fuels binds its condition adapters. Keep
+    -- the retained engine's map/hardware in the preview through further swaps
+    -- and checkout; new physical parts already supplied their own conditions.
+    previewVehicle.partConditions = require('overhaul/lib/vehicles/fuelConditions')(
+      previewVehicle.partConditions, currentPartConditions)
   end
   updateShoppingCart()
   sendShoppingDataToUI()
-  core_vehicleBridge.executeAction(getObjectByID(overhaul_career_garage_inventory.getVehicleIdFromInventoryId(previewVehicle.id)),'setFreeze', true)
+  require('overhaul/lib/vehicles/freeze').set('overhaul_career_parts_partShopping', overhaul_career_garage_inventory.getVehicleIdFromInventoryId(previewVehicle.id), true)
 
   if drafts.isRestoreInProgress() then
     drafts.incrementRestoreCurrent()
@@ -720,8 +724,12 @@ local function startShoppingActual(_originComputerId, _returnRoute, attempt)
   local vehicle = getObjectByID(overhaul_career_garage_inventory.getVehicleIdFromInventoryId(previewVehicle.id))
   if shoppingInitializer ~= attempt then return end
   if not vehicle then abortShoppingInitializer(attempt); return end
-  core_vehicleBridge.executeAction(vehicle,'setFreeze', true)
+  require('overhaul/lib/vehicles/freeze').setVehicle('overhaul_career_parts_partShopping', vehicle, true)
   if shoppingInitializer ~= attempt then return end
+  -- Scan the other cars' hitches and brakes now, while the player browses, for the purchase save.
+  if overhaul_career_garage_inventory.stageSaveRelationships then
+    overhaul_career_garage_inventory.stageSaveRelationships(currentVehicleInventoryId)
+  end
   extensions.hook("onOverhaulPartShoppingStarted")
   if shoppingInitializer ~= attempt then return end
   drafts.maybeStartCartRestore()
@@ -777,8 +785,7 @@ local function startShopping(inventoryId, _originComputerId, _returnRoute)
   if shoppingInitializer ~= attempt then return end
   local vehicle = vehicles and vehicles[currentVehicleInventoryId]
   if not vehicle then abortShoppingInitializer(attempt); return end
-  local brokenParts = overhaul_career_market_valueCalculator.getNumberOfBrokenParts(vehicle.partConditions)
-  if brokenParts > 0 then
+  if overhaul_career_market_valueCalculator.partConditionsNeedRepair(vehicle.partConditions) then
     ui_message('Repair the vehicle before changing parts.', 5, 'Parts shop', 'warning')
     abortShoppingInitializer(attempt)
     return
@@ -1000,6 +1007,8 @@ local function fillEmptySlotsWithInitialParts(initialNode, previewNode)
       if not previewNode.children then previewNode.children = {} end
       if not previewNode.children[slotName] then
         previewNode.children[slotName] = {
+          id = initialChildNode.id or slotName,
+          path = initialChildNode.path or (previewNode.path or "/") .. slotName .. "/",
           chosenPartName = "",
           children = {},
           suitablePartNames = {initialChildNode.chosenPartName},
@@ -1042,7 +1051,10 @@ local function updateInstalledParts(addedParts, removedParts)
             local parentNode = getNodeFromSlotPath(previewVehicle.config.partsTree, parentPath)
             if parentNode then
               parentNode.children = parentNode.children or {}
-              parentNode.children[part.slot] = {chosenPartName = part.name, path = parentNode.path .. part.slot .. "/", children = {}, suitablePartNames = {part.name}, unsuitablePartNames = {}, decisionMethod = "user"}
+              parentNode.children[part.slot] = {
+                id = part.slot, chosenPartName = part.name, path = parentNode.path .. part.slot .. "/",
+                children = {}, suitablePartNames = {part.name}, unsuitablePartNames = {}, decisionMethod = "user",
+              }
             end
           end
         end
@@ -1197,6 +1209,11 @@ local function removePartBySlot(slot)
 end
 
 local closeMenuAfterSaving
+-- A purchased car whose thumbnail renders after its save commits.
+local pendingThumbnailRefresh
+-- Off for now: on a tester's heavily modded game the off-screen thumbnail render froze the game for 10-20 s
+-- after a purchase. The car keeps its previous picture until this is fixed and switched back on.
+local REFRESH_THUMBNAIL_AFTER_PURCHASE = false
 
 local function closeMenu()
   if originComputerId then
@@ -1239,6 +1256,7 @@ local function restoreVehicleAndEndShopping()
   end
 
   extensions.hook("onOverhaulPartShoppingCancelled")
+  if overhaul_career_garage_inventory.clearStagedSaveRelationships then overhaul_career_garage_inventory.clearStagedSaveRelationships() end
   if not vehicleRemoved then
     healSpawnedVehicle = true
     local inventoryId, damage = currentVehicleInventoryId, overhaul_career_repair_damageManager
@@ -1302,11 +1320,18 @@ local function onOverhaulSaveFinished()
     closeMenu()
     closeMenuAfterSaving = nil
   end
+  -- A save that finished ahead of the queued purchase save leaves the render for the purchase slot.
+  if pendingThumbnailRefresh and not overhaul_career_saveSystem.isSavePending() then
+    local inventoryId = pendingThumbnailRefresh
+    pendingThumbnailRefresh = nil
+    overhaul_career_garage_inventory.refreshVehicleThumbnail(inventoryId)
+  end
 end
 
 local function updateInventory()
   local vehicle = overhaul_career_garage_inventory.getVehicles()[currentVehicleInventoryId]
   for slot, part in pairs(shoppingCart.partsOut) do
+    if vehicle.partConditions and part.partPath then vehicle.partConditions[part.partPath] = nil end
     part.location = 0
     vehicle.changedSlots[slot] = true
   end
@@ -1327,6 +1352,10 @@ local function updateInventory()
     part.disabled = nil
     part.disabledReason = nil
     vehicle.changedSlots[slot] = true
+    -- Inventory part owns calibration; stamp it onto the vehicle before rebind.
+    if part.partCondition and part.partPath and vehicle.partConditions then
+      vehicle.partConditions[part.partPath] = part.partCondition
+    end
     if partComesFromInventory then
       overhaul_career_parts_partInventory.getInventory()[partId] = part
     else
@@ -1384,24 +1413,43 @@ local function applyShopping()
   -- transaction autosave and vehicle respawn. Inventory-sourced parts retain
   -- their own state; newly purchased parts are initialized as fresh.
   extensions.hook("onOverhaulPartShoppingPartsInstalled", currentVehicleInventoryId, installedParts)
+  local fuelVehicleId = overhaul_career_garage_inventory.getVehicleIdFromInventoryId(currentVehicleInventoryId)
+  if fuelVehicleId and overhaul_career_maintenance_fuelSystem then
+    overhaul_career_maintenance_fuelSystem.rebindVehicle(fuelVehicleId)
+  end
   endShopping()
   local buyingLabel = getBuyingLabel()
   checkout.settle(operation, function()
     checkout.money.execute(overhaul_career_economy_playerAttributes.addAttributes, {money=-shoppingCart.total}, {category = "purchase", finance = {vehicleId = currentVehicleInventoryId}, tags={"partsBought", "buying"},label=buyingLabel})
   end)
-  -- Publish the purchased build before a later same-build restore can read it.
-  overhaul_career_repair_damageManager.saveDamageState(currentVehicleInventoryId)
-  if overhaul_career_career.isAutosaveEnabled() then
-    saveStore.request("partShop:apply", {currentVehicleInventoryId}, {force = true})
+  -- A changed build is the respawned preview: a car without damage, so nothing is captured from it.
+  -- An unchanged build is still the car the player drove in; publish its damage as before.
+  local inventoryId = currentVehicleInventoryId
+  local changedBuild = next(shoppingCart.partsIn or {}) or next(shoppingCart.partsOut or {})
+  if changedBuild then
+    overhaul_career_repair_damageManager.clearDamageState(inventoryId)
   else
-    overhaul_career_garage_inventory.updatePartConditions(nil, currentVehicleInventoryId)
+    overhaul_career_repair_damageManager.saveDamageState(inventoryId)
   end
 
   Engine.Audio.playOnce('AudioGui','event:>UI>Career>Buy_01')
   healCurrentVehicleVisible()
-  core_vehicleBridge.executeAction(getObjectByID(overhaul_career_garage_inventory.getVehicleIdFromInventoryId(previewVehicle.id)),'setFreeze', false)
+  require('overhaul/lib/vehicles/freeze').set('overhaul_career_parts_partShopping', overhaul_career_garage_inventory.getVehicleIdFromInventoryId(previewVehicle.id), false)
   extensions.hook("onOverhaulPartShoppingTransactionComplete")
   gameplay_achievement.unlockAchievement("VEHICLE_MODIFIED")
+
+  -- Saved after every purchase hook ran. The preview already reported this car's conditions and the
+  -- other cars are parked, so no car is asked again; the new thumbnail renders once the save commits.
+  local refreshThumbnail = REFRESH_THUMBNAIL_AFTER_PURCHASE and inventoryId or nil
+  if overhaul_career_career.isAutosaveEnabled() then
+    pendingThumbnailRefresh = refreshThumbnail
+    saveStore.request("partShop:apply", nil, {force = true, foreground = true, liveCapture = false})
+  else
+    overhaul_career_garage_inventory.updatePartConditions(nil, inventoryId)
+    if refreshThumbnail then overhaul_career_garage_inventory.refreshVehicleThumbnail(refreshThumbnail) end
+  end
+  -- A save that started took the staged scan; a deferred one scans live.
+  if overhaul_career_garage_inventory.clearStagedSaveRelationships then overhaul_career_garage_inventory.clearStagedSaveRelationships() end
 end
 
 local function isShoppingSessionActive() return shoppingSessionActive end
@@ -1435,8 +1483,7 @@ local function onOverhaulComputerAddFunctions(menuData, computerFunctions)
       order = 1
     }
     -- vehicle broken
-    local vehicle = overhaul_career_garage_inventory.getVehicles()[inventoryId]
-    if vehicle and overhaul_career_market_valueCalculator.getNumberOfBrokenParts(vehicle.partConditions) > 0 then
+    if vehicleData.needsRepair then
       computerFunctionData.disabled = true
       computerFunctionData.reason = overhaul_career_garage_computer.reasons.needsRepair
     end
@@ -1477,6 +1524,16 @@ M.onRouteMount = onRouteMount
 M.getPartsInShop = getPartsInShop
 M.getShoppingCart = getShoppingCart
 M.isShoppingSessionActive = isShoppingSessionActive
+M.getFuelHardwareContext = function()
+  if not shoppingSessionActive or isShoppingUnavailable() or drafts.isRestoreInProgress() or not shoppingCart
+    or next(shoppingCart.partsIn or {}) or next(shoppingCart.partsOut or {}) then return nil end
+  return {inventoryId=currentVehicleInventoryId,computerId=originComputerId}
+end
+M.onOverhaulFuelSystemPersisted = function(vehicleId,conditions)
+  if not M.getFuelHardwareContext() or getCurrentVehicleVehId()~=vehicleId then return end
+  initialVehicle.partConditions=deepcopy(conditions)
+  previewVehicle.partConditions=deepcopy(conditions)
+end
 M.getCategoryBreadcrumbTitle = getCategoryBreadcrumbTitle
 M.getSlotBreadcrumbTitle = getSlotBreadcrumbTitle
 M.setupTether = setupTether

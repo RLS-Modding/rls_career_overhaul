@@ -4,8 +4,8 @@
 
 <template>
   <section class="house-accordion">
-    <HouseButton :aria-expanded="modelValue" :aria-controls="id" @click="emit('update:modelValue', !modelValue)">
-      {{ title }} {{ modelValue ? '−' : '+' }}
+    <HouseButton :disabled="disabled" :aria-expanded="modelValue" :aria-controls="id" @click="emit('update:modelValue', !modelValue)">
+      <slot name="title" :expanded="modelValue">{{ title }} {{ modelValue ? '−' : '+' }}</slot>
     </HouseButton>
     <div v-if="modelValue" :id="id" v-bng-ui-nav-scroll class="accordion-body"><slot /></div>
   </section>
@@ -13,7 +13,7 @@
 <script setup>
 import { vBngUiNavScroll } from "@/common/directives"
 import HouseButton from "./HouseButton.vue"
-defineProps({ modelValue: Boolean, title: String, id: { type: String, required: true } })
+defineProps({ modelValue: Boolean, disabled: Boolean, title: String, id: { type: String, required: true } })
 const emit = defineEmits(["update:modelValue"])
 </script>
 <style scoped>

@@ -257,6 +257,7 @@
         <div
           v-if="openModalTechId !== null"
           class="rls-house job-select-modal-overlay"
+          :data-phone-surface="inPhone || undefined"
           @click.stop="closeJobModal"
           @mousedown.stop
         >
@@ -329,6 +330,7 @@ import useControls from "@/services/controls"
 import { useNowSeconds } from "../../../../composables/useNowSeconds.js"
 import { secondsUntil, techProgressAt } from "../../../../stores/businessComputer/businessTime.js"
 import { computed, ref, Teleport, nextTick, onMounted, onUnmounted, watch } from "vue"
+import { isInsidePhone } from "../../../../composables/usePhoneScreen.js"
 import { useBusinessRacingTeamStore } from "../../../../stores/businessComputer/businessRacingTeamStore.js"
 import { useBusinessSessionStore } from "../../../../stores/businessComputer/businessSessionStore.js"
 import { useBusinessTechsStore } from "../../../../stores/businessComputer/businessTechsStore.js"
@@ -351,6 +353,8 @@ defineProps({
   },
 })
 
+// The phone's Racing Team app reuses this tab; its dialogs then keep the phone's colours.
+const inPhone = isInsidePhone()
 const racingTeamStore = useBusinessRacingTeamStore()
 const sessionStore = useBusinessSessionStore()
 const techsStore = useBusinessTechsStore()

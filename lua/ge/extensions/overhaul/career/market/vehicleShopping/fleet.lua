@@ -139,18 +139,22 @@ function M.new(inputs)
   local function deliverStoredFleetVehicleAtPurchase(businessId, pending, fleetVehicleId)
     local inv = overhaul_career_business_fleet
     if inv and inv.deliverFleetVehicleAtPurchase then
-      inv.deliverFleetVehicleAtPurchase(pending.businessType or "racingTeam", businessId, fleetVehicleId)
+      return inv.deliverFleetVehicleAtPurchase(pending.businessType or "racingTeam", businessId, fleetVehicleId) == true
     end
+    return false
   end
 
   -- The recovery window keeps an undeliverable purchase from holding money indefinitely.
   local function settleDueTimerPendingPurchase(businessId, pending, now)
+    local inv = overhaul_career_business_fleet
+    if pending.fleetVehicleId then
+      if not inv or not inv.getVehicleById then return false end
+      -- A player can sell the stored car while its garage delivery is unavailable.
+      if not inv.getVehicleById(businessId, pending.fleetVehicleId) then return true end
+    end
     local stored, fleetVehicleId = service.storeRacingTeamFleetVehicleFromPending(businessId, pending)
     if stored == true then
-      if fleetVehicleId then
-        deliverStoredFleetVehicleAtPurchase(businessId, pending, fleetVehicleId)
-      end
-      return true
+      return fleetVehicleId ~= nil and deliverStoredFleetVehicleAtPurchase(businessId, pending, fleetVehicleId)
     end
     pending.firstStoreFailureEpoch = tonumber(pending.firstStoreFailureEpoch) or now
     if now - pending.firstStoreFailureEpoch >= state.rtPendingStoreFailureRefundSec then

@@ -391,7 +391,6 @@ local function apply(context, state, runtime, derived)
   for _, entry in ipairs(context.devices or {}) do
     local engine = entry.device
     local base = entry.base
-    local baseMaxTorque = base.maxTorque or engine.maxTorque or 0
     local thermalSeverity = common.clamp(
       (1 - (derived.coolantMassCoef or 1)) * 0.82 + (derived.radiatorDamage or 0) * 1.4 + (derived.overheatFactor or 0) * 0.45,
       0,
@@ -400,18 +399,13 @@ local function apply(context, state, runtime, derived)
     local interventionSeverity = common.clamp(common.linearScale(thermalSeverity, 0.28, 1.0, 0, 1), 0, 1)
     local shouldLimitForCooling = derived.catastrophicCoolingLoss or (derived.overheatFactor or 0) >= 0.18 or runtime.forceHardFailure == true
 
-    if shouldLimitForCooling and baseMaxTorque > 0 and engine.maxTorqueLimit ~= nil then
-      local existingLimit = tonumber(entry.engineAppliedMaxTorqueLimit or engine.maxTorqueLimit) or math.huge
-      local coolingLimit = baseMaxTorque * common.lerp(0.92, 0.62, common.clamp(max(interventionSeverity, derived.overheatFactor or 0), 0, 1))
-      if base.originalMaxTorqueLimit and base.originalMaxTorqueLimit < math.huge then
-        coolingLimit = math.min(coolingLimit, base.originalMaxTorqueLimit)
-      end
-      engine.maxTorqueLimit = math.min(existingLimit, coolingLimit)
-      if coolingLimit < baseMaxTorque * 0.995 then
-        runtime.lastPowerLimitReason = derived.catastrophicCoolingLoss and 'Catastrophic cooling loss' or 'Overheating'
-        runtime.lastPowerLimitActive = true
-      end
+    local coolingHold = 1
+    if shouldLimitForCooling then
+      coolingHold = common.lerp(0.92, 0.62, common.clamp(max(interventionSeverity, derived.overheatFactor or 0), 0, 1))
+      runtime.lastPowerLimitReason = derived.catastrophicCoolingLoss and 'Catastrophic cooling loss' or 'Overheating'
+      runtime.lastPowerLimitActive = true
     end
+    common.setOutputDerating(engine, 'cooling', coolingHold)
 
     if engine.friction ~= nil then
       engine.friction = (entry.engineAppliedFriction or base.friction or engine.friction) * symptomFrictionCoef
@@ -446,9 +440,7 @@ local function clearFailureRuntime(context)
     local engine = entry.device
     local base = entry.base or {}
 
-    if base.originalMaxTorqueLimit ~= nil and engine.maxTorqueLimit ~= nil then
-      engine.maxTorqueLimit = base.originalMaxTorqueLimit
-    end
+    common.setOutputDerating(engine, 'cooling', 1)
     if base.friction ~= nil and engine.friction ~= nil then
       engine.friction = base.friction
     end

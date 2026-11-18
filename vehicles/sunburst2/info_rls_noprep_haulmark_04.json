@@ -1,0 +1,26 @@
+{
+  "Configuration": "Garrett Weller - No Prep",
+  "Description": "Violet Dispatch. Tier 4 racer. Highway no-prep quarter-mile: 9.979s at 155.61mph. Haulmark Racing. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Haulmark Racing",
+  "Name": "Garrett Weller",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 8.501513654051,
+    "time_1_4": 9.9790358514692,
+    "time_1_8": 6.703509780178,
+    "time_330": 4.5389062826607,
+    "time_60": 1.6543833797099,
+    "velAt_1_4": 69.56442332437,
+    "velAt_1_8": 54.104196848821
+  },
+  "Reaction Time": 0.25801917969022,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

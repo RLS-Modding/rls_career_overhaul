@@ -1,0 +1,9 @@
+{
+  "chance": 0.25,
+  "policeCount": 2,
+  "pursuitMode": 2,
+  "minSpawnDistance": 350,
+  "maxSpawnDistance": 800,
+  "attendanceRadius": 800,
+  "raidRadius": 1500
+}

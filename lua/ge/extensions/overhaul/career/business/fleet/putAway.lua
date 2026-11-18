@@ -15,7 +15,7 @@ function part.new(inputs)
 
   -- Put-away --------------------------------------------------------------------------------------
 
-  local function persistSpawnedVehiclePartConditions(businessId, normalizedVehicleId, onDone)
+  local function persistSpawnedVehiclePartConditions(businessId, normalizedVehicleId, onDone, acceptCapture)
     if onDone == nil then
       onDone = function() end
     end
@@ -23,6 +23,11 @@ function part.new(inputs)
     normalizedVehicleId = inputs.normalizeVehicleId(normalizedVehicleId)
     if not businessId or not normalizedVehicleId then
       onDone()
+      return
+    end
+    local dyno = capabilities.peek('businessSession')
+    if dyno and dyno.isFleetVehicleBusy and dyno.isFleetVehicleBusy(businessId, normalizedVehicleId) then
+      onDone(false)
       return
     end
     local stored = inputs.getVehicleById(businessId, normalizedVehicleId)
@@ -33,12 +38,20 @@ function part.new(inputs)
       return
     end
     local records = fleetState.businessVehicles
+    local replacement = fleetState.dynoReplacements and fleetState.dynoReplacements[stored]
     local profile = overhaul_career_saveSystem.getCurrentProfile()
     local finished = false
     core_vehicleBridge.requestValue(vehObj, function(res)
       if finished then return end
+      if dyno and dyno.isFleetVehicleBusy and dyno.isFleetVehicleBusy(businessId, normalizedVehicleId) then
+        finished = true
+        onDone(false)
+        return
+      end
+      if acceptCapture and not acceptCapture(res) then return end
       finished = true
       if fleetState.businessVehicles ~= records or profile ~= overhaul_career_saveSystem.getCurrentProfile()
+        or (fleetState.dynoReplacements and fleetState.dynoReplacements[stored] ~= replacement)
         or inputs.getVehicleById(businessId, normalizedVehicleId) ~= stored
         or inputs.getSpawnedVehicleId(businessId, normalizedVehicleId) ~= spawnedId then
         onDone(false)
@@ -194,6 +207,11 @@ function part.new(inputs)
 
     local skipPersist = opts and opts.skipPartConditionPersist == true
     businessId = inputs.normalizeBusinessId(businessId)
+    local dyno = capabilities.peek('businessSession')
+    if dyno and dyno.isBusinessSessionBusy and dyno.isBusinessSessionBusy(businessId) then
+      runComplete(onComplete, false)
+      return false
+    end
     if not vehicleId then
       putAwayAllPulledOutVehicles(businessId, skipPersist, onComplete)
       return true

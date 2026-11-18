@@ -1,0 +1,33 @@
+{
+  "Name": "PICKUP / No Prep Knights",
+  "Configuration": "No Prep Knights - Tier 4 racer 1",
+  "Value": 85000,
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Description": "Dedicated No Prep Knights drag build and paint scheme.",
+  "Drag Times": {
+    "time_1000": 7.2905000895262,
+    "time_1_4": 8.7385001070797,
+    "time_1_8": 5.5755000673234,
+    "time_330": 3.5950000435114,
+    "time_60": 1.2645000144839,
+    "velAt_1_4": 69.224036125445,
+    "velAt_1_8": 56.527138549298
+  },
+  "Reaction Time": 0.20000000298023,
+  "Drivetrain": "RWD",
+  "Transmission": "Automatic",
+  "Fuel Type": "Gasoline",
+  "Years": {
+    "max": 1997,
+    "min": 1992
+  },
+  "dragConfigVersion": 3,
+  "dragFitmentVersion": 3,
+  "dragTimesRevalidated": false
+}

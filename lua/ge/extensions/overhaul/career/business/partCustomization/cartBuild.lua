@@ -87,11 +87,11 @@ function installer.new(inputs)
     local slotNiceName = slotNiceNameFor(slotPath, rowContext.slotData, rowContext.actualTree, rowContext.vehicleData.ioCtx)
     local canRemove = sharedParts.preview.slotAllowsRemoval(rowContext.session, slotPath, rowContext.vehicleData)
 
-    local newPartItem = rowContext.newPartItem
+    local newPartItem = rowContext.selectedPartsBySlot[slotPath] or rowContext.newPartItem
     local partToAdd = rowContext.partToAdd
     local fromInventory = false
     local partId = nil
-    if newPartItem.slotPath == slotPath and newPartItem.fromInventory then
+    if newPartItem.slotPath == slotPath and newPartItem.partName == partInfo.partName and newPartItem.fromInventory then
       fromInventory = true
       partId = newPartItem.partId
       partValue = 0
@@ -201,6 +201,17 @@ function installer.new(inputs)
     local businessId, vehicleId, session = cartChange.businessId, cartChange.vehicleId, cartChange.session
     local actualTree = actualVehicleData.config.partsTree
     local changedPartsMap = sharedParts.cart.findChangedParts(cartChange.baselineTree, actualTree, {})
+    local selectedPartsBySlot = {}
+    for _, item in ipairs(cartChange.cart) do
+      if item.type == 'part' then selectedPartsBySlot[item.slotPath] = item end
+    end
+    selectedPartsBySlot[cartChange.newPartItem.slotPath] = cartChange.newPartItem
+    -- Equal JBeam names can still represent different physical stored parts.
+    for slotPath, selection in pairs(selectedPartsBySlot) do
+      local node = selection.fromInventory and not changedPartsMap[slotPath]
+        and sharedParts.baseline.getNodeFromSlotPath(actualTree, slotPath)
+      if node and node.chosenPartName == selection.partName then changedPartsMap[slotPath] = selection end
+    end
 
     local finalCart = cartWithoutChangedSlots(cartChange.cart, changedPartsMap)
     appendChangedPartsToCart(finalCart, changedPartsMap, {
@@ -212,6 +223,7 @@ function installer.new(inputs)
       slotData = cartChange.slotData,
       actualTree = actualTree,
       newPartItem = cartChange.newPartItem,
+      selectedPartsBySlot = selectedPartsBySlot,
       partToAdd = cartChange.partToAdd,
     })
 

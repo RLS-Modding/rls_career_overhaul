@@ -122,6 +122,22 @@ function M.resolve(facility, org)
     policy = policy, source = sourceName, organizationId = facility.associatedOrganization }
 end
 
+-- Why a service vehicle is locked. Each builder returns the full sentence (disableReason) and the
+-- short tag (lockReason) together so they agree; the tag is a structured lock (kind, level, label).
+local function configLock()
+  return "Vehicle configuration is not installed", { kind = "config", label = "Not installed" }
+end
+
+local function skillLock(level, skillName)
+  return "Requires " .. skillName .. " level " .. tostring(level),
+    { kind = "skill", level = level, label = skillName .. " Lv " .. tostring(level) }
+end
+
+local function reputationLock(level)
+  return "Requires company reputation " .. tostring(level),
+    { kind = "reputation", level = level, label = "Reputation Lv " .. tostring(level) }
+end
+
 function M.offers(facility, org, repLevel)
   local fleet = M.resolve(facility, org)
   if not fleet then return nil end
@@ -129,6 +145,7 @@ function M.offers(facility, org, repLevel)
   local level = skillLevel(fleet.policy)
   local usesSkill = fleet.policy.loanerUnlockMode == "skillLevel"
   local rep = tonumber(repLevel) or tonumber(org and org.reputation and org.reputation.level) or 0
+  local skillName = fleet.policy.loanerUnlockSkillLabel or (skillLabels[fleet.role] or defaultSkillLabels).loaner
   local anyConfig, anyUnlocked = false, false
   for index, entry in ipairs(fleet.entries) do
     local valid = type(entry.model) == "string" and type(entry.config) == "string"
@@ -139,15 +156,14 @@ function M.offers(facility, org, repLevel)
     end
     local requiredSkill = tonumber(entry.requiredSkillLevel) or tonumber(entry.requiredPoliceLevel) or 0
     local requiredRep = tonumber(entry.reputationLvl)
-    local skillLabel = string.format("%s level %d", fleet.policy.loanerUnlockSkillLabel
-      or (skillLabels[fleet.role] or defaultSkillLabels).loaner, requiredSkill)
-    local reason
+    -- The first check that fails decides both the sentence and the short tag.
+    local reason, lockReason
     if not exists then
-      reason = "Vehicle configuration is not installed"
+      reason, lockReason = configLock()
     elseif usesSkill and level < requiredSkill then
-      reason = "Requires " .. skillLabel
+      reason, lockReason = skillLock(requiredSkill, skillName)
     elseif requiredRep and rep < requiredRep then
-      reason = "Requires company reputation " .. requiredRep
+      reason, lockReason = reputationLock(requiredRep)
     end
     local offer = {}
     for key, value in pairs(entry) do offer[key] = value end
@@ -157,7 +173,7 @@ function M.offers(facility, org, repLevel)
     offer.enabled = reason == nil
     offer._unlocked = reason == nil
     offer.disableReason = reason
-    offer.serviceUnlockLabel = usesSkill and requiredSkill > 0 and skillLabel or nil
+    offer.lockReason = lockReason
     offer._serviceRole = fleet.role
     offers[#offers + 1] = offer
     anyConfig = anyConfig or exists

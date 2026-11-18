@@ -1,0 +1,33 @@
+{
+  "Name": "BX / No Prep Knights",
+  "Configuration": "No Prep Knights - Tier 5 racer 1",
+  "Value": 120000,
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Description": "Dedicated No Prep Knights drag build and paint scheme.",
+  "Drag Times": {
+    "time_1000": 6.5080000795424,
+    "time_1_4": 7.639500092715,
+    "time_1_8": 5.1445000655949,
+    "time_330": 3.4625000432134,
+    "time_60": 1.2315000146627,
+    "velAt_1_4": 89.637112744017,
+    "velAt_1_8": 68.29589873725
+  },
+  "Reaction Time": 0.21600000187755,
+  "Drivetrain": "RWD",
+  "Transmission": "Manual",
+  "Fuel Type": "Gasoline",
+  "Years": {
+    "max": 1994,
+    "min": 1990
+  },
+  "dragConfigVersion": 3,
+  "dragFitmentVersion": 3,
+  "dragTimesRevalidated": false
+}

@@ -11,6 +11,7 @@ require('overhaul/lib/save/store').registerKeys({
     files = {'career/rls_career/levelRenamed.json'}, phase = 'profile', required = true},
 })
 local RECIPES = '/gameplay/overhaul/world/levelProxies/'
+-- Lower case: Linux stores the paths that writes create in lower case and mounts only the exact name.
 local CACHE = '/temp/rls_career/levelcache/'
 local MOUNT = CACHE .. 'mount/'
 local PLATE_ROOT = '/vehicles/common/licenseplates/'

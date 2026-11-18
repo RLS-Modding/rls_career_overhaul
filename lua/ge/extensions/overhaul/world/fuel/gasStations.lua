@@ -9,9 +9,28 @@
 -- Gas station POIs and refuel prompts for Overhaul; the game's freeroam_gasStations pauses while Overhaul runs.
 
 local M = {}
+local fuelModel = require('common/rlsFuelModel')
 M.dependencies = {"overhaul_shell_patches"}
 
 local PATCH_ID = "gasStations"
+local warnedInvalidGeometry = false
+
+local function finite(value)
+  return type(value) == "number" and value == value and math.abs(value) < math.huge
+end
+
+local function validPosition(position)
+  local kind = type(position)
+  return (kind == "table" or kind == "cdata" or kind == "userdata")
+    and finite(position.x) and finite(position.y) and finite(position.z)
+end
+
+local function warnInvalidGeometry(facility)
+  if warnedInvalidGeometry then return end
+  warnedInvalidGeometry = true
+  log("W", "gasStations", "Skipping gas station pumps or markers with missing or invalid scene positions"
+    .. " (first station: " .. tostring(facility.id) .. "); level objects may not have loaded")
+end
 
 local function isOverhaulActive()
   return overhaul_shell_gameMode and overhaul_shell_gameMode.isActive and overhaul_shell_gameMode.isActive() or false
@@ -46,36 +65,48 @@ local soundByKey = {
 }
 
 local function gasStationCenterRadius(f)
-  local center, count = vec3(0,0,0), 0
+  local center, positions, pumps = vec3(0,0,0), {}, {}
   for _, pair in ipairs(f.pumps or {}) do
     local obj = scenetree.findObject(pair[1])
-    if obj then
-      center = center + obj:getPosition()
-      count = count + 1
+    local position = obj and obj:getPosition()
+    if validPosition(position) then
+      positions[#positions + 1] = position
+      pumps[#pumps + 1] = pair
+      center = center + position
+    else
+      warnInvalidGeometry(f)
     end
   end
-  center = center / count
+  -- An unloaded level has facility definitions but no pump objects. Dividing by
+  -- zero here would feed NaN bounds into the stock playmode cluster tree.
+  if #positions == 0 then warnInvalidGeometry(f) return nil end
+  center = center / #positions
 
   local maxDistSqr = 0
-  for _, pair in ipairs(f.pumps or {}) do
-    local obj = scenetree.findObject(pair[1])
-    if obj then
-      maxDistSqr = math.max(maxDistSqr, (obj:getPosition()-center):squaredLength())
-    end
+  for _, position in ipairs(positions) do
+    maxDistSqr = math.max(maxDistSqr, (position-center):squaredLength())
   end
 
-  return center, math.sqrt(maxDistSqr)
+  local radius = math.sqrt(maxDistSqr)
+  if not validPosition(center) or not finite(radius)
+    or not finite(center.x - radius) or not finite(center.x + radius)
+    or not finite(center.y - radius) or not finite(center.y + radius) then
+    warnInvalidGeometry(f)
+    return nil
+  end
+  return center, radius, pumps
 end
 M.gasStationCenterRadius = gasStationCenterRadius
 
 local function formatGasStationPoi(gasStation)
-  local center, radius = gasStationCenterRadius(gasStation)
+  local center, radius, pumps = gasStationCenterRadius(gasStation)
+  if not center then return nil end
   local isElectric = tableValuesAsLookupDict(gasStation.energyTypes or {"any"}).electricEnergy
   local elem = {
     id = gasStation.id,
     data = { type = "gasStation", facility = gasStation},
     markerInfo = {
-      gasStationMarker = {pumps = gasStation.pumps, pos = center, radius = radius, electric = isElectric},
+      gasStationMarker = {pumps = pumps, pos = center, radius = radius, electric = isElectric},
       bigmapMarker = { pos = center, icon = isElectric and "poi_charge_round" or "poi_fuel_round", name = gasStation.name, description = gasStation.description, thumbnail = gasStation.preview, previews = {gasStation.preview}, cardIcon = isElectric and "charge" or "fuelPump"}
     }
   }
@@ -159,6 +190,15 @@ local function getRefuelTarget()
   return findNearestRefuelVehicle(playerVeh:getPosition()), true
 end
 M.getRefuelTarget = getRefuelTarget
+-- Keep a pump's chosen car bound while walking, even if another car is nearer.
+function M.isWalkUpRefuelTargetInRange(veh)
+  local player=getPlayerVehicle(0)
+  local id=veh and veh:getID()
+  return isUnicycle(player) and id~=nil and veh:getActive() and veh.playerUsable~=false
+    and be:getObjectOOBBIsInitialized(id) and canRefuelOnFoot(id)
+    and distanceToVehicleBB(player:getPosition(),id)<=walkUpRefuelRadius
+end
+
 
 local function getVehicleLabel(veh)
   if overhaul_career_career.isActive() and overhaul_career_garage_inventory then
@@ -178,11 +218,16 @@ local function onGetRawPoiListForLevel(levelIdentifier, elements)
   local facilities = overhaul_world_facilities.getFacilities(levelIdentifier)
   if overhaul_career_career.isActive() or settings.getValue("enableGasStationsInFreeroam") then
     for i, gasStation in ipairs(facilities.gasStations or {}) do
-      table.insert(elements, formatGasStationPoi(gasStation))
+      local poi = formatGasStationPoi(gasStation)
+      if poi then table.insert(elements, poi) end
     end
   end
 end
 M.onGetRawPoiListForLevel = onGetRawPoiListForLevel
+
+M.onClientPreStartMission = function()
+  warnedInvalidGeometry = false
+end
 
 
 local function onActivityAcceptGatherData(elemData, activityData)
@@ -203,17 +248,28 @@ local function onActivityAcceptGatherData(elemData, activityData)
         }
       }
       local props = {}
-      local fuelTypes = tableValuesAsLookupDict(elem.facility.energyTypes or {"any"})
+      local fuelTypes = fuelModel.stationEnergyTypes(elem.facility.energyTypes)
       local fuelTranslations = {}
       local sortedFuelTypes = tableKeys(fuelTypes)
       table.sort(sortedFuelTypes, compareFuelTypes)
       for _, fuelType in ipairs(sortedFuelTypes) do
         if fuelType ~= "unknown" then
-          fuelTranslations[fuelTypeToFuelTranslation[fuelType]] = (fuelTranslations[fuelTypeToFuelTranslation[fuelType]] or 0) + 1
+          local translation = fuelTypeToFuelTranslation[fuelType] or 'refuel'
+          fuelTranslations[translation] = (fuelTranslations[translation] or 0) + 1
           table.insert(props, {
             icon = fuelType == "electricEnergy" and "charge" or "fuelPump",
             keyLabel = "ui.general.fuelType."..fuelType
           })
+          if fuelType == "gasoline" then
+            -- These are gasoline grades, not native energy types. Keep the
+            -- prompt in sync with the refueling menu's station availability.
+            local gradeLabels = {premium = "Premium", e85 = "E85", m100 = "Methanol", nitro90 = "Nitromethane"}
+            for _, grade in ipairs(fuelModel.stationGrades(elem.facility.energyTypes)) do
+              if gradeLabels[grade.id] then
+                table.insert(props, {icon = "fuelPump", keyLabel = gradeLabels[grade.id]})
+              end
+            end
+          end
         end
       end
       -- Charging-only stations are not gas stations; mixed ones still are.

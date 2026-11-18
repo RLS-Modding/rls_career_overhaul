@@ -1,0 +1,150 @@
+{
+  "rls_dt_sidewall": {
+    "name": "rls_dt_sidewall",
+    "mapTo": "rls_dt_sidewall",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/vehicles/common/tires/tire_01d_ao.color.png",
+        "baseColorMap": "/vehicles/common/tires/tire_01d_b.color.png",
+        "normalMap": "/vehicles/common/tires/tire_01d_nm.normal.png",
+        "roughnessMap": "/vehicles/common/tires/tire_01d_r.data.png"
+      },
+      {},
+      {},
+      {}
+    ],
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "translucentBlendOp": "None",
+    "version": 1.5,
+    "doubleSided": true,
+    "invertBackFaceNormals": true
+  },
+  "rls_dt_sidewall.skin_rls_dt_letters.white": {
+    "name": "rls_dt_sidewall.skin_rls_dt_letters.white",
+    "mapTo": "rls_dt_sidewall.skin_rls_dt_letters.white",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/vehicles/common/tires/tire_01d_ao.color.png",
+        "baseColorMap": "/vehicles/common/tires/tire_01d_b.color.png",
+        "normalMap": "/vehicles/common/tires/tire_01d_nm.normal.png",
+        "roughnessMap": "/vehicles/common/tires/tire_01d_r.data.png"
+      },
+      {},
+      {},
+      {}
+    ],
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "translucentBlendOp": "None",
+    "version": 1.5,
+    "doubleSided": true,
+    "invertBackFaceNormals": true
+  },
+  "rls_dt_sidewall.skin_rls_dt_letters.plain": {
+    "name": "rls_dt_sidewall.skin_rls_dt_letters.plain",
+    "mapTo": "rls_dt_sidewall.skin_rls_dt_letters.plain",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/vehicles/common/tires/tire_01d_ao.color.png",
+        "normalMap": "/vehicles/common/tires/tire_01d_nm.normal.png",
+        "roughnessMap": "/vehicles/common/tires/tire_01d_r.data.png",
+        "baseColorFactor": [
+          0.012,
+          0.012,
+          0.012,
+          1
+        ]
+      },
+      {},
+      {},
+      {}
+    ],
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "translucentBlendOp": "None",
+    "version": 1.5,
+    "doubleSided": true,
+    "invertBackFaceNormals": true
+  },
+  "rls_dt_front_sidewall": {
+    "name": "rls_dt_front_sidewall",
+    "mapTo": "rls_dt_front_sidewall",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/vehicles/common/tires/tire_01d_ao.color.png",
+        "baseColorMap": "/vehicles/common/tires/tire_01d_b.color.png",
+        "normalMap": "/vehicles/common/tires/tire_01d_nm.normal.png",
+        "roughnessMap": "/vehicles/common/tires/tire_01d_r.data.png"
+      },
+      {},
+      {},
+      {}
+    ],
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "translucentBlendOp": "None",
+    "version": 1.5,
+    "doubleSided": true,
+    "invertBackFaceNormals": true
+  },
+  "rls_dt_front_sidewall.skin_rls_dt_front_letters.white": {
+    "name": "rls_dt_front_sidewall.skin_rls_dt_front_letters.white",
+    "mapTo": "rls_dt_front_sidewall.skin_rls_dt_front_letters.white",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/vehicles/common/tires/tire_01d_ao.color.png",
+        "baseColorMap": "/vehicles/common/tires/tire_01d_b.color.png",
+        "normalMap": "/vehicles/common/tires/tire_01d_nm.normal.png",
+        "roughnessMap": "/vehicles/common/tires/tire_01d_r.data.png"
+      },
+      {},
+      {},
+      {}
+    ],
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "translucentBlendOp": "None",
+    "version": 1.5,
+    "doubleSided": true,
+    "invertBackFaceNormals": true
+  },
+  "rls_dt_front_sidewall.skin_rls_dt_front_letters.plain": {
+    "name": "rls_dt_front_sidewall.skin_rls_dt_front_letters.plain",
+    "mapTo": "rls_dt_front_sidewall.skin_rls_dt_front_letters.plain",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/vehicles/common/tires/tire_01d_ao.color.png",
+        "normalMap": "/vehicles/common/tires/tire_01d_nm.normal.png",
+        "roughnessMap": "/vehicles/common/tires/tire_01d_r.data.png",
+        "baseColorFactor": [
+          0.012,
+          0.012,
+          0.012,
+          1
+        ]
+      },
+      {},
+      {},
+      {}
+    ],
+    "dynamicCubemap": true,
+    "materialTag0": "beamng",
+    "materialTag1": "vehicle",
+    "translucentBlendOp": "None",
+    "version": 1.5,
+    "doubleSided": true,
+    "invertBackFaceNormals": true
+  }
+}

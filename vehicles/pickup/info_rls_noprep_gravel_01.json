@@ -1,0 +1,26 @@
+{
+  "Configuration": "Owen Pike - No Prep",
+  "Description": "Sandlot Hauler. Tier 2 racer. Highway no-prep quarter-mile: 11.233s at 128.88mph. Gravel Union. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Gravel Union",
+  "Name": "Owen Pike",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 9.4656122864119,
+    "time_1_4": 11.232622958921,
+    "time_1_8": 7.3348068423591,
+    "time_330": 4.7893412567052,
+    "time_60": 1.8206663661414,
+    "velAt_1_4": 57.614383620589,
+    "velAt_1_8": 44.565053599698
+  },
+  "Reaction Time": 0.29218922192484,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

@@ -1,0 +1,26 @@
+{
+  "Configuration": "Petra Moss - No Prep",
+  "Description": "Juniper Express. Tier 5 racer. Highway no-prep quarter-mile: 8.361s at 176.07mph. Gravel Union. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Gravel Union",
+  "Name": "Petra Moss",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 7.0658265364319,
+    "time_1_4": 8.3605809279516,
+    "time_1_8": 5.5336719741253,
+    "time_330": 3.7283337713326,
+    "time_60": 1.4075794684494,
+    "velAt_1_4": 78.710383659516,
+    "velAt_1_8": 63.430030486354
+  },
+  "Reaction Time": 0.24270324421283,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

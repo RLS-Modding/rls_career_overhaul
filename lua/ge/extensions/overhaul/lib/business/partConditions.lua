@@ -20,41 +20,13 @@ local function collectPartConditionKeysFromPartsTree(partsTree, out)
   return out
 end
 
-local function sanitizeSynchroWear(synchroWear)
-  if type(synchroWear) ~= "table" then
-    return nil
-  end
-
-  -- JSON can turn gear indices into strings; reverse gears use negative indices
-  local cleaned = {}
-  local maxIndex = 0
-  for gearIndex, wear in pairs(synchroWear) do
-    local index = tonumber(gearIndex)
-    if index then
-      cleaned[index] = tonumber(wear) or 0
-      if index > maxIndex then
-        maxIndex = index
-      end
-    end
-  end
-
-  if maxIndex < 1 then
-    maxIndex = 6
-  end
-
-  for gearIndex = 0, maxIndex do
-    cleaned[gearIndex] = cleaned[gearIndex] or 0
-  end
-  return cleaned
-end
-
 local function sanitizePowertrainDeviceState(deviceState)
   if type(deviceState) ~= "table" then
     return nil, true
   end
 
   if deviceState.synchroWear ~= nil then
-    local cleaned = sanitizeSynchroWear(deviceState.synchroWear)
+    local cleaned = partConditionCompatibility.sanitizeSynchroWear(deviceState.synchroWear)
     if cleaned == nil then
       return nil, true
     end

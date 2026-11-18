@@ -1,0 +1,72 @@
+{
+  "label": "v2.8.0.2 Beta",
+  "continueLabel": "Continue",
+  "loadingLabel": "Loading career...",
+  "dontShowLabel": "Don't show again",
+  "slides": [
+    {
+      "kind": "intro",
+      "image": "west-coast-sunrise.jpg",
+      "eyebrow": "What's New",
+      "title": "RLS Career Overhaul v2.8.0.2 Beta",
+      "subtitle": "Racing, jobs and fixes",
+      "summary": "Win back lost cars, expand your racing team and take on smoother deliveries.",
+      "contentsLabel": "In this update"
+    },
+    {
+      "image": "no-prep-knights.jpg",
+      "textSide": "top-left",
+      "kicker": "No Prep Knights and car meets",
+      "title": "Race to win your car back",
+      "summary": "Lost a car in a pink-slip race? You may meet its new owner and get another shot.",
+      "facts": [
+        "Win a pink-slip rematch to reclaim your lost build",
+        "Car meets can bring back a past rival and your car",
+        "No Prep Knights progress is tracked by map",
+        "Newly won prize cars now come with used mileage"
+      ]
+    },
+    {
+      "image": "sanctioned-drags.jpg",
+      "textSide": "top-left",
+      "kicker": "Motorsport and Racing Team",
+      "title": "More ways to race",
+      "summary": "Bring more cars to drag weekends and make more use of your team garage.",
+      "facts": [
+        "Register cars in multiple classes before starting the event",
+        "Choose to spectate or end the day when your races are done",
+        "Racing Team cars can use the dyno and fuel services",
+        "Pit fuel offers regular, premium and E85 for compatible cars",
+        "Race offers show the amount your team receives when you drive"
+      ]
+    },
+    {
+      "image": "drag-builds.jpg",
+      "textSide": "top-left",
+      "kicker": "Builds and deliveries",
+      "title": "Ready for the road",
+      "summary": "New drag tires and improvements to Broker routes and garage capacity.",
+      "facts": [
+        "RLS drag slicks, radials and front runners for supported wheels",
+        "Broker loads are added to your route automatically",
+        "Completed pickups and deliveries clear from the route",
+        "Garage free slots account for space across your garages",
+        "Loaded gooseneck job trailers have a raised hitch"
+      ]
+    },
+    {
+      "image": "fuel-ignition.jpg",
+      "textSide": "top-left",
+      "kicker": "Fuel, repairs and more",
+      "title": "A smoother career",
+      "summary": "Fuel, workshops, taxis and events get a round of fixes.",
+      "facts": [
+        "Fuel Hardware has its own garage and workshop entry",
+        "Personal tuning and parts allow up to two broken parts",
+        "Fuel pumps pause when physics is paused",
+        "A crashed taxi can skip ahead and continue the ride",
+        "Fixes for saved engine damage, racing events and freeroam refueling"
+      ]
+    }
+  ]
+}

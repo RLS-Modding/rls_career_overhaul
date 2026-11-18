@@ -482,7 +482,9 @@ function installer.new(inputs)
     local catalog = readPartCatalog(vehicleData.ioCtx)
     local vehObj = be:getObjectByID(spawnedId)
     local personalVehicleModel = vehObj and vehObj:getJBeamFilename() or nil
-    local tree = buildPartsTreeViews(vehicleData, businessId, catalog, personalVehicleModel, nil)
+    local ownedParts = require('overhaul/lib/parts/storage').personalParts(personalVehicleModel)
+    local tree = buildPartsTreeViews(vehicleData, businessId, catalog, personalVehicleModel,
+      buildOwnedPartsLookup(ownedParts, personalVehicleModel))
 
     triggerPartsTree({
       success = true,

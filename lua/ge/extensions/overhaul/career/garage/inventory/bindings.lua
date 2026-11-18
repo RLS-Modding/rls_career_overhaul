@@ -198,7 +198,7 @@ function bindings.new(inputs)
     end
   end
 
-  local function removeVehicleObject(inventoryId, skipPartConditions)
+  local function removeVehicleObject(inventoryId, skipPartConditions, walkingTransform)
     local retiringId = inventoryIdToVehId[inventoryId]
     local retiringObject = retiringId and getObjectByID(retiringId)
     -- Traffic cleanup restores every mesh's alpha; damage capture then deletes
@@ -207,7 +207,7 @@ function bindings.new(inputs)
     if garageState.currentVehicle == inventoryId then
       garageState.skipPartConditionsBeforeWalking = true
       garageState.currentVehicle = nil
-      gameplay_walk.setWalkingMode(true, nil, nil, true)
+      gameplay_walk.setWalkingMode(true, walkingTransform and walkingTransform.pos, walkingTransform and walkingTransform.rot, true)
     end
     extensions.hook("onOverhaulInventoryPreRemoveVehicleObject", inventoryId, M.getVehicleIdFromInventoryId(inventoryId))
     local vehId = inventoryIdToVehId[inventoryId]
@@ -218,14 +218,19 @@ function bindings.new(inputs)
       end
       clearMapCollisionReferences(vehId)
       local obj = getObjectByID(vehId)
-      if obj and not skipPartConditions then
+      local skipDamageCapture = skipPartConditions
+        or (M.isDamageRestorePending and M.isDamageRestorePending(inventoryId))
+        or (M.isTransientBuild and M.isTransientBuild(inventoryId))
+      if obj and not skipDamageCapture then
         overhaul_career_repair_damageManager.saveDamageState(inventoryId, nil, true) -- remove vehicle
-      elseif obj and skipPartConditions then
-        obj:delete()
+      elseif obj then
+        require('overhaul/lib/vehicles/removal').delete(obj)
       end
       inputs.vehIdToInventoryId[vehId] = nil
     end
     inventoryIdToVehId[inventoryId] = nil
+    -- Walking callbacks can briefly reselect the retiring binding.
+    if garageState.currentVehicle == inventoryId then garageState.currentVehicle = nil end
     if extensions and extensions.hook then extensions.hook("onOverhaulInventoryBindingsChanged") end
     if M.setTransientBuild then M.setTransientBuild(inventoryId, false) end
     helpers.bumpGeneration(inventoryId)
@@ -272,6 +277,8 @@ function bindings.new(inputs)
     return true
   end
 
+  local preserveRlsFuelEngineStates = require('overhaul/lib/vehicles/fuelConditions')
+
   local function getPartConditionsCallback(partConditions, inventoryId, batchToken)
     if not helpers.partConditionBatches:isLive(batchToken) then return end
     if M.isTransientBuild and M.isTransientBuild(inventoryId) then return end
@@ -279,6 +286,7 @@ function bindings.new(inputs)
       onPartConditionsUpdateFinished(inventoryId)
       return
     end
+    partConditions = preserveRlsFuelEngineStates(vehicles[inventoryId].partConditions, partConditions)
     partConditions = inputs.sanitizeMaintenancePartConditionsForVehicle(vehicles[inventoryId], partConditions)
     vehicles[inventoryId].partConditions = partConditions
     seedInitialMaintenanceStateForVehicle(inventoryId)
@@ -287,7 +295,7 @@ function bindings.new(inputs)
     overhaul_career_parts_partInventory.updatePartConditionsInInventory(inventoryId)
   end
 
-  local function updatePartConditions(vehId, inventoryId, callback, batchToken)
+  local function updatePartConditions(vehId, inventoryId, callback, batchToken, acceptCapture)
     if M.isTransientBuild and M.isTransientBuild(inventoryId) then
       if callback then callback() end
       return
@@ -314,6 +322,7 @@ function bindings.new(inputs)
       veh,
       function(res)
         local function finish()
+          if acceptCapture and not acceptCapture(res) then return end
           if not helpers.partConditionBatches:isLive(batchToken) then return end
           if inventoryIdToVehId[inventoryId] ~= requestedVehId then return end
           if M.isTransientBuild and M.isTransientBuild(inventoryId) then

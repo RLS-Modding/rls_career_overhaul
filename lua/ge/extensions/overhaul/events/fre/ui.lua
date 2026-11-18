@@ -18,6 +18,8 @@ local tierOrder = {
 
 local uiStreamingActive = false
 local uiRevision = 0
+local lastPowerHp
+local POWER_REFRESH_BEFORE_EXPIRY_SECONDS = 5
 
 -- Discipline projections ----------------------------------------------------------------------------
 
@@ -165,6 +167,8 @@ local function formatContractForUi(contract, now, level)
 end
 
 local function formatSponsorForUi(sponsor, now, level)
+  local acknowledgedAt = tonumber(sponsor.warningAcknowledgedAt)
+  local issuedAt = tonumber(sponsor.warningIssuedAt)
   local upkeepMinutes = math.max(1, tonumber(sponsor.upkeepMinutes) or 120)
   local nextCheckAt = tonumber(sponsor.nextCheckAt) or now
   local lastQualifiedAt = tonumber(sponsor.lastQualifiedAt)
@@ -204,6 +208,9 @@ local function formatSponsorForUi(sponsor, now, level)
     minutesRemaining = math.max(0, (tonumber(sponsor.expiresAt) or now) - now),
     level = level,
     warningIssued = sponsor.warningIssued == true,
+    -- Acknowledgement dismisses this notice, not the grace period or a later warning.
+    warningAcknowledged = sponsor.warningIssued == true
+      and acknowledgedAt ~= nil and issuedAt ~= nil and acknowledgedAt >= issuedAt,
     probation = sponsor.probation == true,
     warningIssuedAt = sponsor.warningIssuedAt,
     lastQualifiedAt = lastQualifiedAt,
@@ -263,6 +270,18 @@ end
 
 -- UI snapshots --------------------------------------------------------------------------------------
 
+local function requestVehiclePowerRefresh()
+  local racers = overhaul_events_aiRacers
+  if racers and racers.requestStagingUiLivePowerRefresh then racers.requestStagingUiLivePowerRefresh() end
+end
+
+local function getVehiclePowerReadout()
+  local racers = overhaul_events_aiRacers
+  if not racers or not racers.getPlayerVehicleLivePowerWeight then return nil end
+  local hp = racers.getPlayerVehicleLivePowerWeight()
+  return hp and math.floor(hp + 0.5) or nil
+end
+
 local function getUiState(filterDisciplineId)
   local state = overhaul_events_fre_state.getState()
   local now = state.simTime
@@ -305,6 +324,18 @@ local function getUiState(filterDisciplineId)
   sortForUi(activeSponsors, "sponsor")
   sortForUi(availableSponsors, "sponsor")
 
+  local racers = overhaul_events_aiRacers
+  if uiStreamingActive and racers and racers.getPlayerVehicleLivePowerWeight then
+    local hp, _, remainingSeconds = racers.getPlayerVehicleLivePowerWeight()
+    -- Refresh lazily at snapshot boundaries; idle frames never queue beam-stat work.
+    if not hp or (remainingSeconds and remainingSeconds <= POWER_REFRESH_BEFORE_EXPIRY_SECONDS) then
+      requestVehiclePowerRefresh()
+    end
+  end
+  local sanctionedRacing = overhaul_events_fre_sanctionedRacing.getOfferUiSnapshot(now)
+  -- Remember blanks too, so completion restores an expired readout even at the same HP.
+  if uiStreamingActive then lastPowerHp = sanctionedRacing and sanctionedRacing.playerCatalogHp end
+
   return {
     simTimeMinutes = now,
     levelId = overhaul_events_fre_raceCache.getRaceCache().levelId,
@@ -314,7 +345,7 @@ local function getUiState(filterDisciplineId)
     availableContracts = availableContracts,
     activeSponsors = activeSponsors,
     availableSponsors = availableSponsors,
-    sanctionedRacing = overhaul_events_fre_sanctionedRacing.getOfferUiSnapshot(now),
+    sanctionedRacing = sanctionedRacing,
     sanctionedRacingOfferPeriodMinutes = overhaul_events_fre_sanctionedRacing.getOfferGenerationPeriodMinutes(),
     freeroamEventContractBlockReason = freHelpers.getFreeroamEventContractBlockMessage(),
   }
@@ -325,7 +356,13 @@ end
 local function setUiStreamingActive(active)
   local wasActive = uiStreamingActive
   uiStreamingActive = active == true
+  if not uiStreamingActive then
+    local racers = overhaul_events_aiRacers
+    if racers and racers.cancelStagingUiLivePowerRefresh then racers.cancelStagingUiLivePowerRefresh() end
+  end
   if uiStreamingActive and not wasActive then
+    lastPowerHp = getVehiclePowerReadout()
+    requestVehiclePowerRefresh()
     local now = overhaul_events_fre_state.getSimTime()
     overhaul_events_fre_offers.purgeExpiredEntries(now)
     overhaul_events_fre_offers.syncAllOffers(now)
@@ -348,10 +385,43 @@ local function emitUiStateUpdate(reason)
   return true
 end
 
+local function onOverhaulPlayerLivePowerSample(vehId)
+  if not uiStreamingActive or not overhaul_events_fre_state.isCareerActive() then return end
+  if vehId ~= be:getPlayerVehicleID(0) then return end
+  local hp = getVehiclePowerReadout()
+  -- Weight can drift as fuel burns; only a changed visible HP readout warrants clearing action feedback.
+  if hp == lastPowerHp then return end
+  lastPowerHp = hp
+  emitUiStateUpdate("vehicle_power")
+end
+
+local function onPlayerVehicleChanged(vehId)
+  if not uiStreamingActive or vehId ~= be:getPlayerVehicleID(0) then return end
+  requestVehiclePowerRefresh()
+  -- Clear the previous car immediately; the completion hook publishes the new readout.
+  onOverhaulPlayerLivePowerSample(vehId)
+end
+
+local function onVehicleSwitched(_, newVehId, player)
+  if player ~= nil and player ~= 0 then return end
+  onPlayerVehicleChanged(newVehId)
+end
+
+local function onOverhaulTuningApplied()
+  onPlayerVehicleChanged(be:getPlayerVehicleID(0))
+end
+
 -- Public API --------------------------------------------------------------------------------------
 
 M.getUiState = getUiState
 M.setUiStreamingActive = setUiStreamingActive
 M.emitUiStateUpdate = emitUiStateUpdate
+M.onOverhaulPlayerLivePowerSample = onOverhaulPlayerLivePowerSample
+M.onVehicleSwitched = onVehicleSwitched
+-- Part changes rebuild the vehicle and raise these same GE lifecycle hooks.
+M.onVehicleSpawned = onPlayerVehicleChanged
+M.onVehicleReplaced = onPlayerVehicleChanged
+M.onVehicleResetted = onPlayerVehicleChanged
+M.onOverhaulTuningApplied = onOverhaulTuningApplied
 
 return M

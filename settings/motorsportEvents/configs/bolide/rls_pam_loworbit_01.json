@@ -1,0 +1,73 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "bolide/rls_pam_loworbit_01",
+    "configId": "rls_pam_loworbit_01",
+    "model": "bolide",
+    "config": "/vehicles/bolide/rls_pam_loworbit_01.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "memphis_raines",
+    "driverName": "Jade Hayes",
+    "builder": "Low Orbit Garage",
+    "classIds": [
+      "pro_motor"
+    ],
+    "approvedClassIds": [
+      "pro_motor"
+    ],
+    "leagueId": "pro_league",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "580f2c1c91858d4ae82919ff834b51ca8a408517637bdc3ee9c9984b08789ab9",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "Manual",
+      "induction": "Naturally aspirated",
+      "nitrous": false,
+      "years": {
+        "max": 1988,
+        "min": 1981
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_18x5",
+          "part": "tire_F_28_4_5_18_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_18x12_alt",
+          "part": "tire_R_28_13_5_18_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "bolide_rollcage",
+          "part": "bolide_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 10.432607425521,
+      "runId": "PAM-014",
+      "evidenceConfigSHA256": "1831e90a97d01ee2931b29b8c6e18c70e18374f47aace6a6b15815d9f8839238",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/pro-allmotor/final-metadata.json",
+      "acceptedConfig": "outputs/pro-allmotor/accepted/rls_pam_loworbit_01/rls_pam_loworbit_01.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_pro_allmotor"
+  }
+}

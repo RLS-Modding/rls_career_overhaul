@@ -49,6 +49,7 @@ local runtime = {
   deliveryModeActive = false,
   lastInteractivePoiKey = nil,
   mostRecentCargoContainerData = {},
+  mostRecentCargoContainerVehicles = {},
   nearbyScanGeneration = 0,
   nearbyScanLifecycle = 0,
   updateWeightsScheduled = false,
@@ -84,6 +85,7 @@ local function resetDiscovery()
   discovery.elapsed, discovery.poiElapsed, discovery.nextExpiry = 0, 0, math.huge
   discovery.eventElapsed, discovery.inFlight = math.huge, nil
   runtime.mostRecentCargoContainerData = {}
+  runtime.mostRecentCargoContainerVehicles = {}
   runtime.nearbyScanGeneration = runtime.nearbyScanGeneration + 1
   runtime.nearbyScanLifecycle = runtime.nearbyScanLifecycle + 1
 end

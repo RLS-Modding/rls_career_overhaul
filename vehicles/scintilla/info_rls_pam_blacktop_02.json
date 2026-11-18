@@ -1,0 +1,88 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Name": "Lucas Bell",
+  "Configuration": "Lucas Bell - Pro All-Motor",
+  "Description": "Blacktop Engineering. Naturally aspirated competition build; drag tires on both axles, lights, doors, hood and glass retained. Tested healthy at Alder: 8.652 s quarter-mile. DCT; 912 engine hp, 1333 kg. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Induction Type": "NA",
+  "Drivetrain": "RWD",
+  "Transmission": "DCT",
+  "Power": 912,
+  "Weight": 1333,
+  "Years": {
+    "max": 2022,
+    "min": 2020
+  },
+  "Motorsport": {
+    "version": 1,
+    "id": "scintilla/rls_pam_blacktop_02",
+    "configId": "rls_pam_blacktop_02",
+    "model": "scintilla",
+    "config": "/vehicles/scintilla/rls_pam_blacktop_02.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "darius_kane",
+    "driverName": "Lucas Bell",
+    "builder": "Blacktop Engineering",
+    "classIds": [
+      "pro_motor"
+    ],
+    "approvedClassIds": [
+      "pro_motor"
+    ],
+    "leagueId": "pro_league",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "227d96b0ef60e7b6f0800a885be75cf8c15aaa266092ac2a9ecdf3f51693b43b",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "DCT",
+      "induction": "Naturally aspirated",
+      "nitrous": false,
+      "years": {
+        "max": 2022,
+        "min": 2020
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_18x5",
+          "part": "tire_F_28_4_5_18_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_18x12_alt",
+          "part": "tire_R_28_13_5_18_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "scintilla_rollcage_hardtop",
+          "part": "scintilla_rollcage_hardtop"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.651855483913,
+      "runId": "PAM-050",
+      "evidenceConfigSHA256": "4628fc409a9e368c46ef8d6b2dae868b9088517b13f3ee7ac4c0ffa2f933576a",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/pro-allmotor/final-metadata.json",
+      "acceptedConfig": "outputs/pro-allmotor/accepted/rls_pam_blacktop_02/rls_pam_blacktop_02.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_pro_allmotor"
+  }
+}

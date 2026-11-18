@@ -3,6 +3,7 @@
 local M = {}
 local ledgerCategories = require("overhaul/lib/ledger/categories")
 local providers, categories = {}, {}
+local readRevision = 0
 
 local function copy(value, seen)
   if type(value) ~= "table" then return value end
@@ -60,7 +61,20 @@ function M.registerCategory(key, definition)
   assert(text(key) and type(definition) == "table" and text(definition.name), "category needs an id and name")
   local entry = {id = key, name = definition.name, accent = definition.accent or "#8e8e93"}
   categories[key] = entry
-  return function() if categories[key] == entry then categories[key] = nil end end
+  readRevision = readRevision + 1
+  return function()
+    if categories[key] == entry then categories[key] = nil; readRevision = readRevision + 1 end
+  end
+end
+
+function M.getReadRevision() return readRevision end
+
+-- Async owners can finish an existing receipt without appending a money row.
+-- The revision belongs to the read cache, never to the durable receipt schema.
+function M.updateReceipt(record, snapshot)
+  record.finance = snapshot
+  readRevision = readRevision + 1
+  return snapshot
 end
 
 function M.registerProvider(key, callback, order)

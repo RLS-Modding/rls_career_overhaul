@@ -190,7 +190,7 @@
     <!-- Assign Job Modal -->
     <Teleport to="body">
       <transition name="modal-fade">
-        <div v-if="showAssignModal" class="modal-overlay" @click.self.stop="closeAssignModal" @mousedown.self.stop="closeAssignModal">
+        <div v-if="showAssignModal" class="modal-overlay" data-phone-surface @click.self.stop="closeAssignModal" @mousedown.self.stop="closeAssignModal">
           <div class="modal-content assign-modal" v-bng-scoped-nav="modalScopes.assign" v-bc-modal-focus v-bng-on-ui-nav:back="closeTopLayer">
             <div class="modal-header">
               <h3>{{ assignModalTitle }}</h3>
@@ -230,7 +230,7 @@
     <!-- Abandon Confirmation Modal -->
     <Teleport to="body">
       <transition name="modal-fade">
-        <div v-if="showAbandonModal" class="modal-overlay" @click.self.stop="cancelAbandon" @mousedown.self.stop="cancelAbandon">
+        <div v-if="showAbandonModal" class="modal-overlay" data-phone-surface @click.self.stop="cancelAbandon" @mousedown.self.stop="cancelAbandon">
           <div class="modal-content" v-bng-scoped-nav="modalScopes.abandon" v-bc-modal-focus v-bng-on-ui-nav:back="closeTopLayer">
             <h2>Abandon Job</h2>
             <p>Are you sure? Penalty: <span class="penalty-text">${{ penaltyCost.toLocaleString() }}</span></p>

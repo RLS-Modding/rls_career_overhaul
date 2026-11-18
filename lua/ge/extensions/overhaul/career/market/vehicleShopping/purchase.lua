@@ -737,6 +737,10 @@ function M.new(inputs)
   end
 
   local function buyFromPurchaseMenu(purchaseType, options)
+    local configs=require('overhaul/lib/platform/capabilities').get('noPrepConfigOwnership')
+    if configs and state.purchaseData and not configs.allowListing(state.purchaseData.vehicleInfo) then
+      ui_message('This car is available only through No Prep Knights.',5,'No Prep Knights');return
+    end
     options = options or {}
     if state.personalPurchaseAttempt or overhaul_career_saveSystem.isSaveBusy() then
       ui_message("A purchase or career save is in progress. Please try again in a moment.", 6, "vehicleShopping")

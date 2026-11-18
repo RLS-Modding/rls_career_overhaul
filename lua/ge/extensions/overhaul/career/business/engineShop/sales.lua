@@ -94,7 +94,7 @@ function part.new(inputs)
   local function saleCandidates(id, state)
     local rows = {}
     for _, blueprint in pairs(state.blueprints or {}) do
-      if blueprint.listed and #host.warehousePackages(id, blueprint.id) > 0 then rows[#rows + 1] = blueprint end
+      if blueprint.listed and not blueprint.removed and #host.warehousePackages(id, blueprint.id) > 0 then rows[#rows + 1] = blueprint end
     end
     table.sort(rows, function(a, b)
       local aId, bId = tonumber(a.id), tonumber(b.id)
@@ -107,7 +107,7 @@ function part.new(inputs)
   -- Keeps the current listing's countdown while it still has stock; otherwise picks the next listing after the cursor.
   local function ensureSalesCycle(id, state)
     local current = state.salesCurrentBlueprintId and state.blueprints[tostring(state.salesCurrentBlueprintId)]
-    if current and current.listed and #host.warehousePackages(id, current.id) > 0 then
+    if current and current.listed and not current.removed and #host.warehousePackages(id, current.id) > 0 then
       if not state.salesCycleDurationSeconds or state.salesCycleDurationSeconds <= 0 then
         state.salesCycleDurationSeconds = saleCycleSeconds(current, landedCost(current, state.lines), state)
         if state.salesCycleMigrationRatio then
@@ -193,6 +193,7 @@ function part.new(inputs)
     local state = host.ensureState(id)
     local blueprint = state.blueprints[tostring(blueprintId)]
     if not blueprint then return {success = false, message = "Certified engine blueprint not found."} end
+    if listed == true and blueprint.removed then return {success = false, message = "Restore this blueprint before listing it for sale."} end
     if listed == true and blueprint.certification and blueprint.certification.status ~= "passed" then
       return {success = false, message = blueprint.certification.reason or "This blueprint no longer passes its torque limit."}
     end
@@ -225,6 +226,7 @@ function part.new(inputs)
     ensureSalesCycle = ensureSalesCycle,
     landedCost = landedCost,
     normalizeBlueprintPrice = normalizeBlueprintPrice,
+    resetSalesCycle = resetSalesCycle,
     saleCycleSeconds = saleCycleSeconds,
     salePriceLimit = salePriceLimit,
     setBlueprintListed = setBlueprintListed,

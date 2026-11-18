@@ -17,12 +17,13 @@ function sales.new(inputs)
     if not garageId then return false end
     local garage = overhaul_world_facilities.getFacility("garage", garageId)
     if not garage then return false end
+    if not inputs.state.purchasedGarages[garageId] or inputs.parts.ownership.isGarageForSale(garageId) then return {false, 0} end
     -- Granted / unpaid ownership cannot be sold for money.
     if inputs.parts.ownership.isGrantedGarageOwnership(garageId) then return {false, 0} end
-    local space = inputs.parts.capacity.isGarageSpace(garageId)
+    local freeSlots = inputs.parts.capacity.getFreeSlots()
     local capacity = math.ceil(garage.capacity / (inputs.parts.ownership.isHardcoreMode() and 2 or 1))
     local vehicleCount = inputs.parts.capacity.getGarageOccupancy(garageId)
-    return {space and space[2] == capacity and vehicleCount == 0, vehicleCount}
+    return {freeSlots >= capacity and vehicleCount == 0, vehicleCount}
   end
 
   local function canSellGarage(computerId)
@@ -41,10 +42,10 @@ function sales.new(inputs)
     local garage = overhaul_world_facilities.getFacility("garage", garageId)
     if not garage then return {false, 0, "missing"} end
 
-    local space = inputs.parts.capacity.isGarageSpace(garageId)
+    local freeSlots = inputs.parts.capacity.getFreeSlots()
     local capacity = math.ceil((garage.capacity or 0) / (inputs.parts.ownership.isHardcoreMode() and 2 or 1))
     local vehicleCount = inputs.parts.capacity.getGarageOccupancy(garageId)
-    if not space or space[2] ~= capacity or vehicleCount > 0 then return {false, vehicleCount, "vehicles"} end
+    if freeSlots < capacity or vehicleCount > 0 then return {false, vehicleCount, "vehicles"} end
     return {true, 0, nil}
   end
 

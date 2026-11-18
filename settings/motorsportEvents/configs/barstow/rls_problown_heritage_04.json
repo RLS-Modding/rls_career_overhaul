@@ -1,0 +1,87 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "barstow/rls_problown_heritage_04",
+    "configId": "rls_problown_heritage_04",
+    "model": "barstow",
+    "config": "/vehicles/barstow/rls_problown_heritage_04.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "tobey_marshall",
+    "driverName": "Brooke Bowen",
+    "builder": "Heritage Speed",
+    "classIds": [
+      "pro_blower"
+    ],
+    "approvedClassIds": [
+      "pro_blower"
+    ],
+    "leagueId": "pro_league",
+    "eligibilityStatus": "Roster approval retained. Historical ETs remain historical estimates; consolidated supercharger and pulley selection require current-build validation.",
+    "sourceConfigSHA256": "3ab4b14b3befc00722d937246bd5957971416f515d3ac942dd1b6b9b43c9af52",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "Automatic",
+      "induction": "Supercharger",
+      "nitrous": false,
+      "years": null
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x4",
+          "part": "tire_F_26_4_15_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_15x10",
+          "part": "tire_R_26_10_15_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "barstow_rollcage",
+          "part": "barstow_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 7.89693754736075,
+      "runId": "REPAIR-20261026-D-rls_problown_heritage_04",
+      "evidenceConfigSHA256": "0ff22a731e73c3153eb4bdf1b95edc211e8b00726cdb6b1a479629e50485d475",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/pro-blown/final-results.json",
+      "acceptedConfig": "outputs/pro-blown/accepted/rls_problown_heritage_04/rls_problown_heritage_04.pc",
+      "repairEvidence": "/settings/motorsportEvents/approvalEvidence-20261026.json",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json",
+      "superchargerConsolidation": {
+        "schema": "rls.supercharger-selection-migration/1",
+        "manifest": "docs/vehicles/shared-drag-superchargers.json",
+        "integrationPlanSHA256": "198ae936a8b13c98d615bc44e342692c5d0238364ab2878a1ee80c3d56095ed2",
+        "oldConfigSHA256": "3b2755fa29520987297a1cfd96890f42998ca4943066d97459990e6138959bfb",
+        "configSHA256": "3ab4b14b3befc00722d937246bd5957971416f515d3ac942dd1b6b9b43c9af52",
+        "slot": "barstow_intake_v8",
+        "oldPart": "rls_problown_heritage_04_raceblower",
+        "newPart": "rls_barstow_intake_v8_stage4_supercharger",
+        "childSlot": "rls_barstow_intake_v8_stage4_pulley",
+        "pulleyPart": "rls_barstow_intake_v8_stage4_pulley_6",
+        "ratio": 1.65,
+        "removedVariables": [],
+        "status": "source-migrated-pending-live-validation",
+        "scope": "Supercharger ID, child pulley topology and/or fixed hardware changed. Earlier measurements remain tied to their original saved config and sources; no new live validation."
+      }
+    },
+    "sourcePack": "rls_pro_blown"
+  }
+}

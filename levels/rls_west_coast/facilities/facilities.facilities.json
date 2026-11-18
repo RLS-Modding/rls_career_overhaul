@@ -367,38 +367,40 @@
       ]
     },
     {
-      "activityAcceptProps":[
+      "activityAcceptProps": [
         {
-          "keyLabel":"Vehicle Tuning"
+          "keyLabel": "Vehicle Tuning"
         }
       ],
-      "description":"A place to dial in your build before you take it down the drag strip.",
-      "doors":[
+      "description": "A place to dial in your build before you take it down the drag strip.",
+      "doors": [
         [
           "dragTuningPits_area",
           "dragTuningPits_icon"
         ]
       ],
-      "functions":{
-        "insurances":false,
-        "painting":false,
-        "partInventory":false,
-        "partShop":false,
-        "sleep":false,
-        "tuning":true,
-        "vehicleInventory":false,
-        "vehicleShop":false
+      "functions": {
+        "insurances": false,
+        "painting": false,
+        "partInventory": false,
+        "partShop": false,
+        "sleep": false,
+        "tuning": true,
+        "vehicleInventory": false,
+        "vehicleShop": false
       },
-      "garageId":"dragTuningPits",
-      "icon":"poi_laptop_round",
-      "iconLift":0.2,
-      "iconOffsetHeight":0.15,
+      "garageId": "dragTuningPits",
+      "icon": "poi_laptop_round",
+      "iconLift": 0.2,
+      "iconOffsetHeight": 0.15,
       "neighborhood": "West Coast",
-      "id":"dragTuningPits",
-      "name":"Drag Pit Lane",
-      "openTuningDirectly":true,
-      "preview":"drag_tuning.jpg",
-      "screens":{}
+      "id": "dragTuningPits",
+      "name": "Drag Pit Lane",
+      "openTuningDirectly": true,
+      "preview": "drag_tuning.jpg",
+      "screens": {},
+      "inspectMarker": true,
+      "inspectMarkerFocus": false
     },
     {
       "activityAcceptProps":[
@@ -1695,7 +1697,9 @@
         "gasoline",
         "diesel",
         "n2o",
-        "unknown"
+        "unknown",
+        "premium",
+        "e85"
       ],
       "id":"trilobite_garage",
       "name":"levels.west_coast_usa.gasStationPoints.trilobite_garage.title",
@@ -1868,7 +1872,9 @@
         "gasoline",
         "diesel",
         "n2o",
-        "unknown"
+        "unknown",
+        "premium",
+        "e85"
       ],
       "id":"trilobite_city",
       "name":"levels.west_coast_usa.gasStationPoints.trilobite_city.title",
@@ -2036,7 +2042,9 @@
         "gasoline",
         "diesel",
         "n2o",
-        "unknown"
+        "unknown",
+        "premium",
+        "e85"
       ],
       "id":"apex",
       "name":"levels.west_coast_usa.gasStationPoints.apex.title",
@@ -2178,7 +2186,9 @@
         "gasoline",
         "diesel",
         "n2o",
-        "unknown"
+        "unknown",
+        "premium",
+        "e85"
       ],
       "id":"nodeoline",
       "name":"levels.west_coast_usa.gasStationPoints.nodeoline.title",
@@ -2320,7 +2330,9 @@
         "gasoline",
         "diesel",
         "n2o",
-        "unknown"
+        "unknown",
+        "premium",
+        "e85"
       ],
       "id":"tyranos_island",
       "name":"levels.west_coast_usa.gasStationPoints.tyranos_island.title",
@@ -2485,7 +2497,9 @@
         "gasoline",
         "diesel",
         "n2o",
-        "unknown"
+        "unknown",
+        "premium",
+        "e85"
       ],
       "id":"apex_commercial",
       "name":"levels.west_coast_usa.gasStationPoints.apex_commercial.title",
@@ -2637,32 +2651,36 @@
         "gasoline",
         "diesel",
         "n2o",
-        "unknown"
+        "unknown",
+        "premium",
+        "e85",
+        "methanol",
+        "nitro90"
       ],
       "id":"trilobite_drag",
       "name":"Alder Dragway Fuel",
       "preview":"drag_fuel.jpg",
       "prices":{
         "diesel":{
-          "priceBaseline":50.53,
+          "priceBaseline":15.795,
           "priceRandomnessBias":0.2,
           "priceRandomnessGain":0.1,
           "us_9_10_tax":true
         },
         "gasoline":{
-          "priceBaseline":50.37,
+          "priceBaseline":15.555,
           "priceRandomnessBias":0.2,
           "priceRandomnessGain":0.1,
           "us_9_10_tax":true
         },
         "n2o":{
-          "priceBaseline":75,
+          "priceBaseline":37.5,
           "priceRandomnessBias":0.2,
           "priceRandomnessGain":0.1,
           "us_9_10_tax":true
         },
         "unknown":{
-          "priceBaseline":65,
+          "priceBaseline":22.5,
           "priceRandomnessBias":0.2,
           "priceRandomnessGain":0.1,
           "us_9_10_tax":true

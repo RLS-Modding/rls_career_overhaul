@@ -1,0 +1,1527 @@
+{
+  "version": 1,
+  "audit": "drag-compliance-20261026",
+  "method": "Tuning-only saved configurations; three or more clean legal native passes with both lanes covered per unchanged final PC hash.",
+  "modules": {
+    "lua/ge/extensions/overhaul/events/motorsportEvents/drag/runner.lua": "5c20c23fd68900b627e65cafac456f58d1711ea84cfd6c074d0e7fff68273483",
+    "lua/vehicle/extensions/overhaulMotorsportCooldown.lua": "f7cba3699c96d8505e6ccf113994ba8931cf1e9a271e14029433e90f6d9a5fc4",
+    "lua/vehicle/extensions/overhaulMotorsportLaunch.lua": "57e57508c43cde7cffa681429fbb112e9d0e9199c2fc3473db7be25f0d64140d",
+    "lua/ge/extensions/overhaul/events/motorsportEvents/drag/classes.lua": "d60141ceb34aa601bb1535b81fef2ecfd17e405595dcade76a8d2bc5613ff20e",
+    "lua/ge/extensions/overhaul/events/motorsportEvents/drag/laneZones.lua": "be0ee0729c9bd3f7ecae7fcbad3250a97cb0994ad1bfa183176cb7e01de0d547",
+    "lua/ge/extensions/overhaul/events/motorsportEvents/definitions.lua": "471747e20b0d89ac5001fc88b9ce5c4276f8e2860c6ab453695173429e1508ed",
+    "settings/motorsportEvents/competition.json": "447953cf5079041e59efb5c2acd152dfe1c5cd1c5486685ad111bbb36910b7da",
+    "lua/vehicle/extensions/overhaulMotorsportStartup.lua": "8563549932b60b78eb3b282f8f0bb738b8d3783096342e3b6c04af34c066bef4",
+    "lua/vehicle/extensions/overhaulMotorsportApproach.lua": "37974e9a78942faf2419cf8e8ae91c30cd6cb8cd518676886e5003736ef137b7",
+    "lua/vehicle/extensions/overhaulMotorsportStagingHold.lua": "844ee87a22a5a186632b1c1edd9fc5149e9cb66e21c6d60829adede3d76e562c",
+    "lua/ge/extensions/overhaul/events/motorsportEvents/drag/approach.lua": "98ff3c873a5093abff033bc7400ce9d13ea023a102c4e59b9207a656c9cbb81b",
+    "lua/ge/extensions/overhaul/events/motorsportEvents/drag/recovery.lua": "cf912da5ab871b79665fd31ee556adbf7121a18de22867c2187899a9a55a5eaf",
+    "lua/ge/extensions/overhaul/events/motorsportEvents/drag/staging.lua": "83daad73ceec094930f1129db0dd49bb60e6362da110d4e1f1fffe4630a6f6a2"
+  },
+  "configs": [
+    {
+      "id": "nine/rls_stu_haulmark_03",
+      "classIds": [
+        "stu_leonard_850"
+      ],
+      "index": 8.5,
+      "sourceConfigSHA256": "7b30e6fecc9ab0ab94276d3fe6f8912fd026009da540eee16f3713941404f556",
+      "originalSHA256": "cf97194ae522f15199db82deb3fed86ad9c571266a4db1815e38a27e19922845",
+      "varsBefore": {
+        "$n2o_power": 400
+      },
+      "varsAfter": {
+        "$n2o_power": 260
+      },
+      "previousPerformance": {
+        "quarterMileSeconds": 8.921693068441767,
+        "runId": "BEHAVIOR-20261025-rls_stu_haulmark_03",
+        "evidenceConfigSHA256": "cf97194ae522f15199db82deb3fed86ad9c571266a4db1815e38a27e19922845",
+        "configHashMatches": true,
+        "status": "recorded-pass-matching-config"
+      },
+      "runs": [
+        {
+          "round": 1,
+          "sha256": "7b30e6fecc9ab0ab94276d3fe6f8912fd026009da540eee16f3713941404f556",
+          "knobs": {
+            "$n2o_power": 260
+          },
+          "side": "left",
+          "time": 9.2242184744501,
+          "clean": true,
+          "tech": {
+            "stu_leonard_850": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 2,
+          "sha256": "7b30e6fecc9ab0ab94276d3fe6f8912fd026009da540eee16f3713941404f556",
+          "knobs": {
+            "$n2o_power": 260
+          },
+          "side": "right",
+          "time": 9.2390095887832,
+          "clean": true,
+          "tech": {
+            "stu_leonard_850": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 3,
+          "sha256": "7b30e6fecc9ab0ab94276d3fe6f8912fd026009da540eee16f3713941404f556",
+          "knobs": {
+            "$n2o_power": 260
+          },
+          "side": "left",
+          "time": 9.2381612392911,
+          "clean": true,
+          "tech": {
+            "stu_leonard_850": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        }
+      ]
+    },
+    {
+      "id": "bastion/rls_streetheat_blacktop_darius_kane",
+      "classIds": [
+        "street_heat"
+      ],
+      "index": 10.5,
+      "sourceConfigSHA256": "7a80d24cb42ee9841398a62e0ba5ecef2fc12d974b73e05c1498dcb4cbe7a988",
+      "originalSHA256": "285ed89388cbc30d3a402b080db5a18fe96384b1f433635786ff9f28a5d0ea6a",
+      "varsBefore": {
+        "$wastegateStart": 16,
+        "$revLimiterRPM": 6800
+      },
+      "varsAfter": {
+        "$wastegateStart": 10,
+        "$revLimiterRPM": 6200
+      },
+      "previousPerformance": {
+        "quarterMileSeconds": 10.129113358481,
+        "runId": "SH-20261020-075552",
+        "evidenceConfigSHA256": "285ed89388cbc30d3a402b080db5a18fe96384b1f433635786ff9f28a5d0ea6a",
+        "configHashMatches": true,
+        "status": "recorded-pass-matching-config"
+      },
+      "runs": [
+        {
+          "round": 5,
+          "sha256": "7a80d24cb42ee9841398a62e0ba5ecef2fc12d974b73e05c1498dcb4cbe7a988",
+          "knobs": {
+            "$wastegateStart": 10,
+            "$revLimiterRPM": 6200
+          },
+          "side": "left",
+          "time": 10.619345187575,
+          "clean": true,
+          "tech": {
+            "street_heat": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 6,
+          "sha256": "7a80d24cb42ee9841398a62e0ba5ecef2fc12d974b73e05c1498dcb4cbe7a988",
+          "knobs": {
+            "$wastegateStart": 10,
+            "$revLimiterRPM": 6200
+          },
+          "side": "right",
+          "time": 11.384194011337,
+          "clean": true,
+          "tech": {
+            "street_heat": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 7,
+          "sha256": "7a80d24cb42ee9841398a62e0ba5ecef2fc12d974b73e05c1498dcb4cbe7a988",
+          "knobs": {
+            "$wastegateStart": 10,
+            "$revLimiterRPM": 6200
+          },
+          "side": "left",
+          "time": 10.586055855257,
+          "clean": true,
+          "tech": {
+            "street_heat": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        }
+      ]
+    },
+    {
+      "id": "bluebuck/rls_stu_blacktop_02",
+      "classIds": [
+        "stu_leonard_850"
+      ],
+      "index": 8.5,
+      "sourceConfigSHA256": "4e842664e3bcb245f8d57d7c0e3e6697b407407f4a9386e3f74f438e33dff1c6",
+      "originalSHA256": "559b58e5ecae15dfce15e4650af52b1e142895231a302b6e679c091fbac1d9d8",
+      "varsBefore": {
+        "$n2o_power": 350
+      },
+      "varsAfter": {
+        "$n2o_power": 230
+      },
+      "previousPerformance": {
+        "quarterMileSeconds": 8.6368430034048,
+        "runId": "STU-046",
+        "evidenceConfigSHA256": "559b58e5ecae15dfce15e4650af52b1e142895231a302b6e679c091fbac1d9d8",
+        "configHashMatches": true,
+        "status": "recorded-pass-matching-config"
+      },
+      "runs": [
+        {
+          "round": 1,
+          "sha256": "4e842664e3bcb245f8d57d7c0e3e6697b407407f4a9386e3f74f438e33dff1c6",
+          "knobs": {
+            "$n2o_power": 230
+          },
+          "side": "left",
+          "time": 8.8030298340669,
+          "clean": true,
+          "tech": {
+            "stu_leonard_850": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 2,
+          "sha256": "4e842664e3bcb245f8d57d7c0e3e6697b407407f4a9386e3f74f438e33dff1c6",
+          "knobs": {
+            "$n2o_power": 230
+          },
+          "side": "right",
+          "time": 8.8044671402361,
+          "clean": true,
+          "tech": {
+            "stu_leonard_850": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 3,
+          "sha256": "4e842664e3bcb245f8d57d7c0e3e6697b407407f4a9386e3f74f438e33dff1c6",
+          "knobs": {
+            "$n2o_power": 230
+          },
+          "side": "left",
+          "time": 8.7929879657382,
+          "clean": true,
+          "tech": {
+            "stu_leonard_850": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        }
+      ]
+    },
+    {
+      "id": "covet/rls_wrongwheel_neon_01",
+      "classIds": [
+        "wrong_wheel_drive"
+      ],
+      "index": 9.5,
+      "sourceConfigSHA256": "90224e507d258dd364e9c456b16107d16d25ecfa3da232eaf17953a8acc2a94e",
+      "originalSHA256": "6f0f98b58215c6dcba7c0a1134148880f9d0ea725691e0ff8c13e34ecdf8a43a",
+      "varsBefore": {
+        "$wastegateStart": 60,
+        "$wwLaunchBoost": 22,
+        "$wwSecondBoost": 44
+      },
+      "varsAfter": {
+        "$wastegateStart": 51,
+        "$wwLaunchBoost": 18.7,
+        "$wwSecondBoost": 37.4
+      },
+      "previousPerformance": {
+        "quarterMileSeconds": 9.6613929427831,
+        "runId": "WW-035",
+        "evidenceConfigSHA256": "6f0f98b58215c6dcba7c0a1134148880f9d0ea725691e0ff8c13e34ecdf8a43a",
+        "configHashMatches": true,
+        "status": "recorded-pass-matching-config"
+      },
+      "runs": [
+        {
+          "round": 1,
+          "sha256": "90224e507d258dd364e9c456b16107d16d25ecfa3da232eaf17953a8acc2a94e",
+          "knobs": {
+            "$wastegateStart": 51,
+            "$wwLaunchBoost": 18.7,
+            "$wwSecondBoost": 37.4
+          },
+          "side": "right",
+          "time": 9.7563706879249,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 2,
+          "sha256": "90224e507d258dd364e9c456b16107d16d25ecfa3da232eaf17953a8acc2a94e",
+          "knobs": {
+            "$wastegateStart": 51,
+            "$wwLaunchBoost": 18.7,
+            "$wwSecondBoost": 37.4
+          },
+          "side": "left",
+          "time": 9.7684085011832,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 3,
+          "sha256": "90224e507d258dd364e9c456b16107d16d25ecfa3da232eaf17953a8acc2a94e",
+          "knobs": {
+            "$wastegateStart": 51,
+            "$wwLaunchBoost": 18.7,
+            "$wwSecondBoost": 37.4
+          },
+          "side": "right",
+          "time": 9.7812535838299,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        }
+      ]
+    },
+    {
+      "id": "covet/rls_wrongwheel_neon_02",
+      "classIds": [
+        "wrong_wheel_drive"
+      ],
+      "index": 9.5,
+      "sourceConfigSHA256": "9ca70bfb72ff5a4371840fb7f16537f7498a7e89b60df29965f87d5d83c8cf04",
+      "originalSHA256": "f9732cf7f855655ab5f1f256fa7974f635aedbcf38e2e49153f335c38ad06c8f",
+      "varsBefore": {
+        "$n2o_power": 260
+      },
+      "varsAfter": {
+        "$n2o_power": 170
+      },
+      "previousPerformance": {
+        "quarterMileSeconds": 9.5046751951894,
+        "runId": "WW-041",
+        "evidenceConfigSHA256": "f9732cf7f855655ab5f1f256fa7974f635aedbcf38e2e49153f335c38ad06c8f",
+        "configHashMatches": true,
+        "status": "recorded-pass-matching-config"
+      },
+      "runs": [
+        {
+          "round": 1,
+          "sha256": "9ca70bfb72ff5a4371840fb7f16537f7498a7e89b60df29965f87d5d83c8cf04",
+          "knobs": {
+            "$n2o_power": 170
+          },
+          "side": "left",
+          "time": 9.6867063176126,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 2,
+          "sha256": "9ca70bfb72ff5a4371840fb7f16537f7498a7e89b60df29965f87d5d83c8cf04",
+          "knobs": {
+            "$n2o_power": 170
+          },
+          "side": "right",
+          "time": 9.685496071276,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 3,
+          "sha256": "9ca70bfb72ff5a4371840fb7f16537f7498a7e89b60df29965f87d5d83c8cf04",
+          "knobs": {
+            "$n2o_power": 170
+          },
+          "side": "left",
+          "time": 9.7036790432247,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        }
+      ]
+    },
+    {
+      "id": "covet/rls_wrongwheel_neon_03",
+      "classIds": [
+        "wrong_wheel_drive"
+      ],
+      "index": 9.5,
+      "sourceConfigSHA256": "efa159765caf165fd9d5a967f9c7f61897799637d5934e8e05224c968b791bff",
+      "originalSHA256": "f5721bd93d85e4ee602f51d537a0320bc8ee0de0152f9e65497f6dc608b4a9b6",
+      "varsBefore": {
+        "$n2o_power": 100,
+        "$wastegateStart": 22,
+        "$wwLaunchBoost": 8,
+        "$wwSecondBoost": 16
+      },
+      "varsAfter": {
+        "$n2o_power": 25,
+        "$wastegateStart": 20.31,
+        "$wwLaunchBoost": 7.38,
+        "$wwSecondBoost": 14.77
+      },
+      "previousPerformance": {
+        "quarterMileSeconds": 9.6491167066376,
+        "runId": "WW-023",
+        "evidenceConfigSHA256": "f5721bd93d85e4ee602f51d537a0320bc8ee0de0152f9e65497f6dc608b4a9b6",
+        "configHashMatches": true,
+        "status": "recorded-pass-matching-config"
+      },
+      "runs": [
+        {
+          "round": 3,
+          "sha256": "efa159765caf165fd9d5a967f9c7f61897799637d5934e8e05224c968b791bff",
+          "knobs": {
+            "$n2o_power": 25,
+            "$wastegateStart": 20.31,
+            "$wwLaunchBoost": 7.38,
+            "$wwSecondBoost": 14.77
+          },
+          "side": "right",
+          "time": 9.6973805640741,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 4,
+          "sha256": "efa159765caf165fd9d5a967f9c7f61897799637d5934e8e05224c968b791bff",
+          "knobs": {
+            "$n2o_power": 25,
+            "$wastegateStart": 20.31,
+            "$wwLaunchBoost": 7.38,
+            "$wwSecondBoost": 14.77
+          },
+          "side": "left",
+          "time": 9.7558419262685,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 5,
+          "sha256": "efa159765caf165fd9d5a967f9c7f61897799637d5934e8e05224c968b791bff",
+          "knobs": {
+            "$n2o_power": 25,
+            "$wastegateStart": 20.31,
+            "$wwLaunchBoost": 7.38,
+            "$wwSecondBoost": 14.77
+          },
+          "side": "right",
+          "time": 9.6702567334161,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        }
+      ]
+    },
+    {
+      "id": "covet/rls_wrongwheel_neon_04",
+      "classIds": [
+        "wrong_wheel_drive"
+      ],
+      "index": 9.5,
+      "sourceConfigSHA256": "7b27ca0529d8cfdd2819a1ea3cb1631431811bbf96bd920d5c5abb73499e624c",
+      "originalSHA256": "83c0edf728e3b5ed50edf7f8f916c21fbad93cbd5beef707e482adb012c4260c",
+      "varsBefore": {
+        "$wastegateStart": 32,
+        "$wwLaunchBoost": 11,
+        "$wwSecondBoost": 20
+      },
+      "varsAfter": {
+        "$wastegateStart": 27.2,
+        "$wwLaunchBoost": 9.35,
+        "$wwSecondBoost": 17
+      },
+      "previousPerformance": {
+        "quarterMileSeconds": 9.5932998712317,
+        "runId": "WW-024",
+        "evidenceConfigSHA256": "83c0edf728e3b5ed50edf7f8f916c21fbad93cbd5beef707e482adb012c4260c",
+        "configHashMatches": true,
+        "status": "recorded-pass-matching-config"
+      },
+      "runs": [
+        {
+          "round": 1,
+          "sha256": "7b27ca0529d8cfdd2819a1ea3cb1631431811bbf96bd920d5c5abb73499e624c",
+          "knobs": {
+            "$wastegateStart": 27.2,
+            "$wwLaunchBoost": 9.35,
+            "$wwSecondBoost": 17
+          },
+          "side": "left",
+          "time": 9.8391438840556,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 2,
+          "sha256": "7b27ca0529d8cfdd2819a1ea3cb1631431811bbf96bd920d5c5abb73499e624c",
+          "knobs": {
+            "$wastegateStart": 27.2,
+            "$wwLaunchBoost": 9.35,
+            "$wwSecondBoost": 17
+          },
+          "side": "right",
+          "time": 9.8142372758868,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 3,
+          "sha256": "7b27ca0529d8cfdd2819a1ea3cb1631431811bbf96bd920d5c5abb73499e624c",
+          "knobs": {
+            "$wastegateStart": 27.2,
+            "$wwLaunchBoost": 9.35,
+            "$wwSecondBoost": 17
+          },
+          "side": "left",
+          "time": 9.6574546632675,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        }
+      ]
+    },
+    {
+      "id": "midsize/rls_wrongwheel_blacktop_03",
+      "classIds": [
+        "wrong_wheel_drive"
+      ],
+      "index": 9.5,
+      "sourceConfigSHA256": "fa03a0e7f31313135fc7f3591b5ef04b80688294c35f92f52050265fd8f36e5f",
+      "originalSHA256": "9ae494e5661a943152472deb6070d26bcbb067656cd693e4160e3de6248f711e",
+      "varsBefore": {
+        "$n2o_power": 440
+      },
+      "varsAfter": {
+        "$n2o_power": 285
+      },
+      "previousPerformance": {
+        "quarterMileSeconds": 9.5767172948696,
+        "runId": "WW-011",
+        "evidenceConfigSHA256": "9ae494e5661a943152472deb6070d26bcbb067656cd693e4160e3de6248f711e",
+        "configHashMatches": true,
+        "status": "recorded-pass-matching-config"
+      },
+      "runs": [
+        {
+          "round": 1,
+          "sha256": "fa03a0e7f31313135fc7f3591b5ef04b80688294c35f92f52050265fd8f36e5f",
+          "knobs": {
+            "$n2o_power": 285
+          },
+          "side": "right",
+          "time": 9.6281526079414,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 2,
+          "sha256": "fa03a0e7f31313135fc7f3591b5ef04b80688294c35f92f52050265fd8f36e5f",
+          "knobs": {
+            "$n2o_power": 285
+          },
+          "side": "left",
+          "time": 9.6069971522383,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 3,
+          "sha256": "fa03a0e7f31313135fc7f3591b5ef04b80688294c35f92f52050265fd8f36e5f",
+          "knobs": {
+            "$n2o_power": 285
+          },
+          "side": "right",
+          "time": 9.6153152668436,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        }
+      ]
+    },
+    {
+      "id": "nine/rls_stu_haulmark_01",
+      "classIds": [
+        "stu_leonard_850"
+      ],
+      "index": 8.5,
+      "sourceConfigSHA256": "f758f0189b0cb6573ca5648cd1fe69f6d6c9ddb88546c5b5c842c690e9459c71",
+      "originalSHA256": "eb4af5999e441f50c7fd1f228cfd8522d9b856fb3ad743254637b776a8047ffb",
+      "varsBefore": {
+        "$n2o_power": 100,
+        "$revLimiterRPM": 6500,
+        "$finaldrive_R": 3.1
+      },
+      "varsAfter": {
+        "$n2o_power": 25,
+        "$revLimiterRPM": 5500,
+        "$finaldrive_R": 2.5
+      },
+      "previousPerformance": {
+        "quarterMileSeconds": 8.6073755886589,
+        "runId": "STU-016",
+        "evidenceConfigSHA256": "eb4af5999e441f50c7fd1f228cfd8522d9b856fb3ad743254637b776a8047ffb",
+        "configHashMatches": true,
+        "status": "recorded-pass-matching-config"
+      },
+      "runs": [
+        {
+          "round": 8,
+          "sha256": "f758f0189b0cb6573ca5648cd1fe69f6d6c9ddb88546c5b5c842c690e9459c71",
+          "knobs": {
+            "$n2o_power": 25,
+            "$revLimiterRPM": 5500,
+            "$finaldrive_R": 2.5
+          },
+          "side": "right",
+          "time": 8.9002738942544,
+          "clean": true,
+          "tech": {
+            "stu_leonard_850": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 9,
+          "sha256": "f758f0189b0cb6573ca5648cd1fe69f6d6c9ddb88546c5b5c842c690e9459c71",
+          "knobs": {
+            "$n2o_power": 25,
+            "$revLimiterRPM": 5500,
+            "$finaldrive_R": 2.5
+          },
+          "side": "left",
+          "time": 8.89724281601,
+          "clean": true,
+          "tech": {
+            "stu_leonard_850": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 10,
+          "sha256": "f758f0189b0cb6573ca5648cd1fe69f6d6c9ddb88546c5b5c842c690e9459c71",
+          "knobs": {
+            "$n2o_power": 25,
+            "$revLimiterRPM": 5500,
+            "$finaldrive_R": 2.5
+          },
+          "side": "right",
+          "time": 8.8970453580361,
+          "clean": true,
+          "tech": {
+            "stu_leonard_850": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        }
+      ]
+    },
+    {
+      "id": "pessima/rls_wrongwheel_heritage_02",
+      "classIds": [
+        "wrong_wheel_drive"
+      ],
+      "index": 9.5,
+      "sourceConfigSHA256": "9c729780925f248909416c69d9bfe4340043223c50dcdd666dc1b8ca58f7e432",
+      "originalSHA256": "f1366ba3219d2d918adbd5e4c5e441a92bcee763aaa0e0ee781e3618b1397f58",
+      "varsBefore": {
+        "$n2o_power": 500
+      },
+      "varsAfter": {
+        "$n2o_power": 325
+      },
+      "previousPerformance": {
+        "quarterMileSeconds": 9.513164425669,
+        "runId": "WW-026",
+        "evidenceConfigSHA256": "f1366ba3219d2d918adbd5e4c5e441a92bcee763aaa0e0ee781e3618b1397f58",
+        "configHashMatches": true,
+        "status": "recorded-pass-matching-config"
+      },
+      "runs": [
+        {
+          "round": 1,
+          "sha256": "9c729780925f248909416c69d9bfe4340043223c50dcdd666dc1b8ca58f7e432",
+          "knobs": {
+            "$n2o_power": 325
+          },
+          "side": "right",
+          "time": 9.6499248985872,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 2,
+          "sha256": "9c729780925f248909416c69d9bfe4340043223c50dcdd666dc1b8ca58f7e432",
+          "knobs": {
+            "$n2o_power": 325
+          },
+          "side": "left",
+          "time": 9.6186925049158,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 3,
+          "sha256": "9c729780925f248909416c69d9bfe4340043223c50dcdd666dc1b8ca58f7e432",
+          "knobs": {
+            "$n2o_power": 325
+          },
+          "side": "left",
+          "time": 9.6784924265516,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        }
+      ]
+    },
+    {
+      "id": "pessima/rls_wrongwheel_heritage_04",
+      "classIds": [
+        "wrong_wheel_drive"
+      ],
+      "index": 9.5,
+      "sourceConfigSHA256": "a2f52d5989be0aa1136a9d9488ae4a45b18add95b23685e6d46da324d1999765",
+      "originalSHA256": "ae64e682f274352f101d28bb35ca8c9c05b0ad6ddb3511004504e554510d72fe",
+      "varsBefore": {
+        "$n2o_power": 160,
+        "$n2o_gear": 2,
+        "$n2o_rpm": 4000
+      },
+      "varsAfter": {
+        "$n2o_power": 25,
+        "$n2o_gear": 6,
+        "$n2o_rpm": 5500
+      },
+      "previousPerformance": {
+        "quarterMileSeconds": 9.5466118842857,
+        "runId": "WW-038",
+        "evidenceConfigSHA256": "ae64e682f274352f101d28bb35ca8c9c05b0ad6ddb3511004504e554510d72fe",
+        "configHashMatches": true,
+        "status": "recorded-pass-matching-config"
+      },
+      "runs": [
+        {
+          "round": 4,
+          "sha256": "a2f52d5989be0aa1136a9d9488ae4a45b18add95b23685e6d46da324d1999765",
+          "knobs": {
+            "$n2o_power": 25,
+            "$n2o_gear": 6,
+            "$n2o_rpm": 5500
+          },
+          "side": "right",
+          "time": 9.5474311106834,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 5,
+          "sha256": "a2f52d5989be0aa1136a9d9488ae4a45b18add95b23685e6d46da324d1999765",
+          "knobs": {
+            "$n2o_power": 25,
+            "$n2o_gear": 6,
+            "$n2o_rpm": 5500
+          },
+          "side": "left",
+          "time": 9.5593532744994,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 6,
+          "sha256": "a2f52d5989be0aa1136a9d9488ae4a45b18add95b23685e6d46da324d1999765",
+          "knobs": {
+            "$n2o_power": 25,
+            "$n2o_gear": 6,
+            "$n2o_rpm": 5500
+          },
+          "side": "right",
+          "time": 9.5437906458147,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        }
+      ]
+    },
+    {
+      "id": "pickup/rls_bedtime_blacktop_01",
+      "classIds": [
+        "bedtime_bullies"
+      ],
+      "index": 9.5,
+      "sourceConfigSHA256": "75c9deb89959a5a54345e8a7b031188bed4c731a63c8f489e59606c3ed3dd65a",
+      "originalSHA256": "c8c9d4e87dd0857e944be03d57797437b205619ad9b0eb7d15ecbb29882c98a1",
+      "varsBefore": {
+        "$n2o_power": 275
+      },
+      "varsAfter": {
+        "$n2o_power": 105
+      },
+      "previousPerformance": {
+        "quarterMileSeconds": 9.8123933654573,
+        "runId": "BB-004",
+        "evidenceConfigSHA256": "c8c9d4e87dd0857e944be03d57797437b205619ad9b0eb7d15ecbb29882c98a1",
+        "configHashMatches": true,
+        "status": "recorded-pass-matching-config"
+      },
+      "runs": [
+        {
+          "round": 2,
+          "sha256": "75c9deb89959a5a54345e8a7b031188bed4c731a63c8f489e59606c3ed3dd65a",
+          "knobs": {
+            "$n2o_power": 105
+          },
+          "side": "left",
+          "time": 9.6994327595212,
+          "clean": true,
+          "tech": {
+            "bedtime_bullies": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 3,
+          "sha256": "75c9deb89959a5a54345e8a7b031188bed4c731a63c8f489e59606c3ed3dd65a",
+          "knobs": {
+            "$n2o_power": 105
+          },
+          "side": "left",
+          "time": 9.7193819847973,
+          "clean": true,
+          "tech": {
+            "bedtime_bullies": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 4,
+          "sha256": "75c9deb89959a5a54345e8a7b031188bed4c731a63c8f489e59606c3ed3dd65a",
+          "knobs": {
+            "$n2o_power": 105
+          },
+          "side": "left",
+          "time": 9.7209192816645,
+          "clean": true,
+          "tech": {
+            "bedtime_bullies": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 5,
+          "sha256": "75c9deb89959a5a54345e8a7b031188bed4c731a63c8f489e59606c3ed3dd65a",
+          "knobs": {
+            "$n2o_power": 105
+          },
+          "side": "right",
+          "time": 9.7070779002704,
+          "clean": true,
+          "tech": {
+            "bedtime_bullies": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        }
+      ]
+    },
+    {
+      "id": "pickup/rls_bedtime_heritage_01",
+      "classIds": [
+        "bedtime_bullies"
+      ],
+      "index": 9.5,
+      "sourceConfigSHA256": "9bc727345c8712f77e34130e0a66e7a8c759dad868f4878cbccf9052a351e7b5",
+      "originalSHA256": "9a6df5963dd572677bdc0a931c2885437cb805f9afcb59d9c58f6e497a7bb42a",
+      "varsBefore": {
+        "$n2o_power": 300
+      },
+      "varsAfter": {
+        "$n2o_power": 195
+      },
+      "previousPerformance": {
+        "quarterMileSeconds": 9.5282081548114,
+        "runId": "BB-038",
+        "evidenceConfigSHA256": "9a6df5963dd572677bdc0a931c2885437cb805f9afcb59d9c58f6e497a7bb42a",
+        "configHashMatches": true,
+        "status": "recorded-pass-matching-config"
+      },
+      "runs": [
+        {
+          "round": 1,
+          "sha256": "9bc727345c8712f77e34130e0a66e7a8c759dad868f4878cbccf9052a351e7b5",
+          "knobs": {
+            "$n2o_power": 195
+          },
+          "side": "left",
+          "time": 9.7057871706523,
+          "clean": true,
+          "tech": {
+            "bedtime_bullies": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 2,
+          "sha256": "9bc727345c8712f77e34130e0a66e7a8c759dad868f4878cbccf9052a351e7b5",
+          "knobs": {
+            "$n2o_power": 195
+          },
+          "side": "right",
+          "time": 9.7126583173827,
+          "clean": true,
+          "tech": {
+            "bedtime_bullies": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 3,
+          "sha256": "9bc727345c8712f77e34130e0a66e7a8c759dad868f4878cbccf9052a351e7b5",
+          "knobs": {
+            "$n2o_power": 195
+          },
+          "side": "right",
+          "time": 9.6917181234382,
+          "clean": true,
+          "tech": {
+            "bedtime_bullies": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        }
+      ]
+    },
+    {
+      "id": "roamer/rls_bedtime_heritage_03",
+      "classIds": [
+        "bedtime_bullies"
+      ],
+      "index": 9.5,
+      "sourceConfigSHA256": "bc7fd7aa09e5ddc3e3b3d9e47e6876d96dc157f8b56aa158a8285e33895315eb",
+      "originalSHA256": "556fc3b05dd981e9747ecaa3956098bf734b9160c4f09ffcc7796520ff07e80f",
+      "varsBefore": {
+        "$n2o_power": 125
+      },
+      "varsAfter": {
+        "$n2o_power": 25
+      },
+      "previousPerformance": {
+        "quarterMileSeconds": 9.6430494119281,
+        "runId": "BB-039",
+        "evidenceConfigSHA256": "556fc3b05dd981e9747ecaa3956098bf734b9160c4f09ffcc7796520ff07e80f",
+        "configHashMatches": true,
+        "status": "recorded-pass-matching-config"
+      },
+      "runs": [
+        {
+          "round": 2,
+          "sha256": "bc7fd7aa09e5ddc3e3b3d9e47e6876d96dc157f8b56aa158a8285e33895315eb",
+          "knobs": {
+            "$n2o_power": 25
+          },
+          "side": "left",
+          "time": 9.6357327919972,
+          "clean": true,
+          "tech": {
+            "bedtime_bullies": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 3,
+          "sha256": "bc7fd7aa09e5ddc3e3b3d9e47e6876d96dc157f8b56aa158a8285e33895315eb",
+          "knobs": {
+            "$n2o_power": 25
+          },
+          "side": "left",
+          "time": 9.6222709795932,
+          "clean": true,
+          "tech": {
+            "bedtime_bullies": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 4,
+          "sha256": "bc7fd7aa09e5ddc3e3b3d9e47e6876d96dc157f8b56aa158a8285e33895315eb",
+          "knobs": {
+            "$n2o_power": 25
+          },
+          "side": "right",
+          "time": 9.6303743991913,
+          "clean": true,
+          "tech": {
+            "bedtime_bullies": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        }
+      ]
+    },
+    {
+      "id": "roamer/rls_bedtime_loworbit_04",
+      "classIds": [
+        "bedtime_bullies"
+      ],
+      "index": 9.5,
+      "sourceConfigSHA256": "e53b6929ef5b204a0daf155bab892153159d906c084e008d91a203b9f9eb3dbe",
+      "originalSHA256": "42a6277559829511fdfd99636d5ecd83829193beafc72ea6b3eb6c57d63e5b2e",
+      "varsBefore": {
+        "$n2o_power": 25,
+        "$n2o_gear": 2,
+        "$n2o_rpm": 3000,
+        "$revLimiterRPM": 6500
+      },
+      "varsAfter": {
+        "$n2o_power": 25,
+        "$n2o_gear": 6,
+        "$n2o_rpm": 4500,
+        "$revLimiterRPM": 6300
+      },
+      "previousPerformance": {
+        "quarterMileSeconds": 9.54986375286,
+        "runId": "BB-041",
+        "evidenceConfigSHA256": "42a6277559829511fdfd99636d5ecd83829193beafc72ea6b3eb6c57d63e5b2e",
+        "configHashMatches": true,
+        "status": "recorded-pass-matching-config"
+      },
+      "runs": [
+        {
+          "round": 4,
+          "sha256": "e53b6929ef5b204a0daf155bab892153159d906c084e008d91a203b9f9eb3dbe",
+          "knobs": {
+            "$n2o_power": 25,
+            "$n2o_gear": 6,
+            "$n2o_rpm": 4500,
+            "$revLimiterRPM": 6300
+          },
+          "side": "left",
+          "time": 9.5963286402953,
+          "clean": true,
+          "tech": {
+            "bedtime_bullies": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 5,
+          "sha256": "e53b6929ef5b204a0daf155bab892153159d906c084e008d91a203b9f9eb3dbe",
+          "knobs": {
+            "$n2o_power": 25,
+            "$n2o_gear": 6,
+            "$n2o_rpm": 4500,
+            "$revLimiterRPM": 6300
+          },
+          "side": "left",
+          "time": 9.6099540380142,
+          "clean": true,
+          "tech": {
+            "bedtime_bullies": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 6,
+          "sha256": "e53b6929ef5b204a0daf155bab892153159d906c084e008d91a203b9f9eb3dbe",
+          "knobs": {
+            "$n2o_power": 25,
+            "$n2o_gear": 6,
+            "$n2o_rpm": 4500,
+            "$revLimiterRPM": 6300
+          },
+          "side": "left",
+          "time": 9.6336198025002,
+          "clean": true,
+          "tech": {
+            "bedtime_bullies": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 7,
+          "sha256": "e53b6929ef5b204a0daf155bab892153159d906c084e008d91a203b9f9eb3dbe",
+          "knobs": {
+            "$n2o_power": 25,
+            "$n2o_gear": 6,
+            "$n2o_rpm": 4500,
+            "$revLimiterRPM": 6300
+          },
+          "side": "right",
+          "time": 9.6024487850064,
+          "clean": true,
+          "tech": {
+            "bedtime_bullies": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        }
+      ]
+    },
+    {
+      "id": "sunburst2/rls_streetheat_haulmark_luke_darrow",
+      "classIds": [
+        "street_heat"
+      ],
+      "index": 10.5,
+      "sourceConfigSHA256": "0b2e4f86066e876708d0e526d131ed3197188c413144562f577dc1ed3bf1a2d3",
+      "originalSHA256": "047d3d3db455cf293f4f6c1caa03e1a71c88b0cacd79a6cda5b8f1319820bcf4",
+      "varsBefore": {
+        "$wastegateTarget": 22
+      },
+      "varsAfter": {
+        "$wastegateTarget": 18.7
+      },
+      "previousPerformance": {
+        "quarterMileSeconds": 10.578088308223,
+        "runId": "SH-20261020-074648",
+        "evidenceConfigSHA256": "047d3d3db455cf293f4f6c1caa03e1a71c88b0cacd79a6cda5b8f1319820bcf4",
+        "configHashMatches": true,
+        "status": "recorded-pass-matching-config"
+      },
+      "runs": [
+        {
+          "round": 1,
+          "sha256": "0b2e4f86066e876708d0e526d131ed3197188c413144562f577dc1ed3bf1a2d3",
+          "knobs": {
+            "$wastegateTarget": 18.7
+          },
+          "side": "right",
+          "time": 10.661517660024,
+          "clean": true,
+          "tech": {
+            "street_heat": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 2,
+          "sha256": "0b2e4f86066e876708d0e526d131ed3197188c413144562f577dc1ed3bf1a2d3",
+          "knobs": {
+            "$wastegateTarget": 18.7
+          },
+          "side": "left",
+          "time": 10.643324549117,
+          "clean": true,
+          "tech": {
+            "street_heat": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 3,
+          "sha256": "0b2e4f86066e876708d0e526d131ed3197188c413144562f577dc1ed3bf1a2d3",
+          "knobs": {
+            "$wastegateTarget": 18.7
+          },
+          "side": "left",
+          "time": 10.632878778053,
+          "clean": true,
+          "tech": {
+            "street_heat": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        }
+      ]
+    },
+    {
+      "id": "wendover/rls_wrongwheel_loworbit_dominic_toretto",
+      "classIds": [
+        "wrong_wheel_drive"
+      ],
+      "index": 9.5,
+      "sourceConfigSHA256": "f2c5909e74dff0ed6f76277f3c287158fb627421bb4bca58fd3a37052be94cc2",
+      "originalSHA256": "10868b9923b9b6a2200cf6d6531e9333e8161ef65fbc20da84063167c51906dc",
+      "varsBefore": {
+        "$n2o_power": 100
+      },
+      "varsAfter": {
+        "$n2o_power": 65
+      },
+      "previousPerformance": {
+        "quarterMileSeconds": 9.5731884797567,
+        "runId": "WW-014",
+        "evidenceConfigSHA256": "10868b9923b9b6a2200cf6d6531e9333e8161ef65fbc20da84063167c51906dc",
+        "configHashMatches": true,
+        "status": "recorded-pass-matching-config"
+      },
+      "runs": [
+        {
+          "round": 1,
+          "sha256": "f2c5909e74dff0ed6f76277f3c287158fb627421bb4bca58fd3a37052be94cc2",
+          "knobs": {
+            "$n2o_power": 65
+          },
+          "side": "left",
+          "time": 9.6336525986636,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 2,
+          "sha256": "f2c5909e74dff0ed6f76277f3c287158fb627421bb4bca58fd3a37052be94cc2",
+          "knobs": {
+            "$n2o_power": 65
+          },
+          "side": "right",
+          "time": 9.7071512756746,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 3,
+          "sha256": "f2c5909e74dff0ed6f76277f3c287158fb627421bb4bca58fd3a37052be94cc2",
+          "knobs": {
+            "$n2o_power": 65
+          },
+          "side": "right",
+          "time": 9.6758160730783,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        }
+      ]
+    },
+    {
+      "id": "wendover/rls_wrongwheel_loworbit_letty_ortiz",
+      "classIds": [
+        "wrong_wheel_drive"
+      ],
+      "index": 9.5,
+      "sourceConfigSHA256": "7966026cdfda782b17e97e4a451ff84645f84e56c2181fcaa758247ec9cf9b86",
+      "originalSHA256": "4ecf55f5761352726e13d8ea12084e17968b526781b81ffab7a2654f5fa3b5ac",
+      "varsBefore": {
+        "$n2o_power": 150,
+        "$wwlo_sc": 5.3
+      },
+      "varsAfter": {
+        "$n2o_power": 25,
+        "$wwlo_sc": 4.77
+      },
+      "previousPerformance": {
+        "quarterMileSeconds": 9.5547681284385,
+        "runId": "WW-015",
+        "evidenceConfigSHA256": "4ecf55f5761352726e13d8ea12084e17968b526781b81ffab7a2654f5fa3b5ac",
+        "configHashMatches": true,
+        "status": "recorded-pass-matching-config"
+      },
+      "runs": [
+        {
+          "round": 4,
+          "sha256": "7966026cdfda782b17e97e4a451ff84645f84e56c2181fcaa758247ec9cf9b86",
+          "knobs": {
+            "$n2o_power": 25,
+            "$wwlo_sc": 4.77
+          },
+          "side": "right",
+          "time": 9.6439891547158,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 5,
+          "sha256": "7966026cdfda782b17e97e4a451ff84645f84e56c2181fcaa758247ec9cf9b86",
+          "knobs": {
+            "$n2o_power": 25,
+            "$wwlo_sc": 4.77
+          },
+          "side": "right",
+          "time": 9.6935534581062,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 6,
+          "sha256": "7966026cdfda782b17e97e4a451ff84645f84e56c2181fcaa758247ec9cf9b86",
+          "knobs": {
+            "$n2o_power": 25,
+            "$wwlo_sc": 4.77
+          },
+          "side": "right",
+          "time": 9.6621717527253,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 7,
+          "sha256": "7966026cdfda782b17e97e4a451ff84645f84e56c2181fcaa758247ec9cf9b86",
+          "knobs": {
+            "$n2o_power": 25,
+            "$wwlo_sc": 4.77
+          },
+          "side": "left",
+          "time": 9.6482704644266,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        }
+      ]
+    },
+    {
+      "id": "wendover/rls_wrongwheel_loworbit_roman_pearce",
+      "classIds": [
+        "wrong_wheel_drive"
+      ],
+      "index": 9.5,
+      "sourceConfigSHA256": "2bc9f0e67abe24554b4cf735c993adf646805c1d575aea159cff531b3549c9d3",
+      "originalSHA256": "3271817b68ba1b5fe16260eb4680c4f7ffe94e5be096f8ebf37ff3a73414ba4a",
+      "varsBefore": {
+        "$n2o_power": 25,
+        "$wwlo_sc": 6
+      },
+      "varsAfter": {
+        "$n2o_power": 25,
+        "$wwlo_sc": 4.86
+      },
+      "previousPerformance": {
+        "quarterMileSeconds": 9.6414923651525,
+        "runId": "WW-040",
+        "evidenceConfigSHA256": "3271817b68ba1b5fe16260eb4680c4f7ffe94e5be096f8ebf37ff3a73414ba4a",
+        "configHashMatches": true,
+        "status": "recorded-pass-matching-config"
+      },
+      "runs": [
+        {
+          "round": 5,
+          "sha256": "2bc9f0e67abe24554b4cf735c993adf646805c1d575aea159cff531b3549c9d3",
+          "knobs": {
+            "$n2o_power": 25,
+            "$wwlo_sc": 4.86
+          },
+          "side": "left",
+          "time": 9.7238190486147,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 6,
+          "sha256": "2bc9f0e67abe24554b4cf735c993adf646805c1d575aea159cff531b3549c9d3",
+          "knobs": {
+            "$n2o_power": 25,
+            "$wwlo_sc": 4.86
+          },
+          "side": "left",
+          "time": 9.7191110975134,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        },
+        {
+          "round": 7,
+          "sha256": "2bc9f0e67abe24554b4cf735c993adf646805c1d575aea159cff531b3549c9d3",
+          "knobs": {
+            "$n2o_power": 25,
+            "$wwlo_sc": 4.86
+          },
+          "side": "right",
+          "time": 9.7285024928817,
+          "clean": true,
+          "tech": {
+            "wrong_wheel_drive": {
+              "ok": true
+            }
+          },
+          "flags": {}
+        }
+      ]
+    }
+  ]
+}

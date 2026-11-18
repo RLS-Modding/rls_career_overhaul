@@ -1,0 +1,33 @@
+{
+  "Name": "BASTION / No Prep Knights",
+  "Configuration": "No Prep Knights - Tier 2 racer 4",
+  "Value": 35000,
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Description": "Dedicated No Prep Knights drag build and paint scheme.",
+  "Drag Times": {
+    "time_1000": 7.9225000962615,
+    "time_1_4": 9.2880001142621,
+    "time_1_8": 6.2920000776649,
+    "time_330": 4.344500053674,
+    "time_60": 1.7480000220239,
+    "velAt_1_4": 74.711336472743,
+    "velAt_1_8": 58.159931922591
+  },
+  "Reaction Time": 0.25000000372529,
+  "Drivetrain": "RWD",
+  "Transmission": "Automatic",
+  "Fuel Type": "Gasoline",
+  "Years": {
+    "min": 2016,
+    "max": 2022
+  },
+  "dragConfigVersion": 3,
+  "dragFitmentVersion": 3,
+  "dragTimesRevalidated": false
+}

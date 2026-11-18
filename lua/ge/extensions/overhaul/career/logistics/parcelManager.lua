@@ -555,21 +555,23 @@ local function getRewardsWithBreakdown(cargo)
     end
   end
 
-  for organizationId, _ in pairs(cargo.loanerOrganisations or {}) do
-    local organization = overhaul_world_organizations.getOrganization(organizationId)
-    local level = organization and organization.reputation and organization.reputation.level
-    local levelInfo = level and organization.reputationLevels and organization.reputationLevels[level+2]
-    local organizationCut = (levelInfo and levelInfo.loanerCut and levelInfo.loanerCut.value or 0.5)
-
-    local organizationElement = {
-      label = core_locales.contextTranslate("ui.career.delivery.breakdown.loanerOrganization", {cut = round(organizationCut * 100)}),
-      rewards = {money = -organizationCut * originalMoney},
-      simpleBreakdownType = "loaner",
-    }
-    organizationElement.rewards[organizationId.."Reputation"] = 5 + round((tonumber(cargo.data and cargo.data.originalDistance) or 0)/1000)
-
-    table.insert(breakdown, organizationElement)
-  end
+  -- A truck and trailer from different organizations take one cut, not one each. The employer's cut on shift is
+  -- settled by employment pay, so it never counts as the cut here.
+  local loanerCut = require("overhaul/lib/logistics/loanerCut")
+  local employment = overhaul_career_work_employment
+  local loanerReputation = 5 + round((tonumber(cargo.data and cargo.data.originalDistance) or 0)/1000)
+  local loanerRows = loanerCut.breakdownRows({
+    organizationIds = cargo.loanerOrganisations,
+    baseMoney = originalMoney,
+    moneyEarned = loanerCut.moneyEarned(originalMoney, breakdown),
+    getOrganization = function(id) return overhaul_world_organizations.getOrganization(id) end,
+    reputationFor = function() return loanerReputation end,
+    label = function(cut)
+      return core_locales.contextTranslate("ui.career.delivery.breakdown.loanerOrganization", {cut = round(cut * 100)})
+    end,
+    paysOwnCut = employment and employment.usesEmploymentPayForOrg,
+  })
+  for _, row in ipairs(loanerRows) do table.insert(breakdown, row) end
 
 
   local branchMultiplier = tonumber(overhaul_career_progression_skills.getLevelRewardMultiplier("logistics")) or 1

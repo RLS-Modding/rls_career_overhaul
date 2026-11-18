@@ -7,11 +7,17 @@ import { computed, ref } from 'vue'
 const SWIPE_DISMISS_PX = 72
 const CLICK_SLOP_PX = 8
 
+function systemPrefersReducedMotion() {
+  return typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true
+}
+
 /**
  * iOS-style horizontal swipe-to-dismiss for phone notifications.
  * Tap is unchanged; a drag past the threshold dismisses without activating.
+ * With reduced motion the card still follows the finger, but it is dismissed on release without
+ * flying off, and a short drag snaps back without easing.
  */
-export function useHorizontalSwipeDismiss({ getElementEl, onDismiss }) {
+export function useHorizontalSwipeDismiss({ getElementEl, onDismiss, prefersReducedMotion = systemPrefersReducedMotion }) {
   const dragX = ref(0)
   const isDragging = ref(false)
   const isExiting = ref(false)
@@ -31,7 +37,7 @@ export function useHorizontalSwipeDismiss({ getElementEl, onDismiss }) {
 
     const abs = Math.abs(x)
     const opacity = isExiting.value ? 0 : Math.max(0.5, 1 - abs / 260)
-    const useTransition = isExiting.value || (!isDragging.value && x !== 0)
+    const useTransition = !prefersReducedMotion() && (isExiting.value || (!isDragging.value && x !== 0))
     return {
       ...touchOnly,
       transform: `translateX(${x}px)`,
@@ -74,7 +80,7 @@ export function useHorizontalSwipeDismiss({ getElementEl, onDismiss }) {
 
   function dismissHorizontally() {
     const el = getElementEl()
-    if (!el) {
+    if (!el || prefersReducedMotion()) {
       finishDismiss()
       return
     }

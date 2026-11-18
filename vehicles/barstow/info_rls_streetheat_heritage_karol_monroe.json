@@ -1,0 +1,79 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Name": "Kiera Maddox",
+  "Configuration": "Kiera Maddox - Street Heat",
+  "Description": "Driver: Kiera Maddox. Builder: Heritage Speed. Gold 423 supercharged six-speed street-and-strip muscle; retained cabin and sport tires. Sport tires at all four corners. Alder quarter-mile: 10.945 s at 133.3 mph. Two healthy timed passes and a straight-line braking check.",
+  "Config Type": "Custom",
+  "Author": "RLS Modding",
+  "Drivetrain": "RWD",
+  "Transmission": "Manual",
+  "Years": {
+    "max": 1971,
+    "min": 1969
+  },
+  "Weight": 1840.671449,
+  "Motorsport": {
+    "version": 1,
+    "id": "barstow/rls_streetheat_heritage_karol_monroe",
+    "configId": "rls_streetheat_heritage_karol_monroe",
+    "model": "barstow",
+    "config": "/vehicles/barstow/rls_streetheat_heritage_karol_monroe.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "karol_monroe",
+    "driverName": "Kiera Maddox",
+    "builder": "Heritage Speed",
+    "leagueId": "street_kings",
+    "classIds": [
+      "street_heat"
+    ],
+    "approvedClassIds": [
+      "street_heat"
+    ],
+    "eligibilityStatus": "Assigned primary build class; approved from completed collection records and exact current config hash.",
+    "sourceConfigSHA256": "46d20abcc11c5a30ba96084b33226d530bdaa3ba2c393e9a31e61d983cb1b043",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "6-speed Manual",
+      "induction": "Supercharger",
+      "nitrous": false,
+      "years": {
+        "max": 1971,
+        "min": 1969
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x8_alt",
+          "part": "tire_F_235_60_15_alt_sport",
+          "typeHint": "sport"
+        },
+        {
+          "slot": "tire_R_15x9",
+          "part": "tire_R_255_55_15_sport",
+          "typeHint": "sport"
+        }
+      ],
+      "selectedRollCageParts": [],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 10.944860075755,
+      "runId": "SH-20261020-074744",
+      "evidenceConfigSHA256": "46d20abcc11c5a30ba96084b33226d530bdaa3ba2c393e9a31e61d983cb1b043",
+      "configHashMatches": true,
+      "status": "recorded-pass-matching-config"
+    },
+    "provenance": {
+      "metadata": "outputs/street-heat/final-results.json",
+      "acceptedConfig": "outputs/street-heat/accepted/rls_streetheat_heritage_karol_monroe/rls_streetheat_heritage_karol_monroe.pc"
+    },
+    "sourcePack": "rls_street_heat"
+  }
+}

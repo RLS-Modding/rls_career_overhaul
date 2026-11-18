@@ -1,0 +1,95 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Configuration": "Blake Bell - Pro Blown",
+  "Description": "Pro League / Pro Blown. Automatic, RWD, supercharger only. Driver seat and cage; doors, hood/engine cover and windows retained. Healthy Alder quarter-mile 7.792s; saved-config repeat 8.001s. Recorded observations, not guaranteed ET. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Transmission": "Automatic",
+  "Drivetrain": "RWD",
+  "Fuel Type": "Gasoline",
+  "Value": 75000,
+  "Motorsport": {
+    "version": 1,
+    "id": "barstow/rls_problown_heritage_01",
+    "configId": "rls_problown_heritage_01",
+    "model": "barstow",
+    "config": "/vehicles/barstow/rls_problown_heritage_01.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "nate_denver",
+    "driverName": "Blake Bell",
+    "builder": "Heritage Speed",
+    "classIds": [
+      "pro_blower"
+    ],
+    "approvedClassIds": [
+      "pro_blower"
+    ],
+    "leagueId": "pro_league",
+    "eligibilityStatus": "Roster approval retained. Historical ETs remain historical estimates; consolidated supercharger and pulley selection require current-build validation.",
+    "sourceConfigSHA256": "855489a7ac8fe006bd5ce3d81f4d2cc7fb250518ac8cf5c54b2efee629b3ffe7",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "Automatic",
+      "induction": "Supercharger",
+      "nitrous": false,
+      "years": null
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x4",
+          "part": "tire_F_26_4_15_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_15x10",
+          "part": "tire_R_26_10_15_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "barstow_rollcage",
+          "part": "barstow_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 7.7917149052046,
+      "runId": "BLOWN-018",
+      "evidenceConfigSHA256": "d345b3723eab437ef3f098ffd7d8c095663d94f75ea5a4467cb9b7f20c8b54db",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/pro-blown/final-results.json",
+      "acceptedConfig": "outputs/pro-blown/accepted/rls_problown_heritage_01/rls_problown_heritage_01.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json",
+      "superchargerConsolidation": {
+        "schema": "rls.supercharger-selection-migration/1",
+        "manifest": "docs/vehicles/shared-drag-superchargers.json",
+        "integrationPlanSHA256": "198ae936a8b13c98d615bc44e342692c5d0238364ab2878a1ee80c3d56095ed2",
+        "oldConfigSHA256": "14a038e084b524a60891747adbb218eb766683a32c195c6034c54561d4001bff",
+        "configSHA256": "855489a7ac8fe006bd5ce3d81f4d2cc7fb250518ac8cf5c54b2efee629b3ffe7",
+        "slot": "barstow_intake_v8_big",
+        "oldPart": "rls_problown_heritage_pilot_sc",
+        "newPart": "rls_barstow_intake_v8_big_stage4_supercharger",
+        "childSlot": "rls_barstow_intake_v8_big_stage4_pulley",
+        "pulleyPart": "rls_barstow_intake_v8_big_stage4_pulley_5",
+        "ratio": 1.8,
+        "removedVariables": [],
+        "status": "source-migrated-pending-live-validation",
+        "scope": "Supercharger ID, child pulley topology and/or fixed hardware changed. Earlier measurements remain tied to their original saved config and sources; no new live validation."
+      }
+    },
+    "sourcePack": "rls_pro_blown"
+  }
+}

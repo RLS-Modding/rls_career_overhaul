@@ -1,0 +1,79 @@
+{
+  "isAuxiliary": true,
+  "Configuration": "Paige Cooper - Pro Turbo",
+  "Description": "Brick-red 2.5L AWD sedan with a stock-output Stage 4 heavy-duty block, progressive turbo and equal-diameter 26-inch drag tires. Driver seat only, cage, all doors, hood and glass retained. First healthy sub-8-second pass freezes. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Transmission": "Sequential",
+  "Drivetrain": "AWD",
+  "Induction Type": "Turbo",
+  "Population": -1,
+  "Value": 85000,
+  "Motorsport": {
+    "version": 1,
+    "id": "sunburst2/rls_proturbo_haulmark_03",
+    "configId": "rls_proturbo_haulmark_03",
+    "model": "sunburst2",
+    "config": "/vehicles/sunburst2/rls_proturbo_haulmark_03.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "cole_tanner",
+    "driverName": "Paige Cooper",
+    "builder": "Haulmark Racing",
+    "classIds": [
+      "pro_turbo"
+    ],
+    "approvedClassIds": [
+      "pro_turbo"
+    ],
+    "leagueId": "pro_league",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "dd0a3faae697ccf996a957b479cb8ea0a80f76f49c48b5718dd4cd48ff43f69c",
+    "traits": {
+      "drivetrain": "AWD",
+      "transmission": "6-speed sequential",
+      "induction": "Turbocharger",
+      "nitrous": false,
+      "years": null
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_R_15x10",
+          "part": "tire_R_26_10_15_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_F_15x8_alt",
+          "part": "tire_F_26_8_15_alt_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "sunburst2_rollcage",
+          "part": "sunburst2_rollcage_race"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 7.9743143735721,
+      "runId": "PT-060",
+      "evidenceConfigSHA256": "a97f22e7d4a7736bed522dac0db51dcff9d7b77d113c1e6ba4552d16e5f21fce",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/pro-turbo/final-results.json",
+      "acceptedConfig": "outputs/pro-turbo/accepted/rls_proturbo_haulmark_03/rls_proturbo_haulmark_03.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_pro_turbo"
+  }
+}

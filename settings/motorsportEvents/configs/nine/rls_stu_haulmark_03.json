@@ -1,0 +1,45 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "nine/rls_stu_haulmark_03",
+    "configId": "rls_stu_haulmark_03",
+    "model": "nine",
+    "config": "/vehicles/nine/rls_stu_haulmark_03.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "sourcePack": "rls_stu_leonard",
+    "driverId": "bo_darrow",
+    "driverName": "Emilia Lennox",
+    "builder": "haulmark",
+    "classIds": [
+      "stu_leonard_850"
+    ],
+    "approvedClassIds": [
+      "stu_leonard_850"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "12f2b0ca822f663ddf814943ffc44581d08231399759f92168c4c1d6b4e89b1c",
+    "traits": {
+      "drivetrain": "RWD",
+      "years": {
+        "min": 1934,
+        "max": 1934
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.2337964341748,
+      "runId": "COMPLIANCE-20261026-rls_stu_haulmark_03",
+      "evidenceConfigSHA256": "7b30e6fecc9ab0ab94276d3fe6f8912fd026009da540eee16f3713941404f556",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/stu-leonard/final-metadata.json",
+      "approvalEvidence": "/settings/motorsportEvents/approvalEvidence-20261025.json",
+      "tuningEvidence": "/settings/motorsportEvents/complianceEvidence-20261026.json",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    }
+  }
+}

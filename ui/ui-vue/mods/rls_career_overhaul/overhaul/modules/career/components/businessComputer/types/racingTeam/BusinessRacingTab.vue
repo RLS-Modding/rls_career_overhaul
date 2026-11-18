@@ -121,6 +121,7 @@
             <RaceOfferBoardCard
               compact
               :offer="offer"
+              :player-payout-multiplier="playerPayoutMultiplier"
               :declining="decliningOfferId === String(offer.id)"
               @accept="onAccept(offer)"
               @decline="onDeclineRaceOffer(offer)"
@@ -131,6 +132,7 @@
           <div v-for="offer in raceOffers" :key="String(offer.id)" class="offer-grid-item" :data-offer-id="String(offer.id)">
             <RaceOfferBoardCard
               :offer="offer"
+              :player-payout-multiplier="playerPayoutMultiplier"
               :declining="decliningOfferId === String(offer.id)"
               @accept="onAccept(offer)"
               @decline="onDeclineRaceOffer(offer)"
@@ -171,6 +173,7 @@
         <div v-for="place in selectedOfferPrizes" :key="place.label" class="fact money">
           <span class="fact-key">{{ place.label }}</span>
           <span class="fact-value"><BngIcon class="cur" :type="icons.beamCurrency" />{{ formatMoney(place.value) }}</span>
+          <span v-if="playerPayoutMultiplier < 1" class="prize-xp">Race myself: <BngIcon class="cur" :type="icons.beamCurrency" />{{ formatMoney(place.playerValue) }}</span>
           <span v-if="Number(place.xp) > 0" class="prize-xp">{{ Math.round(Number(place.xp)).toLocaleString() }} XP</span>
         </div>
       </div>
@@ -197,7 +200,7 @@
           :aria-disabled="league2FleetLoading"
           @click.stop="openLeague2FleetPicker"
           @mousedown.stop
-          title="Drive this race yourself. Team payout is reduced (see racing team docs) and you'll have a cooldown after."
+          :title="`Drive this race yourself. ${Math.round(playerPayoutMultiplier * 100)}% of the prize goes to the team account; cooldown after.`"
         >
           Race myself
         </HouseButton>
@@ -240,7 +243,7 @@
       <div v-if="!isLeague1 && league2FleetPickerOpen" class="picker">
         <div class="picker-head">
           <span class="caption">Race this offer yourself</span>
-          <p class="hint">Lower team payout; cooldown after you race.</p>
+          <p class="hint">Race myself pays {{ Math.round(playerPayoutMultiplier * 100) }}% of the prize to the team account; cooldown after you race.</p>
         </div>
         <p v-if="league2FleetLoading" class="picker-empty">Loading fleet…</p>
         <p v-else-if="!league2FleetOptions.length" class="picker-empty">No fleet vehicle matches this sanctioned class.</p>
@@ -314,6 +317,7 @@
         <div
           v-if="vehicleOutOfClassModalOpen"
           class="rls-house rls-house-card house-overlay"
+          :data-phone-surface="inPhone || undefined"
           @click.self.stop="vehicleOutOfClassModalOpen = false"
           @mousedown.self.stop="vehicleOutOfClassModalOpen = false"
         >
@@ -341,6 +345,7 @@
         <div
           v-if="vehicleOnCooldownModalOpen"
           class="rls-house rls-house-card house-overlay"
+          :data-phone-surface="inPhone || undefined"
           @click.self.stop="vehicleOnCooldownModalOpen = false"
           @mousedown.self.stop="vehicleOnCooldownModalOpen = false"
         >
@@ -375,6 +380,7 @@ import { useRaceCountdowns } from "./useRaceCountdowns.js"
 import { useRacingManagerSettings } from "./useRacingManagerSettings.js"
 import { isOutOfSpecErr, armScheduledErrMessage, proxyRaceErrMessage, dropScheduledErrMessage } from "./raceActionMessages.js"
 import { computed, ref, watch, nextTick, onMounted, onUnmounted } from "vue"
+import { isInsidePhone } from "../../../../composables/usePhoneScreen.js"
 import { lua, useBridge } from "@/bridge"
 import { useBusinessComputerStore } from "../../../../stores/businessComputerStore"
 import { useBusinessRacingTeamStore } from "../../../../stores/businessComputer/businessRacingTeamStore.js"
@@ -398,6 +404,8 @@ defineProps({
   },
 })
 
+// The phone's Racing Team app reuses this tab; its dialogs then keep the phone's colours.
+const inPhone = isInsidePhone()
 const computerStore = useBusinessComputerStore()
 const racingTeamStore = useBusinessRacingTeamStore()
 const sessionStore = useBusinessSessionStore()
@@ -450,6 +458,8 @@ const raceOffersScreenTitle = computed(() => {
 
 const selectedOffer = ref(null)
 
+const playerPayoutMultiplier = computed(() => isLeague1.value ? 1 : Number(sessionStore.businessData?.playerRacePayoutMultiplier ?? 1))
+
 const selectedOfferPrizes = computed(() => {
   const o = selectedOffer.value
   if (!o) return []
@@ -458,6 +468,7 @@ const selectedOfferPrizes = computed(() => {
     { label: "2nd", value: o.payoutSecond, xp: o.xpSecond },
     { label: "3rd", value: o.payoutThird, xp: o.xpThird },
   ].filter((p) => Number.isFinite(Number(p.value)))
+    .map(place => ({ ...place, playerValue: Math.floor(Number(place.value) * playerPayoutMultiplier.value) }))
 })
 
 const driverPickerOpen = ref(false)

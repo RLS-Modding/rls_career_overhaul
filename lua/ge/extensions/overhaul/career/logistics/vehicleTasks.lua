@@ -289,7 +289,7 @@ function M.clearBrokerTasksForLoad()
     if task.offer.brokerId then
       clearVehicleTasklistEntry(task)
       local veh=getObjectByID(task.vehId)
-      if veh then veh:delete() end
+      if veh then require('overhaul/lib/vehicles/removal').delete(veh) end
       table.remove(taskState.vehicleTasks,i)
     end
   end

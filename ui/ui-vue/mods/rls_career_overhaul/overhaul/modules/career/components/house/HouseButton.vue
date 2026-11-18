@@ -9,14 +9,16 @@
   <button
     type="button"
     class="rls-house btn house-button"
-    :class="[variantClass, { compact, block, 'icon-only': icon && !$slots.default }]"
-    :disabled="disabled"
+    :class="[variantClass, { compact, block, busy, 'icon-only': icon && !$slots.default }]"
+    :disabled="disabled || busy"
+    :aria-busy="busy || undefined"
     :tabindex="tabindex"
     v-bind="navAttrs"
     v-bng-sound-class="!disabled && 'bng_click_hover_generic'">
     <span class="hold-fill" aria-hidden="true"></span>
     <BngBinding v-if="binding" class="btn-binding" :ui-event="binding" controller track-ignore />
-    <BngIcon v-if="icon" class="btn-icon" :type="icon" />
+    <span v-if="busy" class="btn-spinner" aria-hidden="true"></span>
+    <BngIcon v-if="icon" :class="{ 'busy-icon': busy }" class="btn-icon" :type="icon" />
     <span v-if="$slots.default" class="btn-label"><slot /></span>
   </button>
 </template>
@@ -32,6 +34,7 @@ const props = defineProps({
   compact: Boolean,
   block: Boolean,
   disabled: Boolean,
+  busy: Boolean,
   icon: [String, Object],
   navItem: { type: Boolean, default: true },
   tabindex: { type: Number, default: 0 },
@@ -45,7 +48,7 @@ const navAttrs = computed(() => {
   // navItem false = out of controller navigation entirely: the game's native navigation also picks up
   // plain <button>s, so leaving out bng-nav-item alone is not enough
   if (!props.navItem) return { "bng-no-nav": "true" }
-  return props.disabled ? { "bng-nav-item": "", "bng-no-nav": "true" } : { "bng-nav-item": "" }
+  return props.disabled || props.busy ? { "bng-nav-item": "", "bng-no-nav": "true" } : { "bng-nav-item": "" }
 })
 
 const variantClass = computed(() => (props.variant === "neutral" ? null : `btn-${props.variant}`))
@@ -144,4 +147,16 @@ const variantClass = computed(() => (props.variant === "neutral" ? null : `btn-$
   opacity: 0;
   transition: opacity 0.2s ease-out;
 }
+
+.house-button:focus-visible, .house-button.focus-visible {
+  outline: 2px solid var(--phone-focus-color, var(--accent, #ff6600));
+  outline-offset: 2px;
+}
+.house-button.busy .btn-label, .busy-icon { visibility: hidden; }
+.btn-spinner {
+  position: absolute; width: 1em; height: 1em; border: 2px solid currentColor;
+  border-right-color: transparent; border-radius: 50%; animation: button-spin .8s linear infinite;
+}
+@keyframes button-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .btn-spinner { animation-duration: 1.6s; } }
 </style>

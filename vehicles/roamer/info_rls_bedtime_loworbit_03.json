@@ -1,0 +1,83 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Configuration": "Julian Archer - Bedtime Bullies",
+  "Description": "Driver: Julian Archer. Builder: Low Orbit Garage. Low Orbit Garage: Pearl-plum short-wheelbase custom SUV. 6.9L V8, Stage 3 supercharger; Supercharger; nitrous Yes. 4-speed automatic. Bedtime Bullies: first clean West Coast quarter-mile in the 9.500-10.000 second window: 9.797 s.",
+  "Config Type": "Custom",
+  "Drivetrain": "RWD",
+  "Transmission": "Automatic",
+  "Years": {
+    "min": 1992,
+    "max": 1998
+  },
+  "Power": 981,
+  "Weight": 2274,
+  "Motorsport": {
+    "version": 1,
+    "id": "roamer/rls_bedtime_loworbit_03",
+    "configId": "rls_bedtime_loworbit_03",
+    "model": "roamer",
+    "config": "/vehicles/roamer/rls_bedtime_loworbit_03.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "letty_ortiz",
+    "driverName": "Julian Archer",
+    "builder": "Low Orbit Garage",
+    "classIds": [
+      "bedtime_bullies"
+    ],
+    "approvedClassIds": [
+      "bedtime_bullies"
+    ],
+    "leagueId": "street_kings",
+    "eligibilityStatus": "Assigned primary build class; approved from completed collection records and exact current config hash.",
+    "sourceConfigSHA256": "b125556553dac550ec90bfd5c698fdff3d3cdbbb657e030c0ffd7a1ed9d440eb",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "4-speed automatic",
+      "induction": "Supercharger",
+      "nitrous": true,
+      "years": {
+        "min": 1992,
+        "max": 1998
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x8_alt",
+          "part": "tire_F_235_60_15_alt_sport",
+          "typeHint": "sport"
+        },
+        {
+          "slot": "tire_R_15x12_alt",
+          "part": "tire_R_29_12_15_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "roamer_rollcage",
+          "part": "roamer_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.7968733556697,
+      "runId": "BB-012",
+      "evidenceConfigSHA256": "b125556553dac550ec90bfd5c698fdff3d3cdbbb657e030c0ffd7a1ed9d440eb",
+      "configHashMatches": true,
+      "status": "recorded-pass-matching-config"
+    },
+    "provenance": {
+      "metadata": "outputs/bedtime/final-results.json",
+      "acceptedConfig": "outputs/bedtime/accepted/rls_bedtime_loworbit_03/rls_bedtime_loworbit_03.pc"
+    },
+    "sourcePack": "rls_bedtime_bullies"
+  }
+}

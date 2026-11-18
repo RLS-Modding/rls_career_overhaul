@@ -1,0 +1,88 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Name": "Paige Pearson",
+  "Configuration": "Paige Pearson - Pro All-Motor",
+  "Description": "Haulmark Racing. Naturally aspirated competition build; drag tires on both axles, lights, doors, hood and glass retained. Tested healthy at Alder: 11.239 s quarter-mile. Manual; 369 engine hp, 1179 kg. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Induction Type": "NA",
+  "Drivetrain": "FWD",
+  "Transmission": "Manual",
+  "Power": 369,
+  "Weight": 1179,
+  "Years": {
+    "max": 1992,
+    "min": 1986
+  },
+  "Motorsport": {
+    "version": 1,
+    "id": "covet/rls_pam_haulmark_02",
+    "configId": "rls_pam_haulmark_02",
+    "model": "covet",
+    "config": "/vehicles/covet/rls_pam_haulmark_02.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "bo_darrow",
+    "driverName": "Paige Pearson",
+    "builder": "Haulmark Racing",
+    "classIds": [
+      "pro_motor"
+    ],
+    "approvedClassIds": [
+      "pro_motor"
+    ],
+    "leagueId": "pro_league",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "54a3caf29055dbeb81e815094e14da888d3a969c731298059af13037472f4e2f",
+    "traits": {
+      "drivetrain": "FWD",
+      "transmission": "Manual",
+      "induction": "Naturally aspirated",
+      "nitrous": false,
+      "years": {
+        "max": 1992,
+        "min": 1986
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_13x7",
+          "part": "tire_F_24.5_8_13_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_13x7",
+          "part": "tire_R_24.5_8_13_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "covet_rollcage",
+          "part": "covet_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 11.238833893639,
+      "runId": "PAM-022",
+      "evidenceConfigSHA256": "9ededb909e75e86d7608e4183379672144bdbc0205a89a7c5c3c5fdb12b4ee8e",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/pro-allmotor/final-metadata.json",
+      "acceptedConfig": "outputs/pro-allmotor/accepted/rls_pam_haulmark_02/rls_pam_haulmark_02.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_pro_allmotor"
+  }
+}

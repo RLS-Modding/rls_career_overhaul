@@ -1,6 +1,7 @@
 -- Recovery pose, energy and damage snapshots.
 -- State stays with the job owner; these helpers preserve the save paths and snapshot bytes.
 local vehicleCommands = require('overhaul/lib/vehicles/vehicleCommands')
+local partConditionCompatibility = require('overhaul/lib/parts/conditionCompatibility')
 return function(constants, getSaveAdapter)
   local function tableCount(value)
     local count = 0
@@ -159,6 +160,19 @@ return function(constants, getSaveAdapter)
     return true
   end
 
+  -- Saved targets respawn with their snapshot conditions; JSON stored their gear numbers as text.
+  local function withNumericGearKeys(loaded)
+    for _, mapState in pairs(type(loaded) == "table" and type(loaded.maps) == "table" and loaded.maps or {}) do
+      for _, job in ipairs(type(mapState) == "table" and type(mapState.jobs) == "table" and mapState.jobs or {}) do
+        local snapshot = type(job) == "table" and job.vehicleSnapshot
+        if type(snapshot) == "table" then
+          partConditionCompatibility.sanitizeSynchroWearInConditions(snapshot.partConditions)
+        end
+      end
+    end
+    return loaded
+  end
+
   local function captureExitState(job)
     local vehicle = job and job.vehicleId and getObjectByID(job.vehicleId)
     if not vehicle then return end
@@ -179,5 +193,5 @@ return function(constants, getSaveAdapter)
       ensureSaveDirectories = ensureSaveDirectories, loadableDamageFilePath = loadableDamageFilePath,
       saveDamageSnapshot = saveDamageSnapshot, sessionDamageFilePath = sessionDamageFilePath,
       tableCount = tableCount, toQuatArray = toQuatArray, toVec3Array = toVec3Array,
-      updateJobSnapshotFromInventory = updateJobSnapshotFromInventory}
+      updateJobSnapshotFromInventory = updateJobSnapshotFromInventory, withNumericGearKeys = withNumericGearKeys}
 end

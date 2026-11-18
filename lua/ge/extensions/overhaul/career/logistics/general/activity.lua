@@ -94,32 +94,6 @@ local function countPickUpCargo(inputs, elem, psPos)
   return counts
 end
 
-local function countAvailableCargo(inputs, elem)
-  local services = inputs.services
-  local counts = newCargoCounts()
-  for _, cargo in ipairs(services.parcelManager.getAllCargoForFacilityUnexpiredUndelivered(elem.facId)) do
-    local measuredType, add = cargoSemantics.measure(cargo)
-    counts[measuredType] = counts[measuredType] + add
-  end
-  -- Material availability is contract-based; raw facility stock is no longer freely loadable.
-  local materialContracts = services.materialContracts
-  for _, contract in ipairs(materialContracts and materialContracts.getOffersForFacility(elem.facId) or {}) do
-    local template = services.generator.getMaterialsTemplatesById(contract.materialType)
-    if template then
-      counts[template.type] = (counts[template.type] or 0) + contract.totalAmount
-    end
-  end
-  for _, activeContract in ipairs(materialContracts and materialContracts.getActiveContracts() or {}) do
-    if activeContract.sourceFacId == elem.facId then
-      local template = services.generator.getMaterialsTemplatesById(activeContract.materialType)
-      if template then
-        counts[template.type] = (counts[template.type] or 0) + activeContract.loadableAmount
-      end
-    end
-  end
-  return counts
-end
-
 -- props -----------------------------------------------------------------------------------------
 
 local function addDropOffProps(props, counts, vehsClose, trailersClose)
@@ -168,30 +142,10 @@ local function addPickUpProps(props, counts)
   end
 end
 
-local function addAvailableCargoProps(inputs, elem, props)
-  local counts = countAvailableCargo(inputs, elem)
-  if counts.parcel > 0 then
-    addCheckmark(props, core_locales.contextTranslate(counts.parcel ~= 1 and "ui.career.delivery.general.parcelsAvailable" or "ui.career.delivery.general.parcelAvailable", {count = counts.parcel}))
-  end
-  if counts.fluid > 0 then
-    addCheckmark(props, core_locales.contextTranslate("ui.career.delivery.general.fluidAvailable", {volume = counts.fluid}))
-  end
-  if counts.dryBulk > 0 then
-    addCheckmark(props, core_locales.contextTranslate("ui.career.delivery.general.dryBulkAvailable", {volume = counts.dryBulk}))
-  end
-  if counts.cement > 0 then
-    addCheckmark(props, string.format("%dL of cement available", counts.cement))
-  end
-  if counts.cash > 0 then
-    addCheckmark(props, string.format("%d cash available", counts.cash))
-  end
-  local vehOffers, trailerOffers = cargoSemantics.groupVehicleOffers(
-    inputs.services.vehicleOffers.getAllOfferAtFacilityUnexpired(elem.facId))
-  if #vehOffers > 0 then
-    addCheckmark(props, core_locales.contextTranslate(#vehOffers ~= 1 and "ui.career.delivery.general.vehicleTransportsAvailable" or "ui.career.delivery.general.vehicleTransportAvailable", {count = #vehOffers}))
-  end
-  if #trailerOffers > 0 then
-    addCheckmark(props, core_locales.contextTranslate(#trailerOffers ~= 1 and "ui.career.delivery.general.trailerTransportsAvailable" or "ui.career.delivery.general.trailerTransportAvailable", {count = #trailerOffers}))
+local function addAvailableCargoProps(elem, props)
+  local broker = overhaul_career_logistics_broker
+  for _, market in ipairs(broker and broker.getAvailableMarketCounts and broker.getAvailableMarketCounts(elem.facId) or {}) do
+    table.insert(props, {icon = "checkmark", keyLabel = market.name, valueLabel = tostring(market.count)})
   end
 end
 
@@ -457,7 +411,7 @@ local function gatherParkingActivity(inputs, elem, activityData)
   stall.pickUpAvailable = hasAnyCargo(pickUpCounts)
   if not stall.suppressInspect and pois.isInspectParkingSpot(elem.facId, elem.psPath)
       and not pois.isRoleplayFacility(elem.facId) and pois.shouldShowFreelanceInspectAt(elem.facId) then
-    addAvailableCargoProps(inputs, elem, poiTemplate.props)
+    addAvailableCargoProps(elem, poiTemplate.props)
   end
   appendParkingActions(inputs, elem, activityData, poiTemplate, stall)
 end

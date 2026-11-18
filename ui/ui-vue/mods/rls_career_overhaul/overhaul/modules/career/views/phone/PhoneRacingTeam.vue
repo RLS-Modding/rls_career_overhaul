@@ -105,6 +105,7 @@
       <div
         v-if="showSellModal"
         class="phone-fleet-modal-overlay"
+        data-phone-surface
         @click.self.stop="cancelSell"
         @mousedown.self.stop="cancelSell"
       >

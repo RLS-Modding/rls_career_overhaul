@@ -1,0 +1,26 @@
+{
+  "Configuration": "Sana Brook - No Prep",
+  "Description": "Clay Quarry. Tier 2 racer. Highway no-prep quarter-mile: 11.084s at 129.07mph. Gravel Union. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Gravel Union",
+  "Name": "Sana Brook",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 9.3261561019182,
+    "time_1_4": 11.084322397103,
+    "time_1_8": 7.2498014381772,
+    "time_330": 4.8364639144345,
+    "time_60": 1.8354262103657,
+    "velAt_1_4": 57.699976314176,
+    "velAt_1_8": 46.536102083154
+  },
+  "Reaction Time": 0.31846776363287,
+  "dragTimesRevalidated": false,
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation",
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m"
+}

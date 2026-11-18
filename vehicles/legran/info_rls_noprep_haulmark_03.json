@@ -1,0 +1,26 @@
+{
+  "Configuration": "Wyatt Mercer - No Prep",
+  "Description": "Charcoal Express. Tier 4 racer. Highway no-prep quarter-mile: 9.539s at 150.45mph. Haulmark Racing. Historical estimate; restored Stage 4 hardware requires current-build validation. Consolidated supercharger has one current quarter-mile clue pull; selector Drag Times remain historical.",
+  "Author": "Haulmark Racing",
+  "Name": "Wyatt Mercer",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 8.0251337845021,
+    "time_1_4": 9.5387154150164,
+    "time_1_8": 6.2312275500064,
+    "time_330": 4.1244595114484,
+    "time_60": 1.5150553366908,
+    "velAt_1_4": 67.25818268055,
+    "velAt_1_8": 53.609678106513
+  },
+  "Reaction Time": 0.25566128552437,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-with-current-supercharger-clue-pull"
+}

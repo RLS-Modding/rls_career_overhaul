@@ -235,6 +235,7 @@ inference applies to other files. Existing grants elsewhere remain in effect.
 - `ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/phone/PhoneMarketplaceOffers.vue`
 - `ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/phone/PhoneMarketplaceSellListings.vue`
 - `ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/phone/PhoneNavigation.vue`
+- `ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/phone/PhoneNotificationContent.vue`
 - `ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/phone/PhoneSearch.vue`
 - `ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/phone/phoneHomePlacement.js`
 - `ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/components/phone/phoneNumber.js`
@@ -265,6 +266,7 @@ inference applies to other files. Existing grants elsewhere remain in effect.
 - `ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/composables/usePhoneMarketplaceFormat.js`
 - `ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/composables/usePhoneMarketplaceListings.js`
 - `ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/composables/usePhoneMarketplaceUi.js`
+- `ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/composables/usePhoneNotificationCenter.js`
 - `ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/composables/usePhoneNotificationSettings.js`
 - `ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/composables/usePhoneOpeningBlocker.js`
 - `ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/composables/usePhoneOverlayStack.js`
@@ -376,7 +378,9 @@ inference applies to other files. Existing grants elsewhere remain in effect.
 - `ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/utils/phoneLayoutCache.js`
 - `ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/utils/phoneLayoutUtils.js`
 - `ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/utils/phoneNavigation.js`
+- `ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/utils/phoneNotificationApps.js`
 - `ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/utils/phoneNotificationPayload.js`
+- `ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/utils/phoneNotificationPresentation.js`
 - `ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/utils/phoneNotificationRegistry.js`
 - `ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/utils/phoneNotificationRoutes.js`
 - `ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/utils/phoneRoutes.js`
@@ -448,6 +452,7 @@ inference applies to other files. Existing grants elsewhere remain in effect.
 - `ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneMarketplaceVehicle.vue`
 - `ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneMinimap.vue`
 - `ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneNotificationAppSettings.vue`
+- `ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneNotificationCenter.vue`
 - `ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneNotificationDndSettings.vue`
 - `ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneNotificationLockScreenSettings.vue`
 - `ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneNotificationsHub.vue`
@@ -515,6 +520,7 @@ inference applies to other files. Existing grants elsewhere remain in effect.
 - `ui/ui-vue/src/styles/rls_career_overhaul/modules/career/styles/_phone-notification-text.scss`
 - `ui/ui-vue/src/styles/rls_career_overhaul/modules/career/styles/auctionPanel.scss`
 - `ui/ui-vue/src/styles/rls_career_overhaul/modules/career/styles/overhaulFocus.scss`
+- `ui/ui-vue/src/styles/rls_career_overhaul/modules/career/styles/phoneForcedColors.scss`
 - `ui/ui-vue/src/styles/rls_career_overhaul/modules/career/styles/rlsCard.scss`
 - `ui/ui-vue/src/styles/rls_career_overhaul/modules/career/styles/rlsHouse.scss`
 - `ui/ui-vue/src/styles/rls_career_overhaul/modules/career/styles/rlsHouse/_choices.scss`

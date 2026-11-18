@@ -283,7 +283,7 @@ local function restorePaintingSession(active, committed)
       vehObj = vehId and getObjectByID(vehId)
     end
     if vehObj and core_vehicleBridge and core_vehicleBridge.executeAction then
-      core_vehicleBridge.executeAction(vehObj, 'setFreeze', false)
+      require('overhaul/lib/vehicles/freeze').setVehicle('overhaul_career_parts_painting', vehObj, false)
     end
   else
     overhaul_career_garage_inventory.spawnVehicle(inventoryId, 2)
@@ -297,7 +297,7 @@ local function restorePaintingSession(active, committed)
 
   if walkingPositionBefore then
     local vehPos = getPlayerVehicle(0):getPosition()
-    core_vehicleBridge.executeAction(getPlayerVehicle(0),'setFreeze', false)
+    require('overhaul/lib/vehicles/freeze').setVehicle('overhaul_career_parts_painting', getPlayerVehicle(0), false)
     gameplay_walk.setWalkingMode(true, walkingPositionBefore, quatFromDir(vehPos - walkingPositionBefore))
     walkingPositionBefore = nil
   end
@@ -629,7 +629,7 @@ local function onUIOpened()
     else
       overhaul_career_garage_inventory.enterVehicle(inventoryId)
     end
-    core_vehicleBridge.executeAction(veh,'setFreeze', true)
+    require('overhaul/lib/vehicles/freeze').setVehicle('overhaul_career_parts_painting', veh, true)
 
     -- we use setDefaultRotation instead of setRotation, because that one doesnt work reliably
     local vehCamData = core_camera.getCameraDataById(be:getPlayerVehicleID(0)).orbit

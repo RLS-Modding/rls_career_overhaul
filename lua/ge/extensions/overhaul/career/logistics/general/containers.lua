@@ -9,6 +9,8 @@
 -- Nearby cargo containers and weight updates. Map: vehicle bridge, nearby scan, weights, part API; general owns runtime state.
 
 local part = {}
+local vehicleFreeze = require('overhaul/lib/vehicles/freeze')
+local BRIDGE_TIMEOUT_SECONDS = 5
 
 -- A vehicle that does not answer the cargo API (a dyno hub config, for example) is not polled again until it respawns or this many seconds pass.
 local NO_CARGO_API_RETRY_SEC = 60
@@ -49,10 +51,14 @@ local function isUnicycle(veh)
   return veh and veh.getJBeamFilename and veh:getJBeamFilename() == "unicycle"
 end
 
-local function getCargoBridgeVehicle(vehId)
-  local veh = scenetree.findObjectById(tonumber(vehId) or vehId)
+local function getCargoBridgeVehicle(vehId, vehicle)
+  local veh = vehicle or scenetree.findObjectById(tonumber(vehId) or vehId)
   -- Remembered cargo IDs can outlive their vehicle or resolve to a scene prop. requestValue requires a vehicle Lua queue; unlike executeAction, it has no guard.
-  return veh and veh.queueLuaCommand and veh or nil
+  if not (veh and veh.queueLuaCommand) then return nil end
+  -- Failed spawns retain a scene object but never initialize the vehicle bridge.
+  local bundle = core_vehicle_manager and core_vehicle_manager.getVehicleData(tonumber(vehId) or vehId)
+  if core_vehicle_manager and not (bundle and bundle.vdata) then return nil end
+  return veh
 end
 
 -- Returns the container list from a bridge response. An "unknown system" failure starts the retry wait.
@@ -104,7 +110,8 @@ local function findScanVehicles(state, vehicleIds, cargoContainersByVehicleId)
   local now = os.clock()
   for vehId, veh in activeVehiclesIterator() do
     if state.noCargoApiUntil[vehId] and now >= state.noCargoApiUntil[vehId] then state.noCargoApiUntil[vehId] = nil end
-    if veh:getJBeamFilename() ~= "unicycle" and veh.playerUsable ~= false and not state.noCargoApiUntil[vehId] then
+    if getCargoBridgeVehicle(vehId, veh) and veh:getJBeamFilename() ~= "unicycle"
+        and veh.playerUsable ~= false and not state.noCargoApiUntil[vehId] then
       local isNearCab = playerPos and (playerPos - veh:getPosition()):squaredLength() < CAB_SCAN_RADIUS_SQUARED_M
       if (vehicleIds and vehicleIds[vehId]) or (not vehicleIds and (footprintSet[vehId] or isNearCab)) then
         cargoContainersByVehicleId[vehId] = -1
@@ -191,7 +198,7 @@ local function anyVehicleStillPending(cargoContainersByVehicleId)
   return false
 end
 
-local function finishNearbyScan(inputs, cargoContainersByVehicleId, vehicleIds, callback, generation)
+local function finishNearbyScan(inputs, cargoContainersByVehicleId, vehicleIds, callback, generation, nearbyVehicles)
   local cargoContainers = {}
   for _, list in pairs(cargoContainersByVehicleId) do
     for _, containerData in ipairs(list) do
@@ -201,6 +208,8 @@ local function finishNearbyScan(inputs, cargoContainersByVehicleId, vehicleIds, 
   table.sort(cargoContainers, sortByVehIdAndContainerId)
   if not vehicleIds and inputs.state.nearbyScanGeneration == generation then
     inputs.state.mostRecentCargoContainerData = cargoContainers
+    -- Vehicle objects must stay out of the container data sent to the UI.
+    inputs.state.mostRecentCargoContainerVehicles = nearbyVehicles
   end
   callback(cargoContainers)
 end
@@ -220,35 +229,34 @@ local function getNearbyVehicleCargoContainers(inputs, callback, vehicleIds)
   local nearbyVehicles, refNodeClusterIdByVehId = findScanVehicles(inputs.state, vehicleIds, cargoContainersByVehicleId)
   for vehId, veh in pairs(nearbyVehicles) do
     core_vehicleBridge.requestValue(veh, function(response)
-      -- Obsolete full scans must not dereference vehicles from the previous map.
-      if not vehicleIds and inputs.state.nearbyScanLifecycle ~= lifecycle then
+      local liveVehicle = getCargoBridgeVehicle(vehId)
+      -- A reply can outlive its map, a rental returned during the scan, or its vehicle (for example, at shift end).
+      if not liveVehicle or liveVehicle ~= veh
+          or (not vehicleIds and inputs.state.nearbyScanLifecycle ~= lifecycle) then
         cargoContainersByVehicleId[vehId] = {}
       else
-        cargoContainersByVehicleId[vehId] = collectVehicleContainers(inputs, vehId, veh, refNodeClusterIdByVehId[vehId], response)
+        cargoContainersByVehicleId[vehId] = collectVehicleContainers(inputs, vehId, liveVehicle, refNodeClusterIdByVehId[vehId], response)
       end
       if anyVehicleStillPending(cargoContainersByVehicleId) then return end
-      finishNearbyScan(inputs, cargoContainersByVehicleId, vehicleIds, callback, generation)
+      finishNearbyScan(inputs, cargoContainersByVehicleId, vehicleIds, callback, generation, nearbyVehicles)
     end, "overhaulGetCargoContainers")
   end
   if not next(nearbyVehicles) then
-    finishNearbyScan(inputs, cargoContainersByVehicleId, vehicleIds, callback, generation)
+    finishNearbyScan(inputs, cargoContainersByVehicleId, vehicleIds, callback, generation, nearbyVehicles)
   end
 end
 
 -- Unfreezes the vehicles whose cargo was loaded, then tells the prompt and listeners the wait is over.
 -- Loading freeze and delays -----------------------------------------------------------------------
 
-local function releaseCargoLoadingFreeze(state, delaysByVehicleId)
-  for vehId in pairs(delaysByVehicleId) do
-    local veh = getCargoBridgeVehicle(vehId)
-    if veh then core_vehicleBridge.executeAction(veh, 'setFreeze', false) end
-  end
+local function releaseCargoLoadingFreeze(state, delaysByVehicleId, release)
+  release()
   overhaul_integration_services_markerInteraction.setForceReevaluateOpenPrompt()
   state.defaultWeightUpdateActive = false
   extensions.hook("onOverhaulDeliveryCargoLoadingFinished", delaysByVehicleId)
 end
 
-local function defaultDelayCallback(state, delaysByVehicleId)
+local function defaultDelayCallback(state, delaysByVehicleId, release)
   state.defaultWeightUpdateActive = true
   extensions.hook("onOverhaulDeliveryCargoLoadingStarted", delaysByVehicleId)
   local maxDelaySeconds = 0
@@ -260,11 +268,11 @@ local function defaultDelayCallback(state, delaysByVehicleId)
     -- Only one wait sequence runs at a time; a newer one cancels this wait.
     core_jobsystem.create(function(job)
       job.sleep(maxDelaySeconds + 0.5)
-      releaseCargoLoadingFreeze(state, delaysByVehicleId)
+      releaseCargoLoadingFreeze(state, delaysByVehicleId, release)
     end)
     guihooks.trigger("OpenSimpleDelayPopup", {timer = maxDelaySeconds, heading = _tr("ui.career.delivery.general.loadingCargo")})
   else
-    releaseCargoLoadingFreeze(state, delaysByVehicleId)
+    releaseCargoLoadingFreeze(state, delaysByVehicleId, release)
   end
   log("I", "", string.format("%0.2fs delay after adjusting weights for cargo.", maxDelaySeconds))
 end
@@ -274,7 +282,7 @@ end
 local function rememberCargoWeightVehicle(state, vehId)
   vehId = tonumber(vehId) or vehId
   if vehId then
-    state.rememberedWeightVehicleIds[vehId] = true
+    state.rememberedWeightVehicleIds[vehId] = getCargoBridgeVehicle(vehId)
   end
 end
 
@@ -286,16 +294,11 @@ local function rememberCurrentCargoWeightVehicles(inputs)
   end
 end
 
--- Every vehicle that may hold cargo: the ones on the map, remembered ones, and those named by cargo or containers.
+-- Keep both sides of cargo removal, without polling unrelated parked vehicles whose Lua may have failed.
 local function collectCargoWeightVehicleIds(inputs)
   local vehIds = {}
-  for vehId, veh in activeVehiclesIterator() do
-    if veh and not isUnicycle(veh) and veh.playerUsable ~= false then
-      vehIds[vehId] = true
-    end
-  end
-  for vehId in pairs(inputs.state.rememberedWeightVehicleIds) do
-    vehIds[vehId] = true
+  for vehId, previous in pairs(inputs.state.rememberedWeightVehicleIds) do
+    if getCargoBridgeVehicle(vehId) == previous then vehIds[vehId] = true end
   end
   for _, cargo in ipairs(inputs.services.parcelManager.getAllCargoInVehicles() or {}) do
     if cargo.location and cargo.location.vehId then
@@ -303,7 +306,8 @@ local function collectCargoWeightVehicleIds(inputs)
     end
   end
   for _, container in ipairs(inputs.state.mostRecentCargoContainerData or {}) do
-    if container.vehId then
+    local previous = (inputs.state.mostRecentCargoContainerVehicles or {})[container.vehId]
+    if previous and getCargoBridgeVehicle(container.vehId) == previous and (tonumber(container.usedCargoSlots) or 0) > 0 then
       vehIds[container.vehId] = true
     end
   end
@@ -330,14 +334,15 @@ local function addCargoLoadsToVehicles(inputs, updatePerVehicle)
   end
 end
 
-local function sendContainerLoads(updatePerVehicle)
+local function sendContainerLoads(state, updatePerVehicle)
   for vehId in pairs(updatePerVehicle) do
     local veh = getCargoBridgeVehicle(vehId)
     if veh then
       core_vehicleBridge.executeAction(veh, "overhaulSetCargoContainers", updatePerVehicle[vehId] or {}, "updateDelivery")
-      core_vehicleBridge.executeAction(veh, 'setFreeze', true)
 
       if next(updatePerVehicle[vehId]) then
+        -- Remote discard paths may remove the final parcel without a nearby scan.
+        rememberCargoWeightVehicle(state, vehId)
         for _, con in pairs(updatePerVehicle[vehId]) do
           log("I", "", string.format("Container %d => volume %0.1f | density: %0.1f", con.containerId, con.volume or 0, con.density or 1))
         end
@@ -362,19 +367,40 @@ end
 -- Asks each vehicle how long its slowest non-passenger container needs; the callback runs once all have answered.
 local function requestLoadingDelays(state, loadingDelaysByVehicleId, delayCallback)
   local hasCalledDelayCallback = false
+  local holds = {}
+  local function release()
+    for _, hold in pairs(holds) do hold.release() end
+  end
   local function finishDelayCallback()
     if hasCalledDelayCallback then return end
     for _, delay in pairs(loadingDelaysByVehicleId) do
       if delay == -1 then return end
     end
     hasCalledDelayCallback = true
-    delayCallback(loadingDelaysByVehicleId)
+    local maxDelay = 0
+    for _, delay in pairs(loadingDelaysByVehicleId) do maxDelay = math.max(maxDelay, delay) end
+    for _, hold in pairs(holds) do hold.setTimeout(maxDelay + 0.5 + BRIDGE_TIMEOUT_SECONDS) end
+    delayCallback(loadingDelaysByVehicleId, release)
+  end
+
+  -- Open every hold before requesting: bridge callbacks may answer synchronously.
+  for vehId in pairs(loadingDelaysByVehicleId) do
+    holds[vehId] = vehicleFreeze.acquire('overhaul_career_logistics_general', vehId, {
+      timeoutS = BRIDGE_TIMEOUT_SECONDS,
+      onReleased = function()
+        if loadingDelaysByVehicleId[vehId] ~= -1 then return end
+        loadingDelaysByVehicleId[vehId] = 0
+        finishDelayCallback()
+      end,
+    })
   end
 
   for vehId in pairs(loadingDelaysByVehicleId) do
     local veh = getCargoBridgeVehicle(vehId)
-    if veh then
+    local hold = holds[vehId]
+    if veh and hold then
       core_vehicleBridge.requestValue(veh, function(response)
+        if not hold.isCurrent() or hasCalledDelayCallback or loadingDelaysByVehicleId[vehId] ~= -1 then return end
         local maxLoadingDelaySeconds = 0
         for _, container in ipairs(getCargoContainerListFromBridge(state, response, vehId)) do
           if not isPassengerOnly(container.cargoTypes) then
@@ -382,6 +408,8 @@ local function requestLoadingDelays(state, loadingDelaysByVehicleId, delayCallba
           end
         end
         loadingDelaysByVehicleId[vehId] = maxLoadingDelaySeconds
+        -- An unanswered peer must not consume the deadline for a vehicle still loading.
+        hold.setTimeout(maxLoadingDelaySeconds + 0.5 + BRIDGE_TIMEOUT_SECONDS)
         finishDelayCallback()
       end, "overhaulGetCargoContainers")
     else
@@ -396,7 +424,7 @@ local function updateContainerWeights(inputs, delayCallback)
   if not state.updateWeightsScheduled then
     return
   end
-  delayCallback = delayCallback or function(delays) defaultDelayCallback(state, delays) end
+  delayCallback = delayCallback or function(delays, release) defaultDelayCallback(state, delays, release) end
   state.updateWeightsScheduled = false
   log("I", "", "updateContainerWeights...")
 
@@ -410,7 +438,7 @@ local function updateContainerWeights(inputs, delayCallback)
   end
   state.rememberedWeightVehicleIds = {}
   addCargoLoadsToVehicles(inputs, updatePerVehicle)
-  sendContainerLoads(updatePerVehicle)
+  sendContainerLoads(state, updatePerVehicle)
   requestLoadingDelays(state, placeholderDelays(updatePerVehicle), delayCallback)
 end
 

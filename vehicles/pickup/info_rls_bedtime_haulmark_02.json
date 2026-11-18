@@ -1,0 +1,91 @@
+{
+  "isAuxiliary": true,
+  "Configuration": "Holden Navarro - Bedtime Bullies",
+  "Description": "Driver: Holden Navarro. Builder: Haulmark Racing. Haulmark Racing: Charcoal diesel long-bed with copper secondary paint and retained drag bed cover. 6.0L turbo-diesel V8; Turbocharger; nitrous Yes. 4-speed automatic. Bedtime Bullies: first clean West Coast quarter-mile in the 9.500-10.000 second window: 9.693 s. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Transmission": "Automatic",
+  "Drivetrain": "RWD",
+  "Config Type": "Custom",
+  "Population": -1,
+  "Value": 60000,
+  "Power": 1212,
+  "Weight": 2383,
+  "Years": {
+    "min": 1992,
+    "max": 1997
+  },
+  "Motorsport": {
+    "version": 1,
+    "id": "pickup/rls_bedtime_haulmark_02",
+    "configId": "rls_bedtime_haulmark_02",
+    "model": "pickup",
+    "config": "/vehicles/pickup/rls_bedtime_haulmark_02.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "luke_hobson",
+    "driverName": "Holden Navarro",
+    "builder": "Haulmark Racing",
+    "classIds": [
+      "bedtime_bullies"
+    ],
+    "approvedClassIds": [
+      "bedtime_bullies"
+    ],
+    "leagueId": "street_kings",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "5c5fc7e872a4190e0a02e1e5450bde8d8821ae3b9ed258ca5f572b273cb84fd6",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "4-speed automatic",
+      "induction": "Turbocharger",
+      "nitrous": true,
+      "years": {
+        "min": 1992,
+        "max": 1997
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x4",
+          "part": "tire_F_26_4_15_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_15x12_alt",
+          "part": "tire_R_29_12_15_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "pickup_rollcage",
+          "part": "pickup_rollcage"
+        },
+        {
+          "slot": "pickup_rollcage_bedbars",
+          "part": "pickup_rollcage_bedbars"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.6930107437216,
+      "runId": "BB-023",
+      "evidenceConfigSHA256": "c96f9ce52501301e075fc82ccfa0d4dc720014c1b4cfbd409b63c9d968f03b42",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/bedtime/final-results.json",
+      "acceptedConfig": "outputs/bedtime/accepted/rls_bedtime_haulmark_02/rls_bedtime_haulmark_02.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_bedtime_bullies"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "Configuration": "Finn Barrow - No Prep",
+  "Description": "Burgundy Freight. Tier 5 racer. Highway no-prep quarter-mile: 8.190s at 182.03mph. Haulmark Racing. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Haulmark Racing",
+  "Name": "Finn Barrow",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 6.9359981084903,
+    "time_1_4": 8.1904757139866,
+    "time_1_8": 5.4405159716886,
+    "time_330": 3.6868952719276,
+    "time_60": 1.4099080949226,
+    "velAt_1_4": 81.374260085303,
+    "velAt_1_8": 65.423352956285
+  },
+  "Reaction Time": 0.23938970262462,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

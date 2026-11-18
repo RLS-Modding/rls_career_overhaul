@@ -341,7 +341,7 @@ end
 
 shared.isDevToolsEnabled = function()
   local extensionManager = overhaul_shell_extensionManager
-  return extensionManager and extensionManager.isDevKeyValid() and true or false
+  return extensionManager and extensionManager.isDevKeyValid(true) and true or false
 end
 
 shared.isOpenEndedJobKind = function(kind)
@@ -613,7 +613,8 @@ local function tickYardPrompts(shift, dtSim)
     screen.yardArriveSettleTimer = 0
     parts.dropOff.afterReturnDelivered()
   elseif not runtime.nextAssignmentTransition and shift.phase == "loopComplete" and not shift.wrecked
-      and parts.routing.playerReadyAtYardInspect(dtSim) and not screen.uiOpen and not screen.dropOffOpen then
+      and not shift.loopChoiceDeferred and not screen.uiOpen and not screen.dropOffOpen
+      and parts.routing.playerReadyAtYardInspect(dtSim) then
     screen.yardArriveSettleTimer = 0
     parts.projections.openShiftUi(shift.originFacId or state.homeFacId)
   end
@@ -787,6 +788,22 @@ end
 M.isEmployed = isEmployed
 M.isOnShift = isOnShift
 M.hasCompanyShift = parts.eligibility.hasCompanyShift
+M.shiftCargoOnRig=function(vehId)
+  vehId=tonumber(vehId)
+  if not (vehId and state.shift and isOnShift()) then return false end
+  local ids={vehId}
+  if overhaul_vehicles_playerVehicles then overhaul_vehicles_playerVehicles.fillCouplerGroup(vehId,ids,{resolveLead=true}) end
+  local rig={[vehId]=true};for _,id in ipairs(ids)do rig[id]=true end
+  local tasks=overhaul_career_logistics_vehicleTasks
+  for _,task in ipairs(tasks and tasks.getVehicleTasks() or{})do
+    if not task.remove and task.vehId and (rig[task.vehId] or (tasks.getCargoCarrier and tasks.getCargoCarrier(task.vehId,ids))) then return true end
+  end
+  local parcels=shared.parcelManager()
+  for _,cargo in ipairs(parcels and parcels.getAllCargoInVehicles(true) or{})do
+    if cargo.location and cargo.location.type=='vehicle' and rig[cargo.location.vehId] and parts.dropOff.cargoIsAssigned(cargo) then return true end
+  end
+  return false
+end
 M.isJockeyShift = function()
   local shift = state.shift
   if not shift or not isOnShift() then return false end
@@ -1060,7 +1077,22 @@ end
 -- Public API: shift screens -----------------------------------------------------------------------
 
 M.openShiftUi = parts.projections.openShiftUi
-M.closeShiftUi = parts.projections.closeShiftUi
+M.closeShiftUi = function()
+  local shift = state.shift
+  local deferChoice = screen.uiOpen and not runtime.nextAssignmentTransition
+    and shift and isOnShift() and shift.phase == "loopComplete"
+    and not shift.wrecked and not shift.awaitingPark and not shift.spawnBlocked and not shift.endAfterAssignment
+    and not parts.dropOff.assignmentStillInProgress()
+  if deferChoice then
+    shift.loopChoiceDeferred = true
+    screen.yardArriveSettleTimer = 0
+  end
+  parts.projections.closeShiftUi()
+  if deferChoice then
+    parts.routing.routeToYard()
+    parts.projections.refreshTaskGuidance(true)
+  end
+end
 M.canOpenFacilityShiftUi = function(facId)
   if not facId then return false end
   if parts.eligibility.isRoleplayFacility(facId) then return true end
@@ -1407,6 +1439,7 @@ M.onOverhaulDeliveryCargoLoadingFinished = function(token)
   if pending.isCurrent() then parts.projections.refreshActiveTaskGuidance() end
 end
 M.onCareerActivated = onCareerActivated
+M.onOverhaulPrepareCareerLevelSwitch = parts.persistence.prepareMapTravel
 M.onWorldReadyState = function(worldReadyState)
   if worldReadyState == 2 and not runtime.loadedShiftReconciled then
     runtime.loadedShiftReconciled = true

@@ -1,0 +1,73 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "midsize/rls_wrongwheel_blacktop_04",
+    "configId": "rls_wrongwheel_blacktop_04",
+    "model": "midsize",
+    "config": "/vehicles/midsize/rls_wrongwheel_blacktop_04.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "caleb_reece",
+    "driverName": "Chase Hale",
+    "builder": "Blacktop Engineering",
+    "leagueId": "street_kings",
+    "classIds": [
+      "wrong_wheel_drive"
+    ],
+    "approvedClassIds": [
+      "wrong_wheel_drive"
+    ],
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "72fc64859466a3679362c7ad2aa9a6837f7c7ebe79dfbf1210149f102a0d334e",
+    "traits": {
+      "drivetrain": "FWD",
+      "transmission": "6-speed Sequential",
+      "induction": "Turbo",
+      "nitrous": true,
+      "years": {
+        "min": 1996,
+        "max": 2000
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x9",
+          "part": "tire_F_26.5_8.5_15_race",
+          "typeHint": null
+        },
+        {
+          "slot": "tire_R_15x7",
+          "part": "tire_R_205_60_15_sport",
+          "typeHint": "sport"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "midsize_rollcage",
+          "part": "midsize_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.9955936384525,
+      "runId": "WW-030",
+      "evidenceConfigSHA256": "abf0caec3aaee5a75c2a1180edb0ed9c6f9a5879d30087f5af810b527e622712",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/wrongwheel/final-results.json",
+      "acceptedConfig": "outputs/wrongwheel/accepted/rls_wrongwheel_blacktop_04/rls_wrongwheel_blacktop_04.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_wrongwheel_drive"
+  }
+}

@@ -1,0 +1,177 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "legran/rls_wrongwheel_haulmark_03",
+    "configId": "rls_wrongwheel_haulmark_03",
+    "model": "legran",
+    "config": "/vehicles/legran/rls_wrongwheel_haulmark_03.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "bo_darrow",
+    "driverName": "Blake Foster",
+    "builder": "Haulmark Racing",
+    "leagueId": "street_kings",
+    "classIds": [
+      "wrong_wheel_drive"
+    ],
+    "approvedClassIds": [
+      "wrong_wheel_drive"
+    ],
+    "eligibilityStatus": "Roster approval retained. Consolidated supercharger build passed one current quarter-mile with native class eligibility; historical performance remains unchanged. No repeatability claim.",
+    "sourceConfigSHA256": "696a3e3236ef87008f11cdd83d134a3a1d6a8b34197cd22c88cda5609543ee55",
+    "traits": {
+      "drivetrain": "FWD",
+      "transmission": "6-speed Sequential",
+      "induction": "Supercharger",
+      "nitrous": true,
+      "years": {
+        "max": 1988,
+        "min": 1984
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_R_16x8_altb",
+          "part": "tire_R_225_50_16_altb_race",
+          "typeHint": null
+        },
+        {
+          "slot": "tire_F_15x8_altb",
+          "part": "tire_F_26_8_15_altb_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "legran_rollcage",
+          "part": "legran_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.9037023728581,
+      "runId": "WW-044",
+      "evidenceConfigSHA256": "18fba06267f9eebeecb292948a12e2cdd5498441018cd0602a8c19ec9db87d7f",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/wrongwheel/final-results.json",
+      "acceptedConfig": "outputs/wrongwheel/accepted/rls_wrongwheel_haulmark_03/rls_wrongwheel_haulmark_03.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json",
+      "superchargerConsolidation": {
+        "schema": "rls.supercharger-selection-migration/1",
+        "manifest": "docs/vehicles/shared-drag-superchargers.json",
+        "integrationPlanSHA256": "198ae936a8b13c98d615bc44e342692c5d0238364ab2878a1ee80c3d56095ed2",
+        "oldConfigSHA256": "7e3bdd328bc84dcdb8ef141e6abb1014145fec988bedd5cbdf18020e10e1cd2b",
+        "configSHA256": "696a3e3236ef87008f11cdd83d134a3a1d6a8b34197cd22c88cda5609543ee55",
+        "slot": "legran_intake_i4",
+        "oldPart": "rls_ww_haulmark_i4_blower",
+        "newPart": "rls_legran_intake_i4_stage4_supercharger",
+        "childSlot": "rls_legran_intake_i4_stage4_pulley",
+        "pulleyPart": "rls_legran_intake_i4_stage4_pulley_5",
+        "ratio": 1.5,
+        "removedVariables": [
+          "$ww_blower"
+        ],
+        "status": "source-migrated-pending-live-validation",
+        "scope": "Supercharger ID, child pulley topology and/or fixed hardware changed. Earlier measurements remain tied to their original saved config and sources; no new live validation."
+      },
+      "superchargerPublication": {
+        "assessmentSHA256": "710d473a43f098a694761735010c0a7f1fff4f302d87abceef6820ab2fea1568",
+        "rawSHA256": "db4943c37d4f933861febd85da9700725f0128784955c6e2b66bfa493f9c44e5",
+        "ledgerSHA256": "e935e7441ac74d3d2341985198ce75c662f3a5b4d165ad4ea681cc85173c6aa7",
+        "status": "accepted-single-quarter",
+        "sourceConfigSHA256": "696a3e3236ef87008f11cdd83d134a3a1d6a8b34197cd22c88cda5609543ee55"
+      }
+    },
+    "sourcePack": "rls_wrongwheel_drive",
+    "superchargerQualification": {
+      "schema": "rls.supercharger-qualification/1",
+      "status": "assessor-accepted",
+      "attemptId": "legran__rls_wrongwheel_haulmark_03-L1-P1-sc-sc-live-04",
+      "configSHA256": "696a3e3236ef87008f11cdd83d134a3a1d6a8b34197cd22c88cda5609543ee55",
+      "classId": "wrong_wheel_drive",
+      "format": "index",
+      "lower": 9.5,
+      "upper": 10.25,
+      "quarterMileSeconds": 9.8232248075922,
+      "evidence": {
+        "raw": "outputs/drag-rebuild-20261028/supercharger-consolidation/harness/runs/sc-live-04/results/legran__rls_wrongwheel_haulmark_03-L1-P1-sc-sc-live-04.json",
+        "rawSHA256": "db4943c37d4f933861febd85da9700725f0128784955c6e2b66bfa493f9c44e5",
+        "assessment": "outputs/drag-rebuild-20261028/supercharger-consolidation/harness/runs/sc-live-04/assessment-native-tables.json",
+        "assessmentSHA256": "710d473a43f098a694761735010c0a7f1fff4f302d87abceef6820ab2fea1568",
+        "assessor": {
+          "file": "outputs/drag-rebuild-20261028/supercharger-consolidation/assess-live-corrected.cjs",
+          "sha256": "16d7b0ea8554f529f50e692403994a2d643224042a507947f917e4b5a81db670"
+        },
+        "ledger": "outputs/drag-rebuild-20261028/supercharger-consolidation/publication/ledgers/e935e7441ac74d3d2341985198ce75c662f3a5b4d165ad4ea681cc85173c6aa7.json",
+        "ledgerSHA256": "e935e7441ac74d3d2341985198ce75c662f3a5b4d165ad4ea681cc85173c6aa7",
+        "ledgerKind": "finite-supercharger-assessment-publication-ledger",
+        "timestamp": "2026-10-28T20:34:23Z"
+      },
+      "source": {
+        "status": "current-in-covered-sources",
+        "sourceSnapshotSHA256": "12ca222e78f61517a86b9fd267c759778b47a9408456cd1296971ba0f715f4b3",
+        "scope": "One native lane-1 quarter-mile; asynchronous health callback and GFX pressure samples. No repeatability or substep guarantee. Source coverage is resolved active JBeam, declared dependencies and captured loaded Lua, not all lazy imports."
+      },
+      "assembly": {
+        "compiled": true,
+        "superchargerPart": "rls_legran_intake_i4_stage4_supercharger",
+        "pulleyPart": "rls_legran_intake_i4_stage4_pulley_5",
+        "gearRatio": 1.5,
+        "sourceSHA256": "be526abcb774520a92ead3d8136ab191350c6df3e34ea3993bd01fedd6abd408",
+        "source": "/vehicles/legran/rls_shared_drag_superchargers.jbeam",
+        "maxRPM": 15000,
+        "resolvedMaxRPM": 15000,
+        "maxRPMBasis": "Explicit compiled blower maxRPM"
+      },
+      "classProof": {
+        "classId": "wrong_wheel_drive",
+        "leagueId": "street_kings",
+        "lower": 9.5,
+        "upper": 10.25,
+        "classEntryAllowed": true,
+        "classResultAllowed": true,
+        "nativeClassInspection": true,
+        "basis": "Native classes.inspect/canEnter and classes.validate captured by SC proof guard."
+      },
+      "health": {
+        "status": "no-observed-faults",
+        "telemetryDropped": 0,
+        "maxSuperchargerPsi": 63.16112799,
+        "maxTurboPsi": null,
+        "healthCaptureBoundary": "quarter-mile"
+      },
+      "physical": {
+        "issues": [],
+        "newBroken": [],
+        "deformed": [],
+        "partDamage": [],
+        "triggered": [],
+        "damageDelta": 1.796421647,
+        "scope": "Sparse getBeamDeformation delta >0.01, broken beam IDs, tires, part damage and native trigger changes. beamstate.damage/energy delta is reported, not treated as damage proof."
+      },
+      "nativeFinished": false,
+      "nativeRaceCompleted": false,
+      "comparison": {
+        "baselineET": 9.8250032904745,
+        "deltaSeconds": -0.0017784828822993148,
+        "baselineFile": "outputs/drag-rebuild-20261028/continuation-ledger/attempts/7bf878b8fc60f45b04799e90750b240287d4de36321db042ccdc641d9ebb93eb.json",
+        "baselineResultSHA256": "7bf878b8fc60f45b04799e90750b240287d4de36321db042ccdc641d9ebb93eb",
+        "baselinePCMatches": true,
+        "baselineStatus": "complete",
+        "scope": "Comparison only; historical source/handling limitations retained. This is not baseline requalification."
+      },
+      "scope": "One native lane-1 quarter-mile; asynchronous health callback and GFX pressure samples. No repeatability or substep guarantee. Source coverage is resolved active JBeam, declared dependencies and captured loaded Lua, not all lazy imports."
+    }
+  }
+}

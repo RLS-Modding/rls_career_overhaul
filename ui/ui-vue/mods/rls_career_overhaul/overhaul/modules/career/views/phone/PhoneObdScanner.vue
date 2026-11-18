@@ -14,12 +14,12 @@
 
     <template v-if="tunerOpen">
       <main class="tuner-page">
-        <button type="button" class="tuner-back" @click="closeTuner">
+        <HouseButton type="button" class="tuner-back" @click="closeTuner">
           <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
             <path d="M8 2L4 6l4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
           Back
-        </button>
+        </HouseButton>
         <section class="card tuner-offer">
           <template v-if="proTunerUnlocked">
             <header class="tuner-offer-head">
@@ -33,13 +33,19 @@
               <div>
                 <p class="tuner-brand">Kapoow Racing</p>
                 <h2>PRO Tuner</h2>
+                </div>
+              </header>
+              <p class="tuner-copy">{{ tuner.description || (tuner.available ? 'Live wastegate adjustment.' : tuner.reason) }}</p>
+              <p v-if="fuelControl" class="tuner-copy fuel-note" role="status">{{ fuelControl.control?.mode==='native' ? 'Original engine behavior is active.' : 'Applied fuel tuning is active.' }} <template v-if="fuelControl.control?.dormantCalibration">An older tune is saved but inactive. Apply it in the garage to use it.</template></p>
+              <div v-if="fuelControl" class="tuner-dyno-metrics fuel-now">
+                <article><span>AFR estimate</span><strong>{{ fuelDecimal(fuelControl.afr,2) }}</strong><small>target {{ fuelDecimal(fuelControl.targetAFR,2) }}</small></article>
+                <article :class="fuelControl.injectorDuty >= 1 ? 'bad' : fuelControl.injectorDuty >= .9 ? 'warn' : null"><span>Injectors</span><strong>{{ fuelDutyText(fuelControl.injectorDuty) }}</strong><small>{{ fuelControl.control?.mode==='native' ? 'Native delivery' : 'of capacity' }}</small></article>
+                <article :class="fuelControl.pumpDuty >= 1 ? 'bad' : fuelControl.pumpDuty >= .9 ? 'warn' : null"><span>Pump</span><strong>{{ fuelDutyText(fuelControl.pumpDuty) }}</strong><small>{{ fuelControl.control?.mode==='native' ? 'Native delivery' : 'of capacity' }}</small></article>
               </div>
-            </header>
-            <p class="tuner-copy">{{ tuner.description || (tuner.available ? 'Live wastegate adjustment.' : tuner.reason) }}</p>
-            <template v-if="tuner.available">
-              <div class="tuner-value-row">
-                <span>{{ tuner.title }}</span>
-                <strong :style="{ color: tunerSliderColor }">{{ tunerValueText }}</strong>
+              <template v-if="tuner.available && !fuelBoostActive">
+                <div class="tuner-value-row">
+                  <span>{{ tuner.title }}</span>
+                  <strong :style="{ color: tunerSliderColor }">{{ tunerValueText }}</strong>
               </div>
               <BngSlider
                 class="tuner-slider"
@@ -56,12 +62,38 @@
                 <small>{{ tunerBoundText(tuner.max) }}</small>
               </div>
               <p v-if="tuner.mode === 'software'" class="tuner-copy tuner-copy-follow">
-                Note: The wastegate only holds boost down. Not every turbocharger can actually make more if you raise it.
-              </p>
+                  Note: The wastegate only holds boost down. Not every turbocharger can actually make more if you raise it.
+                </p>
+              </template>
+                <template v-if="boostCut && !boostCutInFuelCard">
+                  <div class="tuner-value-row tuner-cut-row">
+                    <span>Boost cut</span>
+                    <strong>{{ boostCutText }}</strong>
+                  </div>
+                  <HouseSlider
+                    class="tuner-slider"
+
+                    aria-label="Boost cut pressure"
+                    :min="boostCut.minMarginPsi"
+                    :max="boostCut.maxMarginPsi"
+                    :step="boostCut.step"
+                    :model-value="boostCutMargin"
+                    :disabled="!boostCut.editable"
+                    @update:modelValue="value => onBoostCutInput({target:{value}})"
+                    @valueChanged="value => onBoostCutChange({target:{value}})"
+                   />
+                  <div class="tuner-range">
+                    <small>{{ boostCutBoundText(boostCut.minMarginPsi) }}</small>
+                    <small>{{ boostCutMargin === boostCut.stockMarginPsi ? 'Stock' : `Stock cut ${boostCutBoundText(boostCut.stockMarginPsi)}` }}</small>
+                    <small>{{ boostCutBoundText(boostCut.maxMarginPsi) }}</small>
+                  </div>
+                  <p class="tuner-copy tuner-copy-follow">
+                    {{ boostCut.editable ? 'Cuts fuel when boost stays above this. Same setting as Fuel & Ignition.' : boostCut.reason }}
+                  </p>
+                </template>
             </template>
-          </template>
-          <template v-else>
-            <header class="tuner-offer-head">
+            <template v-else>
+              <header class="tuner-offer-head">
               <span class="tuner-entry-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24">
                   <path d="M4.8 16.8a8.2 8.2 0 1 1 14.4 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
@@ -79,7 +111,7 @@
               <span>One-time license</span>
               <strong><MoneyAmount>{{ proTunerPriceText }}</MoneyAmount></strong>
             </div>
-            <button
+            <HouseButton
               v-if="canBuyProTuner"
               type="button"
               class="tuner-buy"
@@ -87,13 +119,68 @@
               @click="purchaseProTuner"
             >
               {{ purchasingProTuner ? 'Purchasing...' : 'Get license' }}
-            </button>
-            <p v-if="canBuyProTuner && tuner.canAfford === false" class="tuner-copy tuner-copy-follow">Not enough money.</p>
+            </HouseButton>
+              <p v-if="canBuyProTuner && tuner.canAfford === false" class="tuner-copy tuner-copy-follow">Not enough money.</p>
+            </template>
+          </section>
+          <template v-if="proTunerUnlocked && fuelControl">
+            <section class="card fuel-card" aria-label="Live fuel trim">
+              <h2 class="card-title">Fuel trim <span class="tuner-pull-label">Saved on engine</span></h2>
+              <div v-if="tuner.fuelControls?.length>1" class="tuner-value-row"><span>Engine</span><HouseMenu class="fuel-engine-pick" aria-label="Engine" v-model="fuelEngine" :disabled="fuelWriting" :items="tuner.fuelControls.map(e=>({value:e.engine,label:e.engine}))" /></div>
+              <div class="tuner-value-row"><span>Whole-map fuel</span><strong class="fuel-accent">{{ fuelSigned(fuelControl.afrTrim, 0) }}%</strong></div>
+              <HouseSlider  class="tuner-slider" aria-label="Live AFR fuel trim"  min="-20" max="20" step="1" :model-value="fuelControl.afrTrim" :disabled="fuelWriting" @valueChanged="value => writeFuelControl({afrTrim:Number(value)})" />
+              <div class="tuner-range"><small>Leaner −20%</small><small>Richer +20%</small></div>
+              <div class="fuel-actions"><span class="fuel-status" role="status">{{ fuelWriteMessage }}</span><HouseButton type="button" class="fuel-ghost" :disabled="fuelWriting || !fuelControl.afrTrim" @click="writeFuelControl({afrTrim:0})">Reset</HouseButton></div>
+            </section>
+            <section class="card fuel-card" aria-label="Live boost offsets">
+              <h2 class="card-title">Boost <span class="tuner-pull-label tuner-pull-label-live">{{ !fuelBoostActive ? 'Original control' : fuelControl.boost.mode==='map' ? 'RPM map' : 'Per-gear limits' }}</span></h2>
+              <template v-if="fuelBoostActive">
+                <div class="tuner-value-row"><span>Offset, all gears</span><strong>{{ fuelSigned(fuelControl.boost.offset, 1) }} psi</strong></div>
+                <HouseSlider  class="tuner-slider" aria-label="Global boost offset PSI"  min="-30" max="30" step=".5" :model-value="fuelControl.boost.offset" :disabled="fuelWriting" @valueChanged="value => writeFuelControl({boostOffset:Number(value)})" />
+                <div class="tuner-range"><small>−30</small><small>requested {{ fuelDecimal(fuelControl.boostTargetPsi,1) }} psi</small><small>+30</small></div>
+                <div class="fuel-gears"><label v-for="(g,i) in fuelControl.boost.gears" :key="g">G{{ g }}<input type="number" min="-30" max="30" step=".5" :aria-label="'Gear '+g+' boost offset PSI'" :value="fuelControl.boost.offsets[i]" :disabled="fuelWriting" @change="writeGearOffset(i,$event)"><small v-if="fuelControl.boost.mode!=='map'">{{ fuelDecimal(Math.max(0,Math.min(200,fuelControl.boost.caps[i]+fuelControl.boost.offset+fuelControl.boost.offsets[i])),1) }}</small></label></div>
+              </template>
+              <p v-else class="tuner-copy fuel-note"><template v-if="tuner.available">Original boost control. Use the wastegate slider above, or apply Simple gear caps or an Advanced boost map in the garage to enable offsets here.</template><template v-else>{{ fuelControl.boostSupportReason || 'Boost control is unavailable for this setup.' }} Fuel trim still works.</template></p>
+              <div v-if="boostCut && boostCutInFuelCard" class="fuel-cut">
+                <div class="tuner-value-row"><span>Boost cut</span><strong>{{ boostCutText }}</strong></div>
+                <HouseSlider  class="tuner-slider"  aria-label="Boost cut pressure" :min="boostCut.minMarginPsi" :max="boostCut.maxMarginPsi" :step="boostCut.step" :model-value="boostCutMargin" :disabled="!boostCut.editable" @update:modelValue="value => onBoostCutInput({target:{value}})" @valueChanged="value => onBoostCutChange({target:{value}})" />
+                <div class="tuner-range"><small>{{ boostCutBoundText(boostCut.minMarginPsi) }}</small><small>{{ boostCutMargin === boostCut.stockMarginPsi ? 'Stock' : `Stock cut ${boostCutBoundText(boostCut.stockMarginPsi)}` }}</small><small>{{ boostCutBoundText(boostCut.maxMarginPsi) }}</small></div>
+                <p v-if="!boostCut.editable" class="tuner-copy fuel-note">{{ boostCut.reason }}</p>
+              </div>
+              <div v-if="fuelBoostActive" class="fuel-actions"><span></span><HouseButton type="button" class="fuel-ghost" :disabled="fuelWriting" @click="writeFuelControl({boostOffset:0,gearOffsets:fuelControl.boost.gears.map(()=>0)})">Reset boost</HouseButton></div>
+            </section>
           </template>
-        </section>
-        <section v-if="proTunerUnlocked && latestPull" class="card">
-          <h2 class="card-title">
-            Dyno sheet
+          <section v-if="proTunerUnlocked && fuelMonitored && fuelControl" class="card">
+            <h2 class="card-title">
+              Fuel
+              <span class="tuner-pull-label" :class="{ 'tuner-pull-label-live': !fuelPull }">{{ fuelPull ? 'Last pull' : 'Live' }}</span>
+            </h2>
+            <p class="tuner-dyno-date">{{ fuelPullNote }}</p>
+            <div class="tuner-dyno-metrics">
+              <article :class="fuelCard.mixtureBad ? 'bad' : null">
+                <span>AFR</span>
+                <strong>{{ fuelCardText.afr }}</strong>
+                <small>{{ fuelCardText.target }}</small>
+              </article>
+              <article v-if="fuelSystem?.fuelType!=='diesel'" :class="fuelCard.knock ? 'bad' : fuelCard.held ? 'warn' : null">
+                <span>{{ fuelPull ? 'Peak retard' : 'Knock retard' }}</span>
+                <strong>{{ fuelCardText.retard }}</strong>
+                <small>{{ fuelCardRetardNote }}</small>
+              </article>
+              <article :class="fuelCard.limited ? 'bad' : null">
+                <span>{{ fuelPull ? 'Peak delivery' : 'Fuel delivery' }}</span>
+                <strong>{{ fuelCardText.duty }}</strong>
+                <small>{{ fuelControl.control?.mode==='native' ? 'Native delivery' : 'of capacity' }}</small>
+              </article>
+            </div>
+          </section>
+          <section v-else-if="proTunerUnlocked && fuelSystem && fuelSystem.monitored === false" class="card">
+            <h2 class="card-title">Fuel</h2>
+            <p class="tuner-copy">{{ fuelSystem.reason || 'Fuel system not monitored.' }}</p>
+          </section>
+          <section v-if="proTunerUnlocked && latestPull" class="card">
+            <h2 class="card-title">
+              Dyno sheet
             <span class="tuner-pull-label">Latest</span>
           </h2>
           <p v-if="pullDateText(latestPull)" class="tuner-dyno-date">{{ pullDateText(latestPull) }}</p>
@@ -130,20 +217,20 @@
               <span>{{ graphRpmLabel(latestGraphScale.minRpm) }}</span>
               <span>{{ graphRpmLabel(latestGraphScale.maxRpm) }}</span>
             </div>
-          </div>
-        </section>
-        <p v-if="proTunerUnlocked" class="tuner-firmware">
-          <b>Kapoow Racing PRO Tuner 1.0</b>
-          Wastegate adjustment and your latest dyno sheet are live. We're constantly working on new features — everything we add is included with the license you already own.
-        </p>
-      </main>
-    </template>
+            </div>
+          </section>
+          <p v-if="proTunerUnlocked" class="tuner-firmware">
+            <b>Kapoow Racing PRO Tuner 2.0</b>
+            Live AFR trim and global/per-gear boost offsets are included with your existing license.
+          </p>
+        </main>
+      </template>
 
     <template v-else>
     <nav class="tabs" aria-label="Scanner sections">
-      <button v-for="item in tabs" :key="item.id" :class="{ active: tab === item.id }" @click="tab = item.id">
+      <HouseButton v-for="item in tabs" :key="item.id" :class="{ active: tab === item.id }" @click="tab = item.id">
         {{ item.label }}
-      </button>
+      </HouseButton>
     </nav>
 
     <Notice v-if="!scannerConnected" :title="connectionPresentation.noticeTitle">
@@ -196,7 +283,7 @@
         </article>
       </section>
 
-      <button
+      <HouseButton
         v-if="proTunerEnabled"
         type="button"
         class="tuner-entry"
@@ -218,7 +305,7 @@
         <svg v-else class="tuner-entry-chevron" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
           <path d="M4 2l4 4-4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
-      </button>
+      </HouseButton>
     </main>
 
     <main v-else-if="tab === 'engine'">
@@ -229,13 +316,13 @@
             <div><span>{{ motor.position ? `${motor.position} motor` : 'Motor' }}</span><strong>{{ motor.name }}</strong></div>
             <div v-if="isNumber(motor.maxRpm)"><span>Maximum motor speed</span><strong>{{ whole(motor.maxRpm) }} rpm</strong></div>
           </template>
-        </div>
-      </section>
+          </div>
+        </section>
 
-      <section v-if="!live.isElectric && (live.engineName || live.forcedInductionName || live.forcedInductionType || hasEcuCalibration)" class="card specs-card">
-        <h2>Engine & ECU</h2>
-        <div class="spec-list">
-          <div v-if="live.engineName"><span>{{ live.isHybrid ? 'Generator engine' : 'Engine' }}</span><strong>{{ live.engineName }}</strong></div>
+        <section v-if="!live.isElectric && (live.engineName || live.forcedInductionName || live.forcedInductionType || hasEcuCalibration || fuelMonitored)" class="card specs-card">
+          <h2>Engine & ECU</h2>
+          <div class="spec-list">
+            <div v-if="live.engineName"><span>{{ live.isHybrid ? 'Generator engine' : 'Engine' }}</span><strong>{{ live.engineName }}</strong></div>
           <div v-if="live.forcedInductionName || live.forcedInductionType"><span>Forced induction</span><strong>{{ live.forcedInductionName || live.forcedInductionType }}</strong></div>
           <div v-if="isNumber(live.idleRpm)">
             <span>Target idle speed</span><strong>{{ whole(live.idleRpm) }} rpm</strong>
@@ -249,11 +336,15 @@
           <div v-if="isNumber(limiterCutDurationMs)">
             <span>Cut duration</span><strong>{{ whole(limiterCutDurationMs) }} ms</strong>
           </div>
-          <div v-if="isNumber(live.wastegateStartPsi)">
-            <span>Wastegate opening pressure</span><strong>{{ boostPressure(live.wastegateStartPsi) }}</strong>
+            <div v-if="isNumber(live.wastegateStartPsi)">
+              <span>Wastegate opening pressure</span><strong>{{ boostPressure(live.wastegateStartPsi) }}</strong>
+            </div>
+            <div v-if="fuelMonitored && fuelSystem.system"><span>Fuel system</span><strong>{{ fuelSystem.system }}</strong></div>
+            <div v-if="fuelMonitored && fuelSystem.fuelInUse"><span>Fuel in use</span><strong>{{ fuelSystem.fuelInUse }}</strong></div>
+            <div v-if="fuelRequirementText"><span>Fuel requirement</span><strong>{{ fuelRequirementText }}</strong></div>
+            <div v-if="fuelOctaneText"><span>Fuel octane</span><strong>{{ fuelOctaneText }}</strong></div>
           </div>
-        </div>
-      </section>
+        </section>
 
       <section v-if="live.hasElectricDrive" class="card">
         <h2>Drive motor diagnostics</h2>
@@ -266,12 +357,17 @@
         <h2>{{ live.isHybrid ? 'Generator engine diagnostics' : 'Diagnostics' }}</h2>
         <StatusRow v-if="maintenanceOnline" label="Output restriction" :bad="powerLimited" :warn="!powerLimited && Boolean(recentEngineRestrictionObservation)" :text="powerLimited ? powerLimitText : recentEngineRestrictionObservation ? 'Recently observed under load' : 'None'" />
         <StatusRow v-if="live.forcedInductionName || live.forcedInductionType" label="Forced induction" :bad="inductionDamageActive" :warn="!inductionDamageActive && (turboHotActive || inductionDamageRecent || turboHotRecent)" :text="forcedInductionStatusText" />
-        <StatusRow v-if="roughnessState || live.recentCombustionStability" label="Combustion stability" :bad="roughnessState && roughnessState !== 'Normal'" :warn="roughnessState === 'Normal' && live.recentCombustionStability" :text="roughnessState && roughnessState !== 'Normal' ? roughnessState : live.recentCombustionStability ? 'Recently observed — elevated' : 'Normal'" />
-        <StatusRow v-if="live.idleStability" label="Idle stability" :bad="live.idleStability === 'unstable'" :warn="live.idleStability === 'rough' || (live.idleStability === 'normal' && live.recentIdleStall === true)" :text="idleStabilityText" />
-        <StatusRow v-if="misfireState || live.recentMisfireRisk" label="Estimated misfire risk" :bad="misfireState && misfireState !== 'Normal'" :warn="misfireState === 'Normal' && Boolean(live.recentMisfireRisk)" :text="misfireState && misfireState !== 'Normal' ? misfireState : live.recentMisfireRisk ? `Recently observed — ${live.recentMisfireRisk}` : 'Normal'" />
-        <StatusRow v-if="maintenanceOnline" label="Engine condition" :warn="Boolean(engine.activeSymptom || recentEngineSymptom)" :text="engineConditionText" />
-      </section>
-    </main>
+          <StatusRow v-if="roughnessState || live.recentCombustionStability" label="Combustion stability" :bad="roughnessState && roughnessState !== 'Normal'" :warn="roughnessState === 'Normal' && live.recentCombustionStability" :text="roughnessState && roughnessState !== 'Normal' ? roughnessState : live.recentCombustionStability ? 'Recently observed — elevated' : 'Normal'" />
+          <StatusRow v-if="live.idleStability" label="Idle stability" :bad="live.idleStability === 'unstable'" :warn="live.idleStability === 'rough' || (live.idleStability === 'normal' && live.recentIdleStall === true)" :text="idleStabilityText" />
+          <StatusRow v-if="misfireState || live.recentMisfireRisk" label="Estimated misfire risk" :bad="misfireState && misfireState !== 'Normal'" :warn="misfireState === 'Normal' && Boolean(live.recentMisfireRisk)" :text="misfireState && misfireState !== 'Normal' ? misfireState : live.recentMisfireRisk ? `Recently observed — ${live.recentMisfireRisk}` : 'Normal'" />
+          <StatusRow v-if="fuelMonitored" label="Mixture" v-bind="fuelMixtureRow" />
+          <StatusRow v-if="fuelMonitored" label="Knock" v-bind="fuelKnockRow" />
+          <StatusRow v-if="fuelMonitored" label="Fuel delivery" v-bind="fuelDeliveryRow" />
+          <StatusRow v-if="fuelMonitored && fuelAlerts.boostCut === true" label="Boost cut" :bad="true" text="Cutting fuel" />
+          <StatusRow v-if="fuelSystem && fuelSystem.monitored === false" label="Fuel system" :warn="true" :text="fuelSystem.reason || 'Not monitored'" />
+          <StatusRow v-if="maintenanceOnline" label="Engine condition" :warn="Boolean(engine.activeSymptom || recentEngineSymptom)" :text="engineConditionText" />
+        </section>
+      </main>
 
     <main v-else-if="tab === 'service'">
       <Notice v-if="live.isElectric && maintenanceOnline" title="RLS maintenance model">
@@ -386,6 +482,7 @@
 </template>
 
 <script setup>
+import { HouseButton, HouseMenu, HouseSlider } from "../../components/house/index.js"
 
 import { usePhoneAppFocus } from './controllerLayers.js'
 
@@ -394,7 +491,7 @@ import { vBngOnUiNav } from '@/common/directives'
 import { BngSlider } from '@/common/components/base'
 import MoneyAmount from "../../components/MoneyAmount.vue"
 import { createObdPresentation } from './createObdPresentation.js'
-import { computed, h, onBeforeUnmount, onMounted, ref, watch } from "vue"
+import { computed, h, onBeforeUnmount, onMounted, ref, watch, onUnmounted } from "vue"
 import { useBridge } from "@/bridge"
 import { useEvents, useStreams } from "@/services/events"
 import { $translate } from "@/services/translation"
@@ -821,6 +918,100 @@ const forcedInductionStatusText = computed(() => {
 })
 const pressureTankLeakActive = computed(() => nativeDamageActive('pressureTank', 'deformationLeak') || nativeDamageActive('pressureTank', 'breakLeak'))
 const stabilityControlDegraded = computed(() => nativeDamageActive('drivingDynamics', 'systemStateDegraded'))
+const fuelSystem = computed(() => live.value.fuelSystem && typeof live.value.fuelSystem === 'object' ? live.value.fuelSystem : null)
+const fuelMonitored = computed(() => fuelSystem.value?.monitored === true)
+const fuelAlerts = computed(() => fuelSystem.value?.alerts || {})
+// Knock getting through is a fault; protection retard holding it off is only a warning.
+const fuelKnockDetected = computed(() => fuelAlerts.value.knock === true)
+const fuelKnockHeld = computed(() => !fuelKnockDetected.value && fuelAlerts.value.knockRetard === true)
+// The PRO card prefers the last full-load pull: at idle, where the phone can be
+// used, the tune does not apply and every map reads the same.
+const fuelPull = computed(() => {
+  const pull = fuelSystem.value?.lastPull
+  return pull && typeof pull === 'object' ? pull : null
+})
+const fuelCard = computed(() => {
+  const pull = fuelPull.value
+  if (pull) {
+    const retard = Number(pull.peakRetardDeg) || 0
+    return { afr: pull.afr, targetAFR: pull.targetAFR, lambda: pull.lambda, targetLambda: pull.targetLambda, retard, duty: pull.peakDuty,
+      mixtureBad: pull.lean === true || pull.rich === true, knock: pull.knock === true,
+      held: pull.knock !== true && retard > 0.25, limited: Number(pull.peakDuty) >= 1 }
+  }
+  const fuel = fuelSystem.value || {}
+  return { afr: fuel.afr, targetAFR: fuel.targetAFR, lambda: fuel.lambda, targetLambda: fuel.targetLambda, retard: fuel.knockRetardDeg, duty: fuel.deliveryDuty,
+    mixtureBad: fuelMixtureBad.value, knock: fuelKnockDetected.value, held: fuelKnockHeld.value, limited: fuelDeliveryLimited.value }
+})
+const fuelCardRetardNote = computed(() => {
+  if (fuelSystem.value?.knockControl !== true) return fuelCard.value.knock ? 'Knock, no protection' : 'No knock protection'
+  if (fuelCard.value.knock) return 'Knock past protection'
+  return fuelCard.value.held ? 'Active' : 'None'
+})
+const fuelPullNote = computed(() => {
+  const pull = fuelPull.value
+  if (!pull) return 'Live estimates. A full-throttle pull records mixture and delivery under load.'
+  const cut = pull.boostCut === true ? '; boost cut active' : ''
+  const seconds = Math.max(0, Math.round(Number(pull.secondsAgo) || 0))
+  const age = seconds < 60 ? `${seconds} s ago` : `${Math.round(seconds / 60)} min ago`
+  const rpm = Number(pull.rpm)
+  return Number.isFinite(rpm) ? `Full load up to ${Math.round(rpm)} rpm; recorded ${age}${cut}` : `Full load; recorded ${age}${cut}`
+})
+const fuelMixtureBad = computed(() => fuelAlerts.value.lean === true || fuelAlerts.value.rich === true)
+const fuelDeliveryLimited = computed(() => fuelAlerts.value.deliveryLimited === true)
+const fuelMixtureText = computed(() => fuelAlerts.value.lean === true ? 'Lean' : fuelAlerts.value.rich === true ? 'Rich' : 'On target')
+// Engine rows: a live fault is red; otherwise the last full-load pull shows as a
+// past warning, since the phone only opens when the tune no longer applies.
+const fuelMixtureRow = computed(() => {
+  if (fuelMixtureBad.value) return { bad: true, text: fuelMixtureText.value }
+  const pull = fuelPull.value
+  if (pull?.lean === true) return { warn: true, text: 'Lean on last pull' }
+  if (pull?.rich === true) return { warn: true, text: 'Rich on last pull' }
+  return { text: 'On target' }
+})
+const fuelKnockRow = computed(() => {
+  if (fuelKnockDetected.value) return { bad: true, text: 'Detected' }
+  if (fuelKnockHeld.value) return { warn: true, text: 'Held off by protection' }
+  const pull = fuelPull.value
+  if (pull?.knock === true) return { warn: true, text: 'Knock on last pull' }
+  if (pull && Number(pull.peakRetardDeg) > 0.25) return { warn: true, text: 'Held off on last pull' }
+  return { text: 'Normal' }
+})
+const fuelDeliveryRow = computed(() => {
+  if (fuelDeliveryLimited.value) return { bad: true, text: 'At limit' }
+  const duty = Number(fuelPull.value?.peakDuty)
+  if (duty >= 1) return { warn: true, text: `Over limit on last pull (${Math.round(duty * 100)}%)` }
+  return { text: 'Normal' }
+})
+function fuelAkiText(value) {
+  const n = Number(value)
+  return Number.isFinite(n) ? `${Math.round(n)} AKI` : null
+}
+const fuelRequirementText = computed(() => {
+  if (!fuelMonitored.value || fuelSystem.value?.fuelType==='diesel') return null
+  const aki = fuelAkiText(fuelSystem.value?.requiredAki)
+  if (!aki) return null
+  return fuelSystem.value.requirementEstimated === true ? `${aki} (estimated)` : aki
+})
+const fuelOctaneText = computed(() => {
+  if (!fuelMonitored.value || fuelSystem.value?.fuelType==='diesel' || fuelSystem.value?.fuelInUse === 'Empty') return null
+  return fuelAkiText(fuelSystem.value?.fuelAki)
+})
+function fuelDecimal(value, digits) {
+  const n = value == null ? NaN : Number(value)
+  return Number.isFinite(n) ? n.toFixed(digits) : '--'
+}
+const fuelCardText = computed(() => {
+  const card = fuelCard.value
+  const target = fuelDecimal(card.targetAFR, 2)
+  const retard = fuelDecimal(card.retard, 1)
+  const duty = Number(card.duty)
+  return {
+    afr: fuelDecimal(card.afr, 2),
+    target: target === '--' ? 'target unavailable' : `target ${target}`,
+    retard: retard === '--' ? '--' : `${retard}°`,
+    duty: Number.isFinite(duty) ? `${Math.round(duty * 100)}%` : '--',
+  }
+})
 const diagnosticFindings = computed(() => buildDiagnosticFindings({
   live: live.value,
   engine: engine.value,
@@ -923,8 +1114,37 @@ function onBack() {
   return false
 }
 
+const fuelEngine=ref(''),fuelWriting=ref(false),fuelWriteMessage=ref('');
+// Boost cut sits with the fuel boost offsets once a garage per-gear/map boost is active.
+const fuelBoostActive=computed(()=>!!(fuelControl.value?.boost && fuelControl.value.boost.mode!=='original' && fuelControl.value.boostSupported!==false));
+const boostCutInFuelCard=computed(()=>proTunerUnlocked.value&&fuelBoostActive.value);
+function fuelDutyText(value){return isNumber(value)?Math.round(value*100)+'%':'—'}
+function fuelSigned(value,digits){const n=Number(value)||0;return `${n>0?'+':''}${n.toFixed(digits)}`}
+const fuelControl=computed(()=>{const list=Array.isArray(tuner.value.fuelControls)?tuner.value.fuelControls:[];const e=list.find(e=>e.engine===fuelEngine.value)||list[0];if(!e)return;const f=fuelSystem.value;return f?.engine===e.engine && live.value.vehicleId===e.vehicleId?{...e,afr:f.afr,targetAFR:f.targetAFR,injectorDuty:f.injectorDuty,pumpDuty:f.pumpDuty,boostTargetPsi:f.boostTargetPsi}:e});
+let fuelWriteTimeout,fuelWriteContext;
+async function writeFuelControl(changes){
+  if(fuelWriting.value||!fuelControl.value)return;
+  fuelWriting.value=true;fuelWriteMessage.value='Waiting for engine confirmation';
+  const e=fuelControl.value;fuelWriteContext={vehicleId:e.vehicleId,generation:e.generation,engine:e.engine,revision:e.revision};
+  try{const result=await callModLuaIfAvailable('overhaul_vehicles_obdScanner.setProTunerFuel',changes,{vehicleId:e.vehicleId,generation:e.generation,revision:e.revision,engine:e.engine});
+    if(!result?.ok){fuelWriting.value=false;fuelWriteMessage.value=result?.message||'Change not accepted';await refreshProTuner();return}
+    if(!fuelWriting.value)return;
+    fuelWriteTimeout=setTimeout(()=>{fuelWriting.value=false;fuelWriteMessage.value='Confirmation delayed. Refreshing installed state.';refreshProTuner()},4000);
+  }catch(err){fuelWriting.value=false;fuelWriteMessage.value='Unable to apply tune';}
+}
+function writeGearOffset(i,event){const n=Number(event.target.value);if(event.target.value===''||!Number.isFinite(n)||Math.abs(n)>30){event.target.value=fuelControl.value.boost.offsets[i];return}const offsets=[...fuelControl.value.boost.offsets];offsets[i]=n;writeFuelControl({gearOffsets:offsets})}
+function onFuelTrimResult(result){if(!fuelWriteContext||['vehicleId','generation','engine','revision'].some(k=>result[k]!==fuelWriteContext[k]))return;fuelWriteContext=null;clearTimeout(fuelWriteTimeout);fuelWriting.value=false;fuelWriteMessage.value=result.ok?'Applied to engine':result.message||'Change rejected';refreshProTuner()}
+events.on('RlsFuelLiveTrimResult',onFuelTrimResult);
+onUnmounted(()=>{events.off('RlsFuelLiveTrimResult',onFuelTrimResult);clearTimeout(fuelWriteTimeout)});
+
+let tunerReadGeneration=0;
+watch([() => fuelMonitored.value, () => live.value.vehicleId, () => fuelSystem.value?.engine], ([ready]) => {
+  if (ready) refreshProTuner()
+});
 async function refreshProTuner() {
+  const readGeneration=++tunerReadGeneration;
   const state = await callModLuaIfAvailable("overhaul_vehicles_obdScanner.getProTunerState")
+  if(readGeneration!==tunerReadGeneration)return;
   proTuner.value = state && typeof state === "object" ? state : { enabled: false }
   if (proTuner.value.enabled !== true) tunerOpen.value = false
 }
@@ -959,10 +1179,46 @@ async function writeTunerValue(value) {
   if (state && typeof state === "object") proTuner.value = state
 }
 
+// Boost cut is stored as psi above factory boost, shared with Fuel & Ignition.
+const boostCutPreview = ref(null)
+const boostCut = computed(() => {
+  const cut = tuner.value.available ? tuner.value.boostCut : null
+  return cut && isNumber(cut.factoryPsi) && isNumber(cut.marginPsi) ? cut : null
+})
+const boostCutMargin = computed(() => boostCutPreview.value ?? boostCut.value?.marginPsi)
+const boostCutText = computed(() => boostCut.value ? formatTunePressure(boostCut.value.factoryPsi + boostCutMargin.value, 'psi') : null)
+// Where the cut sits on the boost slider's scale (offset or absolute).
+const boostCutMarker = computed(() => {
+  const cut = boostCut.value
+  if (!cut || !isNumber(cut.markerValue)) return null
+  return cut.markerValue + (boostCutMargin.value - cut.marginPsi)
+})
+const boostCutReached = computed(() => isNumber(boostCutMarker.value) && isNumber(tuner.value.value) && tuner.value.value >= boostCutMarker.value)
+
+function boostCutBoundText(margin) {
+  return boostCut.value ? formatTunePressure(boostCut.value.factoryPsi + margin, 'psi') : null
+}
+
+function onBoostCutInput(event) {
+  boostCutPreview.value = Number(event.target.value)
+}
+
+async function onBoostCutChange(event) {
+  const margin = Number(event.target.value)
+  boostCutPreview.value = margin
+  try {
+    const state = await callModLuaIfAvailable("overhaul_vehicles_obdScanner.setProTunerBoostCut", margin)
+    if (state && typeof state === "object") proTuner.value = state
+  } finally {
+    boostCutPreview.value = null
+  }
+}
+
 function formatTunePressure(value, unit) {
   if (!isNumber(value)) return null
   const normalized = String(unit || "psi").toLowerCase()
-  if (normalized === "psi") return `${decimal(value, 1)} psi`
+  // Wastegate settings are authored in psi; show them in the player's pressure unit.
+  if (normalized === "psi") return units?.buildString ? units.buildString('pressure', value * 6.894757, 2) : `${decimal(value, 1)} psi`
   if (normalized === "bar") return `${decimal(value, 2)} bar`
   return unit ? `${decimal(value, 1)} ${unit}` : decimal(value, 1)
 }
@@ -991,6 +1247,7 @@ const tunerSliderColor = computed(() => {
   const min = tuner.value.min
   const max = tuner.value.max
   const value = tuner.value.value
+  if (boostCutReached.value) return 'var(--red)'
   if (!isNumber(min) || !isNumber(max) || !isNumber(value) || max === min) return 'var(--green)'
   const amount = Math.max(0, Math.min(1, (value - min) / (max - min)))
   const green = [80, 227, 164]
@@ -1141,4 +1398,20 @@ usePhoneScreen({ onBack: onBack })
 .tuner-dyno-power{stroke:#f97316}
 .tuner-dyno-torque{stroke:#eef4ff}
 .tuner-dyno-axis{display:flex;justify-content:space-between;margin-top:3px;color:var(--muted);font-size:8px}
+.fuel-now{margin:0}
+.fuel-card .tuner-value-row{margin-bottom:8px}
+.fuel-accent{color:var(--green)}
+.fuel-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px}
+.fuel-status{color:var(--muted);font-size:9px;min-height:1em}
+.fuel-ghost{padding:6px 10px;border-radius:99px;border:1px solid var(--line);background:#0d151d;color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.fuel-ghost:disabled{opacity:.4}
+.fuel-note{margin:0;font-size:10px}
+.fuel-gears{display:grid;grid-template-columns:repeat(auto-fit,minmax(40px,1fr));gap:4px;margin-top:10px}
+.fuel-gears label{display:grid;gap:3px;justify-items:center;padding:6px 2px;border:1px solid var(--line);border-radius:8px;background:#0d151d;font-size:8px;font-weight:800;color:var(--muted)}
+.fuel-gears input{width:100%;background:transparent;border:0;color:var(--text);text-align:center;font:inherit;font-size:11px;padding:0}
+.fuel-gears input::-webkit-inner-spin-button{display:none}
+.fuel-gears small{font-size:7px;color:var(--muted)}
+.fuel-cut{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.fuel-engine-pick{position:relative}.fuel-engine-pick summary{cursor:pointer;color:var(--text);font-weight:800}.fuel-engine-pick button{display:block;margin-top:4px;background:#0d151d;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:5px 8px;font-size:10px}
+.fuel-card .focus-visible,.fuel-now .focus-visible{outline:2px solid var(--green);outline-offset:2px}
 </style>

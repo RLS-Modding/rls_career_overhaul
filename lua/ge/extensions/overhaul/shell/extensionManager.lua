@@ -39,11 +39,23 @@ local shuttingDown = false
 local ownerLoadingPermitted = false
 local versionUnsupported = false
 local testerHiddenThisSession = false
+local devKeyValidity
 -- Path-named extensions are kept out of Lua reload snapshots (see blockUnreloadableExtensionNames).
 local serializationBlocked = {}
 -- A cleanup callback cannot start a second teardown while its result is still pending.
 local preparingUnload = false
 local triggerOwners = {map = nil, byName = {}}
+
+local function invalidateDevKey()
+  devKeyValidity = nil
+end
+
+local function invalidateDevKeyFile(filename)
+  if type(filename) ~= "string" then return end
+  -- Notifications may name a user overlay or a mounted mod instead of the VFS root.
+  local basename = filename:gsub("\\", "/"):match("([^/]+)$")
+  if basename and basename:lower() == "devkey.txt" then invalidateDevKey() end
+end
 
 -- Roster and scope loading ------------------------------------------------------------------------
 
@@ -204,10 +216,10 @@ local function loadWorldScope(names, worldReady)
   startedScopes.world = true
   for _, name in ipairs(names or manifest.shellScope("world", getRoster())) do
     local wasLoaded = extensions.isExtensionLoaded(name)
-    extensions.load(name)
+    local loaded = safeLoad(name)
     ownUnloadMode(name, "manual")
     -- A newly loaded owner is absent from the world-ready hook list already being dispatched.
-    if worldReady and not wasLoaded then
+    if loaded and worldReady and not wasLoaded then
       local declaration, owner = getRoster().byName[name], optional(name)
       local ready = declaration and declaration.reloadOnReady and owner and owner[declaration.reloadOnReady]
       if ready then ready() end
@@ -220,7 +232,7 @@ local function ensureFreeroamEventsLoaded(names)
   for _, name in ipairs(names or manifest.shellScope("freeroamEvents", getRoster())) do
     if not extensions.isExtensionLoaded(name) then
       ownedExtensions[name] = true
-      extensions.load(name)
+      safeLoad(name)
     else
       local owner = roster.byName[name]
       local extension = optional(name)
@@ -237,7 +249,7 @@ local function ensureCareerWorldLoaded(names)
   startedScopes.careerWorld = true
   for _, name in ipairs(names or manifest.shellScope("careerWorld", getRoster())) do
     ownUnloadMode(name, "manual")
-    if not extensions.isExtensionLoaded(name) then extensions.load(name) end
+    if not extensions.isExtensionLoaded(name) then safeLoad(name) end
   end
 end
 
@@ -439,9 +451,13 @@ local function hideTesterFromPublicInput()
   end
 end
 
+local function validateDevKeyNow()
+  return M.isDevKeyValid(true)
+end
+
 local function loadTesterMenuIfKeyed()
   local names = manifest.shellScope("testerMenu", getRoster())
-  if not devScope.isKeyValid(M.isDevKeyValid) then
+  if not devScope.isKeyValid(validateDevKeyNow) then
     if not prepareForUnload(names) then return false end
     startedScopes.testerMenu = true
     for _, name in ipairs(names) do ownUnloadMode(name, "manual") end
@@ -474,7 +490,7 @@ local function updateEditorBlocking()
   local blockedActions = { "editorToggle", "editorSafeModeToggle", "vehicleEditorToggle" }
   core_input_actionFilter.setGroup("RLS_DEACTIVATION", blockedActions)
   local cheatsEnabled = overhaul_career_economy_cheats and overhaul_career_economy_cheats.isCheatsMode()
-  if not devScope.isKeyValid(M.isDevKeyValid) and overhaul_career_career.isActive() and not cheatsEnabled then
+  if not devScope.isKeyValid(validateDevKeyNow) and overhaul_career_career.isActive() and not cheatsEnabled then
     core_input_actionFilter.addAction(0, "RLS_DEACTIVATION", true)
   else
     core_input_actionFilter.addAction(0, "RLS_DEACTIVATION", false)
@@ -667,6 +683,7 @@ local function checkVersionLater()
 end
 
 local function startup()
+  invalidateDevKey()
   ownerLoadingPermitted = false
   shuttingDown = false
   getRoster()
@@ -772,6 +789,7 @@ local function refreshRoster()
 end
 
 local function onModActivated(modData)
+  invalidateDevKey()
   require("overhaul/lib/platform/manifests").invalidate()
   capabilities.reset()
   resetDeliveryTemplates()
@@ -784,6 +802,7 @@ local function onModActivated(modData)
 end
 
 local function onModDeactivated(modData)
+  invalidateDevKey()
   require("overhaul/lib/platform/manifests").invalidate()
   capabilities.reset()
   resetDeliveryTemplates()
@@ -812,8 +831,15 @@ M.canLoadOwners = function()
 end
 M.ensureInputActionsRegistered = ensureInputActionsRegistered
 
-M.isDevKeyValid = function()
-  return devKey == FS:hashFile("devkey.txt")
+M.isDevKeyValid = function(validateNow)
+  -- Hash only after an identity boundary; cache refusals as well as grants.
+  -- Developer operations can request fresh authorization before file notifications arrive.
+  if validateNow or devKeyValidity == nil then
+    -- A failed forced read must not leave an earlier grant available.
+    devKeyValidity = nil
+    devKeyValidity = devKey == FS:hashFile("devkey.txt")
+  end
+  return devKeyValidity
 end
 
 M.getModData = modIdentity.getModData
@@ -859,6 +885,7 @@ end
 -- Timed editor initialization calls only stock editor-folder owners directly.
 M.onEditorActivated = M.onEditorInitialized
 M.onExtensionUnloaded = function()
+  invalidateDevKey()
   integrations.stop()
   ownerLoadingPermitted = false
   capabilities.reset()
@@ -882,6 +909,7 @@ M.onCareerActivated = function()
   blockUnreloadableExtensionNames()
   loadTesterMenuIfKeyed()
 end
+M.onOverhaulModulesActivated = M.onCareerActivated
 
 M.onOverhaulActive = function(active)
   if shuttingDown then return end
@@ -905,13 +933,22 @@ M.onVehicleSpawned = onVehicleSpawned
 M.onBeamNGTrigger = demandTriggerOwner
 M.onModActivated = onModActivated
 M.onModDeactivated = onModDeactivated
-M.onModManagerReady = resetDeliveryTemplates
+M.onModManagerReady = function()
+  invalidateDevKey()
+  resetDeliveryTemplates()
+end
+M.onOverhaulSetProfile = invalidateDevKey
 M.onClientEndMission = function()
   triggerOwners = {map = nil, byName = {}}
   resetDeliveryTemplates()
 end
 M.onFileChanged = function(filename)
+  invalidateDevKeyFile(filename)
   if type(filename) == "string" and filename:match("%.delivery%w+%.json$") then resetDeliveryTemplates() end
+end
+-- Stock broadcasts the batch before individual changes, whose consumers may query the key.
+M.onFilesChanged = function(files)
+  for _, file in pairs(files or {}) do invalidateDevKeyFile(file.filename) end
 end
 
 return M

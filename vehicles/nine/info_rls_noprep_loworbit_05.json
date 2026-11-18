@@ -1,0 +1,26 @@
+{
+  "Configuration": "Dahlia Reed - No Prep",
+  "Description": "Purple Parcel. Tier 3 racer. Highway no-prep quarter-mile: 10.146s at 142.44mph. Low Orbit Garage. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Low Orbit Garage",
+  "Name": "Dahlia Reed",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 8.5463002946444,
+    "time_1_4": 10.146448604972,
+    "time_1_8": 6.6478545162519,
+    "time_330": 4.4611860901824,
+    "time_60": 1.6877507269006,
+    "velAt_1_4": 63.674962858921,
+    "velAt_1_8": 51.464413586698
+  },
+  "Reaction Time": 0.27586911811544,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

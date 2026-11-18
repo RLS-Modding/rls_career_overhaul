@@ -541,6 +541,13 @@ end
 
 M.createOrLoadCareerAndStart = parts.start.createOrLoadCareerAndStart
 M.activateCareer = parts.transitions.activateCareer
+-- Checkpoint sessions already own a verified named save. A second exit save
+-- would advance or overwrite the state that the session is about to restore.
+M.suspendForCheckpoint = function(owner, ticket)
+  if not require('overhaul/lib/career/checkpointSessions').canSuspend(owner, ticket) then return false end
+  parts.transitions.deactivateCareer(false)
+  return true
+end
 -- Stop waits for the pending save before advancing the profile lifetime.
 M.deactivateCareer = function(saveCareer)
   local transition = session.active and lifecycle.begin("profile", {via = "stop"}) or nil

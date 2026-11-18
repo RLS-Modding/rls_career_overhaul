@@ -1,0 +1,88 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Name": "Oscar Palmer",
+  "Configuration": "Oscar Palmer - Pro All-Motor",
+  "Description": "Haulmark Racing. Naturally aspirated competition build; drag tires on both axles, lights, doors, hood and glass retained. Tested healthy at Alder: 11.159 s quarter-mile. Sequential; 369 engine hp, 1179 kg. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Induction Type": "NA",
+  "Drivetrain": "FWD",
+  "Transmission": "Sequential",
+  "Power": 369,
+  "Weight": 1179,
+  "Years": {
+    "max": 1992,
+    "min": 1986
+  },
+  "Motorsport": {
+    "version": 1,
+    "id": "covet/rls_pam_haulmark_01",
+    "configId": "rls_pam_haulmark_01",
+    "model": "covet",
+    "config": "/vehicles/covet/rls_pam_haulmark_01.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "luke_hobson",
+    "driverName": "Oscar Palmer",
+    "builder": "Haulmark Racing",
+    "classIds": [
+      "pro_motor"
+    ],
+    "approvedClassIds": [
+      "pro_motor"
+    ],
+    "leagueId": "pro_league",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "b8c4a4687457809b4eb728381c50f57471affbbdeb3d96a82a429e9ff3875299",
+    "traits": {
+      "drivetrain": "FWD",
+      "transmission": "Sequential",
+      "induction": "Naturally aspirated",
+      "nitrous": false,
+      "years": {
+        "max": 1992,
+        "min": 1986
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_13x7",
+          "part": "tire_F_24.5_8_13_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_13x7",
+          "part": "tire_R_24.5_8_13_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "covet_rollcage",
+          "part": "covet_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 11.158554803455,
+      "runId": "PAM-012",
+      "evidenceConfigSHA256": "b45ae1aaca329045aecdb4e94123b1af272075379831d6bf8afcfdd3024f3612",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/pro-allmotor/final-metadata.json",
+      "acceptedConfig": "outputs/pro-allmotor/accepted/rls_pam_haulmark_01/rls_pam_haulmark_01.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_pro_allmotor"
+  }
+}

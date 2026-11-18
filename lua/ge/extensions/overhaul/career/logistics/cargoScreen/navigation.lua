@@ -64,7 +64,7 @@ function part.new(inputs)
       return
     end
     local commercial = facilityId and overhaul_career_logistics_broker.isAtLoanerFacility(facilityId) or false
-    overhaul_career_logistics_broker.setOpenContext(facilityId, commercial, not facilityId and 'jobs' or nil)
+    overhaul_career_logistics_broker.setOpenContext(facilityId, commercial, facilityId and 'loads' or 'jobs')
     guihooks.trigger('ChangeState', {state='phone-logistics'})
   end
 

@@ -1,0 +1,41 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "bluebuck/rls_stu_blacktop_01",
+    "configId": "rls_stu_blacktop_01",
+    "model": "bluebuck",
+    "config": "/vehicles/bluebuck/rls_stu_blacktop_01.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "sourcePack": "rls_stu_leonard",
+    "driverId": "caleb_reece",
+    "driverName": "Iris Graham",
+    "builder": "blacktop",
+    "classIds": [
+      "stu_leonard_850"
+    ],
+    "approvedClassIds": [
+      "stu_leonard_850"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Accepted collection record matching the bundled config.",
+    "sourceConfigSHA256": "be47cfd99f188ad610722b5626c62519ecc224778cb4cc0b8d4f4b267e2827ce",
+    "traits": {
+      "transmission": "Automatic",
+      "drivetrain": "RWD",
+      "years": {
+        "min": 1963,
+        "max": 1963
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.7861947684416,
+      "runId": "STU-012",
+      "evidenceConfigSHA256": "be47cfd99f188ad610722b5626c62519ecc224778cb4cc0b8d4f4b267e2827ce",
+      "configHashMatches": true,
+      "status": "recorded-pass-matching-config"
+    },
+    "provenance": {
+      "metadata": "outputs/stu-leonard/final-metadata.json"
+    }
+  }
+}

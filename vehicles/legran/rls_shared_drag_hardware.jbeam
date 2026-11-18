@@ -1,0 +1,100 @@
+{
+  "rls_legran_engine_v6_internals_stage4_block": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Heavy Duty Block", "value":20000},
+    "slotType": "legran_engine_v6_internals",
+    "mainEngine": {
+      "maxTorqueRating": 6050,
+      "maxOverTorqueDamage": 1500,
+      "cylinderWallTemperatureDamageThreshold": 175,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1900000,
+      "pistonRingDamageThreshold": 1900000,
+      "connectingRodDamageThreshold": 2400000,
+      "maxPhysicalRPM": 8400
+    },
+    "powertrainDamage": [
+      ["deviceName", "damageID"],
+      ["mainEngine", "block"]
+    ]
+  },
+  "rls_legran_engine_i4_internals_stage4_block": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Heavy Duty Block", "value":20000},
+    "slotType": "legran_engine_i4_internals",
+    "mainEngine": {
+      "maxTorqueRating": 1900,
+      "maxOverTorqueDamage": 1500,
+      "cylinderWallTemperatureDamageThreshold": 175,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1900000,
+      "pistonRingDamageThreshold": 1900000,
+      "connectingRodDamageThreshold": 2400000,
+      "maxPhysicalRPM": 8400
+    },
+    "powertrainDamage": [
+      ["deviceName", "damageID"],
+      ["mainEngine", "block"]
+    ]
+  },
+  "rls_legran_engine_v6_internals_stage4_performance": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Performance Block", "value":22500},
+    "slotType": "legran_engine_v6_internals",
+    "mainEngine": {
+      "torqueModMult": [
+        ["rpm", "torque"],
+        [0, 1],
+        [1000, 1],
+        [2000, 1.1157142857142857],
+        [3000, 1.2514285714285716],
+        [4000, 1.4464285714285714],
+        [5000, 1.65],
+        [6000, 1.87],
+        [7000, 1.98],
+        [8000, 1.98]
+      ],
+      "maxTorqueRating": 6050,
+      "maxOverTorqueDamage": 1500,
+      "cylinderWallTemperatureDamageThreshold": 175,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1900000,
+      "pistonRingDamageThreshold": 1900000,
+      "connectingRodDamageThreshold": 2400000,
+      "maxPhysicalRPM": 8400,
+      "$+maxRPM": 500
+    },
+    "powertrainDamage": [
+      ["deviceName", "damageID"],
+      ["mainEngine", "block"]
+    ]
+  },
+  "rls_legran_engine_i4_internals_stage4_performance": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Performance Block", "value":22500},
+    "slotType": "legran_engine_i4_internals",
+    "mainEngine": {
+      "torqueModMult": [
+        ["rpm", "torque"],
+        [0, 1],
+        [1000, 1],
+        [2000, 1.1157142857142857],
+        [3000, 1.2514285714285716],
+        [4000, 1.4464285714285714],
+        [5000, 1.65],
+        [6000, 1.87],
+        [7000, 1.98],
+        [8000, 1.98]
+      ],
+      "maxTorqueRating": 1900,
+      "maxOverTorqueDamage": 1500,
+      "cylinderWallTemperatureDamageThreshold": 175,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1900000,
+      "pistonRingDamageThreshold": 1900000,
+      "connectingRodDamageThreshold": 2400000,
+      "maxPhysicalRPM": 8400,
+      "$+maxRPM": 500
+    },
+    "powertrainDamage": [
+      ["deviceName", "damageID"],
+      ["mainEngine", "block"]
+    ]
+  }
+}

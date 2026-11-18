@@ -1,0 +1,87 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Configuration": "Hadley Flynn - Spray and Pray",
+  "Description": "Driver: Hadley Flynn. Builder: Low Orbit Garage. Low Orbit Garage: Silver-blue 1960s strip coupe. 423 CUI Ultra-Thrust OHV V8, quad carburetors and Stage 4 Race block; naturally aspirated with nitrous from second gear. 4-speed automatic. Three-pass development result at West Coast: 7.941 s. Spray and Pray class. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Transmission": "Automatic",
+  "Drivetrain": "RWD",
+  "Years": {
+    "min": 1962,
+    "max": 1963
+  },
+  "Power": 1519,
+  "Weight": 1772,
+  "Induction Type": "NA + N2O",
+  "Motorsport": {
+    "version": 1,
+    "id": "bluebuck/rls_nitro_loworbit_03",
+    "configId": "rls_nitro_loworbit_03",
+    "model": "bluebuck",
+    "config": "/vehicles/bluebuck/rls_nitro_loworbit_03.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "letty_ortiz",
+    "driverName": "Hadley Flynn",
+    "builder": "Low Orbit Garage",
+    "classIds": [
+      "spray_and_pray"
+    ],
+    "approvedClassIds": [
+      "spray_and_pray"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "721ad286fa0194e0632da27ff837c30dd4157d99ab94026cc25c6c2bd4c2786d",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "4-speed automatic",
+      "induction": "Naturally aspirated + nitrous",
+      "nitrous": true,
+      "years": {
+        "min": 1962,
+        "max": 1963
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x4",
+          "part": "tire_F_26_4_15_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_15x10",
+          "part": "tire_R_28_10_15_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "bluebuck_rollcage",
+          "part": "bluebuck_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 7.9411430959381,
+      "runId": null,
+      "evidenceConfigSHA256": "15feea0d7c0f4a589aec427b67c45d3a3c6728d210892d2992217c88b6274e12",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/nitrous/final-results.json",
+      "acceptedConfig": "outputs/nitrous/accepted/rls_nitro_loworbit_03/rls_nitro_loworbit_03.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_nitrous_builders"
+  }
+}

@@ -397,12 +397,15 @@ local function addEmploymentEndApi(api, inputs)
   end
 
   api.checkEmploymentInactivity = function()
+    local activeMapId = shared.currentMapId()
+    if not activeMapId or activeMapId == "" or (state.activeMapId and state.activeMapId ~= activeMapId) then return end
     local nowWorldMinute = shared.nowWorldMinutes()
     if nowWorldMinute == nil then return end
     local now = shared.nowSim()
     if now <= 0 then return end
     if (tonumber(state.nextEmploymentInactivityCheckAt) or 0) > now then return end
     state.nextEmploymentInactivityCheckAt = now + 1
+    persistence.resumeEmploymentInactivityClock(nowWorldMinute)
     persistence.applyPendingLastWorkRefresh(nowWorldMinute)
     if state.shift then
       state.lastWorkAt = now
@@ -410,7 +413,7 @@ local function addEmploymentEndApi(api, inputs)
     end
     persistence.flushEmploymentCache()
     for mapId, employment in pairs(state.employments or {}) do
-      if employment and employment.employerOrgId then
+      if mapId == activeMapId and employment and employment.employerOrgId then
         if persistence.employmentShiftBlocksInactivity(mapId, employment) then
           employment.lastWorkAt = now
           employment.lastWorkWorldMinute = nowWorldMinute
@@ -424,7 +427,7 @@ local function addEmploymentEndApi(api, inputs)
             employment.hiredWorldMinute = nowWorldMinute
           end
           local lastWorkWorldMinute = tonumber(employment.lastWorkWorldMinute or employment.hiredWorldMinute) or 0
-          if lastWorkWorldMinute > 0 and lastWorkWorldMinute <= nowWorldMinute and (nowWorldMinute - lastWorkWorldMinute) >= shared.inactivityFireWorldMinutes() then
+          if lastWorkWorldMinute <= nowWorldMinute and (nowWorldMinute - lastWorkWorldMinute) >= shared.inactivityFireWorldMinutes() then
             api.fireEmploymentForInactivity(mapId, employment)
           end
         end

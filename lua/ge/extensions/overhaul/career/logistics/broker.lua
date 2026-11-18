@@ -3,6 +3,7 @@
 
 local M = {}
 local kinds = require("overhaul/career/logistics/broker/kinds").new()
+local offerGroups = require("overhaul/career/logistics/broker/offerGroups")
 local access = require("overhaul/career/logistics/broker/access")
 local presence = require("overhaul/career/logistics/broker/presence")
 local loanerKind = require("overhaul/career/logistics/broker/kinds/loaner")
@@ -33,6 +34,7 @@ local openContext
 local routeCache, routeCacheMap, routeCacheSize = {}, nil, 0
 local offerCache, jobCache = viewCache.new(), viewCache.new()
 local offerFacilities
+local collectOffers
 local restoreTimer = 0
 local presenceWatcher = presence.newWatcher()
 local rentalRouteId
@@ -272,7 +274,18 @@ local function branchInfo(branch)
 end
 
 local function rowAccess(row, native)
-  return access.apply(row, access.evaluate(kinds.forKind(row.kind).requirements(brokerServices, row, native), branchInfo, text))
+  local requirements = kinds.forKind(row.kind).requirements(brokerServices, row, native) or {}
+  local employment = overhaul_career_work_employment
+  local reason = employment and employment.getCargoBoardBlockMessage
+    and employment.getCargoBoardBlockMessage(row.origin and row.origin.facId)
+  if reason then
+    local requirement = brokerServices.flagRequirement("logisticsOwnerOp")
+    requirement.unlocked, requirement.branch = false, "careerSkills-logistics"
+    requirement.definition = {level = requirement.definition and requirement.definition.level,
+      lockedReason = {label = reason}}
+    requirements[#requirements + 1] = requirement
+  end
+  return access.apply(row, access.evaluate(requirements, branchInfo, text))
 end
 
 local function distance(a, b)
@@ -337,6 +350,7 @@ local function addOffer(id, kind, native, row)
   return row
 end
 
+local pruneFinishedRoute, pruneFinishedJobs
 local function syncJobs()
   local changed = false
   for _, job in pairs(state.jobs) do
@@ -347,6 +361,7 @@ local function syncJobs()
     end
   end
   if changed then presenceWatcher.invalidate() end
+  pruneFinishedRoute()
 end
 
 local function booked(kind, id)
@@ -401,7 +416,7 @@ brokerServices.now = now
 brokerServices.text = text
 brokerServices.destination = destination
 brokerServices.addOffer = function(id, kind, native, row)
-  offers[id], natives[id] = addOffer(id, kind, native, row), native
+  offers[id], natives[id] = rowAccess(addOffer(id, kind, native, row), native), native
 end
 -- Board reads must not finish a background generation batch on the UI frame.
 -- Keep suppression around each native query, never across a coroutine yield.
@@ -562,6 +577,76 @@ local function clearFreightRoute(id)
   if rebuild then M.showRoute() end
 end
 
+local function needsPickup(job)
+  if job.status ~= "active" then return job.status == "reserved" end
+  if job.remaining ~= nil then
+    return (tonumber(job.inTransit) or 0) <= 0 and (tonumber(job.remaining) or 0) > 0
+  end
+  if job.vehicles then
+    local pending, staged = false, false
+    for _, vehicle in ipairs(job.vehicles) do
+      pending = pending or not vehicle.status or vehicle.status == "pending"
+      staged = staged or vehicle.status == "staged"
+    end
+    return #job.vehicles == 0 or pending and not staged
+  end
+  return false
+end
+
+local function hasPendingPickup(job)
+  if job.status ~= "active" then return job.status == "reserved" end
+  if job.remaining ~= nil then
+    return (tonumber(job.remaining) or 0) > (tonumber(job.inTransit) or 0)
+  end
+  if job.vehicles then
+    if #job.vehicles == 0 then return true end
+    for _, vehicle in ipairs(job.vehicles) do
+      if not vehicle.status or vehicle.status == "pending" then return true end
+    end
+  end
+  return false
+end
+
+pruneFinishedRoute = function()
+  local affected, changed, pickups, planned = false, false, {}, {}
+  for id, plan in pairs(state.plans) do
+    if isTerminal(state.jobs, id) or plan.status == "complete" or plan.status == "cancelled"
+      or (plan.status and not state.jobs[id]) then
+      state.plans[id] = nil
+      affected = affected or freightRouteJobs[id]
+    end
+  end
+  for i = #state.stops, 1, -1 do
+    local stop = state.stops[i]
+    local id, job = stop.jobId, state.jobs[stop.jobId]
+    if isTerminal(state.jobs, id) or not (job or state.plans[id])
+      or (job and stop.kind == "pickup" and not needsPickup(job)) then
+      table.remove(state.stops, i)
+      affected = affected or freightRouteJobs[id]
+      changed = true
+    elseif job then
+      planned[id] = job
+      if stop.kind == "pickup" then pickups[id] = true end
+      if stop.kind == "delivery" then stop.collected = not needsPickup(job) or nil end
+    end
+  end
+  for id, job in pairs(planned) do
+    if needsPickup(job) and not pickups[id] then
+      state.stops[#state.stops + 1] = {id = nextId("stop"), jobId = id, kind = "pickup",
+        location = deepcopy(job.origin), name = job.from}
+      changed = true
+    end
+  end
+  for id in pairs(freightRouteJobs) do
+    if isTerminal(state.jobs, id) then affected = true; break end
+  end
+  local rebuild = affected and freightRouteIsPlan and freightRoute.isCurrent()
+  if affected then clearFreightRoute() end
+  if changed and #state.stops > 1 then M.optimizeStops() end
+  if rebuild and #state.stops > 0 then M.showRoute() end
+  pruneFinishedJobs()
+end
+
 local function clearRentalRoute(id)
   if id and rentalRouteId and id ~= rentalRouteId then return end
   local current = rentalRoute.isCurrent()
@@ -576,7 +661,38 @@ local function clearRentalRecord(id)
   clearRentalRoute(id)
 end
 
+local function rentalCatalog()
+  return (jsonReadFile("/gameplay/overhaul/loaners/broker.json") or {}).vehicles or {}
+end
+
+local function vehicleConfigName(vehInfo)
+  local config = vehInfo.config
+  local file = type(config) == "table" and config.partConfigFilename or config
+  return type(file) == "string" and file:match("([^/]+)%.pc$") or file
+end
+
+-- A rental vehicle whose booking was lost (older saves) gets its booking back, so stalls and the phone can return it.
+local function restoreRentalRecord(id, invId, vehInfo)
+  local config = vehicleConfigName(vehInfo)
+  local rental = {id = id, model = vehInfo.model, config = config, name = vehInfo.niceName or vehInfo.model,
+    status = "rented", map = vehInfo.brokerMap or mapId(), depotId = vehInfo.brokerDepotId,
+    inventoryId = invId, kind = "loaner"}
+  for _, item in ipairs(rentalCatalog()) do
+    if item.model == rental.model and item.config == config then
+      rental.catalogId, rental.name, rental.bayLength = item.id, item.name or rental.name, item.bayLength
+      break
+    end
+  end
+  state.rentals[id] = rental
+  log("W", "broker", "Restored the missing booking for rental vehicle " .. tostring(id))
+end
+
 local function reconcileRentals()
+  local inventory = overhaul_career_garage_inventory
+  for invId, vehInfo in pairs(inventory and inventory.getVehicles() or {}) do
+    local id = vehInfo.brokerRentalId
+    if id and not state.rentals[id] then restoreRentalRecord(id, invId, vehInfo) end
+  end
   for id, r in pairs(state.rentals) do
     local invId = inventoryRental(id)
     if invId then
@@ -754,24 +870,51 @@ function M.serialize(forSave)
   return saved
 end
 
-local function pruneFinishedJobs()
+local function referencedJobs()
+  local referenced = {}
+  local function keep(id) if id then referenced[id] = true end end
+  for _, saved in pairs(pendingRestore.cargo or {}) do keep(saved.cargo.data.brokerId) end
+  for _, saved in pairs(pendingRestore.tasks or {}) do keep(saved.offer.brokerId) end
+  -- Finished tasks can still be settling rewards; transient cargo can still be
+  -- committing a move. Their native owners decide when those references end.
+  local parcelManager, taskManager = parcels(), overhaul_career_logistics_vehicleTasks
+  for _, cargo in ipairs(parcelManager and parcelManager.getAllCargoInVehicles(true) or {}) do
+    keep(cargo.data and cargo.data.brokerId)
+  end
+  for _, task in ipairs(taskManager and taskManager.getVehicleTasks() or {}) do
+    if not task.remove then keep(task.offer.brokerId) end
+  end
+  for id in pairs(state.plans) do keep(id) end
+  for _, stop in ipairs(state.stops) do keep(stop.jobId) end
+  for id in pairs(freightRouteJobs) do keep(id) end
+  return referenced
+end
+
+pruneFinishedJobs = function()
+  local finishedCount = 0
+  for _, job in pairs(state.jobs) do
+    if type(job) == "table" and (job.status == "complete" or job.status == "cancelled") then
+      finishedCount = finishedCount + 1
+    end
+  end
+  -- Most reads stay within the limit; sorting metadata is only needed to evict.
+  if finishedCount <= FINISHED_JOB_KEEP then return end
   local finished = {}
   for id, job in pairs(state.jobs) do
     if type(job) == "table" and (job.status == "complete" or job.status == "cancelled") then
       finished[#finished + 1] = { id = id, n = tonumber(tostring(id):match("(%d+)$")) or 0 }
     end
   end
-  if #finished <= FINISHED_JOB_KEEP then return end
   table.sort(finished, function(a, b) return a.n > b.n end)
+  local referenced = referencedJobs()
   for i = FINISHED_JOB_KEEP + 1, #finished do
     local id = finished[i].id
-    state.jobs[id] = nil
-    if type(state.stops) == "table" then
-      for j = #state.stops, 1, -1 do
-        if state.stops[j].jobId == id then table.remove(state.stops, j) end
-      end
+    local job = state.jobs[id]
+    if not referenced[id] and not kinds.forKind(job.kind).retainsJob(brokerServices, job) then
+      state.jobs[id] = nil
     end
   end
+  jobCache.retain(state.jobs)
 end
 
 function M.setup(saved)
@@ -786,7 +929,6 @@ function M.setup(saved)
       state[k] = v
     end
   end
-  if type(state.jobs) == "table" then pruneFinishedJobs() end
   offers = {}
   natives = {}
   offerCache, jobCache = viewCache.new(), viewCache.new()
@@ -805,11 +947,14 @@ function M.setup(saved)
       if job then kinds.forKind(job.kind).restoreOffer(brokerServices, job, offer) end
     end
   end
+  -- Terminal restore bindings need their job records to remain identifiable
+  -- until prepare discards them; route cleanup and history pruning follow.
   persistence.prepare(
     pendingRestore,
     state.jobs,
     function(job, offer) kinds.forKind(job.kind).restoreOffer(brokerServices, job, offer) end
   )
+  pruneFinishedRoute()
 end
 
 -- Public API: status ------------------------------------------------------------------------------
@@ -859,23 +1004,39 @@ local function withFit(row, candidates, handler)
   return row
 end
 
-function M.getState(yieldWork)
-  syncJobs()
-  M.refreshOffers(yieldWork)
+local function offerRows(board, yieldWork, facility)
   local bonus = levelBonus()
   local list = {}
   local player, candidates = playerPosition(), fitCandidates(yieldWork)
   local distances = {}
-  local nextUnlock
-  for _, offer in pairs(offers) do
-    local r = offer
-    local present = pickupPresence(r, player, distances)
-    r.pickupDistance, r.atPickup = present.distance, present.here
-    for _, reason in ipairs(r.access.reasons) do
+  for _, offer in pairs(board) do
+    if not facility or offer.origin and offer.origin.facId == facility then
+      local present = pickupPresence(offer, player, distances)
+      offer.pickupDistance, offer.atPickup = present.distance, present.here
+      list[#list + 1] = withFit(withLevelPay(offer, bonus), candidates)
+      if yieldWork then yieldWork() end
+    end
+  end
+  return offerGroups.assign(list, yieldWork), candidates, player, distances
+end
+
+-- Match the initial phone read, including generator catch-up, without consuming
+-- its open context. Only collect and project rows for this pickup.
+function M.getAvailableMarketCounts(facility)
+  if not access.canBrowse(overhaul_career_work_employment) then return {} end
+  local board = collectOffers(nil, facility)
+  return offerGroups.availableCounts(offerRows(board, nil, facility), kinds.markets())
+end
+
+function M.getState(yieldWork)
+  syncJobs()
+  M.refreshOffers(yieldWork)
+  local list, candidates, player, distances = offerRows(offers, yieldWork)
+  local bonus, nextUnlock = levelBonus(), nil
+  for _, row in ipairs(list) do
+    for _, reason in ipairs(row.access.reasons) do
       if reason.need and (not nextUnlock or reason.need < nextUnlock.need) then nextUnlock = deepcopy(reason) end
     end
-    list[#list + 1] = withFit(withLevelPay(r, bonus), candidates)
-    if yieldWork then yieldWork() end
   end
   local jobs = {}
   for id, j in pairs(state.jobs) do
@@ -885,6 +1046,7 @@ function M.getState(yieldWork)
     local row = jobCache.get(id, source, nil, function() return deepcopy(source) end)
     local present = pickupPresence(row, player, distances)
     row.atPickup, row.pickupDistance = present.here, present.distance
+    row.hasPendingPickup = hasPendingPickup(row)
     row.atDelivery = row.map == mapId() and near(row.destination) or false
     withFit(withLevelPay(row, bonus), candidates)
     if row.status == "active" and row.map == mapId() then row.abandonFine = M.abandonQuote(row.id) end
@@ -896,7 +1058,7 @@ function M.getState(yieldWork)
   local context = openContext
   openContext = nil
   return {
-    markets = rules.markets,
+    markets = kinds.markets(),
     nextUnlock = nextUnlock,
     logisticsTime = now(), -- Offer expiry uses simulation time, never the wall clock.
     offers = list,
@@ -950,8 +1112,7 @@ function M.jobForNative(kind, id)
   end
 end
 
-function M.refreshOffers(yieldWork)
-  local previousOffers = offers
+collectOffers = function(yieldWork, pickupFacility)
   local nextOffers, nextNatives = {}, {}
   local context = setmetatable({}, {__index = brokerServices})
   context.cachedOffer = function(...)
@@ -959,14 +1120,13 @@ function M.refreshOffers(yieldWork)
     if yieldWork then yieldWork() end
   end
   context.addOffer = function(id, kind, native, row)
-    nextOffers[id], nextNatives[id] = addOffer(id, kind, native, row), native
+    nextOffers[id], nextNatives[id] = rowAccess(addOffer(id, kind, native, row), native), native
   end
   -- After a map switch the generator may hold the old map's facilities; re-run setup for this map.
   local g = general()
   if g and g.ensureSetupForCurrentMap then g.ensureSetupForCurrentMap() end
   if gen().getSetupLevelIdentifier and gen().getSetupLevelIdentifier() ~= mapId() then
-    offers, natives = nextOffers, nextNatives
-    return
+    return nextOffers, nextNatives
   end
   -- Explicit actions retain their synchronous catch-up. Phone refreshes read
   -- the board that the budgeted logistics generator has already produced.
@@ -982,15 +1142,23 @@ function M.refreshOffers(yieldWork)
     offerFacilities = presentation
   end
   for _, fac in ipairs(facilities) do
-    for _, h in ipairs(kinds.list()) do
-      h.collect(context, fac)
-      if yieldWork then yieldWork() end
+    if not pickupFacility or fac.id == pickupFacility then
+      for _, h in ipairs(kinds.list()) do
+        h.collect(context, fac)
+        if yieldWork then yieldWork() end
+      end
     end
   end
   for _, h in ipairs(kinds.list()) do
     h.collectBoard(context)
     if yieldWork then yieldWork() end
   end
+  return nextOffers, nextNatives
+end
+
+function M.refreshOffers(yieldWork)
+  local previousOffers = offers
+  local nextOffers, nextNatives = collectOffers(yieldWork)
   -- A cancelled phone refresh never publishes a partially built offer board.
   offers, natives = nextOffers, nextNatives
   offerCache.retain(offers)
@@ -1006,7 +1174,7 @@ function M.refreshOffers(yieldWork)
   if changed then presenceWatcher.invalidate() end
 end
 
-function M.reserve(id, signature, keepOffers)
+function M.reserve(id, signature, keepOffers, skipRoute)
   if busy then return false, "Finish the current collection first." end
   if employed() then return false, "Job Broker is for independent contractors." end
   syncJobs()
@@ -1032,6 +1200,7 @@ function M.reserve(id, signature, keepOffers)
   if not ok then return false, msg end
   state.jobs[job.id] = job
   remapFreightRouteJob(id, job.id)
+  local planned = false
   for key, p in pairs(state.plans) do
     if key == id or (p.offerId == id and p.signature == row.signature) then
       for _, stop in ipairs(state.stops) do
@@ -1039,7 +1208,14 @@ function M.reserve(id, signature, keepOffers)
       end
       remapFreightRouteJob(key, job.id)
       state.plans[key] = nil
+      planned = true
     end
+  end
+  if planned then
+    state.plans[job.id] = deepcopy(job)
+    M.optimizeStops()
+  elseif not skipRoute then
+    M.plan(job.id)
   end
   refreshPois()
   return true, "Load reserved.", job.id
@@ -1100,7 +1276,20 @@ function M.getReservedPickups()
   end
   return out
 end
--- Reserves a group of identical offers in one pass and reports how many were taken.
+local function planRepresentative(representatives, job)
+  for _, representative in ipairs(representatives) do
+    if job.map == representative.map and job.kind == representative.kind
+      and job.cargoIdentity == representative.cargoIdentity and job.title == representative.title
+      and job.subtype == representative.subtype and job.trailerType == representative.trailerType
+      and viewCache.equal(job.origin, representative.origin)
+      and viewCache.equal(job.destination, representative.destination)
+      and viewCache.equal(job.destinations, representative.destinations) then return end
+  end
+  representatives[#representatives + 1] = job
+  if not state.plans[job.id] then M.plan(job.id) end
+end
+
+-- Reserves selected offers in one pass and reports how many were taken.
 function M.reserveMany(items)
   local list = {}
   for _, item in ipairs(type(items) == "table" and items or {}) do
@@ -1109,14 +1298,16 @@ function M.reserveMany(items)
   if #list == 0 then return false, "Choose loads to reserve." end
   M.refreshOffers()
   local reserved, firstId, reason = 0, nil, nil
+  local representatives = {}
   for _, item in ipairs(list) do
-    local ok, msg, jobId = M.reserve(item.id, item.signature, true)
+    local ok, msg, jobId = M.reserve(item.id, item.signature, true, true)
     if not ok then
       reason = msg
       break
     end
     reserved = reserved + 1
     firstId = firstId or jobId
+    planRepresentative(representatives, state.jobs[jobId])
   end
   if reserved == 0 then return false, reason or "Nothing could be reserved." end
   if reserved < #list then
@@ -1167,21 +1358,33 @@ function M.plan(id)
     return true, "Plan removed."
   end
   local row = offers[id] or state.jobs[id]
-  if not row then return false, "This load is no longer available." end
+  if not row or isTerminal(state.jobs, id) then return false, "This load is no longer available." end
   local originalId = id
   if not row.status then id = nextId("plan") end
   state.plans[id] = deepcopy(row)
   state.plans[id].id = id
   state.plans[id].offerId = originalId
   remapFreightRouteJob(originalId, id)
-  state.stops[#state.stops + 1] =
-    { id = nextId("stop"), jobId = id, kind = "pickup", location = deepcopy(row.origin), name = row.from }
+  for _, stop in ipairs(state.stops) do
+    if stop.jobId == id then
+      pruneFinishedRoute()
+      M.optimizeStops()
+      return true, "Added to route."
+    end
+  end
+  local pickup = not row.status or needsPickup(row)
+  if pickup then
+    state.stops[#state.stops + 1] =
+      { id = nextId("stop"), jobId = id, kind = "pickup", location = deepcopy(row.origin), name = row.from }
+  end
   local destinations = kinds.forKind(row.kind).destinations(row)
   if not destinations[1] then destinations = { row.destination } end
   for _, loc in ipairs(destinations) do
     state.stops[#state.stops + 1] =
-      { id = nextId("stop"), jobId = id, kind = "delivery", location = deepcopy(loc), name = locationName(loc) }
+      { id = nextId("stop"), jobId = id, kind = "delivery", collected = not pickup or nil,
+        location = deepcopy(loc), name = locationName(loc) }
   end
+  M.optimizeStops()
   return true, "Added to route."
 end
 
@@ -1206,7 +1409,8 @@ function M.routeSummary()
     if d then total = total + d end
     prev = p.pos
   end
-  return { legs = legs, total = total, stops = #legs }
+  -- Empty Lua tables encode as objects in CEF; omit the list until a stop resolves.
+  return { legs = legs[1] and legs or nil, total = total, stops = #legs }
 end
 
 function M.showRoute()
@@ -1232,19 +1436,14 @@ end
 function M.optimizeStops()
   if #state.stops < 2 then return false, "Add more stops to order them." end
   local remaining, ordered, cur = deepcopy(state.stops), {}, playerPosition()
+  local pickups = {}
+  for _, stop in ipairs(remaining) do
+    if stop.kind == "pickup" then pickups[stop.jobId] = (pickups[stop.jobId] or 0) + 1 end
+  end
   while #remaining > 0 do
     local bestI, bestD = nil, nil
     for i, stop in ipairs(remaining) do
-      local blocked = false
-      if stop.kind == "delivery" then
-        for _, o in ipairs(remaining) do
-          if o ~= stop and o.jobId == stop.jobId and o.kind == "pickup" then
-            blocked = true
-            break
-          end
-        end
-      end
-      if not blocked then
+      if stop.kind ~= "delivery" or not pickups[stop.jobId] then
         local pos = position(stop.location)
         local d = pos and distance(cur, pos) or math.huge
         if not bestD or d < bestD then
@@ -1255,6 +1454,10 @@ function M.optimizeStops()
     if not bestI then break end
     local stop = table.remove(remaining, bestI)
     ordered[#ordered + 1] = stop
+    if stop.kind == "pickup" then
+      local count = pickups[stop.jobId] - 1
+      pickups[stop.jobId] = count > 0 and count or nil
+    end
     cur = position(stop.location) or cur
   end
   for _, stop in ipairs(remaining) do
@@ -1262,6 +1465,7 @@ function M.optimizeStops()
   end
   if not rules.validStopOrder(ordered) then return false, "Could not order the stops." end
   state.stops = ordered
+  if freightRouteIsPlan and freightRoute.isCurrent() then M.showRoute() end
   return true, "Stops ordered by shortest drive."
 end
 
@@ -1321,13 +1525,18 @@ function M.startHere(id, amount, containerKey, selectedCars, callback)
     for _, item in ipairs(M.getLoanerCatalog()) do
       if item.id == id then
         if not item.atPickup then return false, "Go to a facility with compatible loaner bays first." end
+        if overhaul_career_logistics_loanerVehicles.hasMarkedOffers() then
+          return false, "Finish the other vehicle collection first."
+        end
         local ok, message, rentalId = M.reserveRental(id)
         if not ok then return false, message end
         local completed = false
         local function done(success, reason)
           if completed then return end
           completed = true
-          if not success then M.cancelRental(rentalId) end
+          -- A spawn waiting on a blocked bay still carries this booking, so it is kept for that retry.
+          local queued = overhaul_career_logistics_loanerVehicles.hasMarkedOffers()
+          if not success and not queued then M.cancelRental(rentalId) end
           if callback then callback(success, reason) end
         end
         local started, reason = M.collectRental(rentalId, done)
@@ -1395,7 +1604,7 @@ function M.loadHere(items, callback)
         release()
         return false, "A parcel here is no longer available. Refresh and retry."
       end
-      local ok, msg, jobId = M.reserve(item.offer, item.signature, true)
+      local ok, msg, jobId = M.reserve(item.offer, item.signature, true, true)
       if not ok then
         release()
         return false, msg
@@ -1408,6 +1617,15 @@ function M.loadHere(items, callback)
   end
   local ok, message = M.pickupBatch(batch, function(done, msg)
     release()
+    local representatives = {}
+    for _, stop in ipairs(state.stops) do
+      local job = state.jobs[stop.jobId]
+      if job then representatives[#representatives + 1] = job end
+    end
+    for _, item in ipairs(batch) do
+      local job = state.jobs[item.id]
+      if job and job.status == "active" then planRepresentative(representatives, job) end
+    end
     if callback then callback(done, msg) end
   end)
   if not ok then release() end
@@ -1500,6 +1718,7 @@ function M.abandon(id)
   clearFreightRoute(id)
   refreshPois()
   overhaul_career_logistics_tasklist.sendCargoToTasklist()
+  pruneFinishedJobs()
   return true, "Work abandoned. Existing delivery penalties apply."
 end
 
@@ -1650,19 +1869,39 @@ function M.getLoanerFacilities()
   return out
 end
 
-local function rentalFacility(item)
+-- The first bay at least as long as the rental's bayLength (metres, from broker.json). Unsized bays still count.
+local function longEnoughSpot(spots, item)
+  local needed = item and tonumber(item.bayLength) or 0
+  -- Older bookings predate bay lengths; the current catalog owns collection sizing.
+  if item and item.catalogId then
+    for _, entry in ipairs(rentalCatalog()) do
+      if entry.id == item.catalogId then
+        needed = tonumber(entry.bayLength) or 0
+        break
+      end
+    end
+  end
+  for _, spot in ipairs(spots or {}) do
+    local length = spot.scl and tonumber(spot.scl.y)
+    if needed <= 0 or not length or length >= needed then return spot end
+  end
+end
+
+-- Collection needs a bay the vehicle fits in; a return may use any compatible bay.
+local function rentalFacility(item, forReturn)
   local locations = M.getLoanerFacilities()
   for _, location in ipairs(locations) do
     local fac = gen().getFacilityById(location.id)
     local profile = item and capabilities.getProfile(item)
     local spots = fac and (profile and profile.isTrailer and fac.loanerTrailerSpots or fac.loanerNonTrailerSpots)
-    if location.atDepot and (location.isDepot or (spots or {})[1]
+    local bay = forReturn and (spots or {})[1] or longEnoughSpot(spots, item)
+    if location.atDepot and (location.isDepot or bay
       or (not item and (fac.loanerTrailerSpots or {})[1])) then return fac, location.location end
   end
-  -- Old bookings retain their collection depot even if its authored role changed.
+  -- Old rentals remain returnable if their depot's authored role changed.
   local saved = item and item.map == mapId() and item.depotId and gen().getFacilityById(item.depotId)
   local location = depotLocation(saved)
-  if location and near(location) then return saved, location end
+  if forReturn and location and near(location) then return saved, location end
 end
 
 function M.isAtLoanerFacility(facId)
@@ -1762,7 +2001,7 @@ function M.getRentals()
     if r.status ~= "returned" then
       local row = deepcopy(r)
       row.vehicleSpawned = rentalVehicleSpawned(inventoryRental(id))
-      local fac = rentalFacility(row)
+      local fac = rentalFacility(row, row.status == "rented")
       row.atPickup, row.atDepot = fac ~= nil, fac ~= nil
       out[#out + 1] = row
     end
@@ -1822,7 +2061,7 @@ end
 function M.returnRental(id, callback)
   local r = state.rentals[id]
   if busy or not r then return false, "This rental is not available here." end
-  local fac, loc = rentalFacility(r)
+  local fac, loc = rentalFacility(r, true)
   if not fac then return false, "Go to a facility with compatible loaner bays first." end
   local invId = inventoryRental(id)
   if not invId then
@@ -1891,6 +2130,7 @@ function M.onBrokerCargoDelivered(cargoItems)
       presenceWatcher.invalidate()
     end
   end
+  pruneFinishedRoute()
 end
 
 function M.onBrokerVehicleDelivered(items)
@@ -1902,6 +2142,7 @@ function M.onBrokerVehicleDelivered(items)
       presenceWatcher.invalidate()
     end
   end
+  pruneFinishedRoute()
 end
 
 function M.onBrokerVehicleAbandoned(offer)
@@ -1912,6 +2153,7 @@ function M.onBrokerVehicleAbandoned(offer)
   end
   local oo = ownerOp()
   if oo and oo.onCarHaulOfferAbandoned then oo.onCarHaulOfferAbandoned(offer) end
+  pruneFinishedRoute()
 end
 
 function M.onRentalVehicleReturned(rentalId)

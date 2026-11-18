@@ -1,0 +1,73 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "scintilla/rls_proturbo_loworbit_04",
+    "configId": "rls_proturbo_loworbit_04",
+    "model": "scintilla",
+    "config": "/vehicles/scintilla/rls_proturbo_loworbit_04.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "roman_pearce",
+    "driverName": "Nina Chandler",
+    "builder": "Low Orbit Garage",
+    "classIds": [
+      "pro_turbo"
+    ],
+    "approvedClassIds": [
+      "pro_turbo"
+    ],
+    "leagueId": "pro_league",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "0eb718cd71bd6b4c8e29a38ee2ebe238ade6097249fc9cddf2640d8a86406b1c",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "6-speed sequential",
+      "induction": "Turbocharger",
+      "nitrous": false,
+      "years": {
+        "min": 2020,
+        "max": 2022
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_18x5",
+          "part": "tire_F_28_4_5_18_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_18x12_alt",
+          "part": "tire_R_28_13_5_18_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "scintilla_rollcage_hardtop",
+          "part": "scintilla_rollcage_hardtop"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 7.3498179585995,
+      "runId": "PT-030",
+      "evidenceConfigSHA256": "fc6ea41a818f13bcf5fb0d79e35074390edc1c3e0143cdef15244ff0470583a1",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/pro-turbo/final-results.json",
+      "acceptedConfig": "outputs/pro-turbo/accepted/rls_proturbo_loworbit_04/rls_proturbo_loworbit_04.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_pro_turbo"
+  }
+}

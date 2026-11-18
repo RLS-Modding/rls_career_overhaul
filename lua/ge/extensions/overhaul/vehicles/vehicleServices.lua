@@ -3,6 +3,7 @@
 local M = {}
 local vehicleCommands = require('overhaul/lib/vehicles/vehicleCommands')
 local vehicleCallbacks = require('overhaul/lib/vehicles/callbacks')
+local vehicleFreeze = require('overhaul/lib/vehicles/freeze')
 local vehicleRoles = require('common/overhaul/vehicleRoles')
 M.dependencies = {'overhaul_shell_patches'}
 
@@ -44,6 +45,7 @@ local function install()
 end
 
 local function uninstall()
+  vehicleFreeze.clear()
   active = false
   uninstallBridge()
   generation = math.max(generation + 1, math.floor(os.clock() * 1000000))
@@ -68,12 +70,26 @@ function M.onVehicleSwitched(_, id)
 end
 
 function M.onVehicleDestroyed(id)
+  vehicleFreeze.vehicleChanged(id)
   vehicles[id] = nil
   vehicleCallbacks.vehicleChanged(id, "destroyed")
 end
 
 function M.onVehicleReplaced(id)
+  vehicleFreeze.vehicleChanged(id)
   vehicleCallbacks.vehicleChanged(id, "replaced")
+end
+
+function M.onVehicleResetted(id)
+  vehicleFreeze.vehicleReset(id)
+end
+
+function M.onClientEndMission()
+  vehicleFreeze.clear()
+end
+
+function M.onUpdate(dtReal)
+  vehicleFreeze.update(dtReal)
 end
 
 function M.onOverhaulBeforeCareerActivate()

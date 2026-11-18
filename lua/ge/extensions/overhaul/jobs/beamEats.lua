@@ -402,26 +402,39 @@ local function findRestaurants()
   M.restaurantParkingSpotPaths = restaurantParkingSpotPaths
 end
 
+-- Sites files can reuse one name at several places, so the position is part of a destination's identity.
+local function deliverySpotKey(sitePath, spot)
+  local pos = spot.pos
+  return string.format("%s|%s@%.2f,%.2f,%.2f", sitePath, tostring(spot.name), pos.x, pos.y, pos.z)
+end
+
 local function collectDeliverySpots(collection, restaurantSpotsLookup, allParkingSpots, seen)
   local sitePath = levelData.assetPath(getCurrentLevelIdentifier(), collection.sitesFile)
   local siteData = sitePath and sitesManager().loadSites(sitePath, true, true)
-  local objects = siteData and siteData.parkingSpots and siteData.parkingSpots.objects
-  if not objects then
+  local parkingSpots = siteData and siteData.parkingSpots
+  -- sorted holds every spot, generated multi-spot children included; objects is keyed by runtime id.
+  local spots = parkingSpots and parkingSpots.sorted
+  if not spots then
     log("W", "beamEats", "Food destinations unavailable: " .. tostring(sitePath))
     return
   end
-  for _, spot in pairs(objects) do
+  -- Generated multi-spot children tie in the stock sort, so their order can change between loads; order by key.
+  local added = {}
+  for _, spot in ipairs(spots) do
     local tags = spot.customFields and spot.customFields.tags or {}
     local eligible = collection.allParkingSpots == true or tags.foodDeliveryDestination
-    local key = sitePath .. "|" .. tostring(spot.name)
-    if eligible and spot.name and spot.pos and not restaurantSpotsLookup[key] and not seen[key] then
+    local isRestaurantPickup = restaurantSpotsLookup[sitePath .. "|" .. tostring(spot.name)]
+    local key = spot.pos and deliverySpotKey(sitePath, spot)
+    if eligible and spot.name and key and not isRestaurantPickup and not seen[key] then
       local destination = {}
-      for key, value in pairs(spot) do destination[key] = value end
+      for field, value in pairs(spot) do destination[field] = value end
       destination.zoneName = spot.zoneName or (spot.customFields and spot.customFields.values and spot.customFields.values.zoneName) or collection.zoneName
-      allParkingSpots[#allParkingSpots + 1] = destination
+      added[#added + 1] = {key = key, destination = destination}
       seen[key] = true
     end
   end
+  table.sort(added, function(a, b) return a.key < b.key end)
+  for _, entry in ipairs(added) do allParkingSpots[#allParkingSpots + 1] = entry.destination end
 end
 
 local function findAllDeliveryParkingSpots()

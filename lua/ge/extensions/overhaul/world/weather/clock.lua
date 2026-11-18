@@ -3,6 +3,7 @@
 local model = require("overhaul/world/weather/model")
 
 local M = {}
+local VISUAL_CLOCK_HZ = 10
 
 -- The clock also runs before a level's environment preset loads and while it tears down.
 local function readClock()
@@ -48,6 +49,7 @@ function M.new(inputs)
   local environment = inputs.environment
   local persistence = inputs.persistence
   local callbacks = inputs.callbacks
+  local visualClockSlot = 0
 
   local function writeClock(values)
     -- Writes go through the environment API: BeamNG 0.39 exposes play through dynamic fields.
@@ -110,20 +112,26 @@ function M.new(inputs)
     runtime.clockBaseline = nil
     runtime.lastAppliedTimeOfDay = nil
     runtime.nativePlayRequested = false
+    visualClockSlot = 0
   end
 
   local function ownsClock()
     local state = runtime.state
-    return runtime.loaded and state and (runtime.careerActive or state.settings.dynamicWeather)
+    return runtime.loaded and state and runtime.careerActive
       and not runtime.externalOverride and not runtime.editorSuspended and runtime.editorSaveDepth == 0
   end
 
-  local function applyTimeOfDay()
+  local function applyTimeOfDay(slot)
     if not ownsClock() or not scenetree.tod then return end
     if not runtime.clockBaseline then runtime.clockBaseline = readClock() end
     local playing = nativePlay()
     runtime.nativePlayRequested = false
-    local engineTime = model.minuteToEngineTime(runtime.state.minuteOfDay)
+    visualClockSlot = slot or 0
+    local minute = runtime.state.minuteOfDay
+    if visualClockSlot > 0 then
+      minute = minute + visualClockSlot / VISUAL_CLOCK_HZ * forecast.gameMinutesPerRealSecond(minute)
+    end
+    local engineTime = model.minuteToEngineTime(minute)
     if runtime.lastAppliedTimeOfDay ~= engineTime or playing then
       local values = {time = engineTime}
       if playing then values.play = false end
@@ -132,13 +140,26 @@ function M.new(inputs)
     end
   end
 
+  local function updateVisualClock(elapsed)
+    if not runtime.state.playCycle or runtime.missionFrozen or runtime.externalOverride then return end
+    local slot = math.floor(elapsed * VISUAL_CLOCK_HZ)
+    if slot > visualClockSlot then applyTimeOfDay(slot) end
+  end
+
+  local function setMissionFrozen(frozen)
+    if runtime.missionFrozen and not frozen and ownsClock() and runtime.state.playCycle then
+      runtime.stateTimer:reset(visualClockSlot / VISUAL_CLOCK_HZ)
+    end
+    runtime.missionFrozen = frozen
+  end
+
   -- Only cheat mode or a valid devkey may cycle during career; the weather clock owns the sky otherwise.
-  local function canCycleTimeOfDay()
+  local function canCycleTimeOfDay(validateNow)
     if not runtime.careerActive then return true end
     if overhaul_career_economy_cheats and overhaul_career_economy_cheats.isCheatsMode and overhaul_career_economy_cheats.isCheatsMode() then
       return true
     end
-    if overhaul_shell_extensionManager and overhaul_shell_extensionManager.isDevKeyValid and overhaul_shell_extensionManager.isDevKeyValid() then
+    if overhaul_shell_extensionManager and overhaul_shell_extensionManager.isDevKeyValid and overhaul_shell_extensionManager.isDevKeyValid(validateNow) then
       return true
     end
     return false
@@ -162,7 +183,7 @@ function M.new(inputs)
       return
     end
 
-    if not canCycleTimeOfDay() then
+    if not canCycleTimeOfDay(true) then
       return
     end
 
@@ -174,7 +195,7 @@ function M.new(inputs)
     if runtime.writingClock or type(changes) ~= "table" then return end
     if boolean(changes.play) == true and ownsClock() then runtime.nativePlayRequested = true end
     if type(changes.time) ~= "number" then return end
-    if not runtime.lastAppliedTimeOfDay or not ownsClock() or not canCycleTimeOfDay() then return end
+    if not runtime.lastAppliedTimeOfDay or not ownsClock() or not canCycleTimeOfDay(true) then return end
     if math.abs(changes.time - nextCycleTime(runtime.lastAppliedTimeOfDay)) > 1e-4 then return end
     syncCycledTime(changes.time)
     -- Native notifications precede their write; the incoming play flag can overwrite our cycle correction.
@@ -193,7 +214,7 @@ function M.new(inputs)
     elseif state.playCycle and not runtime.missionFrozen then
       forecast.advanceMinutes(model.stateTickSeconds * forecast.gameMinutesPerRealSecond(state.minuteOfDay))
     end
-    applyTimeOfDay()
+    applyTimeOfDay(runtime.missionFrozen and visualClockSlot or nil)
     callbacks.updateCondition(false)
   end
 
@@ -236,6 +257,8 @@ function M.new(inputs)
     restoreClock = restoreClock,
     ownsClock = ownsClock,
     applyTimeOfDay = applyTimeOfDay,
+    updateVisualClock = updateVisualClock,
+    setMissionFrozen = setMissionFrozen,
     cycleTimeOfDay = cycleTimeOfDay,
     environmentChanged = environmentChanged,
     stateStep = stateStep,

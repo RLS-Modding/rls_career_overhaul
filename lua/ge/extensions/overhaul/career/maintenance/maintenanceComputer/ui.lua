@@ -31,7 +31,12 @@ function partFactory.new(inputs)
     local canAffordService = true
 
     if servicePrice > 0 then
-      canAffordService = overhaul_career_economy_payment.canPay({money = {amount = servicePrice, canBeNegative = false}})
+      local access = inputs.getDynoAccess and inputs.getDynoAccess(vehicleData.id)
+      if access then
+        canAffordService = access.canPay(servicePrice, {inventoryId = vehicleData.id})
+      else
+        canAffordService = overhaul_career_economy_payment.canPay({money = {amount = servicePrice, canBeNegative = false}})
+      end
     end
 
     return {
@@ -85,7 +90,7 @@ function partFactory.new(inputs)
       return {enabled = false}
     end
 
-    inventoryId = tonumber(inventoryId)
+    inventoryId = inputs.normalizeInventoryId and inputs.normalizeInventoryId(inventoryId) or tonumber(inventoryId)
     if not inventoryId then
       return {enabled = false}
     end
@@ -99,7 +104,10 @@ function partFactory.new(inputs)
       return {enabled = false}
     end
 
-    local vehicleUiData = overhaul_career_garage_inventory.getVehicleUiData(inventoryId) or inputs.deepCopy(vehicleData)
+    local access = inputs.getDynoAccess and inputs.getDynoAccess(inventoryId)
+    local owner = access and access.service(inventoryId)
+    local vehicleUiData = (not owner and overhaul_career_garage_inventory.getVehicleUiData(inventoryId)) or inputs.deepCopy(vehicleData)
+    local payer = owner and overhaul_career_economy_bank.getBusinessAccount('racingTeam', owner.businessId)
 
     local categories = buildInstalledCategories(vehicleData, maintenanceState, uiState)
     local tireShop = nil
@@ -114,7 +122,8 @@ function partFactory.new(inputs)
       vehicle = vehicleUiData,
       maintenanceProfile = inputs.deepCopy(maintenanceState.profile),
       categories = categories,
-      playerMoney = getPlayerMoney(),
+      playerMoney = owner and (payer and payer.balance or 0) or getPlayerMoney(),
+      payerLabel = owner and 'Racing Team account' or nil,
       sessionMode = computerState.sessionMode,
       tireShop = tireShop,
     }

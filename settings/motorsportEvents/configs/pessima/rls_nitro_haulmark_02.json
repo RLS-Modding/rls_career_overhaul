@@ -1,0 +1,73 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "pessima/rls_nitro_haulmark_02",
+    "configId": "rls_nitro_haulmark_02",
+    "model": "pessima",
+    "config": "/vehicles/pessima/rls_nitro_haulmark_02.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "bo_darrow",
+    "driverName": "Ezra Lockwood",
+    "builder": "Haulmark Racing",
+    "classIds": [
+      "spray_and_pray"
+    ],
+    "approvedClassIds": [
+      "spray_and_pray"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "d2dbb3780aa93206f8d93a04d0d60b8953bdad994bd4880d8567ddadf6342842",
+    "traits": {
+      "drivetrain": "AWD",
+      "transmission": "6-speed sequential",
+      "induction": "Naturally aspirated + nitrous",
+      "nitrous": true,
+      "years": {
+        "min": 1988,
+        "max": 1991
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_16x8",
+          "part": "tire_F_225_45_16_race",
+          "typeHint": null
+        },
+        {
+          "slot": "tire_R_16x8",
+          "part": "tire_R_225_45_16_race",
+          "typeHint": null
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "pessima_rollcage",
+          "part": "pessima_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.8598109765738,
+      "runId": null,
+      "evidenceConfigSHA256": "206e91fe3b8e0fcc66afee90f3716fa1bfc8edba06282424f5374661d7d76c22",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/nitrous/final-results.json",
+      "acceptedConfig": "outputs/nitrous/accepted/rls_nitro_haulmark_02/rls_nitro_haulmark_02.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_nitrous_builders"
+  }
+}

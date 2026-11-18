@@ -18,8 +18,6 @@ local transmissionSymptomFractions = {
   shiftDelay = {shiftSpeed = 0.82},
   slip = {friction = 1.06, dynamicFriction = 1.08, shiftSpeed = 0.88, lockTorque = 0.9, clutchFreePlay = 1.22}
 }
-local powerCapCheckMinAVRadPerS = 220
-local torqueCapToleranceNm = 0.001
 
 function M.create(inputs)
   local runtime, config, helpers, parts = inputs.runtime, inputs.config, inputs.helpers, inputs.parts
@@ -207,24 +205,19 @@ function M.create(inputs)
 
     local engine = entry.device
     local base = entry.base or {}
-    local baseMaxTorque = config.max(tonumber(base.maxTorque) or tonumber(engine.maxTorque) or 0, 0)
     local baseMaxPowerRaw = config.max(tonumber(base.maxPower) or tonumber(engine.maxPower) or 0, 0)
     local baseMaxPowerWatts = config.common.getBeamPowerWatts(baseMaxPowerRaw)
     local currentAV = config.max(config.abs(parts.environment.getNumericValue(engine.outputAV1 or engine.inputAV or engine.outputAV2)), 0)
     local redlineAV = config.max(tonumber(base.maxAV) or tonumber(engine.maxAV) or 0, 1)
     local rpmCapacity = currentAV / redlineAV
-    local torqueLimit = tonumber(engine.maxTorqueLimit) or base.originalMaxTorqueLimit or math.huge
-    local symptom = getRuntimeSymptom(runtimeCategory)
+    local torqueLimit = tonumber(engine.maxTorqueLimit) or math.huge
+    local output = engine.rlsMaintenanceOutput or {}
     local liveTorqueHoldCoef = config.engineCategory.getLiveTorqueHoldCoef(
       tonumber(derived and derived.torqueHoldCoef) or 1,
       tonumber(derived and derived.loadFactor) or 0,
       rpmCapacity
     )
-    local expectedTorqueCap = baseMaxTorque * liveTorqueHoldCoef * getEngineSymptomModifiers(symptom).torqueCoef
-    local powerCapActive = runtimeCategory and runtimeCategory.lastPowerLimitActive
-    if powerCapActive == nil then
-      powerCapActive = baseMaxPowerWatts > 0 and currentAV > powerCapCheckMinAVRadPerS and torqueLimit < (expectedTorqueCap - torqueCapToleranceNm)
-    end
+    local powerCapActive = runtimeCategory and runtimeCategory.lastPowerLimitActive == true or false
 
     return {
       currentAV = currentAV,
@@ -233,7 +226,10 @@ function M.create(inputs)
       baseMaxPowerRaw = baseMaxPowerRaw,
       baseMaxPowerWatts = baseMaxPowerWatts,
       liveTorqueHoldCoef = liveTorqueHoldCoef,
-      torqueLimitCoef = baseMaxTorque > 0 and torqueLimit / baseMaxTorque or nil,
+      torqueLimitCoef = output.engine or 1,
+      maintenanceOutputCoef = math.min(output.engine or 1, output.cooling or 1),
+      nativeTorqueLimit = torqueLimit < math.huge and torqueLimit or nil,
+      nativeTorqueLimitActive = torqueLimit < math.huge,
       frictionCoef = base.friction and base.friction ~= 0 and (tonumber(engine.friction) or base.friction) / base.friction or nil,
       dynamicFrictionCoef = base.dynamicFriction and base.dynamicFriction ~= 0 and
           (tonumber(engine.dynamicFriction) or base.dynamicFriction) / base.dynamicFriction or nil,
@@ -253,10 +249,9 @@ function M.create(inputs)
 
     local engine = entry.device
     local base = entry.base or {}
-    local baseMaxTorque = config.max(tonumber(base.maxTorque) or tonumber(engine.maxTorque) or 0, 0)
-    local torqueLimit = tonumber(engine.maxTorqueLimit) or base.originalMaxTorqueLimit or math.huge
+    local output = engine.rlsMaintenanceOutput or {}
     return {
-      torqueLimitCoef = baseMaxTorque > 0 and torqueLimit / baseMaxTorque or nil,
+      torqueLimitCoef = output.cooling or 1,
       powerLimitActive = runtimeCategory and runtimeCategory.lastPowerLimitActive == true or false,
       powerLimitReason = runtimeCategory and runtimeCategory.lastPowerLimitReason or nil,
       frictionCoef = base.friction and base.friction ~= 0 and (tonumber(engine.friction) or base.friction) / base.friction or nil,

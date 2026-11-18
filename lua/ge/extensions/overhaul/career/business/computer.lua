@@ -416,6 +416,7 @@ M.onVehicleWheelDataUpdate = parts.tuning.onVehicleWheelDataUpdate
 M.getBusinessAccountBalance = parts.purchase.getBusinessAccountBalance
 M.getBusinessXP = parts.purchase.getBusinessXP
 M.purchaseCartItems = parts.purchase.purchaseCartItems
+M.getPartsPaymentContext = parts.purchase.getPartsPaymentContext
 M.installPartOnVehicle = parts.tuning.installPartOnVehicle
 M.initializePreviewVehicle = parts.tuning.initializePreviewVehicle
 M.applyTuningToVehicle = parts.tuning.applyTuningToVehicle

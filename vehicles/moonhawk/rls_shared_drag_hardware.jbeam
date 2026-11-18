@@ -1,0 +1,124 @@
+{
+  "rls_moonhawk_engine_internals_v8_big_stage4_block": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Heavy Duty Block", "value":33500},
+    "slotType": "moonhawk_engine_internals_v8_big",
+    "mainEngine": {
+      "maxTorqueRating": 5450,
+      "maxOverTorqueDamage": 1000,
+      "cylinderWallTemperatureDamageThreshold": 180,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1500000,
+      "pistonRingDamageThreshold": 1500000,
+      "connectingRodDamageThreshold": 2000000,
+      "maxPhysicalRPM": 7500
+    },
+    "flexbodies": [
+      ["mesh", "[group]:", "nonFlexMaterials"],
+      ["moonhawk_valvecover_v8_bigblock_performance", ["moonhawk_engine"]]
+    ]
+  },
+  "rls_moonhawk_engine_internals_v8_mid_stage4_block": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Heavy Duty Block", "value":29000},
+    "slotType": "moonhawk_engine_internals_v8_mid",
+    "mainEngine": {
+      "maxTorqueRating": 4500,
+      "maxOverTorqueDamage": 1000,
+      "cylinderWallTemperatureDamageThreshold": 180,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1500000,
+      "pistonRingDamageThreshold": 1500000,
+      "connectingRodDamageThreshold": 2000000,
+      "maxPhysicalRPM": 7250
+    },
+    "flexbodies": [
+      ["mesh", "[group]:", "nonFlexMaterials"],
+      ["moonhawk_valvecover_v8_bigblock_performance", ["moonhawk_engine"]]
+    ]
+  },
+  "rls_moonhawk_engine_internals_v8_big_stage4_performance": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Performance Block", "value":36000},
+    "slotType": "moonhawk_engine_internals_v8_big",
+    "mainEngine": {
+      "torqueModMult": [
+        ["rpm", "torque"],
+        [0, 1],
+        [500, 1.05],
+        [1000, 1.1],
+        [1500, 1.15],
+        [2000, 1.2577142857142856],
+        [2500, 1.3474285714285714],
+        [3000, 1.4287142857142858],
+        [3500, 1.532857142857143],
+        [4000, 1.6821428571428572],
+        [4500, 1.8457142857142856],
+        [5000, 2.079],
+        [5500, 2.398000000000001],
+        [6000, 2.7170000000000005],
+        [6500, 3.1130000000000004],
+        [7000, 3.63],
+        [7500, 4.840000000000001],
+        [8000, 5.83]
+      ],
+      "$+maxRPM": 2000,
+      "$*friction": 1.05,
+      "$*dynamicFriction": 1.05,
+      "$*inertia": 1.2,
+      "$*engineBrakeTorque": 1.6,
+      "maxTorqueRating": 5450,
+      "maxOverTorqueDamage": 1000,
+      "cylinderWallTemperatureDamageThreshold": 180,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1500000,
+      "pistonRingDamageThreshold": 1500000,
+      "connectingRodDamageThreshold": 2000000,
+      "maxPhysicalRPM": 7500
+    },
+    "flexbodies": [
+      ["mesh", "[group]:", "nonFlexMaterials"],
+      ["moonhawk_valvecover_v8_bigblock_performance", ["moonhawk_engine"]]
+    ]
+  },
+  "rls_moonhawk_engine_internals_v8_mid_stage4_performance": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Performance Block", "value":31500},
+    "slotType": "moonhawk_engine_internals_v8_mid",
+    "mainEngine": {
+      "torqueModMult": [
+        ["rpm", "torque"],
+        [0, 1],
+        [500, 1.1],
+        [1000, 1.13],
+        [1500, 1.18],
+        [2000, 1.2678571428571428],
+        [2500, 1.3474285714285714],
+        [3000, 1.439142857142857],
+        [3500, 1.5222857142857142],
+        [4000, 1.5857142857142856],
+        [4500, 1.672],
+        [5000, 1.793],
+        [5500, 2.0240000000000005],
+        [6000, 2.2880000000000003],
+        [6500, 2.5850000000000004],
+        [7000, 3.0250000000000004],
+        [7500, 3.5200000000000005],
+        [8000, 3.850000000000001]
+      ],
+      "$+maxRPM": 1750,
+      "$*friction": 1.05,
+      "$*dynamicFriction": 1.05,
+      "$*inertia": 1.2,
+      "$*engineBrakeTorque": 1.6,
+      "maxTorqueRating": 4500,
+      "maxOverTorqueDamage": 1000,
+      "cylinderWallTemperatureDamageThreshold": 180,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1500000,
+      "pistonRingDamageThreshold": 1500000,
+      "connectingRodDamageThreshold": 2000000,
+      "maxPhysicalRPM": 7250
+    },
+    "flexbodies": [
+      ["mesh", "[group]:", "nonFlexMaterials"],
+      ["moonhawk_valvecover_v8_bigblock_performance", ["moonhawk_engine"]]
+    ]
+  }
+}

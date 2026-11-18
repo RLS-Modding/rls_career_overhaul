@@ -1,0 +1,26 @@
+{
+  "Configuration": "Reed Talon - No Prep",
+  "Description": "Family Business. Tier 1 racer. Highway no-prep quarter-mile: 12.857s at 109.42mph. Gravel Union. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Gravel Union",
+  "Name": "Reed Talon",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 10.796931150924,
+    "time_1_4": 12.856694703453,
+    "time_1_8": 8.3755499498387,
+    "time_330": 5.5597710781631,
+    "time_60": 2.0785430937375,
+    "velAt_1_4": 48.917000990383,
+    "velAt_1_8": 39.664645076342
+  },
+  "Reaction Time": 0.33262859152451,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

@@ -72,12 +72,16 @@ function part.new(inputs)
       local dealer = eligibleDealers[dealerIdx]
       local accepted = inputs.catalog.getDealerAcceptedFilters(dealer)
       local filters = inputs.catalog.intersectFilters(distributorFilters, accepted)
-      if not filters[1] and not (distributor.ownerOpCarHauling and distributor.ownerOpCarHauling.vehicleFilters) then
+      local gen=overhaul_career_logistics_generator
+      local salesDealerId=gen and gen.getVehicleSalesDealerId and gen.getVehicleSalesDealerId(dealer)
+      if salesDealerId then
+        filters=distributorFilters
+      elseif not filters[1] and not (distributor.ownerOpCarHauling and distributor.ownerOpCarHauling.vehicleFilters) then
         filters = accepted
       end
       if filters[1] then
         local filterId = filters[((seed + #vehicles + tries) % #filters) + 1]
-        local rolled = inputs.catalog.rollVehicleFromFilter(filterId)
+        local rolled = inputs.catalog.rollVehicleFromFilter(filterId,salesDealerId)
         local destPs = inputs.catalog.dealerDropPsPath(dealer)
         if rolled and destPs then
           i = i + 1
@@ -89,6 +93,8 @@ function part.new(inputs)
             thumbnail = rolled.thumbnail,
             filterId = rolled.filterId,
             filterName = rolled.filterName,
+            mileage = rolled.mileage,
+            salesDealerId = rolled.salesDealerId,
             unlockTag = rolled.unlockTag,
             destFacId = dealer.id,
             destFacName = dealer.name or dealer.id,
@@ -204,8 +210,19 @@ function part.new(inputs)
   -- Refills sources without an available haul but with a usable staging bay; multipliers clamp to 1–2, routes and counts vary.
   local function addDistributorContracts(distributors, dealers, now)
     local available = {}
-    for _, contract in pairs(inputs.state.contracts) do
-      if contract.kind == inputs.carHaulKind then available[contract.originFacId] = true end
+    local gen=overhaul_career_logistics_generator
+    for id,contract in pairs(inputs.state.contracts)do
+      if contract.kind==inputs.carHaulKind then
+        local stale=false
+        if not inputs.state.active or inputs.state.active.id~=contract.id then
+          for _,vehicle in ipairs(contract.vehicles or{})do
+            local fac=gen and gen.getFacilityById and gen.getFacilityById(vehicle.destFacId)
+            local dealerId=gen and gen.getVehicleSalesDealerId and gen.getVehicleSalesDealerId(fac)
+            if dealerId and vehicle.salesDealerId~=dealerId then stale=true;break end
+          end
+        end
+        if stale then inputs.state.contracts[id]=nil else available[contract.originFacId]=true end
+      end
     end
     for di, distributor in ipairs(distributors) do
       if dealers[1] and not available[distributor.id] and inputs.catalog.distributorStagingPads(distributor)[1] then

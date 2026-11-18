@@ -1,0 +1,26 @@
+{
+  "Configuration": "Travis Marlow - No Prep",
+  "Description": "Juniper County. Tier 3 racer. Highway no-prep quarter-mile: 10.826s at 138.64mph. Heritage Speed. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Heritage Speed",
+  "Name": "Travis Marlow",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 9.1928910416691,
+    "time_1_4": 10.826304709458,
+    "time_1_8": 7.2555040840193,
+    "time_330": 4.9517254726936,
+    "time_60": 1.9131953918238,
+    "velAt_1_4": 61.97945602224,
+    "velAt_1_8": 49.33865250414
+  },
+  "Reaction Time": 0.30444345273579,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

@@ -687,6 +687,9 @@ local function newTravelHooks(context, session, start, toggleCareerModules, acti
   -- Stops the career: its modules unload, its pending choices clear, and the HUD tasklist hides.
   local function deactivateCareer(saveCareer)
     if not session.active then return end
+    -- Persistent vehicle services release Career effects before their ownership
+    -- records and modules are retired, including a same-level return to freeroam.
+    extensions.hook('onOverhaulBeforeCareerDeactivate')
     context.publish("onUpdate", nil)
     -- A stopped career retires its handoff recovery and welcome splash.
     session.loadingSplashToken = nil
@@ -769,6 +772,7 @@ local function newTravelHooks(context, session, start, toggleCareerModules, acti
     session.lastLevelSwitchResult = {phase = "inProgress"}
     travel.begin(currentLevel, nextLevel)
 
+    extensions.hook("onOverhaulPrepareCareerLevelSwitch", currentLevel, nextLevel)
     extensions.hook("onOverhaulBeforeCareerLevelSwitch", currentLevel, nextLevel)
     travel.startLevelSwitchSaveWatchdog(session.levelSwitchSequence)
     -- Leaving the map requires a checkpoint even when periodic autosaves are disabled.

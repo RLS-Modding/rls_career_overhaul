@@ -530,7 +530,23 @@ local function installPackageTrees(helpers, inputs)
     return result
   end
 
-  function helpers.makeConfigTree(node, basePath, slotId)
+  -- Slot names a part declares. Like the game's slot system, slots2 wins over the older slots layout
+  -- (the game's loader already converts slots to slots2; the fallback covers other getPart sources).
+  function helpers.declaredSlotNames(ioCtx, partName)
+    local names = {}
+    local partData = ioCtx and partName and inputs.jbeamIO.getPart(ioCtx, partName)
+    local slots = type(partData) == "table" and (partData.slots2 or partData.slots)
+    for _, slot in ipairs(type(slots) == "table" and slots or {}) do
+      local name = type(slot) == "table" and (slot.name or slot.type)
+      if type(name) == "string" and name ~= "" then names[#names + 1] = name end
+    end
+    return names
+  end
+
+  -- The vehicle config for a package tree. A package holds every part of its engine, so with an ioCtx
+  -- each slot a package part declares but the package leaves empty is written as empty; otherwise the
+  -- spawn fills it with the slot's default part (an exhaust the player removed comes back for free).
+  function helpers.makeConfigTree(node, basePath, slotId, ioCtx)
     local result = {
       id = slotId or node.relativeSlot,
       chosenPartName = node.name,
@@ -540,7 +556,13 @@ local function installPackageTrees(helpers, inputs)
       children = {}
     }
     for slotName, child in pairs(node.children or {}) do
-      result.children[slotName] = helpers.makeConfigTree(child, basePath .. slotName .. "/", slotName)
+      result.children[slotName] = helpers.makeConfigTree(child, basePath .. slotName .. "/", slotName, ioCtx)
+    end
+    for _, slotName in ipairs(helpers.declaredSlotNames(ioCtx, node.name)) do
+      if not result.children[slotName] then
+        result.children[slotName] = {id = slotName, chosenPartName = "", path = basePath .. slotName .. "/",
+          decisionMethod = "user", children = {}}
+      end
     end
     return result
   end

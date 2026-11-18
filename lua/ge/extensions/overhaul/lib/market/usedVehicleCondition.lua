@@ -42,6 +42,8 @@ local function remanufacturedMileage(seller)
 end
 
 local profileCatalog
+-- Config Type tags arrive in any case ("RACE", "race"), so category lookups use lowercase keys.
+local categoryByLowercaseConfigType = {}
 
 local function validProfile(profile)
   if type(profile) ~= 'table' then return false end
@@ -65,6 +67,11 @@ local function conditionPolicies()
       log('W', 'usedVehicleCondition', 'Ignoring invalid profile: ' .. tostring(id))
       data.profiles[id] = nil
     end
+  end
+  local configTypes = type(data.categoryProfiles) == 'table' and data.categoryProfiles.configTypes
+  categoryByLowercaseConfigType = {}
+  for configType, category in pairs(type(configTypes) == 'table' and configTypes or {}) do
+    if type(configType) == 'string' then categoryByLowercaseConfigType[string.lower(configType)] = category end
   end
   profileCatalog = data
   return profileCatalog
@@ -92,7 +99,8 @@ local function profileForVehicle(seller, vehicleInfo)
   end
   if explicit and not seller.usedVehicleCategoryOverrides then return explicit end
   local categories = catalog.categoryProfiles or {}
-  local category = (categories.configTypes or {})[vehicleInfo['Config Type']]
+  local configType = vehicleInfo['Config Type']
+  local category = (type(configType) == 'string' and categoryByLowercaseConfigType[string.lower(configType)])
     or (categories.bodyStyles or {})[vehicleInfo['Body Style']]
   local channel = (catalog.channelProfiles or {})[seller.salesChannel]
   return catalog.profiles[category] or explicit or catalog.profiles[channel] or {}

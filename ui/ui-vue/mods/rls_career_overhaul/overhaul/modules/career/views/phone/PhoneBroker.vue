@@ -8,25 +8,28 @@
       <h2 data-broker-scope>{{ heading }}</h2>
       <BrokerExpand />
     </header>
-    <div data-broker-scope v-if="s.data.employed" class="empty employed-state">
+    <div data-broker-scope v-if="s.data.locked" class="empty"><p data-broker-scope>{{ s.data.lockReason }}</p></div>
+    <div data-broker-scope v-else-if="s.data.employed && !s.data.restricted" class="empty employed-state">
       <span data-broker-scope class="empty-badge"><BngIcon data-broker-scope :type="icons.badge" /></span>
       <p data-broker-scope class="employed-copy">You have a job right now. You need to be unemployed to take independent work.</p>
       <button data-broker-scope class="primary" @click="openEmployment">Open Employment</button>
     </div>
     <div data-broker-scope v-else-if="!s.loaded" class="empty"><p data-broker-scope>Loading available work…</p><button data-broker-scope @click="refreshBroker">Try again</button></div>
     <template v-else>
+      <p data-broker-scope v-if="s.data.restricted" class="intro">{{ s.data.lockReason }}</p>
       <section data-broker-scope v-if="s.view === 'markets'" class="market-body scroll" v-bng-ui-nav-scroll>
         <div data-broker-scope class="view-bar"><p data-broker-scope class="intro">Choose your market</p><BrokerExpand v-if="!s.expanded" /></div>
+        <BrokerFilterSummary scope-only />
         <div data-broker-scope class="market-grid"><button data-broker-scope v-for="m in markets" :key="m.id" class="market-tile" :class="{ last: s.preferences.last === m.id }" @click="s.chooseMarket(m.id)">
           <span data-broker-scope class="tile-img"><img data-broker-scope :src="marketImage(m.id)" alt="" loading="lazy" /><BngIcon data-broker-scope class="tile-glyph" :type="marketIcon(m.id)" /></span>
           <span data-broker-scope class="tile-copy"><strong data-broker-scope>{{ m.name }}</strong><span data-broker-scope>{{ m.hint }}</span></span>
-          <span data-broker-scope class="pill" :class="s.data.offers.some(r => r.market === m.id) ? 'accent' : 'muted'">{{ loadCount(groupedOfferCount(s.data.offers.filter(r => r.market === m.id))) }}</span>
+          <span data-broker-scope v-if="s.hasMarketFilters(m.id)" class="market-filter-label">Filtered</span><span data-broker-scope class="pill" :class="s.data.offers.some(r => r.market === m.id) ? 'accent' : 'muted'">{{ loadCount(s.marketCount(m.id)) }}</span>
         </button></div>
-        <button data-broker-scope class="browse-all" @click="s.chooseMarket('all')">Browse all work <span data-broker-scope class="pill">{{ loadCount(groupedOfferCount(s.data.offers)) }}</span></button>
+        <button data-broker-scope class="browse-all" @click="s.chooseMarket('all')">Browse all work <span data-broker-scope v-if="s.hasMarketFilters('all')" class="market-filter-label">Filtered</span><span data-broker-scope class="pill">{{ loadCount(s.marketCount('all')) }}</span></button>
       </section>
       <BrokerWork @vue:mounted="focusView" v-else-if="s.view === 'loads' || s.view === 'jobs'" />
       <BrokerLoaners @vue:mounted="focusView" v-else-if="s.view === 'loaners'" />
-      <nav data-broker-scope class="nav"><button data-broker-scope :class="{ active: ['markets','loads'].includes(s.view) }" @click="s.view = 'markets'; s.selected = null"><BngIcon data-broker-scope :type="icons.search" /><span data-broker-scope>Loads</span></button><button data-broker-scope :class="{ active: s.view === 'jobs' }" @click="s.view = 'jobs'; s.selected = null"><BngIcon data-broker-scope :type="icons.listIndented" /><span data-broker-scope>My Loads</span></button><button data-broker-scope :class="{ active: s.view === 'loaners' }" @click="s.view = 'loaners'; s.selected = null"><BngIcon data-broker-scope :type="icons.carCoins" /><span data-broker-scope>Loaners</span></button></nav>
+      <nav data-broker-scope class="nav"><button data-broker-scope v-if="!s.data.restricted" :class="{ active: ['markets','loads'].includes(s.view) }" @click="s.view = 'markets'; s.selected = null"><BngIcon data-broker-scope :type="icons.search" /><span data-broker-scope>Loads</span></button><button data-broker-scope :class="{ active: s.view === 'jobs' }" @click="s.view = 'jobs'; s.selected = null"><BngIcon data-broker-scope :type="icons.listIndented" /><span data-broker-scope>My Loads</span></button><button data-broker-scope :class="{ active: s.view === 'loaners' }" @click="s.view = 'loaners'; s.selected = null"><BngIcon data-broker-scope :type="icons.carCoins" /><span data-broker-scope>{{ s.data.restricted ? 'Rentals' : 'Loaners' }}</span></button></nav>
     </template>
     <button data-broker-scope v-if="s.message" class="message" aria-live="polite" @click="s.message = ''">{{ s.message }} <span data-broker-scope>×</span></button>
   </div>
@@ -37,9 +40,10 @@ import { vBngOnUiNav, vBngUiNavScroll } from '@/common/directives'
 import { defineAsyncComponent, provide } from 'vue'
 import { useBrokerScreen } from './broker/useBrokerScreen'
 import BrokerExpand from './broker/BrokerExpand.vue'
+import BrokerFilterSummary from './broker/BrokerFilterSummary.vue'
 const context = useBrokerScreen()
 provide(Symbol.for('overhaul.phoneBroker'), context)
-const { focusView, screenRef, changeTab, BngIcon, icons, groupedOfferCount, markets, s, openEmployment, heading, marketIcon, marketImage, loadCount, refreshBroker } = context
+const { focusView, screenRef, changeTab, BngIcon, icons, markets, s, openEmployment, heading, marketIcon, marketImage, loadCount, refreshBroker } = context
 const BrokerLoaners = defineAsyncComponent(() => import('./broker/BrokerLoaners.vue'))
 const BrokerWork = defineAsyncComponent(() => import('./broker/BrokerWork.vue'))
 </script>
@@ -144,11 +148,28 @@ to { transform: rotate(360deg);
 }
 .market-tile .tile-copy span[data-broker-scope] { color: var(--muted); font-size: 0.9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.market-tile .pill[data-broker-scope] { flex: 0 0 auto;
+.market-tile .pill[data-broker-scope] { flex: 0 0 auto; font-variant-numeric: tabular-nums;
 }
 .browse-all[data-broker-scope] { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-top: 0.6em; padding: 0.8em 0.9em !important;
 }
-.browse-all .pill[data-broker-scope] { font-size: 0.8em;
+.browse-all .pill[data-broker-scope] { font-size: 0.8em; font-variant-numeric: tabular-nums;
+}
+
+/* A count narrowed by the pickup scope or saved filters is labelled as a key
+   beside its count, the way facts are labelled on a load. Only labelled tiles
+   change layout, so the label never costs the market name any width. */
+.market-filter-label[data-broker-scope] { flex: 0 0 auto; font-size: max(0.6875rem, 0.68em); font-weight: 700; letter-spacing: 0.09em; line-height: 1; text-transform: uppercase; white-space: nowrap; color: color-mix(in srgb, var(--accent) 50%, white);
+}
+.browse-all .market-filter-label[data-broker-scope] { margin: 0 0.6em 0 auto;
+}
+/* Phone row: the label stacks over the count at the right edge. */
+.broker:not(.expanded) .market-tile[data-broker-scope]:has(.market-filter-label) { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-rows: auto auto; gap: 0.25em 0.7em;
+}
+.broker:not(.expanded) .market-tile:has(.market-filter-label) > .tile-img[data-broker-scope], .broker:not(.expanded) .market-tile:has(.market-filter-label) > .tile-copy[data-broker-scope] { grid-row: 1 / -1;
+}
+.broker:not(.expanded) .market-tile > .market-filter-label[data-broker-scope] { grid-area: 1 / 3; align-self: end; justify-self: end;
+}
+.broker:not(.expanded) .market-tile:has(.market-filter-label) > .pill[data-broker-scope] { grid-area: 2 / 3; align-self: start; justify-self: end;
 }
 
 /* ---- bottom nav */
@@ -249,6 +270,15 @@ to { transform: rotate(360deg);
 .expanded.market-home .market-tile .pill[data-broker-scope] { margin: 0 0.8em 0.7em;
 }
 .expanded.market-home .market-tile strong[data-broker-scope] { font-size: 1.25em;
+}
+/* Wide card: the label sits on the count's row, after it. */
+.expanded.market-home .market-tile[data-broker-scope]:has(.market-filter-label) { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto 1fr auto;
+}
+.expanded.market-home .market-tile:has(.market-filter-label) > .tile-img[data-broker-scope], .expanded.market-home .market-tile:has(.market-filter-label) > .tile-copy[data-broker-scope] { grid-column: 1 / -1;
+}
+.expanded.market-home .market-tile:has(.market-filter-label) > .pill[data-broker-scope] { grid-area: 3 / 1;
+}
+.expanded.market-home .market-tile > .market-filter-label[data-broker-scope] { grid-area: 3 / 2; align-self: center; justify-self: start; margin: 0 0.8em 0.7em -0.4em;
 }
 .expanded.market-home .browse-all[data-broker-scope] { margin-top: 0.9em; padding: 1em 1.1em !important; font-size: 1.05em;
 }

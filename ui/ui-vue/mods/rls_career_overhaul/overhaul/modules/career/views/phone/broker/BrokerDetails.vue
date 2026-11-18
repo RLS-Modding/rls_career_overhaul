@@ -79,11 +79,11 @@
             <template v-else-if="s.selectedRow.status !== 'complete' && nextStep">
               <div data-broker-scope class="next-step"><span data-broker-scope class="kicker">Next</span><span data-broker-scope class="next-step-text">{{ nextStep.hint }}</span></div>
               <button data-broker-scope class="primary" :disabled="working || nextStep.disabled" @click="nextStep.run()">{{ nextStep.label }}</button>
-              <button data-broker-scope v-if="nextStep.key !== 'toPickup'" :disabled="working" @click="s.action('navigate', { id: s.selectedRow.id, leg: 'pickup' })">Navigate to pickup</button>
-              <button data-broker-scope v-if="s.selectedRow.atPickup && s.selectedRow.kind !== 'parcel' && !['stage', 'collect', 'load'].includes(nextStep.key)" :disabled="working || s.selectedRow.kind === 'parcel' && !container" @click="collect">{{ s.selectedRow.kind === 'cars' ? 'Stage selected vehicles' : 'Collect load' }}</button>
+              <button data-broker-scope v-if="s.selectedRow.hasPendingPickup && nextStep.key !== 'toPickup'" :disabled="working" @click="s.action('navigate', { id: s.selectedRow.id, leg: 'pickup' })">Navigate to pickup</button>
+              <button data-broker-scope v-if="s.selectedRow.hasPendingPickup && s.selectedRow.atPickup && s.selectedRow.kind !== 'parcel' && !['stage', 'collect', 'load'].includes(nextStep.key)" :disabled="working || s.selectedRow.kind === 'parcel' && !container" @click="collect">{{ s.selectedRow.kind === 'cars' ? 'Stage selected vehicles' : 'Collect load' }}</button>
               <button data-broker-scope v-if="!['toDelivery', 'deliver'].includes(nextStep.key)" :disabled="working" @click="s.action('navigate', { id: s.selectedRow.id, leg: 'delivery' })">Navigate to delivery</button>
               <button data-broker-scope v-if="s.selectedRow.status === 'reserved'" :disabled="working" @click="cancelReservation">Cancel reservation</button>
-              <button data-broker-scope @click="s.action('plan', { id: s.selectedRow.id })">{{ s.data.plans[s.selectedRow.id] ? 'Remove from route' : 'Add to route' }}</button>
+              <button data-broker-scope v-if="!s.data.restricted" @click="s.action('plan', { id: s.selectedRow.id })">{{ s.data.plans[s.selectedRow.id] ? 'Remove from route' : 'Add to route' }}</button>
               <button data-broker-scope v-if="s.selectedRow.status === 'active'" :disabled="working" @click="abandon">{{ confirmingAbandon ? `Confirm abandon, ${money(abandonFine)}` : 'Abandon work' }}</button><small data-broker-scope v-if="confirmingAbandon">Existing delivery fines and reputation rules apply.</small>
             </template>
           </div></section>

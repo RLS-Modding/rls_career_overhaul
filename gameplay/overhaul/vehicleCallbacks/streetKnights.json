@@ -1,0 +1,12 @@
+{
+  "id": "streetKnights",
+  "order": 115,
+  "callbacks": [
+    {"id": "streetKnightsRecovery", "extension": "overhaul_career_economy_streetKnights", "fn": "requestRecovery", "guard": "function"},
+    {"id": "streetKnightsHomeRecovery", "extension": "overhaul_career_economy_streetKnights", "fn": "requestHomeRecovery", "guard": "function"},
+    {"id": "streetKnightsContact", "extension": "overhaul_events_streetKnightsDrag", "fn": "contact", "guard": "function"},
+    {"id": "streetKnightsOpponentReady", "extension": "overhaul_events_streetKnightsDrag", "fn": "opponentReady", "guard": "function"},
+    {"id": "streetChallengePerformance", "extension": "overhaul_career_economy_streetChallenges", "fn": "receivePerformance", "guard": "function"},
+    {"id": "streetKnightsBossPerformance", "extension": "overhaul_career_economy_streetKnights", "fn": "receiveBossPerformance", "guard": "function"}
+  ]
+}

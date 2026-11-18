@@ -48,7 +48,19 @@ local function isMaintenanceEnabled()
 end
 
 local function getVehicleData(inventoryId)
+  local session = computerState.sessionMode == 'dyno' and capabilities.peek('businessSession')
+  local access = session and session.getVehicleAccess and session.getVehicleAccess(inventoryId)
+  if access then return access.inventory.getVehicle(inventoryId) end
   return overhaul_career_garage_inventory.getVehicle(tonumber(inventoryId))
+end
+
+local function getDynoAccess(id)
+  local session = computerState.sessionMode == 'dyno' and capabilities.peek('businessSession')
+  return session and session.getVehicleAccess and session.getVehicleAccess(id) or nil
+end
+
+local function normalizeInventoryId(id)
+  return getDynoAccess(id) and id or tonumber(id)
 end
 
 local function getBusinessVehicleData(businessId, vehicleId)
@@ -56,6 +68,8 @@ local function getBusinessVehicleData(businessId, vehicleId)
 end
 
 local function markVehicleDirty(inventoryId)
+  local access = getDynoAccess(inventoryId)
+  if access then return access.inventory.setVehicleDirty(inventoryId) end
   overhaul_career_garage_inventory.setVehicleDirty(tonumber(inventoryId))
 end
 
@@ -145,6 +159,7 @@ local parts = {}
 
 local partInputs = {
   quotes = {
+    getDynoAccess = getDynoAccess,
     state = computerState,
     config = config,
     deepCopy = deepcopy,
@@ -165,6 +180,8 @@ local partInputs = {
     ensureMaintenanceComputerState = ensureMaintenanceComputerState,
     getBusinessVehicleData = getBusinessVehicleData,
     getVehicleData = getVehicleData,
+    getDynoAccess = getDynoAccess,
+    normalizeInventoryId = normalizeInventoryId,
     isMaintenanceEnabled = isMaintenanceEnabled,
     markVehicleDirty = markVehicleDirty,
     normalizeVehicleMaintenanceState = normalizeVehicleMaintenanceState,
@@ -172,6 +189,8 @@ local partInputs = {
     roundPercent = roundPercent,
   },
   ui = {
+    getDynoAccess = getDynoAccess,
+    normalizeInventoryId = normalizeInventoryId,
     parts = parts,
     state = computerState,
     config = config,
@@ -184,6 +203,8 @@ local partInputs = {
     roundPercent = roundPercent,
   },
   cart = {
+    getDynoAccess = getDynoAccess,
+    normalizeInventoryId = normalizeInventoryId,
     parts = parts,
     state = computerState,
     DYNO_MAINTENANCE_CATEGORIES = DYNO_MAINTENANCE_CATEGORIES,
@@ -206,10 +227,10 @@ local function openMenuFromComputer(inventoryId, computerId, _returnRoute, optio
     return false
   end
 
-  computerState.activeInventoryId = tonumber(inventoryId)
+  computerState.sessionMode = type(options) == "table" and options.mode or nil
+  computerState.activeInventoryId = normalizeInventoryId(inventoryId)
   computerState.originComputerId = computerId
   returnRoute = _returnRoute
-  computerState.sessionMode = type(options) == "table" and options.mode or nil
   if not computerState.activeInventoryId then
     computerState.sessionMode = nil
     return false

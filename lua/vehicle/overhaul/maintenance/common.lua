@@ -494,7 +494,65 @@ local function pickDuration(minSeconds, maxSeconds)
   return lerp(minSeconds, maxSeconds, random())
 end
 
+-- Derate combustion before native integration/energy accounting, after fuel,
+-- boost and additive nitrous. Never borrow maxTorqueLimit: controllers own it.
+local function bindOutputDerating(engine)
+  local context = engine.rlsMaintenanceOutput
+  if not context or type(engine.torqueUpdate) ~= 'function' then return end
+  if context.resetPending then
+    context.resetPending = nil
+    if engine.torqueUpdate ~= context.wrapper then context.wrapper = nil end
+  elseif context.wrapper and engine.torqueUpdate == context.original then
+    engine.torqueUpdate = context.wrapper
+  end
+  if context.wrapper then return end
+  local original = engine.torqueUpdate
+  context.wrapper = function(self, dt)
+    local coef = min(context.engine or 1, context.cooling or 1)
+    if context.inCall or coef >= 1 or self.outputTorqueState == nil then return original(self, dt) end
+    context.inCall = true
+    local before = self.outputTorqueState
+    local applied = before * coef
+    self.outputTorqueState = applied
+    local ok, err = pcall(original, self, dt)
+    if self.outputTorqueState == applied then
+      self.outputTorqueState = before
+    elseif self.outputTorqueState < applied and coef > 0 then
+      -- Preserve native damage/disable during this step, removing only our factor.
+      self.outputTorqueState = self.outputTorqueState / coef
+    end
+    context.inCall = false
+    if not ok then error(err) end
+  end
+  context.original = original
+  engine.torqueUpdate = context.wrapper
+end
+
+local function setOutputDerating(engine, source, coefficient)
+  local context = engine.rlsMaintenanceOutput
+  if not context then
+    context = {engine = 1, cooling = 1}
+    engine.rlsMaintenanceOutput = context
+  end
+  context[source] = clamp(coefficient, 0.001, 1)
+  bindOutputDerating(engine)
+end
+
+local function releaseOutputDerating(engine)
+  local context = engine.rlsMaintenanceOutput
+  if not context then return end
+  context.engine, context.cooling = 1, 1
+  if engine.torqueUpdate == context.wrapper then
+    engine.torqueUpdate = context.original
+    context.wrapper = nil
+  end
+end
+
 -- Public API --------------------------------------------------------------------------------------
+
+M.bindOutputDerating = bindOutputDerating
+M.setOutputDerating = setOutputDerating
+M.releaseOutputDerating = releaseOutputDerating
 
 M.clamp = clamp
 M.lerp = lerp

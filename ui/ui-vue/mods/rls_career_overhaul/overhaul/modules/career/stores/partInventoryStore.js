@@ -5,15 +5,18 @@
 // RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul
 // RLS modifications: Copyright (C) RLS Modding
 
-import { onScopeDispose, ref, watch } from "vue"
+import { onScopeDispose, ref, shallowRef, watch } from "vue"
 import { defineStore } from "pinia"
 import { useBridge, lua } from "@/bridge"
+import { createPartsInventoryReceiver } from "./partsInventoryTransport.js"
 
 export const usePartInventoryStore = defineStore("overhaulPartInventory", () => {
   const { events } = useBridge()
+  const receiver = createPartsInventoryReceiver()
 
   // States
-  const partInventoryData = ref({})
+  // Publications replace the complete view; per-part proxies add no reactivity we use.
+  const partInventoryData = shallowRef({})
   const newPartsPopupOpen = ref(false)
   const newParts = ref([])
 
@@ -35,6 +38,10 @@ export const usePartInventoryStore = defineStore("overhaulPartInventory", () => 
 
   function dispose() {
     events.off("partInventoryData", handlePartInventoryData)
+    receiver.reset()
+    partInventoryData.value = {}
+    newParts.value = []
+    newPartsPopupOpen.value = false
   }
 
   function openNewPartsPopup(newPartIds) {
@@ -52,25 +59,21 @@ export const usePartInventoryStore = defineStore("overhaulPartInventory", () => 
     }
   }
 
-  const doesPartPassFilter = (part) => {
-    return part.description.description.toLowerCase().includes(searchString.value.toLowerCase()) ||
-      part.name.toLowerCase().includes(searchString.value.toLowerCase())
+  function withFilteredParts(data) {
+    const parts = Array.isArray(data.partList) ? data.partList : []
+    const query = searchString.value.toLowerCase()
+    const filteredPartList = query ? parts.filter(part =>
+      part.description.description.toLowerCase().includes(query) || part.name.toLowerCase().includes(query)) : parts
+    return { ...data, filteredPartList }
   }
 
-  const searchValueChanged = () => {
-    if (partInventoryData.value.partList.filter) {
-      partInventoryData.value.filteredPartList = partInventoryData.value.partList.filter(doesPartPassFilter);
-    } else {
-      partInventoryData.value.filteredPartList = {}
-    }
-  }
-
-  watch(() => searchString.value, searchValueChanged)
+  watch(searchString, () => { partInventoryData.value = withFilteredParts(partInventoryData.value) })
 
   // Lua events
   function handlePartInventoryData(data) {
-    partInventoryData.value = data
-    searchValueChanged()
+    const inventory = receiver.accept(data)
+    if (!inventory) return
+    partInventoryData.value = withFilteredParts(inventory)
   }
   events.on("partInventoryData", handlePartInventoryData)
   onScopeDispose(dispose)

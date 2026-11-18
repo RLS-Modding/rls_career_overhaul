@@ -3,9 +3,14 @@
 
 local lib = {}
 local capabilities = require("overhaul/lib/platform/capabilities")
+local winBack = require('overhaul/lib/vehicles/pinkSlipWinBack')
+local mileage = require('overhaul/lib/vehicles/mileage')
 
 function lib.create(inputs)
   local parts = inputs.parts
+  local winBackTuning=jsonReadFile('/gameplay/overhaul/carmeets/winBack.json') or {}
+  local winBackChance=tonumber(winBackTuning.appearanceChanceFraction) or 0
+  if winBackChance~=winBackChance or winBackChance<0 or winBackChance>1 then winBackChance=0 end
   -- State -----------------------------------------------------------------------------------------
 
   local carMeetState = inputs.carMeetState
@@ -317,7 +322,9 @@ function lib.create(inputs)
       meetPurchaseVehicles = carMeetState.carMeetPurchaseVehicles,
       sale = salePayload and carMeetState.meetState.type ~= "BAZAAR" and salePayload or nil,
       bazaar = salePayload and carMeetState.meetState.type == "BAZAAR" and salePayload or nil,
-      clubs = callbacks.getClubUiData()
+      clubs = callbacks.getClubUiData(),
+      streetMeet = overhaul_career_economy_streetKnights and overhaul_career_economy_streetKnights.getMeetInvite(),
+      devTools = overhaul_career_carmeets_carmeets.devToolsEnabled()
     }
   end
 
@@ -372,7 +379,8 @@ function lib.create(inputs)
       obligationAttended = obligationAttended,
       obligationWindowSize = obligationWindowSize,
       requiredAttendance = requiredAttendance,
-      obligationText = tostring(obligationAttended) .. "/" .. tostring(requiredAttendance) .. " attended in current " .. tostring(obligationWindowSize) .. "-event window"
+      obligationText = club.obligations ~= false and (tostring(obligationAttended) .. "/" .. tostring(requiredAttendance) .. " attended in current " .. tostring(obligationWindowSize) .. "-event window") or nil,
+      screen = club.screen
     }
 
     return entry, joined, hasVehicle
@@ -448,6 +456,11 @@ function lib.create(inputs)
 
   local function leaveClub(clubId)
     clubId = tostring(clubId or "")
+    local owner=overhaul_career_economy_streetKnights
+    if clubId=='no_prep_knights' and owner and owner.isCommitted() then
+      ui_message('Finish your No Prep Knights race first.',5,'warning','warning')
+      return callbacks.getClubUiData()
+    end
     if carMeetState.joinedClubs[clubId] then
       local clubName = "car club"
       for _, club in ipairs(parts.clubs.loadClubDefinitions()) do
@@ -470,6 +483,7 @@ function lib.create(inputs)
   -- Meet vehicles -----------------------------------------------------------------------------------
 
   local function cleanupPreviousMeet()
+    carMeetState.winBackSelection=nil
     carMeetState.meetGeneration = carMeetState.meetGeneration + 1
     for _, vehId in ipairs(carMeetState.spawnedMeetVehicles) do
       gameplay_traffic.removeTraffic(vehId)
@@ -529,21 +543,27 @@ function lib.create(inputs)
     return vehiclesForInfos
   end
 
+  local function isPoliceConfig(info, key)
+    local configType = info and info["Config Type"]
+    if type(configType) == "string" and configType:lower() == "police" then return true end
+    local types = info and info.aggregates and info.aggregates["Config Type"]
+    return (types and (types.Police or types.police)) or (type(key) == "string" and key:lower():find("police", 1, true) ~= nil)
+  end
+
   local function getCarMeetVehicles(meetType, club)
     local vehicles = {}
     local eligibleVehicles = inputs.stockOverrides.getEligibleVehicles(false, false)
 
     local filters = meetType and meetType.vehicleFilters or parts.meetTypesPart.meetTypes.SHOWCASE.vehicleFilters
     local poolRuleTiers = parts.clubs.getMeetVehiclePoolRules(meetType)
-    local vehiclesForInfos = eligibleVehicles
+    local vehiclesForInfos = {}
+    for _, vehicleInfo in ipairs(eligibleVehicles or {}) do
+      if not isPoliceConfig(vehicleInfo, vehicleInfo.key) and (not club or parts.clubs.vehicleInfoMatchesClub(vehicleInfo, club)) then
+        table.insert(vehiclesForInfos, vehicleInfo)
+      end
+    end
 
     if club then
-      vehiclesForInfos = {}
-      for _, vehicleInfo in ipairs(eligibleVehicles or {}) do
-        if parts.clubs.vehicleInfoMatchesClub(vehicleInfo, club) then
-          table.insert(vehiclesForInfos, vehicleInfo)
-        end
-      end
       if #vehiclesForInfos == 0 then
         log("D", "carmeets", "No eligible car meet vehicles found for club " .. tostring(club.name or club.id) .. ".")
         return vehicles
@@ -631,6 +651,15 @@ function lib.create(inputs)
   end
 
   local function registerMeetPurchaseVehicle(vehicleSelection, spot, options, vehId, deferPoiRefresh)
+    if vehicleSelection.winBackId then
+      table.insert(carMeetState.carMeetPurchaseVehicles,{
+        shopId=-vehicleSelection.order,vehicleId=vehId,modelKey=vehicleSelection.model,
+        name=vehicleSelection.originalVehicle.niceName,sellerName=vehicleSelection.name,
+        winBackId=vehicleSelection.winBackId,winBackOwnerId=vehicleSelection.winBackOwnerId,originalVehicle=deepcopy(vehicleSelection.originalVehicle),
+        meetType=carMeetState.meetState.type,pos=vec3(spot.pos),markerRadius=spot.scl and spot.scl:length()/2+2 or 5})
+      if not deferPoiRefresh then flushMeetSpawnPoisRefresh() end
+      return
+    end
     local shopInfo = parts.sales.buildCarMeetVehicleShopInfo(vehicleSelection, spot, carMeetState.meetState.type)
     if type(options.carMeetRandomPaintNames) == "table" then
       shopInfo.paintNames = deepcopy(options.carMeetRandomPaintNames)
@@ -655,8 +684,37 @@ function lib.create(inputs)
 
   end
 
+  local function prepareWinBack(meetType,club)
+    carMeetState.winBackSelection=nil
+    local owner=capabilities.get('carMeetChallenges')
+    if not owner or not owner.getWinBackVehicles then return end
+    local candidates={}
+    for _,lost in ipairs(owner.getWinBackVehicles())do
+      if lost.lostAt<carMeetState.meetState.startTime and FS:fileExists('/vehicles/'..lost.vehicle.model..'/info.json') then
+        local filename=lost.vehicle.config.partConfigFilename
+        local key=type(filename)=='string' and filename:gsub('\\','/'):match('([^/]+)%.pc$') or nil
+        local catalog=(key or club) and core_vehicles.getModel(lost.vehicle.model)
+        local config=catalog and catalog.configs and catalog.configs[key]
+        if not isPoliceConfig(config,key) then
+          local info=club and deepcopy(catalog and catalog.model or {})
+          if info then
+            for name,value in pairs(config or {})do info[name]=value end
+            info.model_key=lost.vehicle.model;info.key=key or info.key;info.Years=lost.vehicle.year or info.Years
+            info.Value=lost.vehicle.configBaseValue or info.Value
+          end
+          if not club or parts.clubs.vehicleInfoMatchesClub(info,club) then candidates[#candidates+1]=lost end
+        end
+      end
+    end
+    if #candidates>0 and math.random()<winBackChance then
+      local lost=candidates[math.random(#candidates)]
+      carMeetState.winBackSelection=winBack.opponent(lost)
+      carMeetState.winBackSelection.order=lost.order
+    end
+  end
+
   local function spawnVehicleOptimized(spot, meetType, forceVisible, club, deferPoiRefresh)
-    local vehicleSelection = getRandomVehicle(meetType, club)
+    local vehicleSelection = carMeetState.winBackSelection or getRandomVehicle(meetType, club)
     if not vehicleSelection then return nil end
 
     local options = {
@@ -667,18 +725,23 @@ function lib.create(inputs)
       rot = quat(spot.rot)
     }
 
-    pcall(function()
+    if not vehicleSelection.winBackId then pcall(function()
       parts.sales.applyRandomPaintToSpawnOptions(options, vehicleSelection.model, vehicleSelection.config)
-    end)
+    end) end
 
     local vehicle = core_vehicles.spawnNewVehicle(vehicleSelection.model, options)
 
     if vehicle then
       local vehId = vehicle:getID()
       gameplay_traffic.insertTraffic(vehId, true)
-      pcall(function()
+      local trafficVehicle = gameplay_traffic.getTrafficData()[vehId]
+      if trafficVehicle then trafficVehicle:setRole('standard') end
+      if vehicleSelection.winBackId then
+        carMeetState.winBackSelection=nil
+        mileage.apply(vehicle,vehicleSelection.originalVehicle.mileage)
+      else pcall(function()
         parts.sales.applyRandomPaintToSpawnedVehicle(vehId, options.carMeetRandomPaintNames, vehicleSelection.model)
-      end)
+      end) end
       vehicle.playerUsable = false
       vehicle:queueLuaCommand('electrics.setLightsState(1)')
       vehicle:queueLuaCommand('electrics.setIgnitionLevel(1)')
@@ -785,6 +848,7 @@ function lib.create(inputs)
     leaveClub = leaveClub,
     cleanupPreviousMeet = cleanupPreviousMeet,
     getCarMeetVehicles = getCarMeetVehicles,
+    prepareWinBack = prepareWinBack,
     flushMeetSpawnPoisRefresh = flushMeetSpawnPoisRefresh,
     spawnVehicleOptimized = spawnVehicleOptimized,
     checkVehicleVisible = checkVehicleVisible,

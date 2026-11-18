@@ -1,0 +1,117 @@
+/* RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+ * Copyright (C) RLS Modding
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
+// Motorsport type and spacing scale. @use after rlsHouse.scss inside every Motorsport <style scoped>.
+// One scale for the phone app, the venue overlays and the result boards:
+//   spacing  --ms-pad   card / dialog inset        --ms-gap   between cards
+//            --ms-stack inside a card              --ms-row   line row vertical padding
+//   type     .ms-title    screen or dialog title   .ms-heading  card title
+//            .ms-body     running text             .ms-caption  supporting text
+//            .ms-label    name of a value          .ms-meta     counts, times, tags
+// Numbers use .ms-num so columns line up. Elapsed times, reaction times and countdowns use .ms-time.
+//
+// Status colour follows the start tree, the same on every Motorsport surface:
+//   wait     blue    the clock runs, nothing to do      act      orange  the player's move
+//   go/done  green   race, passed, complete             blocked  red     fix something, or out
+// A tone class (.ms-tone-*) sets --tone and --tone-ink, so a surface picks its tone from playerStatus and never
+// names a colour. Status is said in words and drawn in the tone; there are no lamps, dots or rings.
+//   .ms-status  the status sentence, in the tone's colour
+//   .ms-wash    a faint ground of the tone, for the one block that is the status (or an error)
+//   .ms-facts   labelled values (a quiet label over each value); add .ruled for hairlines between them
+//   .ms-foot    footer or action row: one line, values on the left, buttons on the right, never a second row
+//   .ms-bar     a share of something, drawn (prize ladder, fee against balance)
+//   .ms-place   1st / 2nd / 3rd plaque                  .ms-picked  a chosen row or card: a fill, never a ring
+// Headers stay plain: a white title on the window's own ground. A title needs no line above it, and a label is
+// written only where its value would be unclear alone.
+
+@mixin ms-scale {
+  --ms-pad: var(--inset);
+  --ms-gap: var(--space-3);
+  --ms-stack: var(--space-2);
+  --ms-row: 0.45em;
+  --ms-icon: 1.1em;
+  --ms-wait: #7fbfff;
+  --ms-wait-ink: #b9dcff;
+  --ms-act: var(--accent);
+  --ms-act-ink: var(--accent-soft);
+  --ms-go: var(--ok);
+  --ms-go-ink: var(--ok-ink);
+  --ms-stop: #f87171;
+  --ms-stop-ink: var(--bad);
+  --ms-gold: #f5c451;
+  --ms-silver: #cbd5e1;
+  --ms-bronze: #d99a6c;
+  --ms-time-font: "Overpass Mono", var(--fnt-mono, monospace);
+}
+
+.ms-label { margin: 0; font-size: 0.78em; font-weight: 600; line-height: 1.25; color: var(--faint); }
+.ms-title { margin: 0; font-size: 1.25em; font-weight: 800; letter-spacing: -0.01em; line-height: 1.15; }
+.ms-heading { margin: 0; font-size: 1.05em; font-weight: 700; line-height: 1.2; }
+.ms-body { margin: 0; font-size: 1em; line-height: 1.35; color: #fff; }
+.ms-caption { margin: 0; font-size: 0.86em; line-height: 1.3; color: var(--muted); }
+.ms-meta { margin: 0; font-size: 0.8em; font-weight: 600; line-height: 1.25; color: var(--faint); }
+// Sizes are em, so keep nested roles at their own size instead of compounding.
+.ms-caption .ms-meta { font-size: 0.93em; }
+.ms-caption .ms-body { font-size: 1.163em; }
+.ms-num { font-variant-numeric: tabular-nums; }
+.ms-icon { flex: 0 0 auto; font-size: var(--ms-icon); --bng-icon-color: currentColor; }
+.ms-accent { color: var(--accent); --bng-icon-color: var(--accent); }
+.ms-money { color: var(--money); font-weight: 800; }
+// A mono space is a full cell wide; the unit ("8.500 s") is pulled back toward its number.
+.ms-time { font-family: var(--ms-time-font, "Overpass Mono", monospace); font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.03em; word-spacing: -0.22em; color: #fff; }
+.ms-ok { color: var(--ok); }
+.ms-bad { color: var(--bad); }
+.ms-warn { color: var(--warn); }
+
+// Opt in on overlay roots; phone and expanded boards retain their own scale.
+@mixin ms-scale-overlay {
+  @include ms-scale;
+  .ms-label { font-size: max(12px, .78em); }
+  .ms-meta { font-size: max(12px, .8em); }
+  .ms-caption { font-size: max(12px, .86em); }
+  small { font-size: max(12px, .8em); }
+}
+.ms-zero { color: var(--faint); }
+.ms-tone-wait { --tone: var(--ms-wait, #7fbfff); --tone-ink: var(--ms-wait-ink, #b9dcff); color: var(--tone-ink); }
+.ms-tone-act { --tone: var(--ms-act, var(--accent)); --tone-ink: var(--ms-act-ink, var(--accent-soft)); color: var(--tone-ink); }
+.ms-tone-go, .ms-tone-done { --tone: var(--ms-go, var(--ok)); --tone-ink: var(--ms-go-ink, var(--ok-ink)); color: var(--tone-ink); }
+.ms-tone-blocked { --tone: var(--ms-stop, #f87171); --tone-ink: var(--ms-stop-ink, var(--bad)); color: var(--tone-ink); }
+.pill.ms-tone-wait, .pill.ms-tone-act, .pill.ms-tone-go, .pill.ms-tone-done, .pill.ms-tone-blocked { background: color-mix(in srgb, var(--tone) 20%, transparent); }
+.ms-player-row { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.ms-you { padding: .2em .5em .08em; border-radius: var(--radius-pill); background: var(--accent); color: #17130a; font-size: max(12px, .76em); font-weight: 800; line-height: 1.2; }
+.ms-picked { background: color-mix(in srgb, var(--accent) 18%, transparent); }
+
+.ms-status { color: var(--tone, #fff); font-weight: 800; line-height: 1.2; }
+.ms-wash { background: color-mix(in srgb, var(--tone, #fff) 10%, transparent); border-radius: var(--radius-tile); }
+
+.ms-facts { margin: 0; display: flex; flex-wrap: wrap; gap: .5em 1.5em; }
+.ms-facts > * { display: grid; align-content: start; gap: .12em; min-width: 0; }
+.ms-facts dd, .ms-facts strong { margin: 0; font-size: 1.02em; font-weight: 700; line-height: 1.2; color: #fff; }
+.ms-facts .ms-time { font-size: 1.5em; line-height: 1.1; }
+.ms-facts .ms-money { color: var(--money); font-weight: 800; }
+.ms-facts .ms-ok { color: var(--ok); }
+.ms-facts .ms-bad { color: var(--bad); }
+.ms-facts .ms-zero { color: var(--faint); }
+.ms-facts.ruled { flex-wrap: nowrap; gap: 0; }
+.ms-facts.ruled > * { padding: 0 .9em; border-left: 1px solid var(--line); }
+.ms-facts.ruled > :first-child { padding-left: 0; border-left: 0; }
+
+.ms-bar { display: block; height: .5em; border-radius: 1em; background: rgba(255, 255, 255, .08); overflow: hidden; }
+.ms-bar > * { display: block; height: 100%; border-radius: 1em; transform-origin: 0 50%; background: linear-gradient(90deg, #b98a2e, var(--money)); }
+.ms-bar.short > * { background: var(--bad); }
+
+// One line always: the facts give way (they shrink and cut off) before a button drops to a second row.
+.ms-foot { display: flex; flex-wrap: nowrap; align-items: center; gap: var(--ms-stack, .5em); min-width: 0; }
+.ms-foot > * { flex: 0 0 auto; }
+.ms-foot > .ms-facts { flex: 1 1 0; flex-wrap: nowrap; min-width: 0; overflow: hidden; }
+.ms-foot > .ms-facts > * { flex: 0 1 auto; white-space: nowrap; }
+.ms-foot > .ms-facts dd { overflow: hidden; text-overflow: ellipsis; }
+.ms-foot > .ms-foot-end { margin-left: auto; }
+
+.ms-place { flex: 0 0 auto; display: grid; place-items: center; min-width: 3em; height: 2.1em; padding: .12em .45em 0; border-radius: .45em; font-size: 1.05em; font-weight: 800; font-variant-numeric: tabular-nums; color: #17130a; background: var(--panel-2); }
+.ms-place.place-1 { background: var(--ms-gold, #f5c451); }
+.ms-place.place-2 { background: var(--ms-silver, #cbd5e1); }
+.ms-place.place-3 { background: var(--ms-bronze, #d99a6c); }
+.ms-place.place-out { color: var(--bad); font-size: .9em; }

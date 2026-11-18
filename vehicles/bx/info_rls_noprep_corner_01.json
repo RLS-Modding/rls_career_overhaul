@@ -1,0 +1,26 @@
+{
+  "Configuration": "Nico Calder - No Prep",
+  "Description": "Olive Nightshift. Tier 5 racer. Highway no-prep quarter-mile: 8.729s at 192.61mph. Corner Shop Motors. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Corner Shop Motors",
+  "Name": "Nico Calder",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 7.5227094562157,
+    "time_1_4": 8.7294436278464,
+    "time_1_8": 5.9926802953339,
+    "time_330": 4.1031802894115,
+    "time_60": 1.5726979613795,
+    "velAt_1_4": 86.104182900263,
+    "velAt_1_8": 59.985807410079
+  },
+  "Reaction Time": 0.26460368581495,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

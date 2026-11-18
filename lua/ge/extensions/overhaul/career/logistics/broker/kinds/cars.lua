@@ -58,6 +58,12 @@ function M.reserve(brokerContext, job, row, native)
   return true
 end
 
+function M.retainsJob(brokerContext, job)
+  if job.map ~= brokerContext.mapId() then return false end
+  local active = brokerContext.ownerOp().getActiveContract()
+  return active and active.id == job.nativeId or false
+end
+
 function M.release(brokerContext, job)
   if not brokerContext.ownerOp().cancelUnstartedBrokerContract(job.nativeId) then
     return false, "Vehicle collection has already begun."

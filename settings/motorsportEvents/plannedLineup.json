@@ -1,0 +1,144 @@
+{
+  "version": 1,
+  "status": "implemented",
+  "source": "User diagram IMG_4115.jpg and accompanying instructions, 2026-10-19",
+  "notes": [
+    "Active classes are defined in classes.json. Eight fields have 20 completed builds; Stu Leonard remains unavailable pending its finished field."
+  ],
+  "leagues": [
+    {
+      "id": "slra",
+      "name": "SLRA",
+      "classes": [
+        {
+          "id": "super_stick",
+          "name": "Super Stick",
+          "indexSeconds": 8.5,
+          "rules": [
+            {
+              "trait": "manual",
+              "equals": true
+            }
+          ],
+          "ruleSource": "Existing Super Stick build contract: actual H-pattern manual, 8.50 index; 9.00 build target ceiling is not a championship disqualification rule."
+        },
+        {
+          "id": "spray_and_pray",
+          "name": "Spray and Pray",
+          "format": "headsUp",
+          "requirements": {
+            "nitrous": true,
+            "turbocharger": false,
+            "supercharger": false
+          },
+          "ruleSource": "Existing nitrous build contract: naturally aspirated plus nitrous, no ET index."
+        },
+        {
+          "id": "stu_leonard_850",
+          "name": "Stu Leonard 8.50",
+          "indexSeconds": 8.5,
+          "rules": [
+            {
+              "trait": "year",
+              "lessThan": 1971
+            }
+          ],
+          "ruleSource": "Diagram and current build contract: model/body year <=1970."
+        }
+      ],
+      "rules": [
+        {
+          "trait": "rollCage",
+          "equals": true,
+          "message": "A roll cage is required for a pass below 9.50 seconds.",
+          "whenElapsedBelow": 9.5
+        }
+      ]
+    },
+    {
+      "id": "pro_league",
+      "name": "Pro League",
+      "classes": [
+        {
+          "id": "pro_turbo",
+          "name": "Pro Turbo",
+          "format": "headsUp",
+          "requirements": {
+            "turbocharger": true
+          },
+          "pending": [
+            "Confirm whether nitrous and compound boost are allowed."
+          ]
+        },
+        {
+          "id": "pro_blower",
+          "name": "Pro Blower",
+          "format": "headsUp",
+          "requirements": {
+            "supercharger": true
+          },
+          "pending": [
+            "Confirm whether nitrous and compound boost are allowed."
+          ]
+        },
+        {
+          "id": "pro_motor",
+          "name": "Pro Motor",
+          "format": "headsUp",
+          "pending": [
+            "Confirm naturally aspirated and no nitrous interpretation."
+          ]
+        }
+      ],
+      "equipment": {
+        "rollCageRequired": true
+      }
+    },
+    {
+      "id": "street_kings",
+      "name": "Street Kings",
+      "classes": [
+        {
+          "id": "bedtime_bullies",
+          "name": "Bedtime Bullies",
+          "requirements": {
+            "vehicleCategory": "utility"
+          },
+          "pending": [
+            "Confirm 9.50 championship index; existing build target is 9.50–10.00 seconds."
+          ]
+        },
+        {
+          "id": "wrong_wheel_drive",
+          "name": "Wrong Wheel Drive",
+          "indexSeconds": 9.5,
+          "rules": [
+            {
+              "trait": "drivetrain",
+              "equals": "FWD"
+            }
+          ]
+        },
+        {
+          "id": "street_heat",
+          "name": "Street Heat",
+          "indexSeconds": 10.5,
+          "rules": [],
+          "equipment": {
+            "allowedTireTypes": [
+              "sport"
+            ]
+          }
+        }
+      ],
+      "rules": [
+        {
+          "trait": "rollCage",
+          "equals": true,
+          "message": "A roll cage is required for a pass below 9.50 seconds.",
+          "whenElapsedBelow": 9.5
+        }
+      ]
+    }
+  ]
+}

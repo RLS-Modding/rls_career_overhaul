@@ -1,0 +1,26 @@
+{
+  "Configuration": "Juno Rios - No Prep",
+  "Description": "Golden Switchback. Tier 3 boss. Highway no-prep quarter-mile: 9.538s at 174.69mph. Neon Works. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Neon Works",
+  "Name": "Juno Rios",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": true
+  },
+  "Drag Times": {
+    "time_1000": 8.2216202602074,
+    "time_1_4": 9.537693085092,
+    "time_1_8": 6.5709142036081,
+    "time_330": 4.4605514446695,
+    "time_60": 1.6740943420453,
+    "velAt_1_4": 78.091683415731,
+    "velAt_1_8": 55.503134533063
+  },
+  "Reaction Time": 0.27078953621598,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

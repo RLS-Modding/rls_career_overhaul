@@ -1,0 +1,50 @@
+{
+  "rls_vivace_engine_internals_i5_2.5_petrol_stage4_block": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Heavy Duty Block", "value":25500},
+    "slotType": "vivace_engine_internals_i5_2.5_petrol",
+    "mainEngine": {
+      "maxTorqueRating": 4150,
+      "maxOverTorqueDamage": 1000,
+      "cylinderWallTemperatureDamageThreshold": 175,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1700000,
+      "pistonRingDamageThreshold": 1700000,
+      "connectingRodDamageThreshold": 2200000,
+      "maxPhysicalRPM": 8925
+    }
+  },
+  "rls_vivace_engine_internals_i5_2.5_petrol_stage4_performance": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Performance Block", "value":28000},
+    "slotType": "vivace_engine_internals_i5_2.5_petrol",
+    "mainEngine": {
+      "$+maxRPM": 1000,
+      "$*inertia": 1.2,
+      "$*engineBrakeTorque": 1.16,
+      "torqueModMult": [
+        ["rpm", "torque"],
+        [0, 1],
+        [1000, 1],
+        [2000, 1],
+        [3000, 1.015],
+        [4000, 1.035],
+        [4500, 1.05],
+        [5000, 1.065],
+        [5500, 1.08],
+        [6100, 1.1],
+        [7000, 1.12],
+        [7500, 1.12],
+        [8000, 1.12],
+        [8500, 1.1],
+        [9000, 1.08]
+      ],
+      "maxTorqueRating": 4150,
+      "maxOverTorqueDamage": 1000,
+      "cylinderWallTemperatureDamageThreshold": 175,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1700000,
+      "pistonRingDamageThreshold": 1700000,
+      "connectingRodDamageThreshold": 2200000,
+      "maxPhysicalRPM": 8925
+    }
+  }
+}

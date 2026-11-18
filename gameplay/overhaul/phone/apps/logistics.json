@@ -11,6 +11,9 @@
   "storeDescription": "Find independent hauling work, reserve loads, plan your route and borrow equipment from the central depot.",
   "defaultPage": 0,
   "defaultPosition": 11,
+  "careerOnly": true,
+  "showInStoreWhenLocked": true,
+  "lockedMessage": "Logistics level 30 required",
   "notifications": [
     {
       "key": "logistics.cargoAbandoned",
@@ -22,7 +25,10 @@
     }
   ],
   "unlock": {
-    "type": "careerActive"
+    "type": "lua",
+    "extension": "overhaul_phone_apps_logistics",
+    "function": "canOpen",
+    "load": true
   },
   "notificationSources": [
     "logistics"

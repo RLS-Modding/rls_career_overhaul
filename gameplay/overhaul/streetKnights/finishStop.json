@@ -1,0 +1,5 @@
+{
+  "stoppedSpeedMps": 1,
+  "brakeRampPerSec": 1.5,
+  "handoverTimeoutSec": 15
+}

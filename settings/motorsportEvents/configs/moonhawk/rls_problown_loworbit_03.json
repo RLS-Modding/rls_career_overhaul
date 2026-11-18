@@ -1,0 +1,89 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "moonhawk/rls_problown_loworbit_03",
+    "configId": "rls_problown_loworbit_03",
+    "model": "moonhawk",
+    "config": "/vehicles/moonhawk/rls_problown_loworbit_03.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "letty_ortiz",
+    "driverName": "Delaney Hudson",
+    "builder": "Low Orbit Garage",
+    "classIds": [
+      "pro_blower"
+    ],
+    "approvedClassIds": [
+      "pro_blower"
+    ],
+    "leagueId": "pro_league",
+    "eligibilityStatus": "Roster approval retained. Historical ETs remain historical estimates; consolidated supercharger and pulley selection require current-build validation.",
+    "sourceConfigSHA256": "ae830af053d5b41d852fc461c699e6f34a4ba0275f18548d2193945928e8ea94",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "Automatic",
+      "induction": "Supercharger",
+      "nitrous": false,
+      "years": {
+        "min": 1976,
+        "max": 1978
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x4",
+          "part": "tire_F_27.5_4_15_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_15x12_alt",
+          "part": "tire_R_29_12_15_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "moonhawk_rollcage",
+          "part": "moonhawk_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 7.950824876522,
+      "runId": "BLOWN-049",
+      "evidenceConfigSHA256": "3d30043d485b2cb6746757305ebdf74d8c7c30918dd4317b6a9812340d5fd6b0",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/pro-blown/final-results.json",
+      "acceptedConfig": "outputs/pro-blown/accepted/rls_problown_loworbit_03/rls_problown_loworbit_03.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json",
+      "superchargerConsolidation": {
+        "schema": "rls.supercharger-selection-migration/1",
+        "manifest": "docs/vehicles/shared-drag-superchargers.json",
+        "integrationPlanSHA256": "198ae936a8b13c98d615bc44e342692c5d0238364ab2878a1ee80c3d56095ed2",
+        "oldConfigSHA256": "21796235181a978a2a8fefc211a91af7ecfc1fae9f609dc0fa5d991a7f177ecd",
+        "configSHA256": "ae830af053d5b41d852fc461c699e6f34a4ba0275f18548d2193945928e8ea94",
+        "slot": "moonhawk_intake_v8_big",
+        "oldPart": "rls_problown_loworbit_03_raceblower",
+        "newPart": "rls_moonhawk_intake_v8_big_stage4_supercharger",
+        "childSlot": "rls_moonhawk_intake_v8_big_stage4_pulley",
+        "pulleyPart": "rls_moonhawk_intake_v8_big_stage4_pulley_6",
+        "ratio": 2.2,
+        "removedVariables": [],
+        "status": "source-migrated-pending-live-validation",
+        "scope": "Supercharger ID, child pulley topology and/or fixed hardware changed. Earlier measurements remain tied to their original saved config and sources; no new live validation."
+      }
+    },
+    "sourcePack": "rls_pro_blown"
+  }
+}

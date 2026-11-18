@@ -1,0 +1,196 @@
+{
+  "isAuxiliary": true,
+  "Configuration": "Jordan Abbott - Super Stick",
+  "Description": "Driver: Jordan Abbott. Builder: Haulmark Racing. Haulmark Racing: 6.9L low-RPM Stage4 heavy-duty block, enlarged roots blower and second-gear nitrous; red/cream longbed sport hauler. 6.9L V8 Engine; Supercharger; nitrous Yes. 6-speed H-pattern manual. First clean qualifying West Coast quarter-mile: 8.937 s. Custom Super Stick build. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Transmission": "Manual",
+  "Drivetrain": "RWD",
+  "Config Type": "Custom",
+  "Population": -1,
+  "Value": 65000,
+  "Power": 1748,
+  "Weight": 2284,
+  "Years": {
+    "min": 1992,
+    "max": 1997
+  },
+  "Induction Type": "SC + N2O",
+  "Motorsport": {
+    "version": 1,
+    "id": "pickup/rls_s850_haulmark_redline",
+    "configId": "rls_s850_haulmark_redline",
+    "model": "pickup",
+    "config": "/vehicles/pickup/rls_s850_haulmark_redline.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "luke_darrow",
+    "driverName": "Jordan Abbott",
+    "builder": "Haulmark Racing",
+    "classIds": [
+      "super_stick"
+    ],
+    "approvedClassIds": [
+      "super_stick"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained. Consolidated supercharger build passed one current quarter-mile with native class eligibility; historical performance remains unchanged. No repeatability claim.",
+    "sourceConfigSHA256": "324e2f10a69373e87a1927875db9b147726424811600ddde618006dde9977c96",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "6-speed H-pattern manual",
+      "induction": "Supercharger",
+      "nitrous": true,
+      "years": {
+        "min": 1992,
+        "max": 1997
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x8_alt",
+          "part": "tire_F_235_60_15_alt_sport",
+          "typeHint": "sport"
+        },
+        {
+          "slot": "tire_R_15x14",
+          "part": "tire_R_31_14_15_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "pickup_rollcage",
+          "part": "pickup_rollcage"
+        },
+        {
+          "slot": "pickup_rollcage_bedbars",
+          "part": "pickup_rollcage_bedbars"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.9368013271723,
+      "runId": "S850-053",
+      "evidenceConfigSHA256": "db9a266415c5bc28d662872e8c7a5742f8b21e0925a11d4d8c0382ca0a7a5631",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/stick850/final-results.json",
+      "acceptedConfig": "outputs/stick850/accepted/rls_s850_haulmark_redline/rls_s850_haulmark_redline.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json",
+      "superchargerConsolidation": {
+        "schema": "rls.supercharger-selection-migration/1",
+        "manifest": "docs/vehicles/shared-drag-superchargers.json",
+        "integrationPlanSHA256": "198ae936a8b13c98d615bc44e342692c5d0238364ab2878a1ee80c3d56095ed2",
+        "oldConfigSHA256": "8fd2332c8615528389fc8d4c7dd39c176ec2d7f38ef79e7f0ffe2143ae5c2c95",
+        "configSHA256": "324e2f10a69373e87a1927875db9b147726424811600ddde618006dde9977c96",
+        "slot": "pickup_intake_v8",
+        "oldPart": "rls_s850_haulmark_supercharger4",
+        "newPart": "rls_pickup_intake_v8_stage4_supercharger",
+        "childSlot": "rls_pickup_intake_v8_stage4_pulley",
+        "pulleyPart": "rls_pickup_intake_v8_stage4_pulley_6",
+        "ratio": 3.2,
+        "removedVariables": [
+          "$haulmarkPulley"
+        ],
+        "status": "source-migrated-pending-live-validation",
+        "scope": "Supercharger ID, child pulley topology and/or fixed hardware changed. Earlier measurements remain tied to their original saved config and sources; no new live validation."
+      },
+      "superchargerPublication": {
+        "assessmentSHA256": "710d473a43f098a694761735010c0a7f1fff4f302d87abceef6820ab2fea1568",
+        "rawSHA256": "584bf5f619f0fa4294b786946c7734ab36b38bf15eaf2d3a58fe5dd81d3f7758",
+        "ledgerSHA256": "e935e7441ac74d3d2341985198ce75c662f3a5b4d165ad4ea681cc85173c6aa7",
+        "status": "accepted-single-quarter",
+        "sourceConfigSHA256": "324e2f10a69373e87a1927875db9b147726424811600ddde618006dde9977c96"
+      }
+    },
+    "sourcePack": "rls_stickshift850",
+    "superchargerQualification": {
+      "schema": "rls.supercharger-qualification/1",
+      "status": "assessor-accepted",
+      "attemptId": "pickup__rls_s850_haulmark_redline-L1-P1-sc-sc-live-04",
+      "configSHA256": "324e2f10a69373e87a1927875db9b147726424811600ddde618006dde9977c96",
+      "classId": "super_stick",
+      "format": "index",
+      "lower": 8.5,
+      "upper": 9.25,
+      "quarterMileSeconds": 9.0274200596146,
+      "evidence": {
+        "raw": "outputs/drag-rebuild-20261028/supercharger-consolidation/harness/runs/sc-live-04/results/pickup__rls_s850_haulmark_redline-L1-P1-sc-sc-live-04.json",
+        "rawSHA256": "584bf5f619f0fa4294b786946c7734ab36b38bf15eaf2d3a58fe5dd81d3f7758",
+        "assessment": "outputs/drag-rebuild-20261028/supercharger-consolidation/harness/runs/sc-live-04/assessment-native-tables.json",
+        "assessmentSHA256": "710d473a43f098a694761735010c0a7f1fff4f302d87abceef6820ab2fea1568",
+        "assessor": {
+          "file": "outputs/drag-rebuild-20261028/supercharger-consolidation/assess-live-corrected.cjs",
+          "sha256": "16d7b0ea8554f529f50e692403994a2d643224042a507947f917e4b5a81db670"
+        },
+        "ledger": "outputs/drag-rebuild-20261028/supercharger-consolidation/publication/ledgers/e935e7441ac74d3d2341985198ce75c662f3a5b4d165ad4ea681cc85173c6aa7.json",
+        "ledgerSHA256": "e935e7441ac74d3d2341985198ce75c662f3a5b4d165ad4ea681cc85173c6aa7",
+        "ledgerKind": "finite-supercharger-assessment-publication-ledger",
+        "timestamp": "2026-10-28T20:36:20Z"
+      },
+      "source": {
+        "status": "current-in-covered-sources",
+        "sourceSnapshotSHA256": "12ca222e78f61517a86b9fd267c759778b47a9408456cd1296971ba0f715f4b3",
+        "scope": "One native lane-1 quarter-mile; asynchronous health callback and GFX pressure samples. No repeatability or substep guarantee. Source coverage is resolved active JBeam, declared dependencies and captured loaded Lua, not all lazy imports."
+      },
+      "assembly": {
+        "compiled": true,
+        "superchargerPart": "rls_pickup_intake_v8_stage4_supercharger",
+        "pulleyPart": "rls_pickup_intake_v8_stage4_pulley_6",
+        "gearRatio": 3.2,
+        "sourceSHA256": "1b16739ea10c64ad6efdf7bd96b441a2f615b29f902d0d9785f17e79626e981a",
+        "source": "/vehicles/pickup/rls_shared_drag_superchargers.jbeam",
+        "maxRPM": null,
+        "resolvedMaxRPM": 16640,
+        "maxRPMBasis": "Native supercharger.init fallback; combustionEngine assigns active revLimiterRPM to device.maxRPM before induction init. Inferred from captured effective device and pinned native source, not a direct read of private maxBlowerRPM."
+      },
+      "classProof": {
+        "classId": "super_stick",
+        "leagueId": "slra",
+        "lower": 8.5,
+        "upper": 9.25,
+        "classEntryAllowed": true,
+        "classResultAllowed": true,
+        "nativeClassInspection": true,
+        "basis": "Native classes.inspect/canEnter and classes.validate captured by SC proof guard."
+      },
+      "health": {
+        "status": "no-observed-faults",
+        "telemetryDropped": 0,
+        "maxSuperchargerPsi": 58.72580804,
+        "maxTurboPsi": null,
+        "healthCaptureBoundary": "quarter-mile"
+      },
+      "physical": {
+        "issues": [],
+        "newBroken": [],
+        "deformed": [],
+        "partDamage": [],
+        "triggered": [],
+        "damageDelta": 0.06385201209999997,
+        "scope": "Sparse getBeamDeformation delta >0.01, broken beam IDs, tires, part damage and native trigger changes. beamstate.damage/energy delta is reported, not treated as damage proof."
+      },
+      "nativeFinished": false,
+      "nativeRaceCompleted": false,
+      "comparison": {
+        "baselineET": 8.997367479719,
+        "deltaSeconds": 0.030052579895601284,
+        "baselineFile": "outputs/drag-rebuild-20261028/continuation-ledger/attempts/e9b4fcc87f1e7e56f3dc17278c42c427e5e0967873727669612755a80096b383.json",
+        "baselineResultSHA256": "e9b4fcc87f1e7e56f3dc17278c42c427e5e0967873727669612755a80096b383",
+        "baselinePCMatches": true,
+        "baselineStatus": "complete",
+        "scope": "Comparison only; historical source/handling limitations retained. This is not baseline requalification."
+      },
+      "scope": "One native lane-1 quarter-mile; asynchronous health callback and GFX pressure samples. No repeatability or substep guarantee. Source coverage is resolved active JBeam, declared dependencies and captured loaded Lua, not all lazy imports."
+    }
+  }
+}

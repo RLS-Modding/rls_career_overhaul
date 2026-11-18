@@ -1,0 +1,87 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Name": "Aubrey Fairchild",
+  "Configuration": "Aubrey Fairchild - Bedtime Bullies",
+  "Description": "Driver: Aubrey Fairchild. Builder: Neon Works. Neon Works: Violet late-body FWD race van; 15-inch front drag wheels and 18-inch rear street wheels. 3.8 L V6 with Stage 4 race block; Supercharger; nitrous Yes. 6-speed sequential. Bedtime Bullies: first clean West Coast quarter-mile in the 9.500-10.000 second window: 9.867 s. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Transmission": "Sequential",
+  "Drivetrain": "FWD",
+  "Years": {
+    "min": 2003,
+    "max": 2007
+  },
+  "Power": 1070,
+  "Weight": 1777,
+  "Motorsport": {
+    "version": 1,
+    "id": "lansdale/rls_bedtime_neon_04",
+    "configId": "rls_bedtime_neon_04",
+    "model": "lansdale",
+    "config": "/vehicles/lansdale/rls_bedtime_neon_04.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "rachel_teller",
+    "driverName": "Aubrey Fairchild",
+    "builder": "Neon Works",
+    "classIds": [
+      "bedtime_bullies"
+    ],
+    "approvedClassIds": [
+      "bedtime_bullies"
+    ],
+    "leagueId": "street_kings",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "1aabe4a0e5056a3a85a0628b680e1fbacce010247611dc148c0c95fd60efb5a3",
+    "traits": {
+      "drivetrain": "FWD",
+      "transmission": "6-speed sequential",
+      "induction": "Supercharger",
+      "nitrous": true,
+      "years": {
+        "min": 2003,
+        "max": 2007
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_R_18x10",
+          "part": "tire_R_275_40_18_race",
+          "typeHint": null
+        },
+        {
+          "slot": "tire_F_15x8_alt",
+          "part": "tire_F_26_8_15_alt_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "lansdale_rollcage",
+          "part": "lansdale_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.866502523359,
+      "runId": "BB-056",
+      "evidenceConfigSHA256": "c6b5c99f2732d88b17c860d64ebf2089b53cc179a771e0f6ddd5c00d794338a8",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/bedtime/final-results.json",
+      "acceptedConfig": "outputs/bedtime/accepted/rls_bedtime_neon_04/rls_bedtime_neon_04.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_bedtime_bullies"
+  }
+}

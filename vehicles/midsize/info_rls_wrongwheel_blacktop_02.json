@@ -1,0 +1,90 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Name": "Cameron Graham",
+  "Configuration": "Cameron Graham - Wrong-Wheel Drive",
+  "Description": "Driver: Cameron Graham. Builder: Blacktop Engineering. Graphite V6 twin-turbo HD-block sleeper with retained cabin trim and wingless body. First healthy native Alder quarter-mile in the 9.50–10.00 bracket: 9.892 s. FWD, no first-gear nitrous. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Author": "RLS Modding",
+  "Brand": "Blacktop Engineering",
+  "Drivetrain": "FWD",
+  "Transmission": "Sequential",
+  "Induction Type": "Turbo + N2O",
+  "Years": {
+    "min": 1996,
+    "max": 2000
+  },
+  "Power": 937,
+  "Weight": 1456,
+  "Motorsport": {
+    "version": 1,
+    "id": "midsize/rls_wrongwheel_blacktop_02",
+    "configId": "rls_wrongwheel_blacktop_02",
+    "model": "midsize",
+    "config": "/vehicles/midsize/rls_wrongwheel_blacktop_02.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "darius_kane",
+    "driverName": "Cameron Graham",
+    "builder": "Blacktop Engineering",
+    "leagueId": "street_kings",
+    "classIds": [
+      "wrong_wheel_drive"
+    ],
+    "approvedClassIds": [
+      "wrong_wheel_drive"
+    ],
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "e36443ce7d5530e5715f49fe68b0d3026ce759cf50b9687ed43a36966e9cb190",
+    "traits": {
+      "drivetrain": "FWD",
+      "transmission": "6-speed Sequential",
+      "induction": "Turbo",
+      "nitrous": true,
+      "years": {
+        "min": 1996,
+        "max": 2000
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x9",
+          "part": "tire_F_26.5_8.5_15_race",
+          "typeHint": null
+        },
+        {
+          "slot": "tire_R_15x7",
+          "part": "tire_R_205_60_15_sport",
+          "typeHint": "sport"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "midsize_rollcage",
+          "part": "midsize_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.8921025726983,
+      "runId": "WW-029",
+      "evidenceConfigSHA256": "f4367c3e04b73268fd19182c957dcd16eac16565a08e4a08138b8fef1b5113de",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/wrongwheel/final-results.json",
+      "acceptedConfig": "outputs/wrongwheel/accepted/rls_wrongwheel_blacktop_02/rls_wrongwheel_blacktop_02.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_wrongwheel_drive"
+  }
+}

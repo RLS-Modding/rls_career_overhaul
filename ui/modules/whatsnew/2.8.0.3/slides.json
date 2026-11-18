@@ -1,0 +1,86 @@
+{
+  "label": "v2.8.0.3",
+  "continueLabel": "Continue",
+  "loadingLabel": "Loading career...",
+  "dontShowLabel": "Don't show again",
+  "slides": [
+    {
+      "kind": "intro",
+      "image": "rally-sunset.jpg",
+      "eyebrow": "What's New",
+      "title": "RLS Career Overhaul v2.8.0.3",
+      "subtitle": "Drag classes, flames and fixes",
+      "summary": "Race new drag classes, bet on heats, find a new street venue and watch real fuel light up your exhaust.",
+      "contentsLabel": "In this update"
+    },
+    {
+      "image": "sanctioned-drags.jpg",
+      "textSide": "top-left",
+      "kicker": "Sanctioned drags",
+      "title": "19 classes, four leagues",
+      "summary": "Sanctioned drags add ten classes and a new league, and you can bet on the heats you watch.",
+      "facts": [
+        "Outlaw Drag League lets uncaged cars race",
+        "New classes from Unlimited Stick to AWD Unlimited",
+        "Bet on NPC heats while you watch; the race waits for you",
+        "Registration, standings and brackets are easier to read",
+        "The phone shows your status and next step at every stage"
+      ]
+    },
+    {
+      "image": "no-prep-tunnel.jpg",
+      "textSide": "top-left",
+      "kicker": "No Prep Knights and car meets",
+      "title": "Race in the storm drain",
+      "summary": "Belasco Sewer is a new No Prep Knights venue, and the other five venues get a fresh setup.",
+      "facts": [
+        "Haggle over car-meet race terms with counteroffers",
+        "Your lost pink-slip car is on display at that night's meet",
+        "Return to the meet with one button after a race",
+        "Running wide past the lane edge no longer disqualifies you"
+      ]
+    },
+    {
+      "image": "dyno-tune.jpg",
+      "textSide": "top-left",
+      "kicker": "Fuel and exhaust",
+      "title": "Flames from real fuel",
+      "summary": "Exhaust flames and smoke now come from the fuel your engine doesn't burn.",
+      "facts": [
+        "Each fuel has its own flame, from gasoline to nitromethane",
+        "Nitromethane burns with a white core and a gold edge",
+        "Rich diesel tunes leave dark smoke behind the flame",
+        "Flames stay on the exhaust tip at speed",
+        "Race fuels cost less, especially at Alder Dragway"
+      ]
+    },
+    {
+      "image": "garage-build.jpg",
+      "textSide": "top-left",
+      "kicker": "Garage and tuning",
+      "title": "Build it, tune it, share it",
+      "summary": "Share a build from the garage computer and push your engine further.",
+      "facts": [
+        "Export a build and its fuel setup as a ZIP to share",
+        "New Alcohol Race and Top Fuel injection tiers",
+        "Automatic clutch and converter limits follow your tuned power",
+        "Rename or delete saved Fuel & Ignition maps",
+        "Remove or delete Engine Works blueprints"
+      ]
+    },
+    {
+      "image": "drift-playground.jpg",
+      "textSide": "top-left",
+      "kicker": "Events, jobs and fixes",
+      "title": "Drift Playground and fixes",
+      "summary": "A new drift event opens on West Coast, and jobs, repairs and long sessions get a round of fixes.",
+      "facts": [
+        "Drift Playground replaces Drift Loop Remaster",
+        "Five drift events have new score goals",
+        "Long play sessions stay smoother",
+        "Job Broker keeps every load in view after travel and pickups",
+        "One loaner cut per delivery, and never below zero"
+      ]
+    }
+  ]
+}

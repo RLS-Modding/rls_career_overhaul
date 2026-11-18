@@ -1,0 +1,44 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "burnside/rls_stu_loworbit_04",
+    "configId": "rls_stu_loworbit_04",
+    "model": "burnside",
+    "config": "/vehicles/burnside/rls_stu_loworbit_04.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "sourcePack": "rls_stu_leonard",
+    "driverId": "roman_pearce",
+    "driverName": "Kian Lawson",
+    "builder": "loworbit",
+    "classIds": [
+      "stu_leonard_850"
+    ],
+    "approvedClassIds": [
+      "stu_leonard_850"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "847eab7a1f9236d3c72ce50fdfe926d869ebc77ed50fadcf3fcf1021fcc0c4d1",
+    "traits": {
+      "drivetrain": "RWD",
+      "years": {
+        "min": 1953,
+        "max": 1953
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.8190754421193,
+      "runId": "REPAIR-20261026-D-rls_stu_loworbit_04",
+      "evidenceConfigSHA256": "f0c01d9b2bb7ec9b9a447b2a70d570266dbd11ede7da0cbd288309d028d8a138",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/stu-leonard/final-metadata.json",
+      "repairEvidence": "/settings/motorsportEvents/approvalEvidence-20261026.json",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    }
+  }
+}

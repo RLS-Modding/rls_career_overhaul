@@ -1,0 +1,85 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Name": "Mira McAllister - Pro Turbo",
+  "Configuration": "Mira McAllister - Pro Turbo",
+  "Description": "Neon Works independently tuned turbo-only BX. Driver seat, full glass, doors and hood retained. Untested Pro League candidate. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Transmission": "Manual",
+  "Drivetrain": "RWD",
+  "Years": {
+    "min": 1989,
+    "max": 1994
+  },
+  "Motorsport": {
+    "version": 1,
+    "id": "bx/rls_proturbo_neon_04",
+    "configId": "rls_proturbo_neon_04",
+    "model": "bx",
+    "config": "/vehicles/bx/rls_proturbo_neon_04.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "rachel_teller",
+    "driverName": "Mira McAllister",
+    "builder": "Neon Works",
+    "classIds": [
+      "pro_turbo"
+    ],
+    "approvedClassIds": [
+      "pro_turbo"
+    ],
+    "leagueId": "pro_league",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "86dd61f15528fbd54008b5b0a08a318164a36116984123c2e47711e88ce7bab8",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "6-speed race manual",
+      "induction": "Turbocharger",
+      "nitrous": false,
+      "years": {
+        "min": 1989,
+        "max": 1994
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x4",
+          "part": "tire_F_26_4_15_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_15x10",
+          "part": "tire_R_26_10_15_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "bx_rollcage",
+          "part": "bx_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 7.5992233039913,
+      "runId": "PT-016",
+      "evidenceConfigSHA256": "8bcf938bbe03312810ac035787023d43a4d4baccbb745533d553fcb98fcb366b",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/pro-turbo/final-results.json",
+      "acceptedConfig": "outputs/pro-turbo/accepted/rls_proturbo_neon_04/rls_proturbo_neon_04.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_pro_turbo"
+  }
+}

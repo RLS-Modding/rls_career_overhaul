@@ -7,16 +7,6 @@
       "zoneName": "Asotv"
     },
     {
-      "sitesFile": "auction.sites.json",
-      "allParkingSpots": true,
-      "zoneName": "Auction"
-    },
-    {
-      "sitesFile": "burnout.sites.json",
-      "allParkingSpots": true,
-      "zoneName": "Burnout"
-    },
-    {
       "sitesFile": "businesses.sites.json",
       "allParkingSpots": true,
       "zoneName": "Businesses"
@@ -29,26 +19,6 @@
     {
       "sitesFile": "city.sites.json",
       "allParkingSpots": true
-    },
-    {
-      "sitesFile": "cleanup.sites.json",
-      "allParkingSpots": true,
-      "zoneName": "Cleanup"
-    },
-    {
-      "sitesFile": "competitiveRaceAI.sites.json",
-      "allParkingSpots": true,
-      "zoneName": "CompetitiveRaceAI"
-    },
-    {
-      "sitesFile": "demolition.sites.json",
-      "allParkingSpots": true,
-      "zoneName": "Demolition"
-    },
-    {
-      "sitesFile": "dynoSession.sites.json",
-      "allParkingSpots": true,
-      "zoneName": "DynoSession"
     },
     {
       "sitesFile": "engineShop.sites.json",
@@ -100,21 +70,6 @@
       "zoneName": "JoesJunk"
     },
     {
-      "sitesFile": "offroadRecovery.sites.json",
-      "allParkingSpots": true,
-      "zoneName": "OffroadRecovery"
-    },
-    {
-      "sitesFile": "pulling.sites.json",
-      "allParkingSpots": true,
-      "zoneName": "Pulling"
-    },
-    {
-      "sitesFile": "quarry.sites.json",
-      "allParkingSpots": true,
-      "zoneName": "Quarry"
-    },
-    {
       "sitesFile": "raceTab.sites.json",
       "allParkingSpots": true,
       "zoneName": "RaceTab"
@@ -123,11 +78,6 @@
       "sitesFile": "racingTeam.sites.json",
       "allParkingSpots": true,
       "zoneName": "RacingTeam"
-    },
-    {
-      "sitesFile": "temp.sites.json",
-      "allParkingSpots": true,
-      "zoneName": "Temp"
     },
     {
       "sitesFile": "travel.sites.json",

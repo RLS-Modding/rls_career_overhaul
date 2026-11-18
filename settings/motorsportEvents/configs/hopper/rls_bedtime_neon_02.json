@@ -1,0 +1,68 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "hopper/rls_bedtime_neon_02",
+    "configId": "rls_bedtime_neon_02",
+    "model": "hopper",
+    "config": "/vehicles/hopper/rls_bedtime_neon_02.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "han_lue",
+    "driverName": "Annika Emerson",
+    "builder": "Neon Works",
+    "classIds": [
+      "bedtime_bullies"
+    ],
+    "approvedClassIds": [
+      "bedtime_bullies"
+    ],
+    "leagueId": "street_kings",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "5029af73a27af55d5e9ebec310692bd6bf1047e2cdc389f2ba7ecbafc68fc59f",
+    "traits": {
+      "drivetrain": "4WD",
+      "transmission": "6-speed manual",
+      "induction": "Naturally aspirated",
+      "nitrous": true,
+      "years": {
+        "min": 1989,
+        "max": 2001
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x10",
+          "part": "tire_F_27_10_15_race",
+          "typeHint": null
+        },
+        {
+          "slot": "tire_R_15x10",
+          "part": "tire_R_27_10_15_race",
+          "typeHint": null
+        }
+      ],
+      "selectedRollCageParts": [],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.892196030684,
+      "runId": "BB-047",
+      "evidenceConfigSHA256": "90a47950417ae8be81a14ba7d8508084f8088196174ae93a3545fa1355d2cf91",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/bedtime/final-results.json",
+      "acceptedConfig": "outputs/bedtime/accepted/rls_bedtime_neon_02/rls_bedtime_neon_02.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_bedtime_bullies"
+  }
+}

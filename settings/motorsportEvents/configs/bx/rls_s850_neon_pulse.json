@@ -1,0 +1,73 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "bx/rls_s850_neon_pulse",
+    "configId": "rls_s850_neon_pulse",
+    "model": "bx",
+    "config": "/vehicles/bx/rls_s850_neon_pulse.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "ryan_cooper",
+    "driverName": "Nathan Montgomery",
+    "builder": "Neon Works",
+    "classIds": [
+      "super_stick"
+    ],
+    "approvedClassIds": [
+      "super_stick"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "3e09fa8c1388c8cb62d7f9236bdea44c7c6aee7636459eedda233c10acabbd24",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "6-speed H-pattern manual",
+      "induction": "Turbocharger",
+      "nitrous": true,
+      "years": {
+        "min": 1990,
+        "max": 1994
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x4",
+          "part": "tire_F_26_4_15_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_15x10",
+          "part": "tire_R_26_10_15_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "bx_rollcage",
+          "part": "bx_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.9249092422575,
+      "runId": "S850-036",
+      "evidenceConfigSHA256": "a44cb2c37b7b7e7a5c935c3b2463c53a291488da0c3758c5c9bab828db4b0c4e",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/stick850/final-results.json",
+      "acceptedConfig": "outputs/stick850/accepted/rls_s850_neon_pulse/rls_s850_neon_pulse.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_stickshift850"
+  }
+}

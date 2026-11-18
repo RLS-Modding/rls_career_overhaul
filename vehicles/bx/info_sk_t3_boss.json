@@ -1,0 +1,33 @@
+{
+  "Name": "Wraith",
+  "Configuration": "sk_t3_boss",
+  "Value": 55000,
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": true
+  },
+  "Description": "Pro BX \u2014 No Prep Knights boss.",
+  "Drag Times": {
+    "time_1000": 6.4925000816584,
+    "time_1_4": 7.6420000977814,
+    "time_1_8": 5.1455000676215,
+    "time_330": 3.465500049293,
+    "time_60": 1.2170000188053,
+    "velAt_1_4": 89.889996545322,
+    "velAt_1_8": 68.599548538566
+  },
+  "Reaction Time": 0.21600000187755,
+  "Drivetrain": "RWD",
+  "Transmission": "Manual",
+  "Fuel Type": "Gasoline",
+  "Years": {
+    "max": 1994,
+    "min": 1990
+  },
+  "dragConfigVersion": 3,
+  "dragFitmentVersion": 3,
+  "dragTimesRevalidated": false
+}

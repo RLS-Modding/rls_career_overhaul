@@ -222,7 +222,7 @@ function part.new(inputs)
         unlockTag = veh.unlockTag or (filter and filter.unlockTag),
         name = name,
         brand = brand,
-        mileage = math.random(0, 800),
+        mileage = veh.mileage or math.random(0, 800),
       },
       rewards = { money = veh.pay or 0 },
     }

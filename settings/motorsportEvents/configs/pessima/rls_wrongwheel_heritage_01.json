@@ -1,0 +1,73 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "pessima/rls_wrongwheel_heritage_01",
+    "configId": "rls_wrongwheel_heritage_01",
+    "model": "pessima",
+    "config": "/vehicles/pessima/rls_wrongwheel_heritage_01.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "jack_rourke",
+    "driverName": "Finn Malone",
+    "builder": "Heritage Speed",
+    "leagueId": "street_kings",
+    "classIds": [
+      "wrong_wheel_drive"
+    ],
+    "approvedClassIds": [
+      "wrong_wheel_drive"
+    ],
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "a376aea7ee5c3cc85d8bca67584f3d7611837ad1def6b3c9dae7b84c1711d152",
+    "traits": {
+      "drivetrain": "FWD",
+      "transmission": "6-speed Manual",
+      "induction": "Turbo",
+      "nitrous": true,
+      "years": {
+        "max": 1991,
+        "min": 1988
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x8_alt",
+          "part": "tire_F_26_8_15_alt_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_15x7",
+          "part": "tire_R_195_60_15_standard",
+          "typeHint": null
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "pessima_rollcage",
+          "part": "pessima_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.7389522104742,
+      "runId": "WW-025",
+      "evidenceConfigSHA256": "7f94376619d76ad7ba058bc2e06410c6156dc8112e82f5e84ceca2de08b349d1",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/wrongwheel/final-results.json",
+      "acceptedConfig": "outputs/wrongwheel/accepted/rls_wrongwheel_heritage_01/rls_wrongwheel_heritage_01.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_wrongwheel_drive"
+  }
+}

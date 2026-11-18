@@ -1273,7 +1273,7 @@
     {
       "id": "BruckellDealership",
       "name": "Bruckell Factory Store",
-      "description": "New Bruckell Bastions ordered direct from the factory and collected at the freight terminal.",
+      "description": "Factory-spec Bruckell vehicles ordered through the factory store and collected at the freight terminal.",
       "preview": "bruckellFactoryStore.jpg",
       "stock": 10,
       "salesChannel": "factory",
@@ -1310,9 +1310,6 @@
           "Brand": [
             "Bruckell"
           ],
-          "model_key": [
-            "bastion"
-          ],
           "Config Type": [
             "Factory"
           ],
@@ -1343,94 +1340,10 @@
               "max": 2025
             }
           }
-        },
-        {
-          "probability": 6,
-          "whiteList": {
-            "Mileage": {
-              "min": 0,
-              "max": 1000
-            },
-            "Years": {
-              "min": 2000,
-              "max": 2009
-            }
-          }
-        },
-        {
-          "probability": 5,
-          "whiteList": {
-            "Mileage": {
-              "min": 0,
-              "max": 1000
-            },
-            "Years": {
-              "min": 1990,
-              "max": 1999
-            }
-          }
-        },
-        {
-          "probability": 4,
-          "whiteList": {
-            "Mileage": {
-              "min": 0,
-              "max": 1000
-            },
-            "Years": {
-              "min": 1980,
-              "max": 1989
-            }
-          }
-        },
-        {
-          "probability": 3,
-          "whiteList": {
-            "Mileage": {
-              "min": 0,
-              "max": 1000
-            },
-            "Years": {
-              "min": 1970,
-              "max": 1979
-            }
-          }
-        },
-        {
-          "probability": 2,
-          "whiteList": {
-            "Mileage": {
-              "min": 0,
-              "max": 1000
-            },
-            "Years": {
-              "min": 1950,
-              "max": 1969
-            }
-          }
-        },
-        {
-          "probability": 1,
-          "whiteList": {
-            "Mileage": {
-              "min": 0,
-              "max": 1000
-            },
-            "Years": {
-              "min": 1900,
-              "max": 1949
-            }
-          }
         }
       ],
       "subFilterNames": [
-        "Sub-Filter 1",
-        "Sub-Filter 1 (Copy)",
-        "Sub-Filter 1 (Copy) (Copy)",
-        "Sub-Filter 1 (Copy) (Copy)",
-        "Sub-Filter 1 (Copy) (Copy)",
-        "Sub-Filter 1 (Copy) (Copy) (Copy)",
-        "Sub-Filter 1 (Copy) (Copy) (Copy) (Copy)"
+        "Sub-Filter 1"
       ],
       "fees": 500,
       "containsStarterVehicles": false,
@@ -1961,44 +1874,6 @@
         "timeLimit": 120,
         "licencePlate": ""
       },
-      "iconOffsetHeight": 1,
-      "iconLift": 0.25,
-      "playModeIconName": "poi_entrance_round"
-    },
-    {
-      "id": "CivettaDealership",
-      "name": "Civetta Factory Store",
-      "description": "New Civetta Scintillas ordered online and collected at the freight terminal.",
-      "preview": "civettaFactoryStore.jpg",
-      "stock": 8,
-      "range": [0.98, 1, 1.08, 1.2],
-      "associatedOrganization": "CivettaDealership",
-      "salesChannel": "factory",
-      "discoverable": false,
-      "remotePurchaseOnly": true,
-      "remotePurchaseLevel": 0,
-      "garageDeliveryLevel": 2,
-      "deliveryDiscounts": {"3": 0.25},
-      "doors": [],
-      "parkingSpotNames": ["domesticOnline", "domesticOnlineBus"],
-      "freightPickupSpotNames": ["domesticOnline", "domesticOnlineBus"],
-      "activityAcceptProps": [{"keyLabel": "New Vehicles"}],
-      "filter": {
-        "whiteList": {
-          "Brand": ["Civetta"],
-          "model_key": ["scintilla"],
-          "Config Type": ["Factory"],
-          "Years": {"min": 2010, "max": 2035}
-        },
-        "blackList": {"Config Type": ["Frame"]}
-      },
-      "subFilters": [
-        {"probability": 1, "whiteList": {"Years": {"min": 2010, "max": 2035}}}
-      ],
-      "subFilterNames": ["Current Factory Catalog"],
-      "fees": 500,
-      "containsStarterVehicles": false,
-      "testDrive": {"abandonFees": 250, "timeLimit": 120, "licencePlate": ""},
       "iconOffsetHeight": 1,
       "iconLift": 0.25,
       "playModeIconName": "poi_entrance_round"

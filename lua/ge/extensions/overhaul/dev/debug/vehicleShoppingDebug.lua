@@ -77,7 +77,7 @@ local function recompute()
     for idx, filter in ipairs(filters) do
       local matches = {}
       for _, vehInfo in ipairs(eligible) do
-        if util_configListGenerator.doesVehiclePassFilter(vehInfo, filter) then
+        if overhaul_career_market_vehicleShopping.doesVehiclePassFilter(vehInfo, filter) then
           table.insert(matches, {
             model = vehInfo.model_key,
             config = vehInfo.key,
@@ -108,15 +108,16 @@ local function simulateDealerships()
 
     -- generate the vehicles without duplicating vehicles that are already in the dealership
     local eligibleVehiclesWithoutDealershipVehicles = overhaul_career_market_vehicleShopping.getEligibleVehiclesWithoutDealershipVehicles(eligibleVehicles, seller)
-    local newRandomVehicleInfos = util_configListGenerator.getRandomVehicleInfos(seller, numberOfVehiclesToGenerate, eligibleVehiclesWithoutDealershipVehicles, "adjustedPopulation")
+    local newRandomVehicleInfos = overhaul_career_market_vehicleShopping.previewSellerStock(seller, eligibleVehiclesWithoutDealershipVehicles).draw(numberOfVehiclesToGenerate)
     arrayConcat(randomVehicleInfos, newRandomVehicleInfos)
 
     -- generate the remaining vehicles without a duplicate check
     local numberOfMissingVehicles = numberOfVehiclesToGenerate - tableSize(newRandomVehicleInfos)
     if numberOfMissingVehicles > 0 then
       log("I", "Career", "Generating " .. numberOfMissingVehicles .. " more vehicles without duplicate check for " .. seller.id)
+      local fullPreview = overhaul_career_market_vehicleShopping.previewSellerStock(seller, eligibleVehicles)
       for i = 1, numberOfMissingVehicles do
-        local newRandomVehicleInfos = util_configListGenerator.getRandomVehicleInfos(seller, 1, eligibleVehicles, "adjustedPopulation")
+        local newRandomVehicleInfos = fullPreview.draw(1)
         arrayConcat(randomVehicleInfos, newRandomVehicleInfos)
       end
     end

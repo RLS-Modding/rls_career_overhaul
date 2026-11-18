@@ -1,0 +1,88 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Name": "Austin Barrett",
+  "Configuration": "Austin Barrett - Pro All-Motor",
+  "Description": "Heritage Speed. Naturally aspirated competition build; drag tires on both axles, lights, doors, hood and glass retained. Tested healthy at Alder: 10.154 s quarter-mile. Manual; 703 engine hp, 1710 kg. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Induction Type": "NA",
+  "Drivetrain": "RWD",
+  "Transmission": "Manual",
+  "Power": 703,
+  "Weight": 1710,
+  "Years": {
+    "max": 1971,
+    "min": 1969
+  },
+  "Motorsport": {
+    "version": 1,
+    "id": "barstow/rls_pam_heritage_02",
+    "configId": "rls_pam_heritage_02",
+    "model": "barstow",
+    "config": "/vehicles/barstow/rls_pam_heritage_02.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "karol_monroe",
+    "driverName": "Austin Barrett",
+    "builder": "Heritage Speed",
+    "classIds": [
+      "pro_motor"
+    ],
+    "approvedClassIds": [
+      "pro_motor"
+    ],
+    "leagueId": "pro_league",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "2a1feadd2b39ec12541c48bdcba4ef7e33a7e252f2642f03cc381ac2b0fc951e",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "Manual",
+      "induction": "Naturally aspirated",
+      "nitrous": false,
+      "years": {
+        "max": 1971,
+        "min": 1969
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x4",
+          "part": "tire_F_26_4_15_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_15x10",
+          "part": "tire_R_26_10_15_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "barstow_rollcage",
+          "part": "barstow_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 10.153595964044,
+      "runId": "PAM-025",
+      "evidenceConfigSHA256": "0ac677216cb2a5fb581313fe7b0b752a5b44adf8b36758af717fbfd1e7aa4299",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/pro-allmotor/final-metadata.json",
+      "acceptedConfig": "outputs/pro-allmotor/accepted/rls_pam_heritage_02/rls_pam_heritage_02.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_pro_allmotor"
+  }
+}

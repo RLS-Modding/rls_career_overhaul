@@ -127,6 +127,7 @@ export const phoneTopics = [
         body: [
           'Notification settings live here instead of inside individual job or finance apps.',
           'Turn down channels you do not care about so important job and payment alerts stay visible.',
+          'Drag down from the top of the phone to open the Notification Center, where notifications from this session wait, grouped by app, until you open or clear them.',
         ],
       },
     ],

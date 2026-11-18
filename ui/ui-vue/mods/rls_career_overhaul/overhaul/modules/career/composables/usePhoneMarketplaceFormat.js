@@ -69,6 +69,14 @@ export function mileageText(mileageMeters) {
 }
 
 /**
+ * Estimated market value of a listing you can buy, at today's vehicle buy market.
+ * The asking price already includes that market, so compare against this value, as the purchase screen does.
+ */
+export function buyMarketValue(vehicle) {
+  return Number(vehicle?.marketValueAdjusted || vehicle?.marketValue || 0)
+}
+
+/**
  * How an asking price or an offer sits against estimated market value.
  * Returns null when there is no market value to compare against, so callers can hide the chip.
  */

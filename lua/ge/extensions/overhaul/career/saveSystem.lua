@@ -37,6 +37,8 @@ local AUTOSAVE_STOP_TOLERANCE_SQ = AUTOSAVE_STOP_TOLERANCE * AUTOSAVE_STOP_TOLER
 local SAVE_IN_FLIGHT_TIMEOUT_S = 45
 local STOP_SAMPLE_INTERVAL = 0.25 -- without a queued save the stop time is only sampled this often
 local WRITE_BUDGET_MS = 2.5
+-- A transaction save finishes sooner without long frames: the player keeps control while it writes.
+local FOREGROUND_WRITE_BUDGET_MS = 8
 local EXIT_WRITE_BUDGET_MS = 1000 -- leaving the level or game waits for the save, so it drains what is ready
 local WRITE_OPS_CAP = 1024
 local REUSE_MIN_BYTES = 16384 -- smaller captures are always encoded again
@@ -64,6 +66,9 @@ local saveTransition
 local queueSave = false
 local saveInProgress = false
 local pendingForceSave = false
+local pendingForegroundSave = false
+-- True only while every request merged into the queued save asked to skip live vehicle capture.
+local pendingSkipLiveCapture = false
 local pendingSaveName = nil
 local pendingVehiclesThumbnailUpdate
 local pendingManualSave = false
@@ -80,6 +85,8 @@ local saveGeneration = 0
 local activeSaveGeneration = 0
 local inFlightSaveName = nil
 local inFlightForceSave = false
+local inFlightForegroundSave = false
+local inFlightSkipLiveCapture = false
 local inFlightVehiclesThumbnailUpdate
 local infoData
 local saveDate
@@ -467,6 +474,7 @@ end
 local function clearQueuedSave()
   queueSave = false
   pendingForceSave, pendingManualSave = false, false
+  pendingForegroundSave, pendingSkipLiveCapture = false, false
   pendingSaveName, pendingVehiclesThumbnailUpdate = nil, nil
   pendingSaveSuccessSound = false
 end
@@ -971,9 +979,12 @@ local function abortSaveInFlight(reason)
   activeWriters = {}
   resetQueues()
   table.clear(asyncSaveExtensions)
+  -- The retry is an ordinary save: it runs later, so it asks the cars again.
+  pendingSkipLiveCapture = false
   queueSave = isCareerActive()
   pendingManualSave = pendingManualSave or inFlightManualSave
   pendingForceSave = pendingForceSave or inFlightForceSave
+  pendingForegroundSave = pendingForegroundSave or inFlightForegroundSave
   pendingSaveName = pendingSaveName or inFlightSaveName
   mergeVehiclesThumbnailUpdate(inFlightVehiclesThumbnailUpdate)
   -- Never restore a complete stamp over partially replaced files.
@@ -984,13 +995,14 @@ local function abortSaveInFlight(reason)
     exitBypassReady = true
     exitFlush = false
   end
+  -- Keep full native diagnostics in the toast so CI/tests and support can see mkdir/copy detail.
   local detail = tostring(reason or "unknown error")
-  if #detail > 180 then detail = detail:sub(1, 177) .. "..." end
   local playerTitle = "Career save failed"
   local playerMsg = waitingForExit
     and "Your last good save is kept. Press Ctrl+L again, or exit again, to continue without saving."
     or "Your last good save is kept. Try Save again later. If you need to leave, press Ctrl+L twice to reload without saving."
-  guihooks.trigger("toastrMsg", {type="error", label="career-save", title=playerTitle, msg=playerMsg .. " (" .. detail .. ")", config={timeOut=20000}})
+  guihooks.trigger("toastrMsg", {type="error", label="career-save", title=playerTitle, msg=playerMsg .. " (" .. detail .. ")", config={timeOut=15000}})
+  -- "failed" clears the Saving indicator (see saveStatus.js); reason/detail/exitBypassReady stay for soft-lock recovery.
   guihooks.trigger("OverhaulSaveStatus", {state = "failed", reason = playerMsg, detail = detail, exitBypassReady = exitBypassReady == true})
   lifecycle.finish(saveTransition, "failed", {reason = reason})
   trace({kind = "finish", result = "failed", generation = activeSaveGeneration, reason = tostring(reason)})
@@ -1179,10 +1191,13 @@ local function tryStartPendingSave()
   if shouldDeferAutosave() then return end
   local name, force, vehicles = pendingSaveName, pendingForceSave, pendingVehiclesThumbnailUpdate
   inFlightManualSave = pendingManualSave
+  inFlightForegroundSave, pendingForegroundSave = pendingForegroundSave, false
+  inFlightSkipLiveCapture, pendingSkipLiveCapture = pendingSkipLiveCapture and not exitFlush, false
   pendingManualSave, pendingForceSave, queueSave = false, false, false
   pendingSaveName, pendingVehiclesThumbnailUpdate = nil, nil
   trace({kind = "start", saveName = name, force = force == true, manual = inFlightManualSave == true,
-    thumbnails = type(vehicles) == "table" and #vehicles or 0, generation = saveGeneration + 1, exit = exitFlush == true})
+    thumbnails = type(vehicles) == "table" and #vehicles or 0, generation = saveGeneration + 1, exit = exitFlush == true,
+    liveCapture = not inFlightSkipLiveCapture})
   saveCurrentActual(vehicles, name, force)
 end
 flow.startPending = tryStartPendingSave
@@ -1199,6 +1214,9 @@ local function queueSaveRequest(vehiclesThumbnailUpdate, arg2, arg3)
   mergeVehiclesThumbnailUpdate(options.vehiclesThumbnailUpdate or vehiclesThumbnailUpdate)
   pendingManualSave = pendingManualSave or manual
   pendingForceSave = pendingForceSave or options.force == true
+  pendingForegroundSave = pendingForegroundSave or options.foreground == true
+  if saveInProgress and options.foreground == true then inFlightForegroundSave = true end
+  pendingSkipLiveCapture = options.liveCapture == false and (not queueSave or pendingSkipLiveCapture)
   pendingSaveName = name or pendingSaveName
   pendingSaveSuccessSound = pendingSaveSuccessSound or options.playSuccessSound == true or arg2 == true
   queueSave = true
@@ -1261,7 +1279,9 @@ end
 local function pumpSaveWrites()
   writeFrames = writeFrames + 1
   frameEncodeMs, frameIoMs = 0, 0
-  local drained, count, started = runWrites((exitFlush or pendingExit) and EXIT_WRITE_BUDGET_MS or WRITE_BUDGET_MS)
+  local budget = (exitFlush or pendingExit) and EXIT_WRITE_BUDGET_MS
+    or inFlightForegroundSave and FOREGROUND_WRITE_BUDGET_MS or WRITE_BUDGET_MS
+  local drained, count, started = runWrites(budget)
   if not drained then return false end
   if timingLog then
     log('D', 'saveSystem', string.format('save frame work_ms=%.3f encode_ms=%.3f write_ms=%.3f operations=%d remaining=%d', clockMs() - started, frameEncodeMs, frameIoMs, count, #writeQueue - writeIndex + 1))
@@ -1478,6 +1498,8 @@ M.clearRequestTrace = function() requestTrace = {} end
 M.getSaveKeyCoverage = getSaveKeyCoverage
 M.isSaveBusy = isSaveBusy
 M.isSavePending = isSavePending
+-- False while a transaction save keeps spawned cars' last known state instead of asking each car.
+M.capturesLiveVehicles = function() return not (saveInProgress and inFlightSkipLiveCapture) end
 M.flushSaveForExit = flushSaveForExit
 M.requestLuaReload = requestLuaReload
 M.onOverhaulActive = onOverhaulActive
@@ -1495,6 +1517,7 @@ M.jsonWriteFileSafe = jsonWriteFileSafe
 M.captureSaveWrites = captureSaveWrites
 M.withFeatureWrites = function(required, callback, ...) return featureWrites.scope(required, callback, ...) end
 M.getSaveWriter = getSaveWriter
+M.getImmediateWriter = function() return directWriter end
 -- `priority` work only starts or finishes async steps; it runs ahead of queued encoding.
 M.deferSaveWork = function(callback, filename, priority)
   if saveInProgress then

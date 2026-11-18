@@ -2,7 +2,7 @@
      Copyright (C) RLS Modding
      SPDX-License-Identifier: AGPL-3.0-only -->
 
-<link rel="stylesheet" type="text/css" href="/ui/modModules/overhaulDynoSessionHud/overhaulDynoSessionHud.css" />
+<link rel="stylesheet" type="text/css" href="/ui/modModules/overhaulDynoSessionHud/overhaulDynoSessionHud.css?v=choices-2" />
 
 <div class="dsh-root" style="visibility: hidden"
      ng-style="{visibility: visible ? 'visible' : 'hidden', left: hudLayout.x + 'px', top: hudLayout.y + 'px'}"
@@ -13,11 +13,23 @@
         <div class="dsh-title">Dyno Session</div>
         <div class="dsh-subtitle">{{ state.vehicleName || 'Current Vehicle' }}</div>
       </div>
-      <div class="dsh-stage" ng-class="qualityClass()">{{ isPulling() ? formatStage(state.pullStage) : formatPhase() }}</div>
+      <div class="dsh-stage">{{ isPulling() ? formatStage(state.pullStage) : formatPhase() }}</div>
     </div>
 
     <div class="dsh-status">{{ statusText() }}</div>
-
+    <div class="dsh-ready" ng-if="state.phase === 'ready' || state.phase === 'complete' || state.phase === 'pulling'">
+      <div class="dsh-choice-grid dsh-load-choices" role="group" aria-label="Dyno load">
+        <strong>Dyno Load</strong>
+        <button type="button" class="dsh-btn" bng-nav-item ng-repeat="preset in loadPresets" ng-class="{'dsh-btn-primary': transmissionChoice.loadPreset === preset.id, 'dsh-btn-secondary': transmissionChoice.loadPreset !== preset.id}" ng-disabled="state.phase === 'pulling'" ng-click="transmissionChoice.loadPreset=preset.id" ng-attr-aria-pressed="{{transmissionChoice.loadPreset === preset.id}}">{{preset.label}}</button>
+      </div>
+      <small>Matched to your engine and gear. Light lets it accelerate faster; Heavy adds resistance. The load curve stays fixed during the pull.</small>
+    </div>
+    <div class="dsh-ready" ng-if="state.transmission.supported && (state.phase === 'ready' || state.phase === 'complete' || state.phase === 'pulling')">
+      <div class="dsh-choice-grid dsh-gear-choices" role="group" aria-label="Hold gear"><span>Hold gear</span><button type="button" class="dsh-btn" bng-nav-item ng-disabled="state.phase === 'pulling'" ng-class="{'dsh-btn-primary': !transmissionChoice.holdGear, 'dsh-btn-secondary': !!transmissionChoice.holdGear}" ng-click="transmissionChoice.holdGear=0" ng-attr-aria-pressed="{{!transmissionChoice.holdGear}}">Off</button><button type="button" class="dsh-btn" bng-nav-item ng-repeat="g in state.transmission.gears" ng-disabled="state.phase === 'pulling'" ng-class="{'dsh-btn-primary': transmissionChoice.holdGear === g.gear, 'dsh-btn-secondary': transmissionChoice.holdGear !== g.gear}" ng-click="transmissionChoice.holdGear=g.gear" ng-attr-aria-pressed="{{transmissionChoice.holdGear === g.gear}}">{{holdGearLabel(g)}}</button></div>
+      <small ng-if="transmissionChoice.holdGear">Start the pull and select Drive. The gearbox shifts to this gear and holds until the run ends.</small>
+      <label ng-if="transmissionChoice.holdGear && state.transmission.lockupSupported"><input type="checkbox" ng-model="transmissionChoice.lockup" ng-disabled="state.phase === 'pulling'" /> Converter lockup during pull</label>
+      <small ng-if="transmissionChoice.holdGear && transmissionChoice.lockup">Uses the fitted clutch; excess torque can still cause slip.</small>
+    </div>
     <div class="dsh-offer" ng-if="state.phase === 'offer' || state.phase === 'starting'">
       <div class="dsh-copy">
         <span ng-if="state.ownerBenefit"><strong>Free — Owner benefit</strong>. Unlimited pulls.</span><span ng-if="!state.ownerBenefit">Run a three-pull dyno session for <strong>${{ state.fee || 0 }}</strong>.</span> The car will be placed on the dyno, and tire wear and thermals will be disabled for the session.
@@ -62,7 +74,7 @@
       </div>
       <div class="dsh-row">
         <span>Instructions</span>
-        <strong>Start the engine, select a high forward gear, then arm the pull.</strong>
+        <strong>Arm the pull to start the engine, then select a high forward gear.</strong>
       </div>
       <div class="dsh-row">
         <span>Pulls Remaining</span>
@@ -99,8 +111,7 @@
       </div>
       <div class="dsh-counts">
         <span>Pull {{ state.pullsUsed || 0 }} / {{ state.unlimitedPulls ? "Unlimited pulls" : state.pullLimit }}</span>
-        <span>Clean {{ state.acceptedSampleCount || 0 }}</span>
-        <span>Rejected {{ state.rejectedSampleCount || 0 }}</span>
+
       </div>
     </div>
 
@@ -116,11 +127,7 @@
           <strong>{{ resultTorque() }}</strong>
           <small>{{ resultTorqueRpm() }}</small>
         </div>
-        <div class="dsh-result-card">
-          <span>Pull Quality</span>
-          <strong>{{ resultQuality() }}</strong>
-          <small>{{ displayResult().acceptedSampleCount || 0 }} accepted / {{ displayResult().rejectedSampleCount || 0 }} rejected</small>
-        </div>
+
       </div>
       <div class="dsh-curve-wrap" ng-if="powerCurvePoints()">
         <div class="dsh-curve-legend">
@@ -178,9 +185,7 @@
       </div>
     </div>
 
-    <div class="dsh-flags" ng-if="flagList.length">
-      <span ng-repeat="flag in flagList track by flag">{{ flag }}</span>
-    </div>
+
 
     <div class="dsh-actions" ng-if="!isPulling()">
       <button type="button" class="dsh-btn dsh-btn-primary" data-dsh-action="start" ng-if="(state.phase === 'offer' || state.phase === 'starting') && !state.repairRequired" ng-disabled="!canStartSession()">{{ state.ownerBenefit ? "Start Session — Free — Owner benefit" : "Start Session — $" + (state.fee || 0) }}</button>
@@ -206,7 +211,7 @@
         <li>Apply at least <strong>90% throttle</strong>. Recording starts automatically.</li>
         <li>Hold the same gear and throttle through the pull. Lift below <strong>75% throttle</strong> to finish.</li>
       </ol>
-      <p>Avoid shifting or braking while recording; either will be reported in the pull warnings.</p>
+      <p>Automatics and DCTs can use Hold gear. Select it before arming, then choose that gear in the car. It releases when recording ends.</p>
       <label class="dsh-howto-preference">
         <input type="checkbox" ng-model="howToPreference.dontShowAgain" />
         <span>Don't show this automatically again</span>

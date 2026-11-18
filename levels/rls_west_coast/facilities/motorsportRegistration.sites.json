@@ -1,0 +1,23 @@
+{
+  "description": "Motorsport event registration parking.",
+  "dir": "/levels/west_coast_usa/facilities/",
+  "locations": {},
+  "name": "motorsportRegistration.sites.json",
+  "parkingSpots": [
+    {
+      "color": [1, 1, 1],
+      "customFields": {"names": {}, "tags": {}, "types": {}, "values": {}},
+      "isMultiSpot": false,
+      "name": "dragRegistration",
+      "oldId": 1,
+      "pos": [-182.750809, -189.739349, 118.87871462],
+      "rot": [0.0048947305734558, -0.0043728808029118, 0.96484679084551, 0.26273102161947],
+      "scl": [4.5, 10, 6],
+      "spotAmount": 1,
+      "spotDirection": "Back",
+      "spotOffset": 0,
+      "spotRotation": 0
+    }
+  ],
+  "zones": {}
+}

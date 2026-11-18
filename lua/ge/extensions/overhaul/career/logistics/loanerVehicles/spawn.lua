@@ -305,7 +305,7 @@ function spawning.new(inputs)
       spawnRuntime.batchResult.hardFail = true
     end
     if vehObj then
-      pcall(function() vehObj:delete() end)
+      pcall(function() require('overhaul/lib/vehicles/removal').delete(vehObj) end)
     end
     if reason == "occupied" then
       if not offer then

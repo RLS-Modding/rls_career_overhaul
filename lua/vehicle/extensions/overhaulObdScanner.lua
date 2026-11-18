@@ -1,10 +1,13 @@
 -- GE API: activate, setWastegateOffsetPsi, setMaintenanceModeEnabled, restoreRecentObservations, requestState.
 -- Read state/readers, observations, parts/diagnostics, payload, wastegate, frame updates, requests and lifecycle.
 local calibratedAVToRPM = 9.549296596
+local boostControl=require('vehicle/rlsBoostControl')
 local M = {}
 local geCallback = require('vehicle/overhaul/geCallback')
 
 -- Config and state --------------------------------------------------------------------------------
+local FUEL_PULL_LOAD, FUEL_PULL_RPM_FRACTION, FUEL_PULL_MIN_SECONDS, FUEL_PULL_GAP_SECONDS = 0.75, 0.4, 0.5, 1.5
+local fuelPull, lastFuelPull, ensureWastegateWrap
 local UPDATE_INTERVAL = 0.20
 local RECENT_EVENT_SECONDS = 300
 local RECENT_HANDOFF_INTERVAL = 1
@@ -269,6 +272,18 @@ local function registerDamageListener()
   end
 end
 
+-- A vehicle reset can clear the registry without delivering a false delta.
+-- Runs on the timed update, not every frame.
+local function reconcileRecentDamageEvents()
+  for _, event in pairs(recentDamageEvents) do
+    local active = trackerDamageActive(event.group, event.name)
+    if active ~= nil and active ~= event.active then
+      event.active = active
+      event.secondsRemaining = RECENT_EVENT_SECONDS
+    end
+  end
+end
+
 local function updateRecentDamageEvents(elapsed)
   for key, event in pairs(recentDamageEvents) do
     if event.active then
@@ -372,12 +387,21 @@ local function restoreRecentObservations(state)
     if event.group and event.name then
       local key = damageEventKey(event.group, event.name)
       local existing = recentDamageEvents[key]
+      -- History survives same-object reloads, but only current damage can assert a fault.
+      local live = trackerDamageActive(event.group, event.name)
+      local active = live == true or (live == nil and existing and existing.active == true) or false
+      local remaining = math.min(RECENT_EVENT_SECONDS, math.max(0, number(event.secondsRemaining) or 0))
+      if active or (existing and existing.active) then
+        remaining = RECENT_EVENT_SECONDS
+      elseif existing then
+        -- Repeated monitor setup must not restart an already-cleared event's history.
+        remaining = number(existing.secondsRemaining) or 0
+      end
       recentDamageEvents[key] = {
         group = event.group,
         name = event.name,
-        active = event.active == true or (existing and existing.active == true) or false,
-        secondsRemaining = math.max(number(event.secondsRemaining) or 0,
-          existing and number(existing.secondsRemaining) or 0),
+        active = active,
+        secondsRemaining = remaining,
       }
     end
   end
@@ -964,6 +988,186 @@ local function readScannerEngineLimits(electricValues, engine, hasElectricDrive,
   return overtorqueThreshold, overrevThresholdRpm, ecuLimiterRpm, engineRpm, generatorRunning, motorBroken, motorDisabled, motorHasEnergy, propulsionRpm
 end
 
+local function fuelSystemKind(state)
+  if type(state)=="table" and state.tune and state.tune.fuelType=="diesel" then return "diesel" end
+  if type(state) ~= "table" or state.conversion ~= true then return "gasoline" end
+  if state.conversionKind == "nitromethane" then return "nitromethane" end
+  if state.conversionKind == "methanol" then return "methanol" end
+  return "ethanol"
+end
+
+local function fuelSystemLabel(kind)
+  if kind=="diesel" then return "Diesel fuel system" end
+  if kind == "nitromethane" then return "Nitro 90" end
+  if kind == "methanol" then return "M100" end
+  if kind == "ethanol" then return "Flex-fuel" end
+  return "Standard gasoline"
+end
+
+local function ethanolGradeLabel(fraction)
+  local percent = math.floor((fraction * 100) * 10 + 0.5) / 10
+  if percent == math.floor(percent) then return string.format("E%d", percent) end
+  return string.format("E%.1f", percent)
+end
+
+local function fuelInUseLabel(telemetry, liters)
+  if liters and liters <= 0.05 then return "Empty" end
+  local nitro = number(telemetry.nitromethane) or 0
+  local methanol = number(telemetry.methanol) or 0
+  local ethanol = number(telemetry.ethanol) or 0
+  if nitro > 0.001 then
+    if math.abs(nitro - 0.9) < 0.002 and math.abs(methanol - 0.1) < 0.002 then return "Nitro 90" end
+    return "Mixed nitro fuel"
+  end
+  if methanol >= 0.98 then return "M100" end
+  if methanol > 0.001 then return "Mixed fuels" end
+  return ethanolGradeLabel(ethanol)
+end
+
+local function connectedFuelLiters(snapshot, record)
+  local names = record.tanks
+  if type(names) ~= "table" then return nil end
+  local total, seen = 0, false
+  for _, tankName in pairs(names) do
+    local tank = snapshot.tanks and snapshot.tanks[tankName]
+    if type(tank) == "table" then
+      seen = true
+      total = total + (number(tank.liters) or 0)
+    end
+  end
+  if not seen then return nil end
+  return total
+end
+
+-- Track full-load running and keep the readings of the latest pull: lambda at
+-- its highest RPM, and the peak retard and delivery duty anywhere in it.
+local function observeFuelPull(engine, dt)
+  local runtime = extensions and extensions.rlsFuelRuntime
+  local record
+  if isCombustionEngine(engine) and (engine.requiredEnergyType == "gasoline" or engine.requiredEnergyType == "diesel")
+      and type(runtime) == "table" and type(runtime.getSnapshot) == "function" then
+    local ok, snapshot = pcall(runtime.getSnapshot)
+    record = ok and type(snapshot) == "table" and snapshot.engines and snapshot.engines[engine.name] or nil
+  end
+  local telemetry = type(record) == "table" and type(record.telemetry) == "table" and record.telemetry or nil
+  local maxRPM = telemetry and type(record.profile) == "table" and number(record.profile.maxRPM)
+  local load, rpm = telemetry and number(telemetry.load), telemetry and number(telemetry.rpm)
+  if not (maxRPM and maxRPM > 0 and load and rpm and load >= FUEL_PULL_LOAD and rpm >= maxRPM * FUEL_PULL_RPM_FRACTION) then
+    if fuelPull then
+      fuelPull.gap = fuelPull.gap + dt
+      if fuelPull.gap > FUEL_PULL_GAP_SECONDS then fuelPull = nil end
+    end
+    return
+  end
+  if not fuelPull or fuelPull.engine ~= engine.name then
+    fuelPull = { engine = engine.name, seconds = 0, gap = 0, peakRetardDeg = 0, knock = false, lean = false, rich = false }
+  end
+  fuelPull.gap = 0
+  fuelPull.seconds = fuelPull.seconds + dt
+  if rpm >= (fuelPull.rpm or 0) then
+    fuelPull.rpm = rpm
+    fuelPull.afr=number(telemetry.afr);fuelPull.targetAFR=number(telemetry.targetAFR)
+    fuelPull.lambda = number(telemetry.lambda)
+    fuelPull.targetLambda = number(telemetry.targetLambda)
+  end
+  fuelPull.peakRetardDeg = math.max(fuelPull.peakRetardDeg, number(telemetry.knockRetard) or 0)
+  local duty = number(telemetry.deliveryDuty)
+  if duty then fuelPull.peakDuty = math.max(fuelPull.peakDuty or duty, duty) end
+  -- Same thresholds as the live alerts below.
+  fuelPull.knock = fuelPull.knock or (number(telemetry.knock) or 0) > 0.05
+  fuelPull.lean = fuelPull.lean or (number(telemetry.leanSeverity) or 0) > 0.05
+  fuelPull.rich = fuelPull.rich or (number(telemetry.richSeverity) or 0) > 0.05
+  fuelPull.boostCut = fuelPull.boostCut or telemetry.boostFuelCut == true
+  if fuelPull.seconds >= FUEL_PULL_MIN_SECONDS then
+    lastFuelPull = {
+      engine = fuelPull.engine, secondsAgo = 0, rpm = fuelPull.rpm,
+      afr=fuelPull.afr,targetAFR=fuelPull.targetAFR,lambda = fuelPull.lambda, targetLambda = fuelPull.targetLambda,
+      peakRetardDeg = fuelPull.peakRetardDeg, peakDuty = fuelPull.peakDuty,
+      knock = fuelPull.knock, lean = fuelPull.lean, rich = fuelPull.rich, boostCut = fuelPull.boostCut,
+    }
+  end
+end
+
+-- Compact view of the engine the rest of this scan is already about.
+-- Thresholds match rlsFuelModel.warning and rlsFuelDamage.inspect so the
+-- scanner does not invent a second idea of "too lean" or "octane short".
+-- Named fuelSystem because `fuel` is already the tank level.
+local function fuelReport(engine)
+  if not isCombustionEngine(engine) or (engine.requiredEnergyType ~= "gasoline" and engine.requiredEnergyType ~= "diesel") then return nil end
+  local runtime = extensions and extensions.rlsFuelRuntime
+  if type(runtime) ~= "table" or type(runtime.getSnapshot) ~= "function" then
+    return { monitored = false, reason = "Fuel system data is unavailable." }
+  end
+  local ok, snapshot = pcall(runtime.getSnapshot)
+  if not ok or type(snapshot) ~= "table" then
+    return { monitored = false, reason = "Fuel system data is unavailable." }
+  end
+  local record = snapshot.engines and snapshot.engines[engine.name]
+  if type(record) ~= "table" then
+    local reason = "Fuel system not monitored."
+    for _, item in pairs(snapshot.unsupported or {}) do
+      if type(item) == "table" and item.name == engine.name and item.reason then
+        reason = item.reason
+        break
+      end
+    end
+    return { monitored = false, reason = reason }
+  end
+
+  local telemetry = type(record.telemetry) == "table" and record.telemetry or {}
+  local state = type(record.state) == "table" and record.state or {}
+  local profile = type(record.profile) == "table" and record.profile or {}
+  local failures = type(state.fuelFailures) == "table" and state.fuelFailures or {}
+  local kind = fuelSystemKind(state)
+  local liters = connectedFuelLiters(snapshot, record)
+  local empty = liters ~= nil and liters <= 0.05
+  local nitro = number(telemetry.nitromethane) or 0
+  local methanol = number(telemetry.methanol) or 0
+  local fuelAki = number(telemetry.aki)
+  local requiredAki = number(profile.requiredAKI)
+  local knock = number(telemetry.knock) or 0
+  local lean = number(telemetry.leanSeverity) or 0
+  local rich = number(telemetry.richSeverity) or 0
+  local retard = number(telemetry.knockRetard) or 0
+  local duty = number(telemetry.deliveryDuty)
+
+  return {
+    monitored = true,engine=engine.name,fuelType=profile.fuelType,boostTargetPsi=telemetry.boostTargetPsi,
+    system = fuelSystemLabel(kind),
+    fuelInUse = kind=="diesel" and (empty and "Empty" or "Diesel") or fuelInUseLabel(telemetry, liters),
+    requiredAki = requiredAki,
+    requirementEstimated = profile.estimated == true,
+    fuelAki = fuelAki,
+    afr=number(telemetry.afr),targetAFR=number(telemetry.targetAFR),injectorDuty=number(telemetry.injectorDuty),pumpDuty=number(telemetry.pumpDuty),
+    lambda = number(telemetry.lambda),
+    targetLambda = number(telemetry.targetLambda),
+    knockRetardDeg = retard,
+    knockControl = profile.knockControl == true,
+    lastPull = lastFuelPull and lastFuelPull.engine == engine.name and lastFuelPull or nil,
+    deliveryDuty = duty,
+    causedRings = failures.pistonRingsDamaged == true,
+    causedGasket = failures.headGasketBlown == true,
+    causedLockup = failures.lockedUp == true,
+    alerts = {
+      nitroKit = not empty and nitro > 0.001 and kind ~= "nitromethane",
+      nitroBlend = not empty and kind == "nitromethane" and (math.abs(nitro - 0.9) > 0.02 or math.abs(methanol - 0.1) > 0.02),
+      -- Nitro 90 is 10% methanol on purpose. Those methanol checks belong to
+      -- gasoline and flex-fuel cars, not to a nitro blend.
+      methanolKit = not empty and nitro <= 0.001 and kind ~= "nitromethane" and methanol > 0.001 and kind ~= "methanol",
+      methanolPurity = not empty and kind == "methanol" and methanol < 0.98,
+      mixedMethanol = not empty and nitro <= 0.001 and kind ~= "nitromethane" and methanol > 0.001 and methanol < 0.98,
+      ethanolUnconverted = not empty and (number(telemetry.ethanol) or 0) > 0.15 and kind == "gasoline",
+      octaneShort = kind~="diesel" and kind~="nitromethane" and kind~="methanol" and not empty and fuelAki ~= nil and requiredAki ~= nil and fuelAki + 0.25 < requiredAki,
+      knock = knock > 0.05,
+      lean = lean > 0.05,
+      rich = rich > 0.05,
+      knockRetard = retard > 0.25,
+      deliveryLimited = duty ~= nil and duty >= 1,
+      boostCut = telemetry.boostFuelCut == true,
+    },
+  }
+end
+
 local function buildState(devices)
   devices = devices or collectLiveDevices()
   local electricValues = devices.ev
@@ -1017,6 +1221,7 @@ local function buildState(devices)
     result, gearbox, clutch, clutchRatedTorque, clutchAvailableTorque, thermals, engineName,
     gearboxName, clutchName, flywheelName, centerCouplingName, transferCase
   )
+  result.fuelSystem = fuelReport(engine)
   return result
 end
 
@@ -1033,79 +1238,21 @@ local function eachCombustionEngine(callback)
 end
 
 local function applyCombinedWastegateOffset()
-  local combined = (wastegateModeBasePsi or 0) + (wastegateOffsetPsi or 0)
-  for _, original in pairs(originalWastegateSetters) do
-    if type(original) == "function" then
-      original(combined)
-    end
-  end
-end
-
-local function wrapEngineTurbo(engine)
-  local turbo = engine and engine.turbocharger
-  if not turbo or type(turbo.setWastegateOffset) ~= "function" then return false end
-  if originalWastegateSetters[turbo] then return false end
-  local original = turbo.rlsObdOriginalSetWastegateOffset or turbo.setWastegateOffset
-  originalWastegateSetters[turbo] = original
-  turbo.rlsObdOriginalSetWastegateOffset = original
-  turbo.setWastegateOffset = function(psi)
-    wastegateModeBasePsi = number(psi) or 0
-    original(wastegateModeBasePsi + (wastegateOffsetPsi or 0))
-  end
-  return true
-end
-
-local function captureDriveModeBase()
-  local dm = controller and controller.getController and controller.getController("driveModes")
-  if not dm or not dm.getCurrentDriveModeKey or not dm.getDriveModeData then return end
-  local data = dm.getDriveModeData(dm.getCurrentDriveModeKey())
-  local settings = data and data.settings
-  if type(settings) ~= "table" then return end
-  for _, setting in pairs(settings) do
-    if type(setting) == "table" and setting.type == "turbocharger" and setting.wastegateOffset ~= nil then
-      wastegateModeBasePsi = number(setting.wastegateOffset) or 0
-      applyCombinedWastegateOffset()
-      return
-    end
-  end
-end
-
-local function ensureWastegateWrap()
-  local newlyWrapped = false
   eachCombustionEngine(function(engine)
-    if wrapEngineTurbo(engine) then newlyWrapped = true end
+    if (wastegateOffsetPsi or 0) == 0 then
+      boostControl.release(engine, 'scanner')
+    else
+      boostControl.setProOffset(engine, wastegateOffsetPsi)
+    end
   end)
-  if newlyWrapped then captureDriveModeBase() end
-  return next(originalWastegateSetters) ~= nil
 end
-
+ensureWastegateWrap=function() applyCombinedWastegateOffset();return true end
 local function restoreVanillaWastegateOffset()
-  for turbo, original in pairs(originalWastegateSetters) do
-    if turbo then
-      turbo.setWastegateOffset = original
-      turbo.rlsObdOriginalSetWastegateOffset = nil
-    end
-    if type(original) == "function" then
-      original(wastegateModeBasePsi or 0)
-    end
-  end
-  originalWastegateSetters = {}
+  eachCombustionEngine(function(engine) boostControl.release(engine,'scanner') end)
 end
-
--- The stock turbo setter is wrapped only while a PRO tuner offset is applied.
 local function setWastegateOffsetPsi(psi)
-  psi = number(psi) or 0
-  wastegateOffsetPsi = psi
-  if psi == 0 then
-    restoreVanillaWastegateOffset()
-    return false
-  end
-  ensureWastegateWrap()
-  applyCombinedWastegateOffset()
-  return next(originalWastegateSetters) ~= nil
+  wastegateOffsetPsi=number(psi) or 0;applyCombinedWastegateOffset();return true
 end
-
--- Per-frame update --------------------------------------------------------------------------------
 local function expireRecentScannerObservations(elapsed)
   recentClutchHeatSeconds = math.max(0, recentClutchHeatSeconds - elapsed)
   recentMotorRestrictionSeconds = math.max(0, recentMotorRestrictionSeconds - elapsed)
@@ -1117,7 +1264,12 @@ local function expireRecentScannerObservations(elapsed)
 end
 
 local function updateGFX(dt)
+  if lastFuelPull then
+    lastFuelPull.secondsAgo=lastFuelPull.secondsAgo+math.max(0,tonumber(dt) or 0)
+    if lastFuelPull.secondsAgo>=300 then lastFuelPull=nil end
+  end
   if not activated then return end
+  observeFuelPull(getEngine(), tonumber(dt) or 0)
   local elapsed = number(dt) or 0
   timer = timer + elapsed
   recentHandoffTimer = recentHandoffTimer + elapsed
@@ -1128,6 +1280,7 @@ local function updateGFX(dt)
   end
   if timer < UPDATE_INTERVAL then return end
   timer = 0
+  reconcileRecentDamageEvents()
   if wastegateOffsetPsi ~= 0 then ensureWastegateWrap() end
   local devices = collectLiveDevices()
   local electricValues = devices.ev

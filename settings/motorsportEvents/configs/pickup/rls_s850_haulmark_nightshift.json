@@ -1,0 +1,79 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "pickup/rls_s850_haulmark_nightshift",
+    "configId": "rls_s850_haulmark_nightshift",
+    "model": "pickup",
+    "config": "/vehicles/pickup/rls_s850_haulmark_nightshift.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "cole_tanner",
+    "driverName": "Joel Sutton",
+    "builder": "Haulmark Racing",
+    "classIds": [
+      "super_stick"
+    ],
+    "approvedClassIds": [
+      "super_stick"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "03508f5fa320a42051b8f079dfecf7018d1f50cf0c66af21e634888f118c0e39",
+    "traits": {
+      "drivetrain": "AWD",
+      "transmission": "6-speed H-pattern manual",
+      "induction": "Supercharger",
+      "nitrous": true,
+      "years": {
+        "min": 1998,
+        "max": 2003
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "pickup_sparetire",
+          "part": "pickup_sparetire_5l",
+          "typeHint": null
+        },
+        {
+          "slot": "tire_F_15x10",
+          "part": "tire_F_285_40_15_race",
+          "typeHint": null
+        },
+        {
+          "slot": "tire_R_15x10",
+          "part": "tire_R_285_40_15_race",
+          "typeHint": null
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "pickup_rollcage",
+          "part": "pickup_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.793548882048,
+      "runId": "CAGES-pickup-final",
+      "evidenceConfigSHA256": "5e4e09726269f11735f6955a8ddc2d612231d3ae55538fddce9d180cd5854638",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/stick850/final-results.json",
+      "acceptedConfig": "outputs/stick850/accepted/rls_s850_haulmark_nightshift/rls_s850_haulmark_nightshift.pc",
+      "cageRetrofit": "outputs/cages-20261020/retrofit-result.json",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_stickshift850"
+  }
+}

@@ -217,7 +217,7 @@ function partFactory.new(inputs)
       return parts.services.buildErrorResult("Cart is empty.")
     end
 
-    inventoryId = tonumber(inventoryId)
+    inventoryId = inputs.normalizeInventoryId and inputs.normalizeInventoryId(inventoryId) or tonumber(inventoryId)
     if not inventoryId then
       return parts.services.buildErrorResult("Invalid vehicle.")
     end
@@ -240,7 +240,10 @@ function partFactory.new(inputs)
     local total = serviceTotal + tireTotal
     local stateBefore = inputs.deepCopy(vehicleData.maintenanceState)
     local computerStateBefore = inputs.deepCopy(vehicleData.maintenanceComputerState)
-    local paid, paymentMessage = payCartTotal(total)
+    local access = inputs.getDynoAccess and inputs.getDynoAccess(inventoryId)
+    local owner = access and access.service(inventoryId)
+    local paymentContext = owner and {mode = 'businessAccount', businessType = 'racingTeam', businessId = owner.businessId, inventoryId = inventoryId}
+    local paid, paymentMessage = payCartTotal(total, paymentContext)
     if not paid then
       return parts.services.buildErrorResult(paymentMessage or "Payment failed.")
     end
@@ -249,7 +252,7 @@ function partFactory.new(inputs)
       inventoryId, vehicleData, maintenanceState, uiState, services, tireAxleIds, cart.quoteRevision)
     if not committed then
       local refundAmount = tiresCommitted and serviceTotal or total
-      return rollBackCartCheckout(vehicleData, stateBefore, computerStateBefore, refundAmount, nil, commitError, tiresCommitted)
+      return rollBackCartCheckout(vehicleData, stateBefore, computerStateBefore, refundAmount, paymentContext, commitError, tiresCommitted)
     end
 
     logCartCheckout(inventoryId, total, services, tireAxleIds, maintenanceState)
@@ -268,7 +271,7 @@ function partFactory.new(inputs)
     if computerState.sessionMode ~= "dyno" then
       return nil
     end
-    if tonumber(inventoryId) ~= tonumber(computerState.activeInventoryId) then
+    if inventoryId == nil or tostring(inventoryId) ~= tostring(computerState.activeInventoryId) then
       return parts.services.buildErrorResult("The dyno maintenance vehicle changed.")
     end
     if #tableToList(cart.tireAxleIds) > 0 then

@@ -182,7 +182,9 @@ local function saveEnergyStorageData(data)
   fuelData = {}
   for _, tank in ipairs(data[1]) do
     -- only add tanks that this station can actually fill
-    if megajoulesPerReadableUnit[tank.energyType] and gasStationOffersFuelType(tank.energyType) then
+    if megajoulesPerReadableUnit[tank.energyType] and gasStationOffersFuelType(tank.energyType)
+      and not (gasStation and gasStation.rlsFuelExcludeGasoline and tank.energyType == 'gasoline')
+      and not (gasStation and gasStation.rlsFuelExcludeTypes and gasStation.rlsFuelExcludeTypes[tank.energyType]) then
       table.insert(fuelData, tank)
     end
   end
@@ -224,6 +226,18 @@ end
 local function startTransaction(_gasStation, vehObjId) -- RLS: vehObjId, the car the player walked up to
   if transaction then return end
   if not careerFuelContext.beginTransaction(vehObjId) then return end -- RLS
+  if _gasStation.rlsFuelReturn then careerFuelContext.setReturnContext(_gasStation.rlsFuelReturn) end
+  if not _gasStation.rlsFuelExcludeGasoline and overhaul_career_maintenance_fuelSystem then
+    local station = deepcopy(_gasStation)
+    station.rlsFuelReturn = careerFuelContext.getReturnContext()
+    station.rlsFuelRegularPrice = fuelSeam.getShopPricePerUnit(station, 'gasoline')
+    station.rlsFuelDieselPrice = fuelSeam.getShopPricePerUnit(station, 'diesel')
+    station.rlsFuelChargePrice = fuelSeam.getShopPricePerUnit(station, 'electricEnergy')
+    if overhaul_career_maintenance_fuelSystem.openPump(station, careerFuelContext.getFuelingVehicle()) then
+      careerFuelContext.releaseToFuelSystem()
+      return
+    end
+  end
   transaction = {}
   gasStation = _gasStation
   careerFuelContext.showStationPrices() -- RLS

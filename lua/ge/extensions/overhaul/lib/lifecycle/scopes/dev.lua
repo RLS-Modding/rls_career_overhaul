@@ -37,25 +37,25 @@ function M.isDebugModule(path)
 end
 
 -- Retained owners may use their own key checker instead of a replacement's.
-function M.isKeyValid(keyCheck)
-  if keyCheck then return keyCheck() and true or false end
+function M.isKeyValid(keyCheck, validateNow)
+  if keyCheck then return keyCheck(validateNow) and true or false end
   local extensionManager = capabilities.get('devKey')
-  return extensionManager and extensionManager.isDevKeyValid and extensionManager.isDevKeyValid() and true or false
+  return extensionManager and extensionManager.isDevKeyValid and extensionManager.isDevKeyValid(validateNow) and true or false
 end
 
 -- Debug panels load with the key.
 function M.debugPanelsEnabled()
-  return M.isKeyValid()
+  return M.isKeyValid(nil, true)
 end
 
 -- Dev tools (the dev console module, the phone tutorial replay) need the key.
 function M.devToolsEnabled()
-  return M.isKeyValid()
+  return M.isKeyValid(nil, true)
 end
 
 -- Console policy stays closed until both the creator key and its declared setting pass.
 function M.consoleEnabled()
-  if not M.isKeyValid() then
+  if not M.isKeyValid(nil, true) then
     return false
   end
   local settings = capabilities.get('developerSettings')

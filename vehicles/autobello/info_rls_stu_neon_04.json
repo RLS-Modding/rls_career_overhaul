@@ -1,0 +1,55 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Configuration": "Annika Ashford - Stu Leonard",
+  "Description": "Neon Works: autobello, 2.0L Water Cooled F4 Engine, Stage 3 Variable Boost Twin Turbochargers + 200 kW nitrous, Race 6-Speed Sequential Transaxle. Healthy qualifying pass 8.879930 s; identical saved-build confirmation 8.876152 s. West Coast quarter mile. Two passes do not establish all-condition repeatability. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Years": {
+    "min": 1968,
+    "max": 1968
+  },
+  "Drivetrain": "RWD",
+  "Fuel Type": "Gasoline",
+  "Author": "RLS / Neon Works",
+  "Motorsport": {
+    "version": 1,
+    "id": "autobello/rls_stu_neon_04",
+    "configId": "rls_stu_neon_04",
+    "model": "autobello",
+    "config": "/vehicles/autobello/rls_stu_neon_04.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "sourcePack": "rls_stu_leonard",
+    "driverId": "han_lue",
+    "driverName": "Annika Ashford",
+    "builder": "neon",
+    "classIds": [
+      "stu_leonard_850"
+    ],
+    "approvedClassIds": [
+      "stu_leonard_850"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained after shared-hardware migration. Recorded ETs are historical estimates; the current build has not been retimed or revalidated.",
+    "sourceConfigSHA256": "2a8357972d830a1cee97381d83d40ff148b8e409f9aa4076297ce277e0bb3056",
+    "traits": {
+      "drivetrain": "RWD",
+      "years": {
+        "min": 1968,
+        "max": 1968
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.8761524484147,
+      "runId": "STU-066",
+      "evidenceConfigSHA256": "976b444d579a56b2bd92f3e9755a7203ec8cc14e054c5a2494ad8ed4392f18f4",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/stu-leonard/final-metadata.json",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "Configuration": "Tessa Vale - No Prep",
+  "Description": "Silver Lunchbreak. Tier 1 racer. Highway no-prep quarter-mile: 12.921s at 113.05mph. Corner Shop Motors. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Corner Shop Motors",
+  "Name": "Tessa Vale",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 10.921089749794,
+    "time_1_4": 12.920963316224,
+    "time_1_8": 8.5264981586062,
+    "time_330": 5.6990874956379,
+    "time_60": 2.1168729505356,
+    "velAt_1_4": 50.535821225712,
+    "velAt_1_8": 39.803727885545
+  },
+  "Reaction Time": 0.3585470959217,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

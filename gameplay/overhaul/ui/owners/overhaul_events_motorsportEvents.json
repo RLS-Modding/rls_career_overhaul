@@ -1,0 +1,10 @@
+{
+  "id": "overhaul_events_motorsportEvents",
+  "order": 191,
+  "exports": {
+    "namespace": true,
+    "aliases": [],
+    "namespaceGroup": "other",
+    "namespaceOrder": 190
+  }
+}

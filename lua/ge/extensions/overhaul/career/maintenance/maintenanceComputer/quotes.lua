@@ -311,7 +311,8 @@ function partFactory.new(inputs)
 
   local function valueTrackedPart(vehicleData, partId, partInfo, partCondition)
     local part = nil
-    local isBusinessRecord = vehicleData.vehicleId ~= nil and vehicleData.id == nil
+    local isBusinessRecord = vehicleData.vehicleId ~= nil and (vehicleData.id == nil or
+      (inputs.getDynoAccess and inputs.getDynoAccess(vehicleData.id) ~= nil))
     if not isBusinessRecord and partInfo and partInfo.treePath then
       part = overhaul_career_parts_partInventory.getPart(vehicleData.id, partInfo.treePath)
     end

@@ -1,0 +1,331 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "pessima/rls_wrongwheel_heritage_04",
+    "configId": "rls_wrongwheel_heritage_04",
+    "model": "pessima",
+    "config": "/vehicles/pessima/rls_wrongwheel_heritage_04.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "tobey_marshall",
+    "driverName": "Gemma Maxwell",
+    "builder": "Heritage Speed",
+    "leagueId": "street_kings",
+    "classIds": [
+      "wrong_wheel_drive"
+    ],
+    "approvedClassIds": [
+      "wrong_wheel_drive"
+    ],
+    "eligibilityStatus": "Roster approval retained. Current build has separate assessor-accepted quarter-mile qualification evidence; recorded historical ETs remain historical estimates.",
+    "sourceConfigSHA256": "84fadd37685cf4acbf21a9d3861bcdbd48a228e5f64b07ce8e217eb732665dde",
+    "traits": {
+      "configId": "pessima/rls_wrongwheel_heritage_04",
+      "diesel": false,
+      "drivetrain": "FWD",
+      "manual": false,
+      "model": "pessima",
+      "nitrous": true,
+      "rollCage": true,
+      "sportTires": false,
+      "supercharger": false,
+      "tireFriction": {
+        "complete": true,
+        "source": "compiled-tread-nodes",
+        "wheels": [
+          {
+            "frictionCoefMax": 1.3,
+            "frictionCoefMin": 1.3,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1.3,
+            "slidingFrictionCoefMin": 1.3,
+            "source": "compiled-tread-nodes",
+            "wheel": "FL"
+          },
+          {
+            "frictionCoefMax": 1.3,
+            "frictionCoefMin": 1.3,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1.3,
+            "slidingFrictionCoefMin": 1.3,
+            "source": "compiled-tread-nodes",
+            "wheel": "FR"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "RL"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "RR"
+          }
+        ]
+      },
+      "tireFrictionCoefMax": 1.3,
+      "tireType": "mixed",
+      "tireTypes": [
+        "drag",
+        "standard"
+      ],
+      "tires": [
+        {
+          "part": "tire_f_26_8_15_alt_drag",
+          "slot": "/pessima_body/pessima_suspension_f/pessima_hub_f/wheel_f_5/tire_f_15x8_alt/tire_f_26_8_15_alt_drag",
+          "source": "installed-part-label",
+          "type": "drag"
+        },
+        {
+          "part": "tire_r_195_60_15_standard",
+          "slot": "/pessima_body/pessima_suspension_r/pessima_hub_r/wheel_r_5/tire_r_15x7/tire_r_195_60_15_standard",
+          "source": "installed-part-label",
+          "type": "standard"
+        }
+      ],
+      "truck": false,
+      "turbocharger": true,
+      "year": 1991,
+      "transmission": "6-speed sequential",
+      "induction": "Turbocharger",
+      "years": {
+        "max": 1991,
+        "min": 1988
+      }
+    },
+    "equipment": {
+      "evidence": "Hash-matched live class inspection and installed-parts tree; no new timing approval is asserted.",
+      "selectedTires": [
+        {
+          "slot": "/pessima_body/pessima_suspension_f/pessima_hub_f/wheel_f_5/tire_f_15x8_alt/tire_f_26_8_15_alt_drag",
+          "part": "tire_f_26_8_15_alt_drag",
+          "typeHint": "drag",
+          "source": "installed-part-label"
+        },
+        {
+          "slot": "/pessima_body/pessima_suspension_r/pessima_hub_r/wheel_r_5/tire_r_15x7/tire_r_195_60_15_standard",
+          "part": "tire_r_195_60_15_standard",
+          "typeHint": "standard",
+          "source": "installed-part-label"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "/pessima_body/pessima_rollcage/",
+          "part": "pessima_rollcage"
+        }
+      ],
+      "rollCage": true,
+      "tireFriction": {
+        "complete": true,
+        "source": "compiled-tread-nodes",
+        "wheels": [
+          {
+            "frictionCoefMax": 1.3,
+            "frictionCoefMin": 1.3,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1.3,
+            "slidingFrictionCoefMin": 1.3,
+            "source": "compiled-tread-nodes",
+            "wheel": "FL"
+          },
+          {
+            "frictionCoefMax": 1.3,
+            "frictionCoefMin": 1.3,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1.3,
+            "slidingFrictionCoefMin": 1.3,
+            "source": "compiled-tread-nodes",
+            "wheel": "FR"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "RL"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "RR"
+          }
+        ]
+      },
+      "nitrous": {
+        "addedPower": 250,
+        "cutInRPM": 4000,
+        "minimumGear": 2,
+        "purgeValves_nodes": [
+          173,
+          155
+        ],
+        "addedPowerUnits": "kW"
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.550191676999168,
+      "runId": "COMPLIANCE-20261026-rls_wrongwheel_heritage_04",
+      "evidenceConfigSHA256": "a2f52d5989be0aa1136a9d9488ae4a45b18add95b23685e6d46da324d1999765",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/wrongwheel/final-results.json",
+      "acceptedConfig": "outputs/wrongwheel/accepted/rls_wrongwheel_heritage_04/rls_wrongwheel_heritage_04.pc",
+      "tuningEvidence": "/settings/motorsportEvents/complianceEvidence-20261026.json",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json",
+      "indexRecoveryMetadata": {
+        "sourceProofFile": "outputs/drag-rebuild-20261028/continuation-ledger/attempts/75d282486c3fcd4c31213d648de6678c7a1e3c57e98cda85a19c25850e4884cd.json",
+        "sourceProofSHA256": "75d282486c3fcd4c31213d648de6678c7a1e3c57e98cda85a19c25850e4884cd",
+        "attemptId": "pessima__rls_wrongwheel_heritage_04-L1-P1-index-recovery-06-31a0ea77",
+        "configSHA256": "84fadd37685cf4acbf21a9d3861bcdbd48a228e5f64b07ce8e217eb732665dde",
+        "evidenceScope": "Hardware declarations only; historical ET receipts and class approvals retained. PC identity is guarded; native/VFS dependency freshness and performance are not certified here."
+      }
+    },
+    "sourcePack": "rls_wrongwheel_drive",
+    "currentQualification": {
+      "schema": "rls.index-recovery.current-qualification/1",
+      "status": "assessor-accepted",
+      "originalKey": "pessima/rls_wrongwheel_heritage_04",
+      "testedKey": "pessima/rls_wrongwheel_heritage_04",
+      "configSHA256": "84fadd37685cf4acbf21a9d3861bcdbd48a228e5f64b07ce8e217eb732665dde",
+      "quarterMileSeconds": 9.5478517440023,
+      "attemptId": "pessima__rls_wrongwheel_heritage_04-L1-P1-index-recovery-06-31a0ea77",
+      "capturedAt": "2026-10-28T19:24:04Z",
+      "classId": "wrong_wheel_drive",
+      "lower": 9.5,
+      "upper": 10.25,
+      "classProof": {
+        "classEntryAllowed": true,
+        "classId": "wrong_wheel_drive",
+        "classResultAllowed": true,
+        "leagueId": "street_kings",
+        "lower": 9.5,
+        "nitrousAddedPower": 250,
+        "nitrousMinimumGear": 2,
+        "traits": {
+          "configId": "pessima/rls_wrongwheel_heritage_04",
+          "diesel": false,
+          "drivetrain": "FWD",
+          "manual": false,
+          "model": "pessima",
+          "nitrous": true,
+          "rollCage": true,
+          "sportTires": false,
+          "supercharger": false,
+          "tireFriction": {
+            "complete": true,
+            "source": "compiled-tread-nodes",
+            "wheels": [
+              {
+                "frictionCoefMax": 1.3,
+                "frictionCoefMin": 1.3,
+                "nodeCount": 32,
+                "slidingFrictionCoefMax": 1.3,
+                "slidingFrictionCoefMin": 1.3,
+                "source": "compiled-tread-nodes",
+                "wheel": "FL"
+              },
+              {
+                "frictionCoefMax": 1.3,
+                "frictionCoefMin": 1.3,
+                "nodeCount": 32,
+                "slidingFrictionCoefMax": 1.3,
+                "slidingFrictionCoefMin": 1.3,
+                "source": "compiled-tread-nodes",
+                "wheel": "FR"
+              },
+              {
+                "frictionCoefMax": 1,
+                "frictionCoefMin": 1,
+                "nodeCount": 32,
+                "slidingFrictionCoefMax": 1,
+                "slidingFrictionCoefMin": 1,
+                "source": "compiled-tread-nodes",
+                "wheel": "RL"
+              },
+              {
+                "frictionCoefMax": 1,
+                "frictionCoefMin": 1,
+                "nodeCount": 32,
+                "slidingFrictionCoefMax": 1,
+                "slidingFrictionCoefMin": 1,
+                "source": "compiled-tread-nodes",
+                "wheel": "RR"
+              }
+            ]
+          },
+          "tireFrictionCoefMax": 1.3,
+          "tireType": "mixed",
+          "tireTypes": [
+            "drag",
+            "standard"
+          ],
+          "tires": [
+            {
+              "part": "tire_f_26_8_15_alt_drag",
+              "slot": "/pessima_body/pessima_suspension_f/pessima_hub_f/wheel_f_5/tire_f_15x8_alt/tire_f_26_8_15_alt_drag",
+              "source": "installed-part-label",
+              "type": "drag"
+            },
+            {
+              "part": "tire_r_195_60_15_standard",
+              "slot": "/pessima_body/pessima_suspension_r/pessima_hub_r/wheel_r_5/tire_r_15x7/tire_r_195_60_15_standard",
+              "source": "installed-part-label",
+              "type": "standard"
+            }
+          ],
+          "truck": false,
+          "turbocharger": true,
+          "year": 1991
+        },
+        "upper": 10.25
+      },
+      "health": {
+        "status": "no-observed-faults",
+        "engineFaults": [],
+        "maxTurboPsi": 48.35355377,
+        "capViolation": false,
+        "telemetryDropped": 0
+      },
+      "physical": {
+        "issues": [],
+        "newBroken": [],
+        "deformed": [],
+        "partDamage": [],
+        "triggered": [],
+        "damageDelta": 11.32273769,
+        "scope": "Sparse getBeamDeformation delta >0.01, broken beam IDs, tires, part damage and native trigger changes. beamstate.damage/energy delta is reported, not treated as damage proof."
+      },
+      "source": {
+        "status": "current-in-covered-sources",
+        "scope": "Saved repository source list and compiled chosen parts only; native/game/VFS dependencies and runtime cache are not certified. Additional current inventory is not evidence of historical changes."
+      },
+      "evidence": {
+        "assessmentFile": "outputs/drag-rebuild-20261028/index-recovery/latest.json",
+        "assessmentSHA256": "03d04ab7739919d0e455f3afaf7e9e794f200f4698433f6cbffa1f7acd663b89",
+        "rawFile": "outputs/drag-rebuild-20261028/continuation-ledger/attempts/75d282486c3fcd4c31213d648de6678c7a1e3c57e98cda85a19c25850e4884cd.json",
+        "rawSHA256": "75d282486c3fcd4c31213d648de6678c7a1e3c57e98cda85a19c25850e4884cd",
+        "ledgerFile": "outputs/drag-rebuild-20261028/continuation-ledger/latest.json",
+        "ledgerSHA256": "a05efb2449df6019312ea0c14ae689f46be53147fa47dd7024f788869686f80b"
+      },
+      "scope": "One assessor-accepted current-build quarter-mile result in the original index through index+0.75 window. Health and source coverage retain the assessor/ledger scope; no repeatability guarantee or complete native/VFS certification. Historical performance and approval remain separate."
+    }
+  }
+}

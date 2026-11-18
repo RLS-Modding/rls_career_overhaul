@@ -584,7 +584,7 @@ local function makeSpawnOfferSteps(offerId, fadeToBlack, postDelay, audience)
     if vehId then
       restorePlayerSeat()
       local veh = getObjectByID(vehId)
-      if veh then veh:delete() end
+      if veh then require('overhaul/lib/vehicles/removal').delete(veh) end
       vehId = nil
     end
     restorePlayerSeat()
@@ -616,7 +616,7 @@ local function makeSpawnOfferSteps(offerId, fadeToBlack, postDelay, audience)
           restorePlayerSeat()
         end
         local veh = getObjectByID(id)
-        if veh then veh:delete() end
+        if veh then require('overhaul/lib/vehicles/removal').delete(veh) end
         return
       end
       vehId = id

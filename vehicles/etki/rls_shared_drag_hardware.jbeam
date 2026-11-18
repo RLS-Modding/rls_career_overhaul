@@ -1,0 +1,46 @@
+{
+  "rls_etki_engine_internals_stage4_block": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Heavy Duty Block", "value":21500},
+    "slotType": "etki_engine_internals",
+    "mainEngine": {
+      "maxTorqueRating": 2350,
+      "maxOverTorqueDamage": 1000,
+      "cylinderWallTemperatureDamageThreshold": 170,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1500000,
+      "pistonRingDamageThreshold": 1500000,
+      "connectingRodDamageThreshold": 2000000,
+      "maxPhysicalRPM": 7770
+    }
+  },
+  "rls_etki_engine_internals_stage4_performance": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Performance Block", "value":24000},
+    "slotType": "etki_engine_internals",
+    "mainEngine": {
+      "torqueModMult": [
+        ["rpm", "torque"],
+        [0, 1],
+        [1000, 0.82],
+        [2500, 0.8125714285714285],
+        [4000, 0.975],
+        [5000, 1.2100000000000002],
+        [6000, 1.408],
+        [7000, 1.815],
+        [8000, 2.2]
+      ],
+      "$+maxRPM": 1200,
+      "$*friction": 0.95,
+      "$*dynamicFriction": 0.9,
+      "$*inertia": 0.95,
+      "$*engineBrakeTorque": 1.25,
+      "maxTorqueRating": 2350,
+      "maxOverTorqueDamage": 1000,
+      "cylinderWallTemperatureDamageThreshold": 170,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1500000,
+      "pistonRingDamageThreshold": 1500000,
+      "connectingRodDamageThreshold": 2000000,
+      "maxPhysicalRPM": 7770
+    }
+  }
+}

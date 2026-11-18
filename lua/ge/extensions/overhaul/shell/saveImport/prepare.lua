@@ -1,6 +1,7 @@
 -- Prepares imported profiles in memory: layout migration, saved-name rewrites and per-slot conservation.
 -- Each slot keeps its money and vehicles unless the caller selects the explicit legacy cash-out plan.
 local names = require('overhaul/shell/saveImport/names')
+local serializedTable = require('overhaul/lib/save/serializedTable')
 local levelData = require('overhaul/lib/world/levelData')
 local partMigration = require("overhaul/lib/save/partMigration040")
 local shapes = require("overhaul/lib/save/migrationShapes")
@@ -78,7 +79,7 @@ local function readPartInventory(files, inventoryPath)
   local inventoryJson = read(files, inventoryPath)
   if not files[inventoryPath] then return {} end
   if type(inventoryJson) ~= "table" or type(inventoryJson[1]) ~= "string" then error("Unreadable part inventory") end
-  local inventory = deserialize(inventoryJson[1])
+  local inventory = serializedTable.decode(inventoryJson[1])
   if type(inventory) ~= "table" then error("Unreadable part inventory") end
   return inventory
 end
@@ -230,7 +231,7 @@ local function renameData(checkpoint, data, profile, target, location, scope, al
       value = renameData(checkpoint, value, profile, target, location .. '/' .. tostring(key), scope, aliases)
     elseif type(value) == 'string' then
       if key == 'partConditions' or (type(key) == 'number' and location:match('partInventory%.json$')) then
-        local decoded = deserialize(value)
+        local decoded = serializedTable.decode(value)
         assert(type(decoded) == 'table', 'Unreadable serialized save data at ' .. location)
         value = serialize(renameData(checkpoint, decoded, profile, target, location .. '/' .. tostring(key), scope, aliases))
       else

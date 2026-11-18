@@ -1,0 +1,88 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Name": "Aubrey Banks",
+  "Configuration": "Aubrey Banks - Pro All-Motor",
+  "Description": "Heritage Speed. Naturally aspirated competition build; drag tires on both axles, lights, doors, hood and glass retained. Tested healthy at Alder: 9.674 s quarter-mile. Automatic; 703 engine hp, 1714 kg. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Induction Type": "NA",
+  "Drivetrain": "RWD",
+  "Transmission": "Automatic",
+  "Power": 703,
+  "Weight": 1714,
+  "Years": {
+    "max": 1971,
+    "min": 1969
+  },
+  "Motorsport": {
+    "version": 1,
+    "id": "barstow/rls_pam_heritage_01",
+    "configId": "rls_pam_heritage_01",
+    "model": "barstow",
+    "config": "/vehicles/barstow/rls_pam_heritage_01.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "jack_rourke",
+    "driverName": "Aubrey Banks",
+    "builder": "Heritage Speed",
+    "classIds": [
+      "pro_motor"
+    ],
+    "approvedClassIds": [
+      "pro_motor"
+    ],
+    "leagueId": "pro_league",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "f7dae3ba263ad407c85ce0a51da2417cd81d67f19ba6c1dcbfdc4812bcdf53ee",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "Automatic",
+      "induction": "Naturally aspirated",
+      "nitrous": false,
+      "years": {
+        "max": 1971,
+        "min": 1969
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x4",
+          "part": "tire_F_26_4_15_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_15x10",
+          "part": "tire_R_26_10_15_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "barstow_rollcage",
+          "part": "barstow_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.6737993144529,
+      "runId": "PAM-013",
+      "evidenceConfigSHA256": "5f7111b9ad66f04d4dec356d740f3efd53c013b5455233bbe46bf2ba45480c4c",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/pro-allmotor/final-metadata.json",
+      "acceptedConfig": "outputs/pro-allmotor/accepted/rls_pam_heritage_01/rls_pam_heritage_01.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_pro_allmotor"
+  }
+}

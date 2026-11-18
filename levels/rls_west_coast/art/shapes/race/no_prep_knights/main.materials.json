@@ -1,0 +1,77 @@
+{
+  "npk_beam_metal_trim": {
+    "name": "npk_beam_metal_trim",
+    "mapTo": "npk_beam_metal_trim",
+    "class": "Material",
+    "Stages": [
+      {
+        "ambientOcclusionMap": "/art/shapes/garage_and_dealership/Clutter/ind_metal_trim_ao.data.png",
+        "baseColorFactor": [
+          0.992156923,
+          0.992156923,
+          0.992156923,
+          1
+        ],
+        "baseColorMap": "/art/shapes/garage_and_dealership/Clutter/ind_metal_trim_b.color.png",
+        "detailScale": [
+          0.100000001,
+          0.100000001
+        ],
+        "metallicFactor": 0.300000012,
+        "metallicMap": "/art/shapes/garage_and_dealership/Clutter/ind_metal_trim_m.data.png",
+        "normalMap": "/art/shapes/garage_and_dealership/Clutter/Ind_metal_trim_nm.normal.png",
+        "opacityMap": "/art/shapes/garage_and_dealership/Clutter/ind_metal_trim_o.data.png",
+        "overlayMap": "/art/shapes/garage_and_dealership/Clutter/utah_breakup_texture.dds",
+        "roughnessFactor": 0.667999983,
+        "roughnessMap": "/art/shapes/garage_and_dealership/Clutter/ind_metal_trim_r.data.png",
+        "specular": [
+          0.996078014,
+          0.996078014,
+          0.996078014,
+          1
+        ],
+        "vertColor": true
+      },
+      {
+        "baseColorFactor": null,
+        "detailScale": null,
+        "metallicFactor": null,
+        "roughnessFactor": null,
+        "specular": null,
+        "vertColor": null
+      },
+      {
+        "baseColorFactor": null,
+        "detailScale": null,
+        "metallicFactor": null,
+        "roughnessFactor": null,
+        "specular": null,
+        "vertColor": null
+      },
+      {
+        "baseColorFactor": null,
+        "detailScale": null,
+        "metallicFactor": null,
+        "roughnessFactor": null,
+        "specular": null,
+        "vertColor": null
+      }
+    ],
+    "alphaRef": 104,
+    "alphaTest": true,
+    "annotation": "BUILDINGS",
+    "doubleSided": true,
+    "dynamicCubemap": true,
+    "groundType": "METAL",
+    "invertBackFaceNormals": true,
+    "materialTag0": "beamng",
+    "materialTag1": "beamng",
+    "materialTag2": "Industrial",
+    "materialTag3": "vegetation",
+    "materialTag4": "east_coast_usa",
+    "specularStrength0": "1.3",
+    "specularStrength1": "0.2",
+    "translucentBlendOp": "None",
+    "version": 1.5
+  }
+}

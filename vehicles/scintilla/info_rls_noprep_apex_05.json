@@ -1,0 +1,26 @@
+{
+  "Configuration": "Anika Frost - No Prep",
+  "Description": "Emerald Equinox. Tier 4 racer. Highway no-prep quarter-mile: 9.157s at 184.23mph. Apex Yard. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Apex Yard",
+  "Name": "Anika Frost",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 7.8922350094786,
+    "time_1_4": 9.1568526907307,
+    "time_1_8": 6.307302509466,
+    "time_330": 4.2900045501354,
+    "time_60": 1.6850830348729,
+    "velAt_1_4": 82.357886391253,
+    "velAt_1_8": 57.848816648531
+  },
+  "Reaction Time": 0.2717748567818,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

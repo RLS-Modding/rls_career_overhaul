@@ -1,0 +1,337 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Name": "Jace Rowan",
+  "Configuration": "Jace Rowan - Street Heat",
+  "Description": "Driver: Jace Rowan. Builder: Heritage Speed. Current inspected build: 5-speed H-pattern manual; RWD; Supercharger; nitrous Yes. ETs are historical estimates; current-build qualification is separately recorded from an assessor-accepted quarter-mile result (10.5-11.25 s original class window).",
+  "Config Type": "Custom",
+  "Author": "RLS Modding",
+  "Drivetrain": "RWD",
+  "Transmission": "Manual",
+  "Years": {
+    "max": 1971,
+    "min": 1969
+  },
+  "Motorsport": {
+    "version": 1,
+    "id": "barstow/rls_streetheat_heritage_jack_rourke",
+    "configId": "rls_streetheat_heritage_jack_rourke",
+    "model": "barstow",
+    "config": "/vehicles/barstow/rls_streetheat_heritage_jack_rourke.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "jack_rourke",
+    "driverName": "Jace Rowan",
+    "builder": "Heritage Speed",
+    "leagueId": "street_kings",
+    "classIds": [
+      "street_heat"
+    ],
+    "approvedClassIds": [
+      "street_heat"
+    ],
+    "eligibilityStatus": "Roster approval retained. Current build has separate assessor-accepted quarter-mile qualification evidence; recorded historical ETs remain historical estimates.",
+    "sourceConfigSHA256": "fb6d0fa4a776d603ef5790efe9b76c1ba513507392f66b895d2b5d75bd1aa230",
+    "traits": {
+      "configId": "barstow/rls_streetheat_heritage_jack_rourke",
+      "diesel": false,
+      "drivetrain": "RWD",
+      "manual": true,
+      "model": "barstow",
+      "nitrous": true,
+      "rollCage": false,
+      "sportTires": true,
+      "supercharger": true,
+      "tireFriction": {
+        "complete": true,
+        "source": "compiled-tread-nodes",
+        "wheels": [
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "FL"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "FR"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "RL"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "RR"
+          }
+        ]
+      },
+      "tireFrictionCoefMax": 1,
+      "tireType": "sport",
+      "tireTypes": [
+        "sport"
+      ],
+      "tires": [
+        {
+          "part": "tire_f_235_60_15_alt_sport",
+          "slot": "/barstow_body/barstow_subframe_f/barstow_suspension_f/wheel_f_5/tire_f_15x8_alt/tire_f_235_60_15_alt_sport",
+          "source": "installed-part-label",
+          "type": "sport"
+        },
+        {
+          "part": "tire_r_255_55_15_sport",
+          "slot": "/barstow_body/barstow_suspension_r/wheel_r_5/tire_r_15x9/tire_r_255_55_15_sport",
+          "source": "installed-part-label",
+          "type": "sport"
+        }
+      ],
+      "truck": false,
+      "turbocharger": false,
+      "year": 1971,
+      "transmission": "5-speed H-pattern manual",
+      "induction": "Supercharger",
+      "years": {
+        "max": 1971,
+        "min": 1969
+      }
+    },
+    "equipment": {
+      "evidence": "Hash-matched live class inspection and installed-parts tree; no new timing approval is asserted.",
+      "selectedTires": [
+        {
+          "slot": "/barstow_body/barstow_subframe_f/barstow_suspension_f/wheel_f_5/tire_f_15x8_alt/tire_f_235_60_15_alt_sport",
+          "part": "tire_f_235_60_15_alt_sport",
+          "typeHint": "sport",
+          "source": "installed-part-label"
+        },
+        {
+          "slot": "/barstow_body/barstow_suspension_r/wheel_r_5/tire_r_15x9/tire_r_255_55_15_sport",
+          "part": "tire_r_255_55_15_sport",
+          "typeHint": "sport",
+          "source": "installed-part-label"
+        }
+      ],
+      "selectedRollCageParts": [],
+      "rollCage": false,
+      "tireFriction": {
+        "complete": true,
+        "source": "compiled-tread-nodes",
+        "wheels": [
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "FL"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "FR"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "RL"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "RR"
+          }
+        ]
+      },
+      "nitrous": {
+        "addedPower": 40,
+        "cutInRPM": 4000,
+        "minimumGear": 2,
+        "purgeValves_nodes": [
+          109,
+          114
+        ],
+        "addedPowerUnits": "kW"
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 11.305892610507,
+      "runId": "SH-20261020-074716",
+      "evidenceConfigSHA256": "ead96d09fe890b79ae0839bff00fb25f551b0f9fa23325b6d6fee456c2aaae17",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/street-heat/final-results.json",
+      "acceptedConfig": "outputs/street-heat/accepted/rls_streetheat_heritage_jack_rourke/rls_streetheat_heritage_jack_rourke.pc",
+      "indexRecoveryMetadata": {
+        "sourceProofFile": "outputs/drag-rebuild-20261028/continuation-ledger/attempts/ed596f7dc0e9f8ac914ff28904a2f8c226e05695c2e59bbb4cab9e034c77caa6.json",
+        "sourceProofSHA256": "ed596f7dc0e9f8ac914ff28904a2f8c226e05695c2e59bbb4cab9e034c77caa6",
+        "attemptId": "barstow__rls_streetheat_heritage_jack_rourke-L1-P1-index-recovery-03-4318d69f",
+        "configSHA256": "fb6d0fa4a776d603ef5790efe9b76c1ba513507392f66b895d2b5d75bd1aa230",
+        "evidenceScope": "Hardware declarations only; historical ET receipts and class approvals retained. PC identity is guarded; native/VFS dependency freshness and performance are not certified here."
+      }
+    },
+    "sourcePack": "rls_street_heat",
+    "currentQualification": {
+      "schema": "rls.index-recovery.current-qualification/1",
+      "status": "assessor-accepted",
+      "originalKey": "barstow/rls_streetheat_heritage_jack_rourke",
+      "testedKey": "barstow/rls_streetheat_heritage_jack_rourke",
+      "configSHA256": "fb6d0fa4a776d603ef5790efe9b76c1ba513507392f66b895d2b5d75bd1aa230",
+      "quarterMileSeconds": 11.141714098509,
+      "attemptId": "barstow__rls_streetheat_heritage_jack_rourke-L1-P1-index-recovery-03-4318d69f",
+      "capturedAt": "2026-10-28T19:14:09Z",
+      "classId": "street_heat",
+      "lower": 10.5,
+      "upper": 11.25,
+      "classProof": {
+        "classEntryAllowed": true,
+        "classId": "street_heat",
+        "classResultAllowed": true,
+        "leagueId": "street_kings",
+        "lower": 10.5,
+        "nitrousAddedPower": 40,
+        "nitrousMinimumGear": 2,
+        "traits": {
+          "configId": "barstow/rls_streetheat_heritage_jack_rourke",
+          "diesel": false,
+          "drivetrain": "RWD",
+          "manual": true,
+          "model": "barstow",
+          "nitrous": true,
+          "rollCage": false,
+          "sportTires": true,
+          "supercharger": true,
+          "tireFriction": {
+            "complete": true,
+            "source": "compiled-tread-nodes",
+            "wheels": [
+              {
+                "frictionCoefMax": 1,
+                "frictionCoefMin": 1,
+                "nodeCount": 32,
+                "slidingFrictionCoefMax": 1,
+                "slidingFrictionCoefMin": 1,
+                "source": "compiled-tread-nodes",
+                "wheel": "FL"
+              },
+              {
+                "frictionCoefMax": 1,
+                "frictionCoefMin": 1,
+                "nodeCount": 32,
+                "slidingFrictionCoefMax": 1,
+                "slidingFrictionCoefMin": 1,
+                "source": "compiled-tread-nodes",
+                "wheel": "FR"
+              },
+              {
+                "frictionCoefMax": 1,
+                "frictionCoefMin": 1,
+                "nodeCount": 32,
+                "slidingFrictionCoefMax": 1,
+                "slidingFrictionCoefMin": 1,
+                "source": "compiled-tread-nodes",
+                "wheel": "RL"
+              },
+              {
+                "frictionCoefMax": 1,
+                "frictionCoefMin": 1,
+                "nodeCount": 32,
+                "slidingFrictionCoefMax": 1,
+                "slidingFrictionCoefMin": 1,
+                "source": "compiled-tread-nodes",
+                "wheel": "RR"
+              }
+            ]
+          },
+          "tireFrictionCoefMax": 1,
+          "tireType": "sport",
+          "tireTypes": [
+            "sport"
+          ],
+          "tires": [
+            {
+              "part": "tire_f_235_60_15_alt_sport",
+              "slot": "/barstow_body/barstow_subframe_f/barstow_suspension_f/wheel_f_5/tire_f_15x8_alt/tire_f_235_60_15_alt_sport",
+              "source": "installed-part-label",
+              "type": "sport"
+            },
+            {
+              "part": "tire_r_255_55_15_sport",
+              "slot": "/barstow_body/barstow_suspension_r/wheel_r_5/tire_r_15x9/tire_r_255_55_15_sport",
+              "source": "installed-part-label",
+              "type": "sport"
+            }
+          ],
+          "truck": false,
+          "turbocharger": false,
+          "year": 1971
+        },
+        "upper": 11.25
+      },
+      "health": {
+        "status": "no-observed-faults",
+        "engineFaults": [],
+        "maxTurboPsi": null,
+        "capViolation": false,
+        "telemetryDropped": 0
+      },
+      "physical": {
+        "issues": [],
+        "newBroken": [],
+        "deformed": [],
+        "partDamage": [],
+        "triggered": [],
+        "damageDelta": 0,
+        "scope": "Sparse getBeamDeformation delta >0.01, broken beam IDs, tires, part damage and native trigger changes. beamstate.damage/energy delta is reported, not treated as damage proof."
+      },
+      "source": {
+        "status": "current-in-covered-sources",
+        "scope": "Saved repository source list and compiled chosen parts only; native/game/VFS dependencies and runtime cache are not certified. Additional current inventory is not evidence of historical changes."
+      },
+      "evidence": {
+        "assessmentFile": "outputs/drag-rebuild-20261028/index-recovery/latest.json",
+        "assessmentSHA256": "03d04ab7739919d0e455f3afaf7e9e794f200f4698433f6cbffa1f7acd663b89",
+        "rawFile": "outputs/drag-rebuild-20261028/continuation-ledger/attempts/ed596f7dc0e9f8ac914ff28904a2f8c226e05695c2e59bbb4cab9e034c77caa6.json",
+        "rawSHA256": "ed596f7dc0e9f8ac914ff28904a2f8c226e05695c2e59bbb4cab9e034c77caa6",
+        "ledgerFile": "outputs/drag-rebuild-20261028/continuation-ledger/latest.json",
+        "ledgerSHA256": "a05efb2449df6019312ea0c14ae689f46be53147fa47dd7024f788869686f80b"
+      },
+      "scope": "One assessor-accepted current-build quarter-mile result in the original index through index+0.75 window. Health and source coverage retain the assessor/ledger scope; no repeatability guarantee or complete native/VFS certification. Historical performance and approval remain separate."
+    }
+  },
+  "Weight": 1847.911449,
+  "Induction Type": "Supercharger + N2O"
+}

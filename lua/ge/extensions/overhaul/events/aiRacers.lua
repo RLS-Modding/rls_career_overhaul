@@ -147,6 +147,10 @@ racerState.pendingPowerRequestGen = 0
 racerState.pendingPowerRequestDeadline = nil
 local POWER_REQUEST_MAX_RETRIES = 20
 local POWER_REQUEST_DEADLINE_SEC = 8
+local LIVE_POWER_MAX_RETRIES = 5
+local LIVE_POWER_RETRY_DELAY_REAL_SECONDS = 0.15
+local livePowerRequest
+local livePowerRequestGeneration = 0
 
 -- Random colors for AI (r g b a, 0-1; a=1). Applied same-frame after spawn so no visible change.
 local AI_COLOR_PALETTE = {
@@ -186,6 +190,30 @@ parts.spawn = require("overhaul/events/aiRacers/aiRacersSpawn").create(ownerServ
 parts.drive = require("overhaul/events/aiRacers/aiRacersDrive").create(ownerServices)
 
 -- Per-frame update --------------------------------------------------------------------------------
+
+local function queueLivePowerRequest(request, vehObj)
+  request.retryDelaySeconds = nil
+  request.deadlineSeconds = os.clock() + POWER_REQUEST_DEADLINE_SEC
+  vehObj:queueLuaCommand("local livePowerRequestGen = " .. request.generation .. "\n" .. M._livePowerCacheScript)
+end
+
+local function updateLivePowerRetry(dtReal)
+  local request = livePowerRequest
+  if not request then return end
+  if request.vehId ~= be:getPlayerVehicleID(0) or os.clock() >= request.deadlineSeconds then
+    livePowerRequest = nil
+    return
+  end
+  if not request.retryDelaySeconds then return end
+  request.retryDelaySeconds = request.retryDelaySeconds - dtReal
+  if request.retryDelaySeconds > 0 then return end
+  local vehObj = be:getObjectByID(request.vehId)
+  if racerState.pendingPowerCallback ~= nil or not vehObj or not vehObj.queueLuaCommand then
+    livePowerRequest = nil
+    return
+  end
+  queueLivePowerRequest(request, vehObj)
+end
 
 local function expirePendingRacerPowerRequest()
   if
@@ -265,12 +293,7 @@ local function recoverUprightRacer(vehId, vehObj, state, step, limits, toDespawn
     end
 
     if limits.recoveryEnabled and state.stuckTime >= limits.stuckSeconds and state.cooldown <= 0 then
-      vehObj:queueLuaCommand([[
-                            if recovery then
-                                recovery.startRecovering()
-                                recovery.stopRecovering()
-                            end
-                        ]])
+      vehObj:queueLuaCommand("if recovery then recovery.recoverInPlace() end")
       -- Re-drive with the race's own route settings, the ones the start used; the level default
       -- would switch a script-path race such as Short Track to navgraph routing.
       parts.drive.queueDriveForVehicle(
@@ -320,6 +343,7 @@ end
 function M.onUpdate(dtReal)
   local dt = tonumber(dtReal) or 0
   if dt <= 0 then return end
+  updateLivePowerRetry(dt)
   expirePendingRacerPowerRequest()
   releaseTimedPlayerFreeze()
   if parts.drive.updateDelayedDespawn(dt) then return end
@@ -534,6 +558,11 @@ local function storeLivePowerSampleForVehicle(vehId, powerWatts, weightKg)
   end
   racerState.mCachedLivePlayerVehId = vehId
   racerState.mCachedLivePlayerClock = os.clock()
+  livePowerRequest = nil
+  -- Consumers publish completed reads, including reliable staging reads, without polling.
+  if extensions and extensions.hook then
+    extensions.hook("onOverhaulPlayerLivePowerSample", vehId, hp)
+  end
 end
 -- Vehicle script: max maxPower over all "engine" devices (raw may be HP-scale or watts; GE normalizes in onPlayerVehiclePowerWeight), beam stats weight, both required before success.
 -- Retries until power>0 and weight>0 or max retries (then report last values).
@@ -580,10 +609,8 @@ if engines then
 end
 local stats = obj:calcBeamStats()
 if stats and stats.total_weight then weight = stats.total_weight end
-if power > 0 and weight > 0 then
-  local vid = obj:getID()
-  obj:queueGameEngineLua(require('vehicle/overhaul/geCallback').command("ingestLivePowerCacheSample", tostring(vid) .. "," .. tostring(power) .. "," .. tostring(weight)))
-end
+local vid = obj:getID()
+obj:queueGameEngineLua(require('vehicle/overhaul/geCallback').command("ingestLivePowerCacheSample", tostring(vid) .. "," .. tostring(power) .. "," .. tostring(weight) .. (livePowerRequestGen and "," .. tostring(livePowerRequestGen) or "")))
 ]]
 
 local function getEffectiveClassFromXp(cfg, businessXp)
@@ -619,15 +646,34 @@ function M.getPlayerVehicleModelAndConfig()
 end
 
 -- GE entry from vehicle VM: updates live HP cache only (no pendingPowerCallback).
-function M.ingestLivePowerCacheSample(vid, powerRaw, weightRaw)
+function M.ingestLivePowerCacheSample(vid, powerRaw, weightRaw, requestGen)
   vid = tonumber(vid)
   if not vid or vid ~= be:getPlayerVehicleID(0) then return end
+  local request = livePowerRequest
+  if requestGen ~= nil and (not request or requestGen ~= request.generation) then return end
   local pRaw = tonumber(powerRaw)
   local wRaw = tonumber(weightRaw)
-  if not pRaw or not wRaw or wRaw <= 0 then return end
-  local p = parts.planner.liveMaxPowerRawToWatts(pRaw)
-  if not p or p <= 0 then return end
+  local p = pRaw and parts.planner.liveMaxPowerRawToWatts(pRaw)
+  if not p or p <= 0 or not wRaw or wRaw <= 0 then
+    if request and request.vehId == vid and not request.retryDelaySeconds then
+      if request.retries >= LIVE_POWER_MAX_RETRIES then
+        livePowerRequest = nil
+      else
+        request.retries = request.retries + 1
+        -- Engine/beam stats can lag a rebuild; real-time spacing also recovers while paused.
+        request.retryDelaySeconds = LIVE_POWER_RETRY_DELAY_REAL_SECONDS
+      end
+    end
+    return
+  end
   storeLivePowerSampleForVehicle(vid, p, wRaw)
+end
+
+-- Offer readouts must share the podium check's sample, without substituting stock config ratings.
+function M.getPlayerVehicleLivePowerWeight()
+  if not liveHpSampleIsTrusted() then return nil, nil, 0 end
+  local remainingSeconds = LIVE_HP_CACHE_STALE_SEC - (os.clock() - racerState.mCachedLivePlayerClock)
+  return racerState.mCachedLivePlayerHp, racerState.mCachedLivePlayerWeightKg, remainingSeconds
 end
 
 -- Staging UI: prefer fresh live sample; fall back to sync getVehicleDetails (display only).
@@ -665,14 +711,24 @@ function M.getPlayerVehiclePwForPodiumCapCheck()
   return nil
 end
 
--- Throttled from competitiveTrackFlow while staging UI is open; skipped if a reliable power request is in flight.
+-- Coalesce event/snapshot requests; a lost VM reply can be retried on a later event.
+function M.cancelStagingUiLivePowerRefresh()
+  livePowerRequest = nil
+end
+
 function M.requestStagingUiLivePowerRefresh()
   if racerState.pendingPowerCallback ~= nil then return end
   local vehId = be:getPlayerVehicleID(0)
   if not vehId then return end
+  local nowSeconds = os.clock()
+  if livePowerRequest and livePowerRequest.vehId == vehId
+    and nowSeconds < livePowerRequest.deadlineSeconds then return end
+  livePowerRequest = nil
   local vehObj = be:getObjectByID(vehId)
   if not vehObj or not vehObj.queueLuaCommand then return end
-  vehObj:queueLuaCommand(M._livePowerCacheScript)
+  livePowerRequestGeneration = livePowerRequestGeneration + 1
+  livePowerRequest = {vehId = vehId, generation = livePowerRequestGeneration, retries = 0}
+  queueLivePowerRequest(livePowerRequest, vehObj)
 end
 
 -- Sync: may return nil if power cannot be read (e.g. no vehicle). Returns power in HP (same as filter/comparison).

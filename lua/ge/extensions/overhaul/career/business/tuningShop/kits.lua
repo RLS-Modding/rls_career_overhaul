@@ -608,6 +608,7 @@ local function storeFuelLevels(vehObj, callback)
       for _, tank in ipairs(data[1]) do
         if tank.energyType ~= "n2o" then
           storedFuelLevels[tank.name] = {
+            rlsFuelTank = overhaul_career_maintenance_fuelSystem and overhaul_career_maintenance_fuelSystem.captureTankForRebuild(vehObj:getID(), tank),
             currentEnergy = tank.currentEnergy,
             maxEnergy = tank.maxEnergy,
             energyType = tank.energyType,
@@ -643,7 +644,9 @@ local function restoreFuelLevels(vehObj, storedFuelLevels)
         local minFuel = tank.maxEnergy * MIN_FUEL_SHARE
         newFuelAmount = math.max(newFuelAmount, minFuel)
 
-        core_vehicleBridge.executeAction(vehObj, 'setEnergyStorageEnergy', tank.name, newFuelAmount)
+        if not (overhaul_career_maintenance_fuelSystem and overhaul_career_maintenance_fuelSystem.restoreTankAfterRebuild(vehObj, stored)) then
+          core_vehicleBridge.executeAction(vehObj, 'setEnergyStorageEnergy', tank.name, newFuelAmount)
+        end
       end
     end
   end, 'energyStorage')

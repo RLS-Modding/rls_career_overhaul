@@ -1,4 +1,4 @@
--- Weather persistence: map profiles, global and freeroam settings, state defaults and normalization.
+-- Weather persistence: career state, map profiles, global settings and normalization.
 -- Weather and legacy clock saves keep their paths and formats so existing profiles remain readable.
 local model = require("overhaul/world/weather/model")
 
@@ -7,7 +7,6 @@ local M = {}
 local SAVE_RELATIVE_PATH = "/career/rls_career/weather.json"
 local LEGACY_TIME_RELATIVE_PATH = "/career/rls_career/time.json"
 local GLOBAL_SETTINGS_PATH = "settings/RLS/weather.json"
-local FREEROAM_SETTINGS_PATH = "settings/RLS/freeroamWeather.json"
 
 local function ensureDirectory(path, writer)
   if writer then
@@ -139,11 +138,7 @@ function M.new(inputs)
 
   local function saveState(currentSavePath, _, writer)
     local state = runtime.state
-    if not state then return false end
-    if not runtime.careerActive then
-      ensureDirectory("settings/RLS/", writer)
-      return writeJson(FREEROAM_SETTINGS_PATH, state)
-    end
+    if not runtime.careerActive or not state then return false end
     if not currentSavePath then return false end
     local dir = currentSavePath .. "/career/rls_career"
     ensureDirectory(dir, writer)
@@ -155,11 +150,11 @@ function M.new(inputs)
   end
 
   local function loadState()
+    if not runtime.careerActive then return false end
     loadGlobalSettings()
     local careerActive = runtime.careerActive
     local path = getSavePath()
     local raw = careerActive and path and jsonReadFile(path .. SAVE_RELATIVE_PATH) or nil
-    if not careerActive then raw = jsonReadFile(FREEROAM_SETTINGS_PATH) end
     if not raw and path then
       local legacy = jsonReadFile(path .. LEGACY_TIME_RELATIVE_PATH)
       if legacy then

@@ -1,0 +1,55 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Configuration": "Damian Chandler - Stu Leonard",
+  "Description": "Heritage Speed: barstow, 291 CUI 'Fleet-Power' V8 Engine, Stage 1 Supercharger + 450 kW nitrous, 4-Speed Automatic Drag Transmission. Healthy qualifying pass 8.849495 s; identical saved-build confirmation 8.849288 s. West Coast quarter mile. Two passes do not establish all-condition repeatability. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Years": {
+    "min": 1970,
+    "max": 1970
+  },
+  "Drivetrain": "RWD",
+  "Fuel Type": "Gasoline",
+  "Author": "RLS / Heritage Speed",
+  "Motorsport": {
+    "version": 1,
+    "id": "barstow/rls_stu_heritage_02",
+    "configId": "rls_stu_heritage_02",
+    "model": "barstow",
+    "config": "/vehicles/barstow/rls_stu_heritage_02.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "sourcePack": "rls_stu_leonard",
+    "driverId": "jack_rourke",
+    "driverName": "Damian Chandler",
+    "builder": "heritage",
+    "classIds": [
+      "stu_leonard_850"
+    ],
+    "approvedClassIds": [
+      "stu_leonard_850"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "d512b7a27944f5c4461ba160a473821ccc9e5379701c6b3a888ff791c994774e",
+    "traits": {
+      "drivetrain": "RWD",
+      "years": {
+        "min": 1970,
+        "max": 1970
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.8492882355375,
+      "runId": "STU-038",
+      "evidenceConfigSHA256": "8f6a6b412df4a804dd5d85f6008b82297556e3a0292b052f11fe270ff2ca29ec",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/stu-leonard/final-metadata.json",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    }
+  }
+}

@@ -255,7 +255,10 @@ local function onExtensionLoaded()
   overhaul_shell_patches.registerFields(PATCH_ID, function() return rawget(_G, 'spawn') end, {
     safeTeleport = function(original)
       return function(veh, ...)
-        if veh then resetPlayerTracking(veh:getID()) end
+        local vehicleType = type(veh)
+        if (vehicleType == 'table' or vehicleType == 'userdata') and type(veh.getID) == 'function' then
+          resetPlayerTracking(veh:getID())
+        end
         return original(veh, ...)
       end
     end,

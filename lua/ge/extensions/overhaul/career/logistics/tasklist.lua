@@ -240,13 +240,6 @@ local function clearTasklistForOfferId(offerId)
 end
 M.clearTasklistForOfferId = clearTasklistForOfferId
 
-local function clearAll()
-  for _, elem in pairs(tasklistElements) do
-    elem.clear = true
-  end
-end
-M.clearAll = clearAll
-
 -- Per-frame update --------------------------------------------------------------------------------
 local anyUpdated = false
 local elementsToClearById = {}
@@ -405,6 +398,15 @@ local function updateCargoTasklistElements()
   end
 end
 M.updateCargoTasklistElements = updateCargoTasklistElements
+
+function M.clearAll()
+  if not next(tasklistElements) then return end
+  for _, elem in pairs(tasklistElements) do
+    elem.clear = true
+    elem.update = false
+  end
+  updateCargoTasklistElements()
+end
 
 M.onUpdate = function(dtReal, dtSim, dtRaw)
   if employmentOwnsHudTasklist() then return end

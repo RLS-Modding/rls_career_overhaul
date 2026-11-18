@@ -1,6 +1,7 @@
 -- Doorway entry: opening, approaching the pocket, settling and crossing the doorway.
 -- Doorway phases read the shared runtime and sibling parts.
 local M = {}
+local movementSampleCount = 64
 
 function M.new(inputs)
   local runtimeState = inputs.state
@@ -147,6 +148,15 @@ function M.new(inputs)
 
   -- Door pocket -----------------------------------------------------------------------------------
 
+  local function prepareDoorwayStep(pos)
+    runtimeState.approach.entryStepT = 0
+    runtimeState.approach.entryStepTravel = 0
+    runtimeState.approach.entryStepPrevPos = vec3(pos)
+    local movement = {first = 1, count = 1}
+    for index = 1, movementSampleCount do movement[index] = {time = 0, travel = 0} end
+    runtimeState.approach.entryStepMovement = movement
+  end
+
   local function advanceDoorwayClosingMotion(veh, unicycle, pos, doorCenter, liveDoorCenter, boardLook, dt, closeGoal)
     if runtimeState.approach.entryClosePrevPos then
       runtimeState.approach.entryCloseTravel = (runtimeState.approach.entryCloseTravel or 0)
@@ -156,7 +166,7 @@ function M.new(inputs)
     local closeDistance = pos:distance(closeGoal)
     runtimeState.approach.entryCloseFinalDistance = closeDistance
     local closeClearance, envelopeSource, collisionHull, collisionEnvelope = parts.paths.vehicleClearance2D(
-      pos, runtimeState.approach.vehId, 0
+      pos, runtimeState.approach.vehId, 0, true
     )
     parts.paths.noteCollisionEnvelope(runtimeState.approach, envelopeSource, collisionHull, collisionEnvelope)
     runtimeState.approach.entryCloseTargetClearance = parts.paths.vehicleClearance2D(closeGoal, runtimeState.approach.vehId, 0)
@@ -183,7 +193,8 @@ function M.new(inputs)
     end
     local reached = closeDistance <= 0.10
     local timedOut = runtimeState.approach.entryCloseT >= 1.80
-    return reached, timedOut
+    local touching = envelopeSource ~= "none" and closeClearance <= inputs.config.doorwayContactM
+    return reached, timedOut, touching
   end
 
   -- The player stopped at the door pocket: plan the step across the sill and let the body settle first.
@@ -191,9 +202,7 @@ function M.new(inputs)
     runtimeState.approach.entryCloseCompleted = closeCompleted
     runtimeState.approach.phase = "stepSettle"
     runtimeState.approach.entrySettleT = 0
-    runtimeState.approach.entryStepT = 0
-    runtimeState.approach.entryStepTravel = 0
-    runtimeState.approach.entryStepPrevPos = vec3(pos)
+    prepareDoorwayStep(pos)
     runtimeState.approach.entryStepPos = parts.paths.getDoorEntryPos(
       veh, runtimeState.approach.boardDoorRef or doorCenter or runtimeState.approach.doorCenter, pos.z
     )
@@ -225,15 +234,22 @@ function M.new(inputs)
     if not closeGoal then
       runtimeState.approach.entryCloseCompleted = false
       runtimeState.approach.phase = "stepIn"
-      runtimeState.approach.entryStepT = 0
-      runtimeState.approach.entryStepTravel = 0
-      runtimeState.approach.entryStepPrevPos = vec3(pos)
+      prepareDoorwayStep(pos)
       return
     end
 
-    local reached, timedOut = advanceDoorwayClosingMotion(
+    local reached, timedOut, touching = advanceDoorwayClosingMotion(
       veh, unicycle, pos, doorCenter, liveDoorCenter, boardLook, dt, closeGoal
     )
+    if touching then
+      runtimeState.approach.entryCloseCompleted = false
+      runtimeState.approach.entryStepStopReason = "contact"
+      runtimeState.approach.phase = "board"
+      runtimeState.approach.doorwayBoard = true
+      runtimeState.approach.boardT = 0
+      parts.doors.clearExternalMove(unicycle)
+      return
+    end
     if reached or timedOut then
       beginStepSettle(veh, unicycle, pos, doorCenter, reached)
       return
@@ -279,15 +295,31 @@ function M.new(inputs)
   -- Doorway crossing ------------------------------------------------------------------------------
 
   local function advanceDoorwayEntryMotion(veh, unicycle, pos, doorCenter, boardLook, aftFactor, dt, stepGoal)
+    local movement = runtimeState.approach.entryStepMovement
     if runtimeState.approach.entryStepPrevPos then
       runtimeState.approach.entryStepTravel = (runtimeState.approach.entryStepTravel or 0)
         + runtimeState.approach.entryStepPrevPos:distance(pos)
       runtimeState.approach.entryStepPrevPos:set(pos)
     end
+    local windowStart = runtimeState.approach.entryStepT - inputs.config.entryStepStallS
+    while movement.count > 1 do
+      local nextIndex = movement.first % movementSampleCount + 1
+      if movement[nextIndex].time > windowStart then break end
+      movement.first = nextIndex
+      movement.count = movement.count - 1
+    end
+    -- Time-spaced samples keep the preallocated ring bounded even at very high frame rates.
+    local latest = movement[(movement.first + movement.count - 2) % movementSampleCount + 1]
+    if runtimeState.approach.entryStepT - latest.time >= inputs.config.entryStepStallS / (movementSampleCount - 2) then
+      local sample = movement[(movement.first + movement.count - 1) % movementSampleCount + 1]
+      sample.time = runtimeState.approach.entryStepT
+      sample.travel = runtimeState.approach.entryStepTravel or 0
+      movement.count = movement.count + 1
+    end
     local stepDistance = pos:distance(stepGoal)
     runtimeState.approach.entryStepFinalDistance = stepDistance
     local stepClearance, envelopeSource, collisionHull, collisionEnvelope = parts.paths.vehicleClearance2D(
-      pos, runtimeState.approach.vehId, 0
+      pos, runtimeState.approach.vehId, 0, true
     )
     parts.paths.noteCollisionEnvelope(runtimeState.approach, envelopeSource, collisionHull, collisionEnvelope)
     runtimeState.approach.entryStepTargetClearance = parts.paths.vehicleClearance2D(stepGoal, runtimeState.approach.vehId, 0)
@@ -315,7 +347,15 @@ function M.new(inputs)
     local reached = stepDistance <= inputs.config.entryStepArriveM
     local stepTimeout = runtimeState.approach.model == "nine" and 2.30 or inputs.config.entryStepTimeoutS
     local timedOut = runtimeState.approach.entryStepT >= stepTimeout
-    return stepDistance, reached, timedOut
+    -- Stop at contact or when the body stops moving; pushing on would load the open door panel.
+    local touching = envelopeSource ~= "none" and stepClearance <= inputs.config.doorwayContactM
+    local oldest = movement[movement.first]
+    local stalled = runtimeState.approach.entryStepT - oldest.time >= inputs.config.entryStepStallS
+      and (runtimeState.approach.entryStepTravel or 0) - oldest.travel < inputs.config.entryStepStallM
+    if touching or stalled then
+      runtimeState.approach.entryStepStopReason = touching and "contact" or "stalled"
+    end
+    return stepDistance, reached, timedOut or touching or stalled
   end
 
   local function stepIn(veh, unicycle, pos, doorCenter, boardLook, aftFactor, dt)
@@ -340,6 +380,7 @@ function M.new(inputs)
     if reached or timedOut then
       runtimeState.approach.entryStepCompleted = reached
       runtimeState.approach.doorwayBoard = reached or stepDistance <= 0.24
+        or runtimeState.approach.entryStepStopReason ~= nil
       runtimeState.approach.phase = "board"
       runtimeState.approach.boardT = 0
       runtimeState.approach.prevBoardClearance = nil

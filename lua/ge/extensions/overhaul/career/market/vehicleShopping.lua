@@ -580,12 +580,18 @@ helpers.buildSnapshot = function()
   return snapshotByShopId
 end
 
+-- Live cards get today's buy-market values, the same as the full shop list and the purchase screen.
+helpers.sanitizeShopCardForUi = function(vehicleInfo)
+  helpers.applyPurchaseAdjustedMarketValue(vehicleInfo)
+  return helpers.sanitizeVehicleForUi(vehicleInfo)
+end
+
 helpers.commitDelta = function(newSnapshotByShopId, justExpiredShopIds)
   justExpiredShopIds = justExpiredShopIds or {}
   local added, removed, sold, updated = {}, {}, {}, {}
   for shopId, vehicleInfo in pairs(newSnapshotByShopId) do
     if not state.lastSnapshotByShopId[shopId] then
-      table.insert(added, helpers.sanitizeVehicleForUi(vehicleInfo))
+      table.insert(added, helpers.sanitizeShopCardForUi(vehicleInfo))
     end
   end
   for shopId, vehicleInfo in pairs(newSnapshotByShopId) do
@@ -597,7 +603,7 @@ helpers.commitDelta = function(newSnapshotByShopId, justExpiredShopIds)
       local currentSoldViewCount = (vehicleInfo.soldViewCounter or 0)
 
       if justExpiredShopIds[shopId] or (isMarkedSold and not wasMarkedSold) or (currentSoldViewCount > previousSoldViewCount) then
-        local soldVehicleForUi = helpers.sanitizeVehicleForUi(vehicleInfo)
+        local soldVehicleForUi = helpers.sanitizeShopCardForUi(vehicleInfo)
         soldVehicleForUi.__sold = true
         table.insert(updated, soldVehicleForUi)
       end
@@ -608,7 +614,7 @@ helpers.commitDelta = function(newSnapshotByShopId, justExpiredShopIds)
       if state.pendingSoldShopIds[shopId] then
         local previousVehicleInfo = state.lastSnapshotByShopId[shopId]
         if previousVehicleInfo then
-          local soldVehicleForUi = helpers.sanitizeVehicleForUi(previousVehicleInfo)
+          local soldVehicleForUi = helpers.sanitizeShopCardForUi(previousVehicleInfo)
           soldVehicleForUi.shopId = shopId
           soldVehicleForUi.__sold = true
           table.insert(sold, soldVehicleForUi)
@@ -1165,6 +1171,8 @@ end
 -- Public API: catalog and stock ------------------------------------------------------------------
 M.addVehicleToDealerCache = parts.catalog.addVehicleToDealerCache
 M.choosePrecomputedFilter = parts.catalog.choosePrecomputedFilter
+M.doesVehiclePassFilter = parts.catalog.doesVehiclePassFilter
+M.previewSellerStock = parts.catalog.previewSellerStock
 M.addModelBlacklistToLookup = parts.validation.addModelBlacklistToLookup
 M.pruneBlacklistedSellerStock = parts.validation.pruneBlacklistedSellerStock
 M.isRichsStreetVehicle = parts.validation.isRichsStreetVehicle
@@ -1261,6 +1269,7 @@ M.clearPendingRacingTeamFleetPurchases = parts.fleet.clearPendingRacingTeamFleet
 local function openFleetShopping()
   state.currentSeller, state.originComputerId, state.selectedSellerId = nil, nil, nil
   state.shoppingScreenTag, state.buyingAvailable, state.marketplaceAvailable = "buying", true, false
+  state.buyingUnavailableReason = nil
   parts.ui.sendShoppingDataToUI()
 end
 

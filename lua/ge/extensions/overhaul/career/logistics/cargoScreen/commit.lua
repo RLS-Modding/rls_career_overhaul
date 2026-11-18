@@ -11,6 +11,8 @@
 -- Part of the Overhaul fork of stock `lua/ge/extensions/career/modules/delivery/cargoScreen.lua`.
 
 local part = {}
+local vehicleFreeze = require('overhaul/lib/vehicles/freeze')
+local BRIDGE_TIMEOUT_SECONDS = 5
 
 -- Built once per cargo screen load.
 function part.new(inputs)
@@ -219,17 +221,33 @@ function part.new(inputs)
   -- Parcel loading ----------------------------------------------------------------------------------
 
   -- Freezes one vehicle, waits out its container reach time, then unfreezes it and reports back.
-  local function loadParcelsForVehicle(vehId, containerData, callback)
+  local function loadParcelsForVehicle(vehId, hold, getContainerData, callback)
     local veh = scenetree.findObjectById(vehId)
-    if not veh then
+    if not hold or not hold.isCurrent() then
       if callback then callback() end
       return
     end
 
+    local containerData = getContainerData()
+    if containerData and next(containerData) then ext.general.rememberCargoWeightVehicle(vehId) end
     core_vehicleBridge.executeAction(veh, "overhaulSetCargoContainers", containerData or {}, "updateDelivery")
-    core_vehicleBridge.executeAction(veh, 'setFreeze', true)
+    local completed = false
+    local function finishLoad()
+      if completed then return end
+      completed = true
+      overhaul_integration_services_markerInteraction.setForceReevaluateOpenPrompt()
+      if callback then callback() end
+    end
+    local activated = hold.activate({
+      timeoutS = BRIDGE_TIMEOUT_SECONDS,
+      onReleased = function(reason) if reason ~= 'released' then finishLoad() end end,
+    })
+    if not activated then finishLoad(); return end
 
+    local answered = false
     core_vehicleBridge.requestValue(veh, function(vehCargoContainerData)
+      if not hold.isCurrent() or answered then return end
+      answered = true
       local maxForContainer = 0
       if vehCargoContainerData and vehCargoContainerData[1] then
         for _, container in ipairs(vehCargoContainerData[1]) do
@@ -241,6 +259,7 @@ function part.new(inputs)
       end
 
       local delay = math.max(maxForContainer, 0)
+      hold.setTimeout(delay + 0.5 + BRIDGE_TIMEOUT_SECONDS)
       local sequence = {}
 
       if delay > 0 then
@@ -249,17 +268,13 @@ function part.new(inputs)
       end
 
       table.insert(sequence, ext.step.makeStepReturnTrueFunction(function()
-        local v = scenetree.findObjectById(vehId)
-        if v then
-          core_vehicleBridge.executeAction(v, 'setFreeze', false)
-        end
+        hold.release()
         overhaul_integration_services_markerInteraction.setForceReevaluateOpenPrompt()
         return true
       end))
 
       ext.step.startStepSequence(sequence, function()
-        overhaul_integration_services_markerInteraction.setForceReevaluateOpenPrompt()
-        if callback then callback() end
+        if hold.reason == 'released' then finishLoad() end
       end)
 
       if delay > 0 then
@@ -276,7 +291,7 @@ function part.new(inputs)
     if not req then return end
 
     loader.inProgress = true
-    loadParcelsForVehicle(req.vehId, req.containerData, function()
+    loadParcelsForVehicle(req.vehId, req.hold, req.getContainerData, function()
       loader.inProgress = false
       if req.callback then req.callback() end
       startNextParcelLoad(loader)
@@ -312,12 +327,12 @@ function part.new(inputs)
     local updatePerVehicle = containerLoadsByVehicle(vehIds)
 
     loader.queue = {}
-    for vehId, containerData in pairs(updatePerVehicle) do
+    for vehId in pairs(updatePerVehicle) do
       local vid = vehId
-      local cdata = containerData
       table.insert(loader.queue, {
         vehId = vid,
-        containerData = cdata,
+        hold = vehicleFreeze.acquire('overhaul_career_logistics_cargoScreen', vid, {deferred = true}),
+        getContainerData = function() return containerLoadsByVehicle({vid})[vid] end,
         callback = function()
           log("I","",string.format("Finished loading parcels for vehicle %d", vid))
         end

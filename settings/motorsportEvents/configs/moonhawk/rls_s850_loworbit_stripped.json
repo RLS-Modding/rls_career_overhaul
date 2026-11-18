@@ -1,0 +1,581 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "moonhawk/rls_s850_loworbit_stripped",
+    "configId": "rls_s850_loworbit_stripped",
+    "model": "moonhawk",
+    "config": "/vehicles/moonhawk/rls_s850_loworbit_stripped.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "roman_pearce",
+    "driverName": "Rafe Prescott",
+    "builder": "Low Orbit Garage",
+    "classIds": [
+      "super_stick"
+    ],
+    "approvedClassIds": [
+      "super_stick"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained. Calibrated 0.75:1 supercharger pulley passed one current quarter-mile with native class eligibility. Historical performance remains unchanged; no repeatability claim.",
+    "sourceConfigSHA256": "52cca6630a0d0dc06152da701e4efd756e7469f0f80cf2284245f26f2173c166",
+    "traits": {
+      "configId": "moonhawk/rls_s850_loworbit_stripped",
+      "diesel": false,
+      "drivetrain": "RWD",
+      "manual": true,
+      "model": "moonhawk",
+      "nitrous": true,
+      "rollCage": true,
+      "sportTires": false,
+      "supercharger": true,
+      "tireFriction": {
+        "complete": true,
+        "source": "compiled-tread-nodes",
+        "wheels": [
+          {
+            "frictionCoefMax": 1.3,
+            "frictionCoefMin": 1.3,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1.26,
+            "slidingFrictionCoefMin": 1.26,
+            "source": "compiled-tread-nodes",
+            "wheel": "FL"
+          },
+          {
+            "frictionCoefMax": 1.3,
+            "frictionCoefMin": 1.3,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1.26,
+            "slidingFrictionCoefMin": 1.26,
+            "source": "compiled-tread-nodes",
+            "wheel": "FR"
+          },
+          {
+            "frictionCoefMax": 1.3,
+            "frictionCoefMin": 1.3,
+            "nodeCount": 40,
+            "slidingFrictionCoefMax": 1.3,
+            "slidingFrictionCoefMin": 1.3,
+            "source": "compiled-tread-nodes",
+            "wheel": "RL"
+          },
+          {
+            "frictionCoefMax": 1.3,
+            "frictionCoefMin": 1.3,
+            "nodeCount": 40,
+            "slidingFrictionCoefMax": 1.3,
+            "slidingFrictionCoefMin": 1.3,
+            "source": "compiled-tread-nodes",
+            "wheel": "RR"
+          }
+        ]
+      },
+      "tireFrictionCoefMax": 1.3,
+      "tireType": "drag",
+      "tireTypes": [
+        "drag"
+      ],
+      "tires": [
+        {
+          "part": "tire_f_27.5_4_15_drag",
+          "slot": "/moonhawk_frame/moonhawk_suspension_f/wheel_f_5/tire_f_15x4/tire_f_27.5_4_15_drag",
+          "source": "installed-part-label",
+          "type": "drag"
+        },
+        {
+          "part": "tire_r_29_12_15_drag",
+          "slot": "/moonhawk_frame/moonhawk_suspension_r/wheel_r_5/tire_r_15x12_alt/tire_r_29_12_15_drag",
+          "source": "installed-part-label",
+          "type": "drag"
+        }
+      ],
+      "truck": false,
+      "turbocharger": false,
+      "year": 1975,
+      "transmission": "6-speed H-pattern manual",
+      "induction": "Supercharger",
+      "years": {
+        "min": 1973,
+        "max": 1975
+      }
+    },
+    "equipment": {
+      "evidence": "Hash-matched live class inspection and installed-parts tree; no new timing approval is asserted.",
+      "selectedTires": [
+        {
+          "slot": "/moonhawk_frame/moonhawk_suspension_f/wheel_f_5/tire_f_15x4/tire_f_27.5_4_15_drag",
+          "part": "tire_f_27.5_4_15_drag",
+          "typeHint": "drag",
+          "source": "installed-part-label"
+        },
+        {
+          "slot": "/moonhawk_frame/moonhawk_suspension_r/wheel_r_5/tire_r_15x12_alt/tire_r_29_12_15_drag",
+          "part": "tire_r_29_12_15_drag",
+          "typeHint": "drag",
+          "source": "installed-part-label"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "/moonhawk_frame/moonhawk_body/moonhawk_interior/moonhawk_rollcage/",
+          "part": "moonhawk_rollcage"
+        }
+      ],
+      "rollCage": true,
+      "tireFriction": {
+        "complete": true,
+        "source": "compiled-tread-nodes",
+        "wheels": [
+          {
+            "frictionCoefMax": 1.3,
+            "frictionCoefMin": 1.3,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1.26,
+            "slidingFrictionCoefMin": 1.26,
+            "source": "compiled-tread-nodes",
+            "wheel": "FL"
+          },
+          {
+            "frictionCoefMax": 1.3,
+            "frictionCoefMin": 1.3,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1.26,
+            "slidingFrictionCoefMin": 1.26,
+            "source": "compiled-tread-nodes",
+            "wheel": "FR"
+          },
+          {
+            "frictionCoefMax": 1.3,
+            "frictionCoefMin": 1.3,
+            "nodeCount": 40,
+            "slidingFrictionCoefMax": 1.3,
+            "slidingFrictionCoefMin": 1.3,
+            "source": "compiled-tread-nodes",
+            "wheel": "RL"
+          },
+          {
+            "frictionCoefMax": 1.3,
+            "frictionCoefMin": 1.3,
+            "nodeCount": 40,
+            "slidingFrictionCoefMax": 1.3,
+            "slidingFrictionCoefMin": 1.3,
+            "source": "compiled-tread-nodes",
+            "wheel": "RR"
+          }
+        ]
+      },
+      "nitrous": {
+        "addedPower": 125,
+        "cutInRPM": 3500,
+        "minimumGear": 2,
+        "purgeValves_nodes": [
+          61,
+          65
+        ],
+        "addedPowerUnits": "kW"
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.8103434618534,
+      "runId": "S850-038",
+      "evidenceConfigSHA256": "e16490d4a8991c448e0a100c43579066edc9223dcfc8542daa6ee1cf95a3e5fb",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/stick850/final-results.json",
+      "acceptedConfig": "outputs/stick850/accepted/rls_s850_loworbit_stripped/rls_s850_loworbit_stripped.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json",
+      "indexRecoveryMetadata": {
+        "sourceProofFile": "outputs/drag-rebuild-20261028/continuation-ledger/attempts/fca4e3b7f0a344a93d0e65f4ab98c7c748880ee8d6ad32a7f80d88cd076a03f4.json",
+        "sourceProofSHA256": "fca4e3b7f0a344a93d0e65f4ab98c7c748880ee8d6ad32a7f80d88cd076a03f4",
+        "attemptId": "moonhawk__rls_s850_loworbit_stripped-L1-P1-index-recovery-04-97d4db13",
+        "configSHA256": "c9adc4ba1c9d3b06d42ad1e9b0337ed00bc09144e8e92e04441c7ee497994476",
+        "evidenceScope": "Hardware declarations only; historical ET receipts and class approvals retained. PC identity is guarded; native/VFS dependency freshness and performance are not certified here."
+      },
+      "superchargerConsolidation": {
+        "schema": "rls.supercharger-selection-migration/1",
+        "manifest": "docs/vehicles/shared-drag-superchargers.json",
+        "integrationPlanSHA256": "198ae936a8b13c98d615bc44e342692c5d0238364ab2878a1ee80c3d56095ed2",
+        "oldConfigSHA256": "c9adc4ba1c9d3b06d42ad1e9b0337ed00bc09144e8e92e04441c7ee497994476",
+        "configSHA256": "d4e4a4a857a169c0dbcd3962cc8b71fbd917fc7ddb4db3aabe30bf6222ff86a7",
+        "slot": "moonhawk_intake_v8_big",
+        "oldPart": "rls_s850_loworbit_stage4_sc_135",
+        "newPart": "rls_moonhawk_intake_v8_big_stage4_supercharger",
+        "childSlot": "rls_moonhawk_intake_v8_big_stage4_pulley",
+        "pulleyPart": "rls_moonhawk_intake_v8_big_stage4_pulley_2",
+        "ratio": 0.72,
+        "removedVariables": [],
+        "status": "source-migrated-pending-live-validation",
+        "scope": "Supercharger ID, child pulley topology and/or fixed hardware changed. Earlier measurements remain tied to their original saved config and sources; no new live validation.",
+        "previousQualification": {
+          "schema": "rls.index-recovery.current-qualification/1",
+          "status": "assessor-accepted",
+          "originalKey": "moonhawk/rls_s850_loworbit_stripped",
+          "testedKey": "moonhawk/rls_s850_loworbit_stripped",
+          "configSHA256": "c9adc4ba1c9d3b06d42ad1e9b0337ed00bc09144e8e92e04441c7ee497994476",
+          "quarterMileSeconds": 9.0553263496548,
+          "attemptId": "moonhawk__rls_s850_loworbit_stripped-L1-P1-index-recovery-04-97d4db13",
+          "capturedAt": "2026-10-28T19:19:43Z",
+          "classId": "super_stick",
+          "lower": 8.5,
+          "upper": 9.25,
+          "classProof": {
+            "classEntryAllowed": true,
+            "classId": "super_stick",
+            "classResultAllowed": true,
+            "leagueId": "slra",
+            "lower": 8.5,
+            "nitrousAddedPower": 125,
+            "nitrousMinimumGear": 2,
+            "traits": {
+              "configId": "moonhawk/rls_s850_loworbit_stripped",
+              "diesel": false,
+              "drivetrain": "RWD",
+              "manual": true,
+              "model": "moonhawk",
+              "nitrous": true,
+              "rollCage": true,
+              "sportTires": false,
+              "supercharger": true,
+              "tireFriction": {
+                "complete": true,
+                "source": "compiled-tread-nodes",
+                "wheels": [
+                  {
+                    "frictionCoefMax": 1.3,
+                    "frictionCoefMin": 1.3,
+                    "nodeCount": 32,
+                    "slidingFrictionCoefMax": 1.26,
+                    "slidingFrictionCoefMin": 1.26,
+                    "source": "compiled-tread-nodes",
+                    "wheel": "FL"
+                  },
+                  {
+                    "frictionCoefMax": 1.3,
+                    "frictionCoefMin": 1.3,
+                    "nodeCount": 32,
+                    "slidingFrictionCoefMax": 1.26,
+                    "slidingFrictionCoefMin": 1.26,
+                    "source": "compiled-tread-nodes",
+                    "wheel": "FR"
+                  },
+                  {
+                    "frictionCoefMax": 1.3,
+                    "frictionCoefMin": 1.3,
+                    "nodeCount": 40,
+                    "slidingFrictionCoefMax": 1.3,
+                    "slidingFrictionCoefMin": 1.3,
+                    "source": "compiled-tread-nodes",
+                    "wheel": "RL"
+                  },
+                  {
+                    "frictionCoefMax": 1.3,
+                    "frictionCoefMin": 1.3,
+                    "nodeCount": 40,
+                    "slidingFrictionCoefMax": 1.3,
+                    "slidingFrictionCoefMin": 1.3,
+                    "source": "compiled-tread-nodes",
+                    "wheel": "RR"
+                  }
+                ]
+              },
+              "tireFrictionCoefMax": 1.3,
+              "tireType": "drag",
+              "tireTypes": [
+                "drag"
+              ],
+              "tires": [
+                {
+                  "part": "tire_f_27.5_4_15_drag",
+                  "slot": "/moonhawk_frame/moonhawk_suspension_f/wheel_f_5/tire_f_15x4/tire_f_27.5_4_15_drag",
+                  "source": "installed-part-label",
+                  "type": "drag"
+                },
+                {
+                  "part": "tire_r_29_12_15_drag",
+                  "slot": "/moonhawk_frame/moonhawk_suspension_r/wheel_r_5/tire_r_15x12_alt/tire_r_29_12_15_drag",
+                  "source": "installed-part-label",
+                  "type": "drag"
+                }
+              ],
+              "truck": false,
+              "turbocharger": false,
+              "year": 1975
+            },
+            "upper": 9.25
+          },
+          "health": {
+            "status": "no-observed-faults",
+            "engineFaults": [],
+            "maxTurboPsi": null,
+            "capViolation": false,
+            "telemetryDropped": 0
+          },
+          "physical": {
+            "issues": [],
+            "newBroken": [],
+            "deformed": [],
+            "partDamage": [],
+            "triggered": [],
+            "damageDelta": 8.017291069,
+            "scope": "Sparse getBeamDeformation delta >0.01, broken beam IDs, tires, part damage and native trigger changes. beamstate.damage/energy delta is reported, not treated as damage proof."
+          },
+          "source": {
+            "status": "current-in-covered-sources",
+            "scope": "Saved repository source list and compiled chosen parts only; native/game/VFS dependencies and runtime cache are not certified. Additional current inventory is not evidence of historical changes."
+          },
+          "evidence": {
+            "assessmentFile": "outputs/drag-rebuild-20261028/index-recovery/latest.json",
+            "assessmentSHA256": "03d04ab7739919d0e455f3afaf7e9e794f200f4698433f6cbffa1f7acd663b89",
+            "rawFile": "outputs/drag-rebuild-20261028/continuation-ledger/attempts/fca4e3b7f0a344a93d0e65f4ab98c7c748880ee8d6ad32a7f80d88cd076a03f4.json",
+            "rawSHA256": "fca4e3b7f0a344a93d0e65f4ab98c7c748880ee8d6ad32a7f80d88cd076a03f4",
+            "ledgerFile": "outputs/drag-rebuild-20261028/continuation-ledger/latest.json",
+            "ledgerSHA256": "a05efb2449df6019312ea0c14ae689f46be53147fa47dd7024f788869686f80b"
+          },
+          "scope": "One assessor-accepted current-build quarter-mile result in the original index through index+0.75 window. Health and source coverage retain the assessor/ledger scope; no repeatability guarantee or complete native/VFS certification. Historical performance and approval remain separate."
+        },
+        "previousQualificationSHA256": "6d87042844e54dde166afae25db2ac25703409f99546bed7825862c71089a12f"
+      },
+      "superchargerCalibration": {
+        "schema": "rls.supercharger-ratio-calibration.metadata/1",
+        "receipt": "tests/fixtures/vehicles/shared_drag_supercharger_calibration_moonhawk_r2.json",
+        "calibrationId": "moonhawk-stripped-pulley-r2",
+        "previousConfigSHA256": "d4e4a4a857a169c0dbcd3962cc8b71fbd917fc7ddb4db3aabe30bf6222ff86a7",
+        "configSHA256": "52cca6630a0d0dc06152da701e4efd756e7469f0f80cf2284245f26f2173c166",
+        "childSlot": "rls_moonhawk_intake_v8_big_stage4_pulley",
+        "previousPulley": "rls_moonhawk_intake_v8_big_stage4_pulley_2",
+        "pulleyPart": "rls_moonhawk_intake_v8_big_stage4_pulley_3",
+        "previousRatio": 0.72,
+        "ratio": 0.75,
+        "status": "calibration-pending-live-validation",
+        "requiresRetiming": true,
+        "currentQualification": false,
+        "previousRawSHA256": "e4cda2d862500d61f6902b5e5e34e888a5a85338447f8d5270581d0674d314ae"
+      },
+      "superchargerCalibrationPublication": {
+        "schema": "rls.supercharger-calibration-publication/1",
+        "status": "accepted-single-quarter",
+        "receiptSHA256": "ced22efcf11e4e8b36233213c805f88118febccf9c7b6317a5e33df9c909d90a",
+        "sourceConfigSHA256": "52cca6630a0d0dc06152da701e4efd756e7469f0f80cf2284245f26f2173c166",
+        "rawSHA256": "cc315aae2af1f4e0cc7f1da2849fb01cc6d91b6990e2f0530fa8b2b54eb49d51",
+        "assessmentSHA256": "f1e28d33f669e5549424755ecd3e49e613c35aa1ebc5c35fab03f1bd5532c692",
+        "ledgerSHA256": "7d93762572192258c5a97123369051298d6194bf3dffd7fcddf589f239512912"
+      }
+    },
+    "sourcePack": "rls_stickshift850",
+    "currentQualification": {
+      "schema": "rls.index-recovery.current-qualification/1",
+      "status": "invalidated-by-supercharger-consolidation",
+      "originalKey": "moonhawk/rls_s850_loworbit_stripped",
+      "testedKey": "moonhawk/rls_s850_loworbit_stripped",
+      "configSHA256": "c9adc4ba1c9d3b06d42ad1e9b0337ed00bc09144e8e92e04441c7ee497994476",
+      "quarterMileSeconds": 9.0553263496548,
+      "attemptId": "moonhawk__rls_s850_loworbit_stripped-L1-P1-index-recovery-04-97d4db13",
+      "capturedAt": "2026-10-28T19:19:43Z",
+      "classId": "super_stick",
+      "lower": 8.5,
+      "upper": 9.25,
+      "classProof": {
+        "classEntryAllowed": true,
+        "classId": "super_stick",
+        "classResultAllowed": true,
+        "leagueId": "slra",
+        "lower": 8.5,
+        "nitrousAddedPower": 125,
+        "nitrousMinimumGear": 2,
+        "traits": {
+          "configId": "moonhawk/rls_s850_loworbit_stripped",
+          "diesel": false,
+          "drivetrain": "RWD",
+          "manual": true,
+          "model": "moonhawk",
+          "nitrous": true,
+          "rollCage": true,
+          "sportTires": false,
+          "supercharger": true,
+          "tireFriction": {
+            "complete": true,
+            "source": "compiled-tread-nodes",
+            "wheels": [
+              {
+                "frictionCoefMax": 1.3,
+                "frictionCoefMin": 1.3,
+                "nodeCount": 32,
+                "slidingFrictionCoefMax": 1.26,
+                "slidingFrictionCoefMin": 1.26,
+                "source": "compiled-tread-nodes",
+                "wheel": "FL"
+              },
+              {
+                "frictionCoefMax": 1.3,
+                "frictionCoefMin": 1.3,
+                "nodeCount": 32,
+                "slidingFrictionCoefMax": 1.26,
+                "slidingFrictionCoefMin": 1.26,
+                "source": "compiled-tread-nodes",
+                "wheel": "FR"
+              },
+              {
+                "frictionCoefMax": 1.3,
+                "frictionCoefMin": 1.3,
+                "nodeCount": 40,
+                "slidingFrictionCoefMax": 1.3,
+                "slidingFrictionCoefMin": 1.3,
+                "source": "compiled-tread-nodes",
+                "wheel": "RL"
+              },
+              {
+                "frictionCoefMax": 1.3,
+                "frictionCoefMin": 1.3,
+                "nodeCount": 40,
+                "slidingFrictionCoefMax": 1.3,
+                "slidingFrictionCoefMin": 1.3,
+                "source": "compiled-tread-nodes",
+                "wheel": "RR"
+              }
+            ]
+          },
+          "tireFrictionCoefMax": 1.3,
+          "tireType": "drag",
+          "tireTypes": [
+            "drag"
+          ],
+          "tires": [
+            {
+              "part": "tire_f_27.5_4_15_drag",
+              "slot": "/moonhawk_frame/moonhawk_suspension_f/wheel_f_5/tire_f_15x4/tire_f_27.5_4_15_drag",
+              "source": "installed-part-label",
+              "type": "drag"
+            },
+            {
+              "part": "tire_r_29_12_15_drag",
+              "slot": "/moonhawk_frame/moonhawk_suspension_r/wheel_r_5/tire_r_15x12_alt/tire_r_29_12_15_drag",
+              "source": "installed-part-label",
+              "type": "drag"
+            }
+          ],
+          "truck": false,
+          "turbocharger": false,
+          "year": 1975
+        },
+        "upper": 9.25
+      },
+      "health": {
+        "status": "no-observed-faults",
+        "engineFaults": [],
+        "maxTurboPsi": null,
+        "capViolation": false,
+        "telemetryDropped": 0
+      },
+      "physical": {
+        "issues": [],
+        "newBroken": [],
+        "deformed": [],
+        "partDamage": [],
+        "triggered": [],
+        "damageDelta": 8.017291069,
+        "scope": "Sparse getBeamDeformation delta >0.01, broken beam IDs, tires, part damage and native trigger changes. beamstate.damage/energy delta is reported, not treated as damage proof."
+      },
+      "source": {
+        "status": "superseded-build",
+        "scope": "Saved repository source list and compiled chosen parts only; native/game/VFS dependencies and runtime cache are not certified. Additional current inventory is not evidence of historical changes."
+      },
+      "evidence": {
+        "assessmentFile": "outputs/drag-rebuild-20261028/index-recovery/latest.json",
+        "assessmentSHA256": "03d04ab7739919d0e455f3afaf7e9e794f200f4698433f6cbffa1f7acd663b89",
+        "rawFile": "outputs/drag-rebuild-20261028/continuation-ledger/attempts/fca4e3b7f0a344a93d0e65f4ab98c7c748880ee8d6ad32a7f80d88cd076a03f4.json",
+        "rawSHA256": "fca4e3b7f0a344a93d0e65f4ab98c7c748880ee8d6ad32a7f80d88cd076a03f4",
+        "ledgerFile": "outputs/drag-rebuild-20261028/continuation-ledger/latest.json",
+        "ledgerSHA256": "a05efb2449df6019312ea0c14ae689f46be53147fa47dd7024f788869686f80b"
+      },
+      "scope": "Historical receipt for the previous build; current-build applicability invalidated. Supercharger ID, child pulley topology and/or fixed hardware changed. Earlier measurements remain tied to their original saved config and sources; no new live validation.",
+      "invalidation": {
+        "reason": "Supercharger ID, child pulley topology and/or fixed hardware changed. Earlier measurements remain tied to their original saved config and sources; no new live validation.",
+        "candidateConfigSHA256": "d4e4a4a857a169c0dbcd3962cc8b71fbd917fc7ddb4db3aabe30bf6222ff86a7",
+        "requiresRetiming": true,
+        "integrationPlanSHA256": "198ae936a8b13c98d615bc44e342692c5d0238364ab2878a1ee80c3d56095ed2"
+      }
+    },
+    "superchargerQualification": {
+      "schema": "rls.supercharger-qualification/1",
+      "status": "assessor-accepted",
+      "attemptId": "moonhawk__rls_s850_loworbit_stripped-L1-P1-sc-sc-moonhawk-r2",
+      "configSHA256": "52cca6630a0d0dc06152da701e4efd756e7469f0f80cf2284245f26f2173c166",
+      "classId": "super_stick",
+      "format": "index",
+      "lower": 8.5,
+      "upper": 9.25,
+      "quarterMileSeconds": 9.1807130786641,
+      "evidence": {
+        "raw": "outputs/drag-rebuild-20261028/supercharger-consolidation/moonhawk-calibration-r2/runs/sc-moonhawk-r2/results/moonhawk__rls_s850_loworbit_stripped-L1-P1-sc-sc-moonhawk-r2.json",
+        "rawSHA256": "cc315aae2af1f4e0cc7f1da2849fb01cc6d91b6990e2f0530fa8b2b54eb49d51",
+        "assessment": "outputs/drag-rebuild-20261028/supercharger-consolidation/moonhawk-calibration-r2/runs/sc-moonhawk-r2/assessment-one.json",
+        "assessmentSHA256": "f1e28d33f669e5549424755ecd3e49e613c35aa1ebc5c35fab03f1bd5532c692",
+        "assessor": {
+          "file": "outputs/drag-rebuild-20261028/supercharger-consolidation/assess-live-corrected.cjs",
+          "sha256": "16d7b0ea8554f529f50e692403994a2d643224042a507947f917e4b5a81db670"
+        },
+        "ledger": "outputs/drag-rebuild-20261028/supercharger-consolidation/moonhawk-calibration-r2/publication/ledgers/7d93762572192258c5a97123369051298d6194bf3dffd7fcddf589f239512912.json",
+        "ledgerSHA256": "7d93762572192258c5a97123369051298d6194bf3dffd7fcddf589f239512912",
+        "ledgerKind": "finite-supercharger-assessment-publication-ledger",
+        "timestamp": "2026-10-28T20:47:32Z"
+      },
+      "source": {
+        "status": "current-in-covered-sources",
+        "sourceSnapshotSHA256": "4907693bad1dfa6f4034e7fc57e5ba1068f3290ee69f6d45afc7c3d644c1d1af",
+        "scope": "One native lane-1 quarter-mile; asynchronous health callback and GFX pressure samples. No repeatability or substep guarantee. Source coverage is resolved active JBeam, declared dependencies and captured loaded Lua, not all lazy imports."
+      },
+      "assembly": {
+        "compiled": true,
+        "superchargerPart": "rls_moonhawk_intake_v8_big_stage4_supercharger",
+        "pulleyPart": "rls_moonhawk_intake_v8_big_stage4_pulley_3",
+        "gearRatio": 0.75,
+        "sourceSHA256": "71e3ba9291c6ac8eb6712b31dc39ba8ddc994d7f5923f581d05ddff104237d53",
+        "source": "/vehicles/moonhawk/rls_shared_drag_superchargers.jbeam",
+        "maxRPM": 16000,
+        "resolvedMaxRPM": 16000,
+        "maxRPMBasis": "Explicit compiled blower maxRPM"
+      },
+      "classProof": {
+        "classId": "super_stick",
+        "leagueId": "slra",
+        "lower": 8.5,
+        "upper": 9.25,
+        "classEntryAllowed": true,
+        "classResultAllowed": true,
+        "nativeClassInspection": true,
+        "basis": "Native classes.inspect/canEnter and classes.validate captured by SC proof guard."
+      },
+      "health": {
+        "status": "no-observed-faults",
+        "telemetryDropped": 0,
+        "maxSuperchargerPsi": 25.3039595,
+        "maxTurboPsi": null,
+        "healthCaptureBoundary": "quarter-mile"
+      },
+      "physical": {
+        "issues": [],
+        "newBroken": [],
+        "deformed": [],
+        "partDamage": [],
+        "triggered": [],
+        "damageDelta": 5.470923901,
+        "scope": "Sparse getBeamDeformation delta >0.01, broken beam IDs, tires, part damage and native trigger changes. beamstate.damage/energy delta is reported, not treated as damage proof."
+      },
+      "nativeFinished": false,
+      "nativeRaceCompleted": false,
+      "comparison": {
+        "baselineET": 9.0553263496548,
+        "baselineFile": "outputs/drag-rebuild-20261028/continuation-ledger/attempts/fca4e3b7f0a344a93d0e65f4ab98c7c748880ee8d6ad32a7f80d88cd076a03f4.json",
+        "baselineResultSHA256": "fca4e3b7f0a344a93d0e65f4ab98c7c748880ee8d6ad32a7f80d88cd076a03f4",
+        "baselinePCMatches": true,
+        "deltaSeconds": 0.1253867290092998,
+        "scope": "Comparison only; frozen original baseline is not requalified."
+      },
+      "scope": "One native lane-1 quarter-mile; asynchronous health callback and GFX pressure samples. No repeatability or substep guarantee. Source coverage is resolved active JBeam, declared dependencies and captured loaded Lua, not all lazy imports."
+    }
+  }
+}

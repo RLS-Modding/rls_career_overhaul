@@ -167,6 +167,30 @@ local function getFacilityById(id) return gen.facilitiesById[id] end
 local function getParkingSpotByPath(path) return gen.parkingSpotsByPath[path] end
 local function getMaterialsTemplatesById(id) return sharedTemplates.getMaterialTemplateById(id) end
 
+-- Opt-in map stocking limits count only unclaimed work still at the source.
+-- Manager readers trigger generation themselves, so suppress that re-entry.
+-- Count every audience: getAllOfferCustomFilter shows only the independent
+-- board, so employment listings would never fill their own cap.
+local function getGeneratorOfferCount(generator, matches)
+  return M.withoutGeneration(function()
+    local persistence = require('overhaul/career/logistics/general/persistence')
+    local count = 0
+    local function available(item)
+      if item.generatorLabel == generator.name
+        and (item.offerExpiresAt or -math.huge) > generationTime()
+        and (not matches or matches(item))
+        and persistence.isRegenerableOffer(item) then count = count + 1 end
+      return false
+    end
+    if generator.type == "parcelProvider" or generator.type == "parcelReceiver" then
+      ext.parcelManager.getAllCargoCustomFilter(available)
+    else
+      for _, offer in ipairs(ext.vehicleOfferManager.getAllSaveableOffers()) do available(offer) end
+    end
+    return count
+  end)
+end
+
 local parts = {}
 
 -- Parts ------------------------------------------------------------------------------------------
@@ -182,6 +206,7 @@ parts.offers = require('overhaul/career/logistics/generator/offers').new({
   rules = {minDeliveryDistance = minDeliveryDistance},
   callbacks = {
     generationTime = generationTime,
+    getGeneratorOfferCount = getGeneratorOfferCount,
     yieldGeneration = yieldGeneration,
     getDistanceBetweenFacilities = parts.routes.getDistanceBetweenFacilities,
     getFacilityById = getFacilityById,
@@ -214,6 +239,7 @@ local isLocationAvailableOnCurrentMap = parts.offers.isLocationAvailableOnCurren
 M.finalizeParcelItemDistanceAndRewards = parts.offers.finalizeParcelItemDistanceAndRewards
 M.getParcelTemplateById = parts.offers.getParcelTemplateById
 M.finalizeVehicleOffer = parts.offers.finalizeVehicleOffer
+M.getVehicleSalesDealerId = parts.offers.getVehicleSalesDealerId
 M.getMaterialsTemplatesById = getMaterialsTemplatesById
 M.splitOffPartsFromMaterialCargo = parts.materials.splitOffPartsFromMaterialCargo
 M.changeMaterialAmountInFacility = parts.materials.changeMaterialAmountInFacility

@@ -77,6 +77,7 @@
                   </span>
                   <span class="saved-tune-actions">
                     <HouseButton compact :disabled="savedTuneApplyInProgress" @click="applySavedTune(tune)">Apply</HouseButton>
+                    <HouseButton compact :disabled="savedTuneApplyInProgress || savedTunesReadOnly || savedTuneEditInProgress" @click="renameSavedTune(tune)">Rename</HouseButton>
                     <HouseButton compact variant="quiet-danger" :disabled="savedTuneApplyInProgress || savedTunesReadOnly" @click="deleteSavedTune(tune)">Delete</HouseButton>
                   </span>
                 </div>
@@ -163,6 +164,7 @@ const savedTunesReadOnly = ref(false)
 const savedTunesError = ref("")
 const savedTuneApplyInProgress = ref(false)
 const savedTunesCollapsed = ref(false)
+const savedTuneEditInProgress = ref(false)
 
 const errorMessages = {
   unreadable_file: "The saved tunes file cannot be read. It was left untouched; saving and deleting are disabled.",
@@ -174,6 +176,7 @@ const errorMessages = {
   empty_snapshot: "There are no visible tuning settings to save.",
   vehicle_respawn_failed: "The vehicle could not be reloaded for this tune preview.",
   tune_not_found: "That saved tune is no longer available.",
+  duplicate_name: "A tune with that name already exists.",
 }
 
 function resultError(result, fallback = "Saved tunes are unavailable.") {
@@ -292,14 +295,36 @@ function nextTuneName() {
   return `Tune ${n}`
 }
 
+async function renameSavedTune(tune) {
+  if (!tune || savedTuneApplyInProgress.value || savedTunesReadOnly.value || savedTuneEditInProgress.value) return
+  const inventoryId = tuningSession.value.activeInventoryId
+  savedTuneEditInProgress.value = true
+  try {
+    const name = await openHousePrompt('', 'Rename saved tune', {defaultValue: tune.name, maxLength: 40, confirmLabel: 'Rename',
+      validate: value => typeof value === 'string' && value.trim().length > 0 && Array.from(value.trim()).length <= 40,
+      errorMessage: 'Enter a name (up to 40 characters).'})
+    if (typeof name !== 'string' || name.trim() === tune.name || inventoryId !== tuningSession.value.activeInventoryId || switchingVehicle.value || exitInProgress.value) return
+    const result = await lua.overhaul_career_parts_tuning.renameSavedTune(tune.id, name)
+    if (!result?.success) {
+      await openHouseMessage('Saved tunes', resultError(result, 'The tune could not be renamed.'))
+      return
+    }
+    savedTunes.value = Array.isArray(result.tunes) ? result.tunes : savedTunes.value
+    savedTunesError.value = ''
+  } finally {savedTuneEditInProgress.value = false}
+}
+
 async function deleteSavedTune(tune) {
-  if (!tune || savedTuneApplyInProgress.value || savedTunesReadOnly.value) return
+  if (!tune || savedTuneApplyInProgress.value || savedTunesReadOnly.value || savedTuneEditInProgress.value) return
+  const inventoryId = tuningSession.value.activeInventoryId
+  savedTuneEditInProgress.value = true
+  try {
   const deletedIndex = savedTunes.value.findIndex(item => item.id === tune.id)
   const confirmed = await openHouseConfirmation(
     "Delete Saved Tune?",
     `Delete <strong>${escapeHtml(tune.name)}</strong>? This cannot be undone.`,
     [{ ...CONFIRM_BUTTONS[0], extras: { destructive: true } }, CONFIRM_BUTTONS[1]])
-  if (!confirmed) return
+  if (!confirmed || inventoryId !== tuningSession.value.activeInventoryId || switchingVehicle.value || exitInProgress.value) return
   const result = await lua.overhaul_career_parts_tuning.deleteSavedTune(tune.id)
   if (!result?.success) {
     savedTunesError.value = resultError(result, "The tune could not be deleted.")
@@ -315,6 +340,7 @@ async function deleteSavedTune(tune) {
     const row = rows[Math.min(Math.max(deletedIndex, 0), rows.length - 1)]
     return row?.querySelector("button:not([disabled])") || document.querySelector(".saved-tunes .save-btn:not([disabled]), .saved-tunes .saved-tunes-toggle")
   }, { force: true })
+  } finally {savedTuneEditInProgress.value = false}
 }
 
 function escapeHtml(value) {
@@ -654,6 +680,13 @@ useRouteReady({
   align-items: center;
   padding-top: 0.5em;
   padding-bottom: 0.4em;
+}
+
+// Rename took room from the name: long names (40 characters at most) wrap in full instead of
+// shortening to "Wet track day with the big in…", so similar names stay easy to tell apart.
+.saved-tune .row-copy strong {
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .saved-tune-actions {

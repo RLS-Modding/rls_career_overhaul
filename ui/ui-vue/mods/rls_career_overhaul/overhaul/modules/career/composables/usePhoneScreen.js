@@ -7,8 +7,17 @@
 import { inject, onUnmounted, provide } from 'vue'
 import { usePhoneOverlayStack } from './usePhoneOverlayStack.js'
 
+// The phone shell provides its screen host under this key.
+export const PHONE_SCREEN = Symbol.for('overhaul.phoneScreen')
+
+// True for any component the phone shell renders. Shared components use it to mark
+// their teleported layers as phone surfaces (data-phone-surface, phoneForcedColors.scss).
+export function isInsidePhone() {
+  return inject(PHONE_SCREEN, null) !== null
+}
+
 export function usePhoneScreen(options = {}) {
-  const host = inject(Symbol.for('overhaul.phoneScreen'), null)
+  const host = inject(PHONE_SCREEN, null)
   const overlays = usePhoneOverlayStack()
   provide(Symbol.for('overhaul.phoneLayers'), overlays)
   const dispose = host?.register({ ...options, onBack: () => overlays.back() || options.onBack?.() })

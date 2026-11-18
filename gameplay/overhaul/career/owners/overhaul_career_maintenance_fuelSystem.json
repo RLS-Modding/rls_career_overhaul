@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_career_maintenance_fuelSystem",
+  "order": 113,
+  "module": "overhaul/career/maintenance/fuelSystem",
+  "scopes": [
+    {
+      "id": "late",
+      "order": 113
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "Configuration": "Luca Penn - No Prep",
+  "Description": "Silver Sprint. Tier 5 racer. Highway no-prep quarter-mile: 8.610s at 171.83mph. Coastline Automotive. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Coastline Automotive",
+  "Name": "Luca Penn",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 7.285471309398,
+    "time_1_4": 8.610384309306,
+    "time_1_8": 5.7200451053085,
+    "time_330": 3.8675259635671,
+    "time_60": 1.4466529412681,
+    "velAt_1_4": 76.813892204929,
+    "velAt_1_8": 61.625837825506
+  },
+  "Reaction Time": 0.24078405383606,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

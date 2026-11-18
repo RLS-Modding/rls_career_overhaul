@@ -122,6 +122,7 @@ import { usePhoneMarketplaceListings, requestSellTab } from '../../composables/u
 import {
   avatarColour,
   avatarInitials,
+  buyMarketValue,
   freeroamValueText,
   marketDelta,
   mileageText,
@@ -211,7 +212,7 @@ const feedDetail = computed(() => {
     v.Transmission ? { label: 'Transmission', value: v.Transmission } : null,
     v.Drivetrain ? { label: 'Drivetrain', value: v.Drivetrain } : null,
     v['Fuel Type'] ? { label: 'Fuel type', value: v['Fuel Type'] } : null,
-    { label: 'Est. market value', value: money(v.marketValue), money: true },
+    { label: 'Est. market value', value: money(buyMarketValue(v)), money: true },
   ].filter(Boolean)
 
   return {
@@ -221,7 +222,7 @@ const feedDetail = computed(() => {
     name: [v.Brand, v.Name].filter(Boolean).join(' ') || v.Name || 'Vehicle',
     priceLabel: 'Asking price',
     priceText: money(asking),
-    delta: marketDelta(asking, v.marketValue),
+    delta: marketDelta(asking, buyMarketValue(v)),
     // marketplace stock has no part conditions, so there is nothing honest to show here
     condition: null,
     conditionColour: '#6fe094',

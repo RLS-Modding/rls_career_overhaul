@@ -1,0 +1,103 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Configuration": "Elena Davidson - Pro Blown (S)",
+  "Description": "Pro League / Pro Blown. Sequential, RWD, supercharger only. Driver seat and cage; doors, hood/engine cover and windows retained. Healthy Alder quarter-mile 7.994s; saved-config repeat 7.991s. Recorded observations, not guaranteed ET. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Drivetrain": "RWD",
+  "Transmission": "Sequential",
+  "Fuel Type": "Gasoline",
+  "Induction Type": "SC",
+  "Years": {
+    "min": 2016,
+    "max": 2022
+  },
+  "Value": 160000,
+  "Motorsport": {
+    "version": 1,
+    "id": "bastion/rls_problown_blacktop_02",
+    "configId": "rls_problown_blacktop_02",
+    "model": "bastion",
+    "config": "/vehicles/bastion/rls_problown_blacktop_02.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "clarence_callahan",
+    "driverName": "Elena Davidson",
+    "builder": "Blacktop Engineering",
+    "classIds": [
+      "pro_blower"
+    ],
+    "approvedClassIds": [
+      "pro_blower"
+    ],
+    "leagueId": "pro_league",
+    "eligibilityStatus": "Roster approval retained. Historical ETs remain historical estimates; consolidated supercharger and pulley selection require current-build validation.",
+    "sourceConfigSHA256": "5f96fcbf28f20c6332fba1677af69d3931d45c4c0cdd98469ac7d100fec7a3a9",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "Sequential",
+      "induction": "Supercharger",
+      "nitrous": false,
+      "years": {
+        "min": 2016,
+        "max": 2022
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_18x5",
+          "part": "tire_F_28_4_5_18_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_18x12_alt",
+          "part": "tire_R_28_13_5_18_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "bastion_rollcage",
+          "part": "bastion_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 7.9911278446664,
+      "runId": "BLOWN-083",
+      "evidenceConfigSHA256": "59222d23c8927ca3f4f024048d556823f427efc17f7cfd3eef26d90d8220a9db",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/pro-blown/final-results.json",
+      "acceptedConfig": "outputs/pro-blown/accepted/rls_problown_blacktop_02/rls_problown_blacktop_02.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json",
+      "superchargerConsolidation": {
+        "schema": "rls.supercharger-selection-migration/1",
+        "manifest": "docs/vehicles/shared-drag-superchargers.json",
+        "integrationPlanSHA256": "198ae936a8b13c98d615bc44e342692c5d0238364ab2878a1ee80c3d56095ed2",
+        "oldConfigSHA256": "c954011c58c9168307f45d102b1aa9c6254143bca05fbc7061c76182c2fe67de",
+        "configSHA256": "5f96fcbf28f20c6332fba1677af69d3931d45c4c0cdd98469ac7d100fec7a3a9",
+        "slot": "bastion_v8_intake",
+        "oldPart": "rls_problown_blacktop_02_raceblower",
+        "newPart": "rls_bastion_v8_intake_stage4_supercharger",
+        "childSlot": "rls_bastion_v8_intake_stage4_pulley",
+        "pulleyPart": "rls_bastion_v8_intake_stage4_pulley_6",
+        "ratio": 2.3,
+        "removedVariables": [],
+        "status": "source-migrated-pending-live-validation",
+        "scope": "Supercharger ID, child pulley topology and/or fixed hardware changed. Earlier measurements remain tied to their original saved config and sources; no new live validation."
+      }
+    },
+    "sourcePack": "rls_pro_blown"
+  }
+}

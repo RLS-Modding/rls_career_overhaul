@@ -1,0 +1,84 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Name": "Asher Everett",
+  "Configuration": "Asher Everett - Bedtime Bullies",
+  "Description": "Driver: Asher Everett. Builder: Neon Works. Neon Works: Mint green late-body AWD family drag van; native 15-inch race wheels. 4.4 L V8; Supercharger; nitrous No. 6-speed sequential. Bedtime Bullies: first clean West Coast quarter-mile in the 9.500-10.000 second window: 9.762 s.",
+  "Config Type": "Custom",
+  "Transmission": "Sequential",
+  "Drivetrain": "AWD",
+  "Years": {
+    "min": 2003,
+    "max": 2007
+  },
+  "Power": 812,
+  "Weight": 1870,
+  "Motorsport": {
+    "version": 1,
+    "id": "lansdale/rls_bedtime_neon_03",
+    "configId": "rls_bedtime_neon_03",
+    "model": "lansdale",
+    "config": "/vehicles/lansdale/rls_bedtime_neon_03.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "ryan_cooper",
+    "driverName": "Asher Everett",
+    "builder": "Neon Works",
+    "classIds": [
+      "bedtime_bullies"
+    ],
+    "approvedClassIds": [
+      "bedtime_bullies"
+    ],
+    "leagueId": "street_kings",
+    "eligibilityStatus": "Assigned primary build class; approved from completed collection records and exact current config hash.",
+    "sourceConfigSHA256": "87b018a8a9a413c8ea26b31852755461d85bba773a2a147c6516c55da9d18554",
+    "traits": {
+      "drivetrain": "AWD",
+      "transmission": "6-speed sequential",
+      "induction": "Supercharger",
+      "nitrous": false,
+      "years": {
+        "min": 2003,
+        "max": 2007
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x10",
+          "part": "tire_F_27_10_15_race",
+          "typeHint": null
+        },
+        {
+          "slot": "tire_R_15x10",
+          "part": "tire_R_27_10_15_race",
+          "typeHint": null
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "lansdale_rollcage",
+          "part": "lansdale_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.7616702490044,
+      "runId": "BB-034",
+      "evidenceConfigSHA256": "87b018a8a9a413c8ea26b31852755461d85bba773a2a147c6516c55da9d18554",
+      "configHashMatches": true,
+      "status": "recorded-pass-matching-config"
+    },
+    "provenance": {
+      "metadata": "outputs/bedtime/final-results.json",
+      "acceptedConfig": "outputs/bedtime/accepted/rls_bedtime_neon_03/rls_bedtime_neon_03.pc"
+    },
+    "sourcePack": "rls_bedtime_bullies"
+  }
+}

@@ -1,0 +1,185 @@
+{
+  "rls_bluebuck_engine_v8_big_internals_stage4_block": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Heavy Duty Block", "value":33000},
+    "slotType": "bluebuck_engine_v8_big_internals",
+    "mainEngine": {
+      "maxTorqueRating": 6500,
+      "maxOverTorqueDamage": 1000,
+      "cylinderWallTemperatureDamageThreshold": 185,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1700000,
+      "pistonRingDamageThreshold": 3000000,
+      "connectingRodDamageThreshold": 2200000,
+      "maxPhysicalRPM": 8200
+    },
+    "flexbodies": [
+      ["mesh", "[group]:", "nonFlexMaterials"],
+      ["bluebuck_valvecover_v8_bigblock_performance", ["bluebuck_engine"]]
+    ]
+  },
+  "rls_bluebuck_engine_v8_mid_internals_stage4_block": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Heavy Duty Block", "value":30500},
+    "slotType": "bluebuck_engine_v8_mid_internals",
+    "mainEngine": {
+      "maxTorqueRating": 5000,
+      "maxOverTorqueDamage": 1000,
+      "cylinderWallTemperatureDamageThreshold": 185,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1700000,
+      "pistonRingDamageThreshold": 1700000,
+      "connectingRodDamageThreshold": 2200000,
+      "maxPhysicalRPM": 8100
+    },
+    "flexbodies": [
+      ["mesh", "[group]:", "nonFlexMaterials"],
+      ["bluebuck_valvecover_v8_smallblock_performance", ["bluebuck_engine"]]
+    ]
+  },
+  "rls_bluebuck_engine_v8_small_internals_stage4_block": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Heavy Duty Block", "value":21500},
+    "slotType": "bluebuck_engine_v8_small_internals",
+    "mainEngine": {
+      "maxTorqueRating": 2300,
+      "maxOverTorqueDamage": 720,
+      "cylinderWallTemperatureDamageThreshold": 185,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1700000,
+      "pistonRingDamageThreshold": 1700000,
+      "connectingRodDamageThreshold": 2200000,
+      "maxPhysicalRPM": 8400
+    },
+    "flexbodies": [
+      ["mesh", "[group]:", "nonFlexMaterials"],
+      ["bluebuck_valvecover_v8_smallblock_heavyduty", ["bluebuck_engine"]]
+    ]
+  },
+  "rls_bluebuck_engine_v8_big_internals_stage4_performance": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Performance Block", "value":35500},
+    "slotType": "bluebuck_engine_v8_big_internals",
+    "mainEngine": {
+      "torqueModMult": [
+        ["rpm", "torque"],
+        [0, 0],
+        [500, 1.12],
+        [1000, 1.15],
+        [1500, 1.28],
+        [2000, 1.4707142857142856],
+        [2500, 1.5634285714285714],
+        [3000, 1.626857142857143],
+        [3500, 1.680857142857143],
+        [4000, 1.725],
+        [4500, 1.7805714285714282],
+        [5000, 1.87],
+        [5500, 1.936],
+        [6000, 1.98],
+        [6500, 2.145],
+        [7000, 2.552],
+        [7500, 3.2890000000000006],
+        [8000, 4.4]
+      ],
+      "$+maxRPM": 1500,
+      "$*friction": 0.91,
+      "$*dynamicFriction": 0.92,
+      "$*inertia": 1.1,
+      "$*engineBrakeTorque": 1.58,
+      "maxTorqueRating": 6500,
+      "maxOverTorqueDamage": 1000,
+      "cylinderWallTemperatureDamageThreshold": 185,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1700000,
+      "pistonRingDamageThreshold": 3000000,
+      "connectingRodDamageThreshold": 2200000,
+      "maxPhysicalRPM": 8200
+    },
+    "flexbodies": [
+      ["mesh", "[group]:", "nonFlexMaterials"],
+      ["bluebuck_valvecover_v8_bigblock_performance", ["bluebuck_engine"]]
+    ]
+  },
+  "rls_bluebuck_engine_v8_mid_internals_stage4_performance": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Performance Block", "value":33000},
+    "slotType": "bluebuck_engine_v8_mid_internals",
+    "mainEngine": {
+      "torqueModMult": [
+        ["rpm", "torque"],
+        [0, 0],
+        [500, 1.01],
+        [1000, 1.06],
+        [1500, 1.09],
+        [2000, 1.146142857142857],
+        [2500, 1.2034285714285713],
+        [3000, 1.261857142857143],
+        [3500, 1.3425714285714283],
+        [4000, 1.4464285714285714],
+        [4500, 1.596],
+        [5000, 1.815],
+        [5500, 2.09],
+        [6000, 2.431],
+        [6500, 2.805],
+        [7000, 3.3660000000000005],
+        [7500, 4.29],
+        [8000, 5.038]
+      ],
+      "$+maxRPM": 2000,
+      "$*friction": 0.91,
+      "$*dynamicFriction": 0.92,
+      "$*inertia": 1.1,
+      "$*engineBrakeTorque": 1.58,
+      "maxTorqueRating": 5000,
+      "maxOverTorqueDamage": 1000,
+      "cylinderWallTemperatureDamageThreshold": 185,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1700000,
+      "pistonRingDamageThreshold": 1700000,
+      "connectingRodDamageThreshold": 2200000,
+      "maxPhysicalRPM": 8100
+    },
+    "flexbodies": [
+      ["mesh", "[group]:", "nonFlexMaterials"],
+      ["bluebuck_valvecover_v8_smallblock_performance", ["bluebuck_engine"]]
+    ]
+  },
+  "rls_bluebuck_engine_v8_small_internals_stage4_performance": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Performance Block", "value":24000},
+    "slotType": "bluebuck_engine_v8_small_internals",
+    "mainEngine": {
+      "torqueModMult": [
+        ["rpm", "torque"],
+        [0, 0],
+        [500, 1.01],
+        [1000, 1.05],
+        [1500, 1.09],
+        [2000, 1.146142857142857],
+        [2500, 1.1931428571428568],
+        [3000, 1.2305714285714286],
+        [3500, 1.2897142857142858],
+        [4000, 1.3714285714285714],
+        [4500, 1.5199999999999998],
+        [5000, 1.7380000000000002],
+        [5500, 1.9910000000000003],
+        [6000, 2.255],
+        [6500, 2.563],
+        [7000, 2.9920000000000004],
+        [7500, 3.795],
+        [8000, 4.73]
+      ],
+      "$+maxRPM": 2000,
+      "$*friction": 0.91,
+      "$*dynamicFriction": 0.92,
+      "$*inertia": 1.1,
+      "$*engineBrakeTorque": 1.58,
+      "maxTorqueRating": 2300,
+      "maxOverTorqueDamage": 720,
+      "cylinderWallTemperatureDamageThreshold": 185,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1700000,
+      "pistonRingDamageThreshold": 1700000,
+      "connectingRodDamageThreshold": 2200000,
+      "maxPhysicalRPM": 8400
+    },
+    "flexbodies": [
+      ["mesh", "[group]:", "nonFlexMaterials"],
+      ["bluebuck_valvecover_v8_smallblock_heavyduty", ["bluebuck_engine"]]
+    ]
+  }
+}

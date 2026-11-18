@@ -4,6 +4,7 @@
 
 import { computed, nextTick, ref, watch } from 'vue'
 import { getBannerDisplayMs, phoneSettings } from './usePhoneSettings'
+import { onNotificationCenterRemoved } from './usePhoneNotificationCenter'
 
 export const PHONE_HEADS_UP_DISPLAY_MS = 8000
 const MAX_QUEUE_SIZE = 8
@@ -12,6 +13,13 @@ const queue = ref([])
 const visible = ref(false)
 let nextId = 1
 let dismissTimer = null
+// The banner on its way out: its leave callback removes exactly it, whatever happened to the queue meanwhile.
+let leavingId = null
+
+function hideCurrent() {
+  leavingId = queue.value[0]?.id ?? null
+  visible.value = false
+}
 
 function clearDismissTimer() {
   if (dismissTimer) {
@@ -32,7 +40,7 @@ function scheduleDismiss() {
   const item = queue.value[0]
   dismissTimer = window.setTimeout(() => {
     dismissTimer = null
-    visible.value = false
+    hideCurrent()
   }, resolveDismissMs(item))
 }
 
@@ -90,8 +98,9 @@ export function pushHeadsUpNotification(payload) {
 }
 
 export function onPhoneHeadsUpAfterLeave() {
-  if (queue.value.length) {
-    queue.value.shift()
+  if (leavingId !== null) {
+    queue.value = queue.value.filter(item => item.id !== leavingId)
+    leavingId = null
   }
   if (queue.value.length) {
     nextTick(() => showCurrent())
@@ -104,7 +113,27 @@ export function dismissCurrentHeadsUp() {
     visible.value = false
     return
   }
-  visible.value = false
+  if (visible.value) hideCurrent()
+}
+
+// Takes back banners whose notification left the Notification Center (cleared or opened there). The one
+// on show leaves the usual way; every other match goes at once, also one waiting to come up next.
+export function withdrawHeadsUpNotifications(centerIds) {
+  const gone = new Set(centerIds)
+  const front = queue.value[0]
+  const onShow = visible.value && front ? front : null
+  queue.value = queue.value.filter(item => item === onShow || !gone.has(item.centerId))
+  if (onShow && gone.has(onShow.centerId)) dismissCurrentHeadsUp()
+}
+
+onNotificationCenterRemoved(withdrawHeadsUpNotifications)
+
+// The Notification Center opened: it lists every one of these already, so the banner on show leaves the
+// usual way and the ones waiting behind it go. New arrivals still get banners once it is closed again.
+export function retireHeadsUpNotifications() {
+  const onShow = visible.value ? queue.value[0] : null
+  queue.value = onShow ? [onShow] : []
+  if (onShow) dismissCurrentHeadsUp()
 }
 
 export function clearPhoneHeadsUpNotifications() {

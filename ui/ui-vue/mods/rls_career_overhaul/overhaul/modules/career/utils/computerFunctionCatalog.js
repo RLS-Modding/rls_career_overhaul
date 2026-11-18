@@ -11,6 +11,8 @@ const catalog = createCatalog('overhaul/career/garage/computer/functionCatalog',
 export const computerFunctions = catalog.entries
 export const computerFunctionsReady = catalog.ready
 const SOURCE = 'overhaul.computer.functions'
+// Add-on pages share this route group. It is a path segment, not a screen of its own.
+export const COMPUTER_FUNCTION_ROUTE_GROUP = 'overhaul.computer.function'
 let registeredIds = '', active = true
 
 function registerPages(entries) {
@@ -18,14 +20,14 @@ function registerPages(entries) {
   const ids = entries.filter(entry => entry.entry && entry.component && !entry.routeTarget).map(entry => entry.id).join('|')
   if (ids === registeredIds) return entries
   const routes = entries.filter(entry => entry.entry && entry.component && !entry.routeTarget).map(entry => ({
-    name: `overhaul.computer.function.${entry.id}`,
+    name: `${COMPUTER_FUNCTION_ROUTE_GROUP}.${entry.id}`,
     path: `/overhaul/computer-function/${entry.id}`,
     component: runtimeRouteComponent('/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/ComputerFunctionHost.vue', { phone: false }),
     props: { functionId: entry.id },
     meta: { uiApps: { shown: false } },
   }))
   if (routes.length) globalThis.window?.bngRoutes?.add([{ path: SOURCE, routes }])
-  else globalThis.window?.bngRoutes?.remove([SOURCE])
+  else if (registeredIds) globalThis.window?.bngRoutes?.remove([SOURCE])
   registeredIds = ids
   return entries
 }
@@ -44,7 +46,7 @@ export function computerFunctionDefinition(id) {
 }
 export function computerFunctionRoute(fn) {
   const entry = computerFunctionDefinition(fn?.id)
-  return fn?.routeTarget || entry?.routeTarget || (entry?.component ? `overhaul.computer.function.${entry.id}` : undefined)
+  return fn?.routeTarget || entry?.routeTarget || (entry?.component ? `${COMPUTER_FUNCTION_ROUTE_GROUP}.${entry.id}` : undefined)
 }
 export function computerFunctionIcon(id) {
   return icons[computerFunctionDefinition(id)?.icon] || icons.bug

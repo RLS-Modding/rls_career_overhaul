@@ -18,6 +18,7 @@ local dateUtils = require('utils/dateUtils')
 local maintenanceComputerConfig = require('overhaul/lib/maintenance/computerConfig')
 local condition = require('overhaul/lib/vehicles/condition')
 local levelData = require('overhaul/lib/world/levelData')
+local vehicleMap = require('overhaul/career/garage/inventory/vehicleMap')
 
 -- Config ------------------------------------------------------------------------------------------
 
@@ -529,7 +530,48 @@ local function tickAccessTimers(elapsed)
   end
 end
 
+local function onInstabilityDetected(vehId, result)
+  local inventoryId = vehIdToInventoryId[vehId]
+  local vehicle = inventoryId and vehicles[inventoryId]
+  if not vehicle or not vehicle.owned or result.instabilityHandled or settings.getValue("pauseGameOnInstability") then return end
+
+  garageState.unstableVehicles = garageState.unstableVehicles or {}
+  garageState.unstableVehicles[vehId] = vehicle
+  result.instabilityHandled = true
+end
+
+local function removeUnstableVehicles()
+  local pending = garageState.unstableVehicles
+  if not pending then return end
+  garageState.unstableVehicles = nil
+  local removed = false
+  for vehId, vehicle in pairs(pending) do
+    local inventoryId = vehIdToInventoryId[vehId]
+    if inventoryId and vehicles[inventoryId] == vehicle and inventoryIdToVehId[inventoryId] == vehId then
+      local walkingTransform
+      if be:getPlayerVehicleID(0) == vehId then
+        walkingTransform = levelData.recoverySpawn(getCurrentLevelIdentifier())
+        garageState.currentVehicle = inventoryId
+      elseif garageState.currentVehicle == inventoryId then
+        garageState.currentVehicle = nil
+      end
+      vehicle.worldPosition = nil
+      travel.clearCarriedPlacement(inventoryId)
+      parts.persistence.setVehicleDirty(inventoryId)
+      parts.bindings.removeVehicleObject(inventoryId, true, walkingTransform)
+      removed = true
+    end
+  end
+  if not removed then return end
+  ui_message("An unstable vehicle was removed from the world. It is still in your inventory.", 8, "vehicleInventory", "warning")
+  if parts.ui.isMenuOpen() then parts.ui.sendVehicleUpdatesToUi() end
+  if overhaul_career_career.isAutosaveEnabled() then
+    require("overhaul/lib/save/store").request("inventory:vehicleInstability")
+  end
+end
+
 local function onUpdate(dtReal, dtSim, _dtRaw)
+  removeUnstableVehicles()
   parts.spawn.onUpdate(dtSim)
   parts.persistence.pumpThumbnailCaptures()
   retryPendingMigration()
@@ -690,6 +732,40 @@ function M.getAllFRECompletions()
 end
 
 -- Garage storage ----------------------------------------------------------------------------------
+
+-- Physical parking survives a repair replacement and reload independently of its old booking.
+-- Reconcile at placement/save boundaries, never while projecting a menu or checking capacity.
+local function reconcileGarageLocations()
+  if not next(inventoryIdToVehId) then return end
+  local parkedGarages, ambiguous = {}, {}
+  local garageManager = overhaul_career_garage_garageManager
+  for _, garage in ipairs(overhaul_world_facilities.getFacilitiesByType('garage') or {}) do
+    if garageManager.isAccessibleGarage(garage.id) and not garageManager.isGarageForSale(garage.id) then
+      for inventoryId in pairs(parts.ui.getVehiclesInGarage(garage)) do
+        if parkedGarages[inventoryId] and parkedGarages[inventoryId] ~= garage.id then
+          ambiguous[inventoryId] = true
+        end
+        parkedGarages[inventoryId] = garage.id
+      end
+    end
+  end
+  local level = getCurrentLevelIdentifier()
+  for inventoryId, garageId in pairs(parkedGarages) do
+    local vehicle = vehicles[inventoryId]
+    if vehicle and vehicle.owned and not vehicle.loanType and not vehicle.takesNoInventorySpace
+      and not vehicle.listedForAuction and not ambiguous[inventoryId]
+      and vehicleMap.homeGarage(vehicle) == vehicle.location
+      and (not vehicle.lastKnownLevel or vehicle.lastKnownLevel == level)
+      and (vehicle.location ~= garageId or vehicle.lastKnownLevel ~= level) then
+      -- Already parked cars must be counted even when an old save exceeds garage capacity.
+      vehicle.location = garageId
+      vehicle.lastKnownLevel = level
+      vehicle.niceLocation = garageManager.garageIdToName(garageId)
+      parts.persistence.setVehicleDirty(inventoryId)
+    end
+  end
+end
+M.reconcileGarageLocations = reconcileGarageLocations
 
 -- Picks the garage a stored vehicle goes to: the asked-for one when it can take it, else the closest owned garage.
 local function resolveStorageGarage(id, garage)
@@ -852,6 +928,9 @@ M.sendDataToUi = parts.ui.sendDataToUi
 M.sendVehicleUpdatesToUi = parts.ui.sendVehicleUpdatesToUi
 M.getVehicleThumbnail = parts.ui.getVehicleThumbnail
 M.ensureVehicleThumbnail = parts.persistence.ensureVehicleThumbnail
+M.refreshVehicleThumbnail = parts.persistence.refreshVehicleThumbnail
+M.stageSaveRelationships = parts.persistence.stageRelationships
+M.clearStagedSaveRelationships = parts.persistence.clearStagedRelationships
 M.getVehicleNiceNameTranslated = parts.ui.getVehicleNiceNameTranslated
 M.getVehicleUiData = parts.ui.getVehicleUiData
 M.getVehicleDetailsUiData = parts.ui.getVehicleDetailsUiData
@@ -960,10 +1039,17 @@ M.publishVehicleSale = saleEvents.publish
 -- Game hooks --------------------------------------------------------------------------------------
 
 M.onExtensionLoaded = parts.setup.onExtensionLoaded
-M.onOverhaulSaveCurrentProfile = parts.persistence.onOverhaulSaveCurrentProfile
+M.onOverhaulSaveCurrentProfile = function(...)
+  reconcileGarageLocations()
+  return parts.persistence.onOverhaulSaveCurrentProfile(...)
+end
 M.onOverhaulSaveCurrentProfileAsyncStart = parts.persistence.onOverhaulSaveCurrentProfileAsyncStart
+M.onOverhaulSaveFinished = parts.persistence.onOverhaulSaveFinished
+M.onOverhaulSaveFailed = parts.persistence.forgetCommittedRecords
+M.onOverhaulBeforeSetProfile = parts.persistence.forgetCommittedRecords
 M.onBigMapActivated = parts.ui.onBigMapActivated
 M.onUpdate = onUpdate
+M.onInstabilityDetected = onInstabilityDetected
 M.onBeforeWalkingModeToggled = parts.ui.onBeforeWalkingModeToggled
 M.onOverhaulActive = parts.setup.onOverhaulActive
 M.onWorldReadyState = parts.setup.onWorldReadyState
@@ -976,6 +1062,7 @@ M.onOverhaulExperimentalMaintenanceModeChanged = onOverhaulExperimentalMaintenan
 M.onOverhaulCheckPermission = parts.operations.onOverhaulCheckPermission
 M.onGetRawPoiListForLevel = parts.operations.onGetRawPoiListForLevel
 
+M.preserveRlsFuelEngineStates = require('overhaul/lib/vehicles/fuelConditions')
 -- Inventory owns name resolution; finance only runs registered providers while recording.
 local disposeFinanceProvider = require("overhaul/lib/finance/metadata").registerProvider("inventory.vehicleName", function(context)
   local finance = context.reason and context.reason.finance

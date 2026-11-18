@@ -1,0 +1,26 @@
+{
+  "Configuration": "Graham Fox - No Prep",
+  "Description": "Indigo Foundry. Tier 3 racer. Highway no-prep quarter-mile: 10.449s at 150.74mph. Iron Lantern Garage. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Iron Lantern Garage",
+  "Name": "Graham Fox",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 8.9281011755196,
+    "time_1_4": 10.449140044941,
+    "time_1_8": 7.0775944105824,
+    "time_330": 4.8183202714618,
+    "time_60": 1.8554761466094,
+    "velAt_1_4": 67.385763971467,
+    "velAt_1_8": 51.072699999115
+  },
+  "Reaction Time": 0.30635725647002,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

@@ -1,0 +1,75 @@
+{
+  "label": "v2.8.0.1 Update",
+  "continueLabel": "Continue",
+  "loadingLabel": "Loading career...",
+  "dontShowLabel": "Don't show again",
+  "slides": [
+    {
+      "kind": "intro",
+      "image": "west-coast-sunrise.jpg",
+      "eyebrow": "What's New",
+      "title": "RLS Career Overhaul v2.8.0.1",
+      "subtitle": "Drag Racing Update",
+      "summary": "Street drags, sanctioned drag weekends, a new fuel system and a round of fixes.",
+      "contentsLabel": "In this update"
+    },
+    {
+      "image": "no-prep-knights.jpg",
+      "textSide": "top-left",
+      "kicker": "Late-night street racing",
+      "title": "No Prep Knights",
+      "summary": "Join the Knights through Car Meets and race for cash or pink slips after dark.",
+      "facts": [
+        "Cash races and a five-boss pink-slip ladder",
+        "Talk a boss into a race your car can't match on value",
+        "Defend your title once the ladder is done",
+        "Meets every two to four days, invites at any hour",
+        "Watch out for police raids at closing time"
+      ]
+    },
+    {
+      "image": "sanctioned-drags.jpg",
+      "textSide": "top-left",
+      "kicker": "Motorsport Events",
+      "title": "Sanctioned Drags",
+      "summary": "Scheduled drag weekends at the Alder strip, booked from a new phone app.",
+      "facts": [
+        "Daily offers from Pro League, SLRA and Street Kings",
+        "Register, pass inspection and run three qualifiers",
+        "Race seeded elimination brackets for cash prizes",
+        "Timeslips on the Event display after every pass",
+        "Clear spectator cameras from paddock to finish"
+      ]
+    },
+    {
+      "image": "fuel-ignition.jpg",
+      "textSide": "top-left",
+      "kicker": "Fuels 2.1",
+      "title": "Fuel & Ignition",
+      "summary": "Tune mixture, timing, boost and decel, and pick the fuel your engine runs on.",
+      "facts": [
+        "Simple dials or a full Advanced map",
+        "Flex-fuel, methanol and nitromethane conversions",
+        "Injector and pump upgrades show the power you gain",
+        "E85 at every West Coast gas station",
+        "Pay once at the pump when you leave",
+        "Boost override is now opt-in"
+      ]
+    },
+    {
+      "image": "drag-builds.jpg",
+      "textSide": "top-left",
+      "kicker": "Builds, dyno and fixes",
+      "title": "Stronger builds. Fewer surprises.",
+      "summary": "Shared drag hardware, a better dyno and fixes across your career.",
+      "facts": [
+        "Shared Stage 4 drag blocks and pulley choices",
+        "Race and drag tires need heat before full grip",
+        "Dyno load presets and your tune gains are kept",
+        "Car-meet pink slips accept a slightly quicker car",
+        "Failed saves no longer lock Exit or reload",
+        "Fixes for taxis, repairs, business pulls and Linux saves"
+      ]
+    }
+  ]
+}

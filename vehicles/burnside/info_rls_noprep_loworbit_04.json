@@ -1,0 +1,25 @@
+{
+  "Configuration": "Rafe Prescott - No Prep",
+  "Description": "White Comet. Tier 2 racer. Highway no-prep quarter-mile: 11.297s at 127.66mph. Low Orbit Garage.",
+  "Author": "Low Orbit Garage",
+  "Name": "Rafe Prescott",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 9.5091689932847,
+    "time_1_4": 11.297132745443,
+    "time_1_8": 7.3974026046647,
+    "time_330": 4.8754973088086,
+    "time_60": 1.7479128120991,
+    "velAt_1_4": 57.068813439707,
+    "velAt_1_8": 45.427247613902
+  },
+  "Reaction Time": 0.31920470734944,
+  "dragTimesRevalidated": true,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m"
+}

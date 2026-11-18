@@ -1,0 +1,25 @@
+{
+  "Configuration": "Dallas Rayne - No Prep",
+  "Description": "Plum Boulevard. Tier 1 boss. Highway no-prep quarter-mile: 11.630s at 122.36mph. Low Orbit Garage.",
+  "Author": "Low Orbit Customs",
+  "Name": "Dallas Rayne",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": true
+  },
+  "Drag Times": {
+    "time_1000": 9.7663114073321,
+    "time_1_4": 11.630251448297,
+    "time_1_8": 7.5649053591431,
+    "time_330": 4.9526334930556,
+    "time_60": 1.7537317878312,
+    "velAt_1_4": 54.698107640644,
+    "velAt_1_8": 43.826758638254
+  },
+  "Reaction Time": 0.31974205863764,
+  "dragTimesRevalidated": true,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m"
+}

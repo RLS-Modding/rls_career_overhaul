@@ -1,0 +1,89 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Configuration": "Joseph Ingram - Spray and Pray",
+  "Description": "Driver: Joseph Ingram. Builder: Heritage Speed. Heritage Speed: Black and ivory fifties pillarless coupe; vintage driver seat retained, passenger seat and spare tire removed. Gavril 423 CUI V8; quad carburetors and Stage 4 race block; naturally aspirated with nitrous from second gear. 4-speed manual. Three-pass development result at West Coast: 9.336 s. Spray and Pray class. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Transmission": "Manual",
+  "Drivetrain": "RWD",
+  "Fuel Type": "Gasoline",
+  "Induction Type": "NA + N2O",
+  "Years": {
+    "min": 1952,
+    "max": 1953
+  },
+  "Value": 75000,
+  "Power": 1404,
+  "Weight": 1908,
+  "Motorsport": {
+    "version": 1,
+    "id": "burnside/rls_nitro_heritage_02",
+    "configId": "rls_nitro_heritage_02",
+    "model": "burnside",
+    "config": "/vehicles/burnside/rls_nitro_heritage_02.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "jack_rourke",
+    "driverName": "Joseph Ingram",
+    "builder": "Heritage Speed",
+    "classIds": [
+      "spray_and_pray"
+    ],
+    "approvedClassIds": [
+      "spray_and_pray"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "47b3986d7f8cdb52d6ba8373cc479f9bf35029c528aab2a3f4966193e6d166b3",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "4-speed manual",
+      "induction": "Naturally aspirated + nitrous",
+      "nitrous": true,
+      "years": {
+        "min": 1952,
+        "max": 1953
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x4",
+          "part": "tire_F_27.5_4_15_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_15x9",
+          "part": "tire_R_28_9_15_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "burnside_rollcage",
+          "part": "burnside_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.3364797637697,
+      "runId": null,
+      "evidenceConfigSHA256": "95c219ff34bac407829a427767960624c78f0ec2a4bc01c48d49a4f44f22e4ef",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/nitrous/final-results.json",
+      "acceptedConfig": "outputs/nitrous/accepted/rls_nitro_heritage_02/rls_nitro_heritage_02.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_nitrous_builders"
+  }
+}

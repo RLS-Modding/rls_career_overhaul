@@ -1,0 +1,25 @@
+{
+  "Configuration": "Mara Velez - No Prep",
+  "Description": "Cobalt Ledger. Tier 2 racer. Highway no-prep quarter-mile: 11.690s at 122.22mph. Apex Yard.",
+  "Author": "Apex Yard",
+  "Name": "Mara Velez",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 9.8461101251409,
+    "time_1_4": 11.689608139217,
+    "time_1_8": 7.6258957974377,
+    "time_330": 5.0201046728511,
+    "time_60": 1.7421076771439,
+    "velAt_1_4": 54.637000710532,
+    "velAt_1_8": 43.530579502839
+  },
+  "Reaction Time": 0.30038715156385,
+  "dragTimesRevalidated": true,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m"
+}

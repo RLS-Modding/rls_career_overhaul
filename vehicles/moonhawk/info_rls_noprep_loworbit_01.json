@@ -1,0 +1,25 @@
+{
+  "Configuration": "Dante Moretti - No Prep",
+  "Description": "Orange Freight. Tier 2 racer. Highway no-prep quarter-mile: 11.593s at 123.82mph. Low Orbit Garage.",
+  "Author": "Low Orbit Customs",
+  "Name": "Dante Moretti",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 9.750011823839,
+    "time_1_4": 11.593123377785,
+    "time_1_8": 7.5652475269957,
+    "time_330": 4.9719343846392,
+    "time_60": 1.7852281324901,
+    "velAt_1_4": 55.351763410561,
+    "velAt_1_8": 44.117300495343
+  },
+  "Reaction Time": 0.29724509957311,
+  "dragTimesRevalidated": true,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m"
+}

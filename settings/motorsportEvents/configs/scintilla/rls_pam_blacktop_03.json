@@ -1,0 +1,73 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "scintilla/rls_pam_blacktop_03",
+    "configId": "rls_pam_blacktop_03",
+    "model": "scintilla",
+    "config": "/vehicles/scintilla/rls_pam_blacktop_03.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "marcus_cross",
+    "driverName": "Lydia Bennett",
+    "builder": "Blacktop Engineering",
+    "classIds": [
+      "pro_motor"
+    ],
+    "approvedClassIds": [
+      "pro_motor"
+    ],
+    "leagueId": "pro_league",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "501d40dbb6697d13b4daf1bae5426db88ce0cdfa64e6a98e934a4c08260df74b",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "DCT",
+      "induction": "Naturally aspirated",
+      "nitrous": false,
+      "years": {
+        "max": 2022,
+        "min": 2020
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_18x5",
+          "part": "tire_F_28_4_5_18_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_18x12_alt",
+          "part": "tire_R_28_13_5_18_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "scintilla_rollcage_hardtop",
+          "part": "scintilla_rollcage_hardtop"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.9531135801428,
+      "runId": "PAM-035",
+      "evidenceConfigSHA256": "95c37428e01661048780c5974e0502222f1e327f5f2ba524acadb538003a354c",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/pro-allmotor/final-metadata.json",
+      "acceptedConfig": "outputs/pro-allmotor/accepted/rls_pam_blacktop_03/rls_pam_blacktop_03.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_pro_allmotor"
+  }
+}

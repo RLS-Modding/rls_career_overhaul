@@ -4,6 +4,7 @@
 local lib = {}
 
 function lib.create(inputs)
+  local inventory = inputs.inventory or overhaul_career_garage_inventory
   local parts = inputs.parts
   local DEFAULT_DYNO_HUB_ID = inputs.DEFAULT_DYNO_HUB_ID
   local dynoState = inputs.dynoState
@@ -34,6 +35,10 @@ function lib.create(inputs)
   end
 
   local function beginTireProtection(inventoryId, liveState)
+    local owner = inputs.vehicleAccess and inputs.vehicleAccess.owners[inventoryId]
+    if owner then
+      return overhaul_career_maintenance_tireSystem.beginBusinessDynoSession(owner.businessId, owner.vehicleId, liveState) == true
+    end
     return overhaul_career_maintenance_tireSystem.beginDynoSession(inventoryId, liveState) == true
   end
 
@@ -42,6 +47,10 @@ function lib.create(inputs)
     if not overhaul_career_maintenance_tireSystem then
       return false
     end
+    local owner = inputs.vehicleAccess and inputs.vehicleAccess.owners[inventoryId]
+    if owner then
+      return overhaul_career_maintenance_tireSystem.endBusinessDynoSession(owner.businessId, owner.vehicleId) == true
+    end
     return overhaul_career_maintenance_tireSystem.endDynoSession(inventoryId) == true
   end
 
@@ -49,7 +58,7 @@ function lib.create(inputs)
     if not dynoSession.inventoryId or not dynoSession.originalConfig then
       return
     end
-    local vehicleData = overhaul_career_garage_inventory.getVehicles()[dynoSession.inventoryId]
+    local vehicleData = inventory.getVehicles()[dynoSession.inventoryId]
     local currentVars
     -- finishSessionRestore reaches this from the unload and level-end hooks, so the tuning module stays optional.
     if dynoSession.serviceOpen == "tuning" and overhaul_career_parts_tuning then
@@ -116,7 +125,20 @@ function lib.create(inputs)
       return false
     end
     dynoSession.originalConfig.vars = parts.history.safeDeepcopy(purchasedVars)
+    if inputs.vehicleAccess and inputs.vehicleAccess.isTeam(targetInventoryId) then inventory.setVehicleDirty(targetInventoryId) end
     return true
+  end
+
+  local function commitFuelSystemState(targetInventoryId, snapshot)
+    if not isTransientConfigActive(targetInventoryId) then return false end
+    local team = inputs.vehicleAccess and inputs.vehicleAccess.isTeam(targetInventoryId)
+    local changed = require('overhaul/lib/vehicles/fuelSnapshot')(
+      dynoSession.originalPartConditions, snapshot, dynoSession.inventoryId, team)
+    if changed and team then
+      inventory.getVehicles()[targetInventoryId].partConditions = parts.history.safeDeepcopy(dynoSession.originalPartConditions)
+      inventory.setVehicleDirty(targetInventoryId)
+    end
+    return changed
   end
 
   local function refundSetupFee(reason)
@@ -218,7 +240,7 @@ function lib.create(inputs)
     dynoState.restoreFailed = true
     dynoSession.pullState, dynoSession.result = nil, nil
     -- Retain protection only when this request actually began with a hub build.
-    overhaul_career_garage_inventory.setTransientBuild(request.inventoryId, request.hadTransientBuild)
+    inventory.setTransientBuild(request.inventoryId, request.hadTransientBuild)
     parts.vehicle.setDynoError(reason or "The dyno could not restore your vehicle. Try leaving again.", "restoreFailed")
   end
 
@@ -230,7 +252,7 @@ function lib.create(inputs)
         return
       end
       local inventoryId = request.inventoryId
-      local restoredVehId = overhaul_career_garage_inventory.getVehicleIdFromInventoryId(inventoryId)
+      local restoredVehId = inventory.getVehicleIdFromInventoryId(inventoryId)
       local restoredVeh = restoredVehId and getObjectByID(restoredVehId) or nil
       if not restoredVeh then
         failRestore(request, "The restored vehicle is unavailable. Try leaving again.")
@@ -246,12 +268,12 @@ function lib.create(inputs)
         parts.vehicle.restoreVehicleTransform(restoredVeh, transform, true)
         parts.vehicle.setVehicleFreeze(restoredVeh, false)
         parts.vehicle.setVehicleIgnition(restoredVeh, 0)
-        be:enterVehicle(0, restoredVeh)
+        require('overhaul/career/parts/dyno/dynoSession/driver').enter(restoredVeh)
         parts.vehicle.refreshDynoCamera(restoredVeh)
       end
 
-      if overhaul_career_garage_inventory.completeVehiclePlacement then
-        overhaul_career_garage_inventory.completeVehiclePlacement(inventoryId, restoredVehId)
+      if inventory.completeVehiclePlacement then
+        inventory.completeVehiclePlacement(inventoryId, restoredVehId)
       end
       parts.vehicle.releaseAllDynoSteering()
       if restoredVeh then parts.vehicle.releaseDynoSteering(restoredVeh) end
@@ -270,7 +292,7 @@ function lib.create(inputs)
 
     local inventoryId = dynoSession.inventoryId
     if not transformOverride and dynoState.restoreFailed then
-      local mappedId = overhaul_career_garage_inventory.getVehicleIdFromInventoryId(inventoryId)
+      local mappedId = inventory.getVehicleIdFromInventoryId(inventoryId)
       local veh = mappedId and getObjectByID(mappedId)
       if parts.vehicle.isDisplacedFromDyno(veh) then
         transformOverride = parts.vehicle.captureVehicleTransform(veh)
@@ -278,25 +300,26 @@ function lib.create(inputs)
     end
     dynoState.restoreFailed = nil
     local request = {inventoryId = inventoryId, config = dynoSession.originalConfig, age = 0,
-      hadTransientBuild = overhaul_career_garage_inventory.isTransientBuild(inventoryId)}
+      hadTransientBuild = inventory.isTransientBuild(inventoryId)}
     dynoState.restoreRequest = request
     dynoSession.phase = "leaving"
     refundSetupFee("Dyno setup refund")
     syncTunedVarsToOriginalConfig()
+    if inputs.vehicleAccess and inputs.vehicleAccess.isTeam(inventoryId) then inventory.setVehicleDirty(inventoryId) end
     if transformOverride then dynoState.restoreTransform = parts.history.safeDeepcopy(transformOverride) end
     local transform = parts.history.safeDeepcopy(dynoState.restoreTransform or dynoSession.originalTransform)
     local originalConfig = parts.history.safeDeepcopy(dynoSession.originalConfig)
 
-    local vehicleData = overhaul_career_garage_inventory.getVehicles()[inventoryId]
+    local vehicleData = inventory.getVehicles()[inventoryId]
     if vehicleData and originalConfig then
       vehicleData.config = originalConfig
     end
     -- Wheels must not simulate at the anchored hub pose before final placement.
     pauseRestore()
-    local ok, spawned = pcall(overhaul_career_garage_inventory.spawnVehicle, inventoryId, 2, restoreAfterRespawn(request, transform), nil, true, {
+    local ok, spawned = pcall(inventory.spawnVehicle, inventoryId, 2, restoreAfterRespawn(request, transform), nil, true, {
       prepareReplacement = function()
         if not restoreIsCurrent(request) then return false end
-        overhaul_career_garage_inventory.setTransientBuild(inventoryId, false)
+        inventory.setTransientBuild(inventoryId, false)
         return true
       end,
     })
@@ -324,22 +347,22 @@ function lib.create(inputs)
     local inventoryId = dynoSession.inventoryId
     if inventoryId then
       syncTunedVarsToOriginalConfig()
-      local record = overhaul_career_garage_inventory.getVehicles()[inventoryId]
+      local record = inventory.getVehicles()[inventoryId]
       if record then
         if dynoSession.originalConfig then record.config = parts.history.safeDeepcopy(dynoSession.originalConfig) end
         if dynoSession.originalPartConditions then record.partConditions = parts.history.safeDeepcopy(dynoSession.originalPartConditions) end
       end
       if restoreWorld then
-        local id = overhaul_career_garage_inventory.getVehicleIdFromInventoryId(inventoryId)
+        local id = inventory.getVehicleIdFromInventoryId(inventoryId)
         local veh = id and getObjectByID(id)
         if veh and request and request.spawnedVehicle == veh then
           parts.vehicle.stopVehiclePullExtension(veh)
           refreshVehiclePartVisibility(id)
           parts.vehicle.restoreVehicleTransform(veh, dynoState.restoreTransform or dynoSession.originalTransform)
           parts.vehicle.setVehicleFreeze(veh, false)
-        elseif veh and overhaul_career_garage_inventory.isTransientBuild(inventoryId) then
+        elseif veh and inventory.isTransientBuild(inventoryId) then
           -- A refused replacement must not leave an unprotected hub car in gameplay.
-          overhaul_career_garage_inventory.removeVehicleObject(inventoryId, true)
+          inventory.removeVehicleObject(inventoryId, true)
         end
       end
       endTireProtection(inventoryId)
@@ -365,7 +388,7 @@ function lib.create(inputs)
       return true
     end
 
-    local mappedId = dynoSession.inventoryId and overhaul_career_garage_inventory.getVehicleIdFromInventoryId(dynoSession.inventoryId)
+    local mappedId = dynoSession.inventoryId and inventory.getVehicleIdFromInventoryId(dynoSession.inventoryId)
     local sessionVeh = mappedId and getObjectByID(mappedId) or nil
     if sessionVeh then
       parts.vehicle.stopVehiclePullExtension(sessionVeh)
@@ -407,6 +430,9 @@ function lib.create(inputs)
     if not context then
       return nil, contextError or "The dyno session could not start."
     end
+    if extraData and extraData.inventoryId and tostring(extraData.inventoryId) ~= tostring(context.inventoryId) then
+      return nil, 'The vehicle changed during dyno setup.'
+    end
 
     if dynoSession.active then
       return nil, "A dyno session is already active."
@@ -447,11 +473,11 @@ function lib.create(inputs)
   local function beginSteeringSetup(context)
     local originalConfig = dynoSession.originalConfig
     return function()
-      overhaul_career_garage_inventory.spawnVehicle(context.inventoryId, 2, function(success, reason)
+      inventory.spawnVehicle(context.inventoryId, 2, function(success, reason)
         if dynoSession.originalConfig ~= originalConfig or not dynoSession.active
           or dynoSession.phase ~= "starting" then return end
         if success == false then
-          if overhaul_career_garage_inventory.isTransientBuild(context.inventoryId) then
+          if inventory.isTransientBuild(context.inventoryId) then
             finishSessionRestore()
           else
             abandonSessionWithoutRestore()
@@ -459,7 +485,7 @@ function lib.create(inputs)
           parts.vehicle.setDynoError(reason or "The dyno could not spawn your vehicle.", "offer")
           return
         end
-        local sessionVehId = overhaul_career_garage_inventory.getVehicleIdFromInventoryId(context.inventoryId)
+        local sessionVehId = inventory.getVehicleIdFromInventoryId(context.inventoryId)
         local sessionVeh = sessionVehId and getObjectByID(sessionVehId) or nil
 
         if not sessionVeh then
@@ -479,19 +505,19 @@ function lib.create(inputs)
           return
         end
 
-        parts.vehicle.setVehicleFreeze(sessionVeh, true)
-        parts.vehicle.setVehicleIgnition(sessionVeh, 0)
+        parts.vehicle.setVehicleFreeze(sessionVeh, false)
+        parts.vehicle.setVehicleIgnition(sessionVeh, 2)
         dynoSession.phase = "ready"
         dynoSession.setupFeeRefundable = false
-        dynoSession.statusText = "Start the engine, select a high forward gear, then arm the pull."
+        dynoSession.statusText = "Arm the pull to start the engine, then select a high forward gear."
         dynoSession.error = nil
 
-        be:enterVehicle(0, sessionVeh)
+        require('overhaul/career/parts/dyno/dynoSession/driver').enter(sessionVeh)
         parts.vehicle.openDynoUi()
       end, nil, nil, {
         prepareReplacement = function()
           if dynoSession.originalConfig ~= originalConfig or dynoSession.phase ~= "starting" then return false end
-          overhaul_career_garage_inventory.setTransientBuild(context.inventoryId, true)
+          inventory.setTransientBuild(context.inventoryId, true)
           return true
         end,
       })
@@ -585,7 +611,11 @@ function lib.create(inputs)
   end
 
   local function resumeWhenDriverStillInBay(callback)
-    return function()
+    return function(ok)
+      if ok == false then
+        parts.vehicle.setDynoError('The vehicle condition inspection failed. Re-enter the dyno bay to try again.', 'offer')
+        return
+      end
       if dynoState.playerInsideTrigger and dynoState.station
         and dynoState.station.mapId == getCurrentLevelIdentifier() and not dynoSession.active then
         callback()
@@ -837,7 +867,6 @@ function lib.create(inputs)
 
   return {
     beginGarageTow = function(vehId, transform)
-      local inventory = overhaul_career_garage_inventory
       if not dynoSession.active or inventory.getVehicleIdFromInventoryId(dynoSession.inventoryId) ~= vehId then return false end
       if transform then dynoState.garageTowTransform = parts.history.safeDeepcopy(transform) end
       pauseRestore()
@@ -851,6 +880,7 @@ function lib.create(inputs)
     getInventorySaveOverride = getInventorySaveOverride,
     applyInventorySpawnOverrides = applyInventorySpawnOverrides,
     commitTuningPurchase = commitTuningPurchase,
+    commitFuelSystemState = commitFuelSystemState,
     refreshVehiclePartVisibility = refreshVehiclePartVisibility,
     finishSessionRestore = finishSessionRestore,
     finishSessionForTeardown = finishSessionForTeardown,

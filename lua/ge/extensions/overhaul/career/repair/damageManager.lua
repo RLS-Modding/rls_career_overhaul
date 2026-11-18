@@ -77,6 +77,38 @@ local function getVehicleSaveFile(inventoryId)
   return getLoadedSaveFile(inventoryId)
 end
 
+-- Live state at the last capture -----------------------------------------------------------------
+
+-- Each spawned car's damage level and position when a save last captured it live, read from the game's
+-- per-frame vehicle data (no request to the car). A purchase save asks only cars that changed since.
+local LIVE_MOVE_TOLERANCE_M = 0.05
+local LIVE_DAMAGE_TOLERANCE = 1e-3
+local capturedLive = {}
+
+local function liveState(inventoryId)
+  local vehId = overhaul_career_garage_inventory.getVehicleIdFromInventoryId(inventoryId)
+  local object = vehId and be:getObjectByID(vehId)
+  -- Without a position the car counts as changed and is captured live.
+  if not (object and object.getPosition) then return nil end
+  local mapObject = map and map.objects and map.objects[vehId]
+  local pos = object:getPosition()
+  return {damage = mapObject and tonumber(mapObject.damage) or nil, x = pos.x, y = pos.y, z = pos.z}
+end
+
+local function recordLiveState(inventoryId)
+  capturedLive[tostring(inventoryId)] = liveState(inventoryId)
+end
+
+-- A car never captured this session, or one that took damage or moved since, has state only it knows.
+local function changedSinceCapture(inventoryId)
+  local before, now = capturedLive[tostring(inventoryId)], liveState(inventoryId)
+  if not before or not now then return true end
+  if (before.damage == nil) ~= (now.damage == nil) then return true end
+  if before.damage and math.abs(before.damage - now.damage) > LIVE_DAMAGE_TOLERANCE then return true end
+  local dx, dy, dz = now.x - before.x, now.y - before.y, now.z - before.z
+  return dx * dx + dy * dy + dz * dz > LIVE_MOVE_TOLERANCE_M * LIVE_MOVE_TOLERANCE_M
+end
+
 local function nextCaptureSequence(inventoryId)
   captureSequenceCounter = captureSequenceCounter + 1
   requestSeq[tostring(inventoryId)] = captureSequenceCounter
@@ -139,6 +171,7 @@ local function clearSessionStore()
   for _, capture in pairs(captures) do finishCapture(capture, false, 'Career changed') end
   failSave(saveTask, "Damage capture cancelled by career change")
   sessionState, requestSeq, captures, saveTask = {}, {}, {}, nil
+  capturedLive = {}
   if FS:directoryExists(SESSION_DIR) then
     for _, file in ipairs(FS:findFiles(SESSION_DIR, '*' .. FILE_SUFFIX, 0, false, false) or {}) do
       FS:removeFile(file)
@@ -149,10 +182,12 @@ end
 -- Capture replies ------------------------------------------------------------------------------
 
 function M.deleteVehicleDelayed(vehId)
+  local retiring = be:getObjectByID(vehId)
+  if not retiring then return end
   core_jobsystem.create(function(job)
     job.sleep(0.5)
     local object = be:getObjectByID(vehId)
-    if object then object:delete() end
+    if object == retiring then require('overhaul/lib/vehicles/removal').delete(object) end
   end)
 end
 
@@ -299,7 +334,7 @@ clearUndamagedVehicle = function(inventoryId, key, saveFile, removeVehicle, into
   if removeVehicle then
     local vehId = overhaul_career_garage_inventory.getVehicleIdFromInventoryId(inventoryId)
     local object = be:getObjectByID(vehId)
-    if object then object:delete() end
+    if object then require('overhaul/lib/vehicles/removal').delete(object) end
   end
   writer.remove(saveFile)
   if preserveSession then return end
@@ -438,6 +473,8 @@ function M.clearDamageState(inventoryId)
   sessionState[tostring(inventoryId)] = "cleared"
   overhaul_career_saveSystem.getSaveWriter().remove(getSessionFile(inventoryId))
   resetLiveDamageTracking(inventoryId)
+  -- Its damage is known now: none.
+  recordLiveState(inventoryId)
 end
 
 -- Removed inventory ids may be reused before saving; late captures must never revive their state.
@@ -515,12 +552,17 @@ local function listDamageFiles(dir, writer)
 end
 
 -- Damage files of spawned cars belong to the live capture, so the profile save leaves them alone.
+-- A save without live capture leaves only the cars that changed to it: the rest keep their session,
+-- loaded or cleared damage.
 local function collectSpawnedDamageFiles()
   local spawned = {}
+  local liveCars = saveTask and saveTask.liveCars
   local inventory = overhaul_career_garage_inventory
   for inventoryId, _ in pairs(inventory and inventory.getMapInventoryIdToVehId and inventory.getMapInventoryIdToVehId() or {}) do
     local transient = inventory.isTransientBuild and inventory.isTransientBuild(inventoryId)
-    if not damageRestorePending(inventoryId) and not transient then spawned[fileName(inventoryId)] = true end
+    if not damageRestorePending(inventoryId) and not transient and (not liveCars or liveCars[tostring(inventoryId)]) then
+      spawned[fileName(inventoryId)] = true
+    end
   end
   return spawned
 end
@@ -600,9 +642,23 @@ M.onExtensionLoaded = clearSessionStore
 M.onExtensionUnloaded = clearSessionStore
 M.onOverhaulActive = clearSessionStore
 M.onOverhaulBeforeSetProfile = clearSessionStore
+-- Which spawned cars this save captures live is decided once, when it starts. An ordinary save captures all
+-- (liveCars nil); a purchase save only the cars that changed since their last capture.
 M.onOverhaulSaveCurrentProfileAsyncStart = function()
   saveTask = {generation = overhaul_career_saveSystem.registerAsyncSaveExtension(SAVE_EXTENSION), pending = 0}
+  local saveSystem = overhaul_career_saveSystem
+  local live = not saveSystem.capturesLiveVehicles or saveSystem.capturesLiveVehicles()
+  if not live then saveTask.liveCars = {} end
+  local inventory = overhaul_career_garage_inventory
+  for inventoryId in pairs(inventory and inventory.getMapInventoryIdToVehId and inventory.getMapInventoryIdToVehId() or {}) do
+    if live or changedSinceCapture(inventoryId) then
+      if saveTask.liveCars then saveTask.liveCars[tostring(inventoryId)] = true end
+      recordLiveState(inventoryId)
+    end
+  end
 end
+-- The cars a purchase save captures live (keyed by tostring(inventoryId)); nil while every car is captured.
+M.getLiveCaptureCars = function() return saveTask and saveTask.liveCars end
 M.onOverhaulVehicleSaveFinished = function()
   if saveTask then
     saveTask.inventoryDone = true

@@ -200,6 +200,7 @@ parts.meetTypesPart = require('overhaul/career/carmeets/carmeets/meetTypes').cre
 parts.invites = require('overhaul/career/carmeets/carmeets/invites').create(partInputs)
 parts.flow = require('overhaul/career/carmeets/carmeets/flow').create(partInputs)
 parts.rsvp = require('overhaul/career/carmeets/carmeets/rsvp').create(partInputs)
+parts.challenges = require('overhaul/career/carmeets/carmeets/challenges').create(partInputs)
 
 -- Update ------------------------------------------------------------------------------------------
 -- An RSVP the player never acted on lapses one in-game day after it is first seen.
@@ -227,10 +228,12 @@ local function beginCarMeetShowcase(currentTime)
       local meetType = parts.meetTypesPart.meetTypes[carMeetState.meetState.type]
       if not meetType then return true end
 
+      -- The RSVP sale candidate may differ from the car actually brought to the meet.
+      carMeetState.meetState.flags.playerBroughtVehicle = parts.invites.didPlayerBringVehicleToMeet()
       local locationName = carMeetState.rsvpData and carMeetState.rsvpData.location or (carMeetState.meetState.location and carMeetState.meetState.location.zone and carMeetState.meetState.location.zone.name) or "carMeet"
       local arrival = overhaul_career_carmeets_reputation.awardMeetArrival({
         multiplier = meetType.baseReputationMultiplier,
-        inventoryId = parts.sales.getMeetVehicleInventoryId(carMeetState.meetState),
+        inventoryId = carMeetState.meetState.flags.playerBroughtVehicle and parts.sales.getMeetVehicleInventoryId(carMeetState.meetState) or nil,
         meetTypeKey = carMeetState.meetState.type,
         meetTypeName = meetType.name,
         location = carMeetState.rsvpData and carMeetState.rsvpData.location or nil,
@@ -262,7 +265,6 @@ local function beginCarMeetShowcase(currentTime)
 
       carMeetState.meetState.phase = "showcase"
       carMeetState.meetState.arrivalTime = currentTime
-      carMeetState.meetState.flags.playerBroughtVehicle = parts.invites.didPlayerBringVehicleToMeet()
       if not carMeetState.meetState.flags.saleInventoryId then
         carMeetState.meetState.flags.saleInventoryId = parts.sales.resolveMeetSaleInventoryId()
       end
@@ -592,8 +594,7 @@ local function startPurchaseOffer(shopId)
   if not overhaul_career_garage_inventory.getVehicleShoppingService().canPurchase(true) then
     return false
   end
-  overhaul_career_garage_inventory.getVehicleNegotiationService().startSellingOffer(shopId)
-  return true
+  return overhaul_career_garage_inventory.getVehicleNegotiationService().startSellingOffer(shopId)
 end
 
 -- Purchase ----------------------------------------------------------------------------------------
@@ -716,7 +717,8 @@ local function onGetRawPoiListForLevel(levelIdentifier, elements)
           type = "carMeetPurchaseVehicle",
           shopId = entry.shopId,
           name = entry.name,
-          sellerName = entry.sellerName
+          sellerName = entry.sellerName,
+          winBackId = entry.winBackId
         },
         markerInfo = {
           inspectVehicleMarker = {
@@ -757,11 +759,11 @@ local function onActivityAcceptGatherData(elemData, activityData)
 
   for _, elem in ipairs(elemData or {}) do
     if elem.type == "carMeetPurchaseVehicle" then
-      local blockReason = overhaul_career_garage_inventory.getVehicleShoppingService().getPurchaseBlockReason() or nil
+      local blockReason = not elem.winBackId and overhaul_career_garage_inventory.getVehicleShoppingService().getPurchaseBlockReason() or nil
       local props = {
         {
           icon = "person",
-          keyLabel = "Seller",
+          keyLabel = elem.winBackId and "Owner" or "Seller",
           valueLabel = elem.sellerName or "Car Meet Owner"
         }
       }
@@ -775,16 +777,19 @@ local function onActivityAcceptGatherData(elemData, activityData)
       table.insert(activityData, {
         icon = "carDealer",
         heading = elem.name or "Meet Vehicle",
-        preheadings = {"Car Meet Sale"},
+        preheadings = {elem.winBackId and "Your former car" or "Car Meet Sale"},
         sorting = {
           type = elem.type,
           id = elem.shopId
         },
         props = props,
-        buttonLabel = "Make an Offer",
-        startable = blockReason == nil,
-        disableReason = blockReason,
-        buttonFun = function() startPurchaseOffer(elem.shopId) end
+        buttonLabel = "Talk to " .. (elem.sellerName or "Owner"),
+        startable = true,
+        buttonFun = function()
+          local owner=capabilities.get('carMeetChallenges')
+          if owner then return owner.openTalk(elem.shopId) end
+          return startPurchaseOffer(elem.shopId)
+        end
       })
     elseif elem.type == "carMeetPlayerSaleOffers" then
       table.insert(activityData, {
@@ -912,6 +917,13 @@ M.getCarMeetVehicleIdForShopId = getCarMeetVehicleIdForShopId
 M.prepareCarMeetVehicleForPurchase = prepareCarMeetVehicleForPurchase
 M.snapshotCarMeetVehicleForPurchase = snapshotCarMeetVehicleForPurchase
 M.onCarMeetVehiclePurchased = onCarMeetVehiclePurchased
+M.startPurchaseOffer = startPurchaseOffer
+M.isClubJoined = parts.clubs.isClubJoined
+for name,fn in pairs(parts.challenges) do M[name]=fn end
+function M.devToolsEnabled()
+  local owner=overhaul_shell_extensionManager
+  return owner and owner.isDevKeyValid and owner.isDevKeyValid() or false
+end
 
 -- Inventory sale-source contract ------------------------------------------------------------------
 

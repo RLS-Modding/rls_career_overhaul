@@ -1,0 +1,44 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "burnside/rls_stu_loworbit_03",
+    "configId": "rls_stu_loworbit_03",
+    "model": "burnside",
+    "config": "/vehicles/burnside/rls_stu_loworbit_03.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "sourcePack": "rls_stu_leonard",
+    "driverId": "memphis_raines",
+    "driverName": "Kendall Keller",
+    "builder": "loworbit",
+    "classIds": [
+      "stu_leonard_850"
+    ],
+    "approvedClassIds": [
+      "stu_leonard_850"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "8302f3db945ef1f5de2b74e54723ca9cd7221e814e4256ad7b3f069a499f6722",
+    "traits": {
+      "drivetrain": "RWD",
+      "years": {
+        "min": 1952,
+        "max": 1952
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.7039922544362,
+      "runId": "REPAIR-20261026-P-rls_stu_loworbit_03",
+      "evidenceConfigSHA256": "a7ead79d5a7c0603e8de46c784a8dbad65946c609f06515393b1228940ffc55b",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/stu-leonard/final-metadata.json",
+      "repairEvidence": "/settings/motorsportEvents/approvalEvidence-20261026.json",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    }
+  }
+}

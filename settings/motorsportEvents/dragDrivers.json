@@ -1,0 +1,5 @@
+{
+  "version": 2,
+  "drivers": [],
+  "note": "Current roster is loaded from configInfo.json. Legacy roster is retained for historical event snapshots."
+}

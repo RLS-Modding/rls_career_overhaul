@@ -57,10 +57,9 @@ function M.vehicleUsesGarageCapacity(vehicle, garageId)
 end
 
 -- Every capacity reader takes a fresh view of the same inventory and pending reservations.
--- Unassigned local vehicles consume the map total even when no garage can claim them.
-local function readCapacity(inventoryId, excludedPurchaseToken, forDisposal)
+local function readCapacity(inventoryId, excludedPurchaseToken, forDisposal, relocatingVehicle)
   parts.ownership.buildGarageSizes()
-  local data, totalCapacity, used = {}, 0, 0
+  local data, unassigned = {}, 0
   local function addGarage(garageId)
     garageId = tostring(garageId)
     if data[garageId] or parts.ownership.isGarageForSale(garageId) then return end
@@ -68,7 +67,6 @@ local function readCapacity(inventoryId, excludedPurchaseToken, forDisposal)
     if not capacity then return end
     local garage = overhaul_world_facilities.getFacility('garage', garageId)
     data[garageId] = {id = garageId, name = garage and garage.name or garageId, capacity = capacity, count = 0}
-    totalCapacity = totalCapacity + capacity
   end
   for garageId, owned in pairs(garageState.purchasedGarages) do
     if owned then addGarage(garageId) end
@@ -86,7 +84,7 @@ local function readCapacity(inventoryId, excludedPurchaseToken, forDisposal)
         home = tostring(home)
         occupancy[home] = (occupancy[home] or 0) + 1
       end
-      if vehicleUsesGarageCapacity(vehicle) then used = used + 1 end
+      if vehicleUsesGarageCapacity(vehicle) and not data[tostring(home)] then unassigned = unassigned + 1 end
     end
   end
   local shopping = overhaul_career_market_vehicleShopping
@@ -94,11 +92,37 @@ local function readCapacity(inventoryId, excludedPurchaseToken, forDisposal)
     return shopping and shopping.getPendingInventorySlotCount
       and (tonumber(shopping.getPendingInventorySlotCount(excludedPurchaseToken, garageId, forDisposal)) or 0) or 0
   end
+  local assignedPending, overflow = 0, 0
   for garageId, info in pairs(data) do
-    info.count = (occupancy[garageId] or 0) + pending(garageId)
+    local reserved = pending(garageId)
+    assignedPending = assignedPending + reserved
+    info.count = (occupancy[garageId] or 0) + reserved
     info.freeSlots = math.max(0, info.capacity - info.count)
+    overflow = overflow + math.max(0, info.count - info.capacity)
   end
-  return data, math.max(0, totalCapacity - used - pending()), occupancy, pending
+  unassigned = unassigned + math.max(0, pending() - assignedPending)
+  -- Relocating an already counted local vehicle cannot increase shared storage debt.
+  if not relocatingVehicle and (unassigned > 0 or overflow > 0) then
+    -- Reserve unassigned vehicles consistently without changing their saved garage assignments.
+    local garageIds = {}
+    for garageId in pairs(data) do garageIds[#garageIds + 1] = garageId end
+    table.sort(garageIds)
+    for _, garageId in ipairs(garageIds) do
+      local info = data[garageId]
+      local reserved = math.min(unassigned, info.freeSlots)
+      info.count = info.count + reserved
+      info.freeSlots = info.freeSlots - reserved
+      unassigned = unassigned - reserved
+      -- Crowded parking still consumes paid storage elsewhere, without inventing bookings there.
+      local overflowReservation = math.min(overflow, info.freeSlots)
+      info.freeSlots = info.freeSlots - overflowReservation
+      overflow = overflow - overflowReservation
+      if unassigned == 0 and overflow == 0 then break end
+    end
+  end
+  local free = 0
+  for _, info in pairs(data) do free = free + info.freeSlots end
+  return data, free, occupancy, pending
 end
 
 function M.getGarageOccupancy(garageId)
@@ -107,10 +131,12 @@ function M.getGarageOccupancy(garageId)
 end
 
 function M.isGarageSpace(garage, inventoryId)
-  local data = readCapacity(inventoryId)
+  local incoming = inventoryId and overhaul_career_garage_inventory.getVehicles()[inventoryId]
+  local relocatingVehicle = incoming and vehicleMap.resolve(incoming) == getCurrentLevelIdentifier()
+    and vehicleUsesGarageCapacity(incoming)
+  local data = readCapacity(inventoryId, nil, nil, relocatingVehicle)
   local info = data[tostring(garage)]
   if not info then return {false, 0} end
-  local incoming = inventoryId and overhaul_career_garage_inventory.getVehicles()[inventoryId]
   -- Returning to a confirmed reservation adds no occupancy, even in older
   -- saves already over capacity. A matching garage id alone is not proof.
   local retainsReservation = incoming and vehicleMap.resolve(incoming) == getCurrentLevelIdentifier()

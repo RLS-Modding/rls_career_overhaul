@@ -1,0 +1,328 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Name": "Caden Rusk",
+  "Configuration": "Caden Rusk - Street Heat",
+  "Description": "Driver: Caden Rusk. Builder: Blacktop Engineering. Current inspected build: 8-speed automatic; RWD; Supercharger; nitrous No. ETs are historical estimates; current-build qualification is separately recorded from an assessor-accepted quarter-mile result (10.5-11.25 s original class window).",
+  "Config Type": "Custom",
+  "Author": "RLS Modding",
+  "Drivetrain": "RWD",
+  "Transmission": "Automatic",
+  "Years": {
+    "min": 2022,
+    "max": 2022
+  },
+  "Motorsport": {
+    "version": 1,
+    "id": "bastion/rls_streetheat_blacktop_caleb_reece",
+    "configId": "rls_streetheat_blacktop_caleb_reece",
+    "model": "bastion",
+    "config": "/vehicles/bastion/rls_streetheat_blacktop_caleb_reece.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "caleb_reece",
+    "driverName": "Caden Rusk",
+    "builder": "Blacktop Engineering",
+    "leagueId": "street_kings",
+    "classIds": [
+      "street_heat"
+    ],
+    "approvedClassIds": [
+      "street_heat"
+    ],
+    "eligibilityStatus": "Roster approval retained. Current build has separate assessor-accepted quarter-mile qualification evidence; recorded historical ETs remain historical estimates.",
+    "sourceConfigSHA256": "bfd521c0b706a0cd82e32f5ae2ed66ed977b0953d77aaddee62613abec162c55",
+    "traits": {
+      "configId": "bastion/rls_streetheat_blacktop_caleb_reece",
+      "diesel": false,
+      "drivetrain": "RWD",
+      "manual": false,
+      "model": "bastion",
+      "nitrous": false,
+      "rollCage": false,
+      "sportTires": true,
+      "supercharger": true,
+      "tireFriction": {
+        "complete": true,
+        "source": "compiled-tread-nodes",
+        "wheels": [
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "FL"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "FR"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "RL"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "RR"
+          }
+        ]
+      },
+      "tireFrictionCoefMax": 1,
+      "tireType": "sport",
+      "tireTypes": [
+        "sport"
+      ],
+      "tires": [
+        {
+          "part": "tire_f_305_35_20_sport",
+          "slot": "/bastion_body/bastion_suspension_f/wheel_f_5/tire_f_20x11/tire_f_305_35_20_sport",
+          "source": "installed-part-label",
+          "type": "sport"
+        },
+        {
+          "part": "tire_r_305_35_20_sport",
+          "slot": "/bastion_body/bastion_suspension_r/wheel_r_5/tire_r_20x11/tire_r_305_35_20_sport",
+          "source": "installed-part-label",
+          "type": "sport"
+        }
+      ],
+      "truck": false,
+      "turbocharger": false,
+      "year": 2022,
+      "transmission": "8-speed automatic",
+      "induction": "Supercharger",
+      "years": {
+        "min": 2022,
+        "max": 2022
+      }
+    },
+    "equipment": {
+      "evidence": "Hash-matched live class inspection and installed-parts tree; no new timing approval is asserted.",
+      "selectedTires": [
+        {
+          "slot": "/bastion_body/bastion_suspension_f/wheel_f_5/tire_f_20x11/tire_f_305_35_20_sport",
+          "part": "tire_f_305_35_20_sport",
+          "typeHint": "sport",
+          "source": "installed-part-label"
+        },
+        {
+          "slot": "/bastion_body/bastion_suspension_r/wheel_r_5/tire_r_20x11/tire_r_305_35_20_sport",
+          "part": "tire_r_305_35_20_sport",
+          "typeHint": "sport",
+          "source": "installed-part-label"
+        }
+      ],
+      "selectedRollCageParts": [],
+      "rollCage": false,
+      "tireFriction": {
+        "complete": true,
+        "source": "compiled-tread-nodes",
+        "wheels": [
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "FL"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "FR"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "RL"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "RR"
+          }
+        ]
+      },
+      "nitrous": null
+    },
+    "performance": {
+      "quarterMileSeconds": 13.603022233149,
+      "runId": "SH-20261020-075526",
+      "evidenceConfigSHA256": "4e8e91c35ebf1d65e3878ec368896745527a8e9f67d4d84f3857b8fe8f2d1ffc",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/street-heat/final-results.json",
+      "acceptedConfig": "outputs/street-heat/accepted/rls_streetheat_blacktop_caleb_reece/rls_streetheat_blacktop_caleb_reece.pc",
+      "indexRecoveryMetadata": {
+        "sourceProofFile": "outputs/drag-rebuild-20261028/continuation-ledger/attempts/14ee3c09a597effea8b4e112518b94d5274a1df5e1431b1eb82ba571d5d2ee31.json",
+        "sourceProofSHA256": "14ee3c09a597effea8b4e112518b94d5274a1df5e1431b1eb82ba571d5d2ee31",
+        "attemptId": "bastion__rls_streetheat_blacktop_caleb_reece-L1-P1-index-recovery-06-eb418c77",
+        "configSHA256": "bfd521c0b706a0cd82e32f5ae2ed66ed977b0953d77aaddee62613abec162c55",
+        "evidenceScope": "Hardware declarations only; historical ET receipts and class approvals retained. PC identity is guarded; native/VFS dependency freshness and performance are not certified here.",
+        "replacementOf": "fullsize/rls_streetheat_blacktop_caleb_reece"
+      }
+    },
+    "sourcePack": "rls_street_heat",
+    "currentQualification": {
+      "schema": "rls.index-recovery.current-qualification/1",
+      "status": "assessor-accepted",
+      "originalKey": "fullsize/rls_streetheat_blacktop_caleb_reece",
+      "testedKey": "bastion/rls_streetheat_blacktop_caleb_reece",
+      "configSHA256": "bfd521c0b706a0cd82e32f5ae2ed66ed977b0953d77aaddee62613abec162c55",
+      "quarterMileSeconds": 10.939196597574,
+      "attemptId": "bastion__rls_streetheat_blacktop_caleb_reece-L1-P1-index-recovery-06-eb418c77",
+      "capturedAt": "2026-10-28T19:23:14Z",
+      "classId": "street_heat",
+      "lower": 10.5,
+      "upper": 11.25,
+      "classProof": {
+        "classEntryAllowed": true,
+        "classId": "street_heat",
+        "classResultAllowed": true,
+        "leagueId": "street_kings",
+        "lower": 10.5,
+        "traits": {
+          "configId": "bastion/rls_streetheat_blacktop_caleb_reece",
+          "diesel": false,
+          "drivetrain": "RWD",
+          "manual": false,
+          "model": "bastion",
+          "nitrous": false,
+          "rollCage": false,
+          "sportTires": true,
+          "supercharger": true,
+          "tireFriction": {
+            "complete": true,
+            "source": "compiled-tread-nodes",
+            "wheels": [
+              {
+                "frictionCoefMax": 1,
+                "frictionCoefMin": 1,
+                "nodeCount": 32,
+                "slidingFrictionCoefMax": 1,
+                "slidingFrictionCoefMin": 1,
+                "source": "compiled-tread-nodes",
+                "wheel": "FL"
+              },
+              {
+                "frictionCoefMax": 1,
+                "frictionCoefMin": 1,
+                "nodeCount": 32,
+                "slidingFrictionCoefMax": 1,
+                "slidingFrictionCoefMin": 1,
+                "source": "compiled-tread-nodes",
+                "wheel": "FR"
+              },
+              {
+                "frictionCoefMax": 1,
+                "frictionCoefMin": 1,
+                "nodeCount": 32,
+                "slidingFrictionCoefMax": 1,
+                "slidingFrictionCoefMin": 1,
+                "source": "compiled-tread-nodes",
+                "wheel": "RL"
+              },
+              {
+                "frictionCoefMax": 1,
+                "frictionCoefMin": 1,
+                "nodeCount": 32,
+                "slidingFrictionCoefMax": 1,
+                "slidingFrictionCoefMin": 1,
+                "source": "compiled-tread-nodes",
+                "wheel": "RR"
+              }
+            ]
+          },
+          "tireFrictionCoefMax": 1,
+          "tireType": "sport",
+          "tireTypes": [
+            "sport"
+          ],
+          "tires": [
+            {
+              "part": "tire_f_305_35_20_sport",
+              "slot": "/bastion_body/bastion_suspension_f/wheel_f_5/tire_f_20x11/tire_f_305_35_20_sport",
+              "source": "installed-part-label",
+              "type": "sport"
+            },
+            {
+              "part": "tire_r_305_35_20_sport",
+              "slot": "/bastion_body/bastion_suspension_r/wheel_r_5/tire_r_20x11/tire_r_305_35_20_sport",
+              "source": "installed-part-label",
+              "type": "sport"
+            }
+          ],
+          "truck": false,
+          "turbocharger": false,
+          "year": 2022
+        },
+        "upper": 11.25
+      },
+      "health": {
+        "status": "no-observed-faults",
+        "engineFaults": [],
+        "maxTurboPsi": null,
+        "capViolation": false,
+        "telemetryDropped": 0
+      },
+      "physical": {
+        "issues": [],
+        "newBroken": [],
+        "deformed": [],
+        "partDamage": [],
+        "triggered": [],
+        "damageDelta": 0,
+        "scope": "Sparse getBeamDeformation delta >0.01, broken beam IDs, tires, part damage and native trigger changes. beamstate.damage/energy delta is reported, not treated as damage proof."
+      },
+      "source": {
+        "status": "current-in-covered-sources",
+        "scope": "Saved repository source list and compiled chosen parts only; native/game/VFS dependencies and runtime cache are not certified. Additional current inventory is not evidence of historical changes."
+      },
+      "evidence": {
+        "assessmentFile": "outputs/drag-rebuild-20261028/index-recovery/latest.json",
+        "assessmentSHA256": "03d04ab7739919d0e455f3afaf7e9e794f200f4698433f6cbffa1f7acd663b89",
+        "rawFile": "outputs/drag-rebuild-20261028/continuation-ledger/attempts/14ee3c09a597effea8b4e112518b94d5274a1df5e1431b1eb82ba571d5d2ee31.json",
+        "rawSHA256": "14ee3c09a597effea8b4e112518b94d5274a1df5e1431b1eb82ba571d5d2ee31",
+        "ledgerFile": "outputs/drag-rebuild-20261028/continuation-ledger/latest.json",
+        "ledgerSHA256": "a05efb2449df6019312ea0c14ae689f46be53147fa47dd7024f788869686f80b"
+      },
+      "scope": "One assessor-accepted current-build quarter-mile result in the original index through index+0.75 window. Health and source coverage retain the assessor/ledger scope; no repeatability guarantee or complete native/VFS certification. Historical performance and approval remain separate."
+    }
+  },
+  "Weight": 2229.058918,
+  "Induction Type": "Supercharger",
+  "Year": 2022
+}

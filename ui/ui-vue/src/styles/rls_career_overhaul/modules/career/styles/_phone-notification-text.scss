@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-// Shared notification text layout for lock-screen peek and in-phone heads-up banner.
+// Shared notification layout for the closed-phone banner, the in-phone heads-up banner and the
+// Notification Center.
 // Import in any component that renders phone notification copy.
 
 @mixin phone-notif-body {
@@ -33,4 +34,47 @@
   word-break: break-word;
   white-space: normal;
   line-height: 1.3;
+}
+
+// The card behind one banner: a solid plate in the house page colour, so the wallpaper and the
+// home-screen icons never show through the text. The status shows in the title's tone, so the plate
+// carries none. Use on an element with .rls-house (the house tokens).
+@mixin phone-notif-card {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 11px 14px 11px 11px;
+  background: var(--page);
+  border: 1px solid var(--line);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+// Card edges peeking out under a card that has more stacked behind it (iOS stack). $edge is the edge
+// element's class; --1 is the first edge, --2 the narrower one under it. The card needs room below
+// (margin-bottom) for the edges it shows.
+@mixin phone-notif-stack-edges($edge) {
+  #{$edge} {
+    position: absolute;
+    top: 100%;
+    height: 7px;
+    border-radius: 0 0 14px 14px;
+    background: color-mix(in srgb, var(--page) 86%, #fff);
+    border: 1px solid var(--line);
+    border-top: none;
+    pointer-events: none;
+  }
+
+  #{$edge}--1 {
+    left: 14px;
+    right: 14px;
+  }
+
+  #{$edge}--2 {
+    top: calc(100% + 7px);
+    left: 28px;
+    right: 28px;
+    height: 6px;
+    background: color-mix(in srgb, var(--page) 92%, #fff);
+  }
 }

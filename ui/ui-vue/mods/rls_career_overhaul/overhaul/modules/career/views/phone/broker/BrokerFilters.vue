@@ -6,6 +6,7 @@
   <BrokerStyles />
       <section data-broker-scope v-show="!pickedField" ref="filterPanel" class="sort-panel filter-page">
         <h3 data-broker-scope>Filters</h3>
+        <BrokerFilterSummary />
         <div data-broker-scope v-if="s.market === 'all'" class="filter-group">
           <h3 data-broker-scope>Work type</h3>
           <div data-broker-scope class="chips market-chips">
@@ -15,7 +16,7 @@
         </div>
         <button data-broker-scope v-for="field in fields" :key="field.key" type="button" class="picker-field" :aria-label="`${field.label}: ${chosenLabel(field)}`" @click="openPicker(field.key)"><span data-broker-scope class="picker-label">{{ field.label }}</span><span data-broker-scope class="picker-value">{{ chosenLabel(field) }}</span><span data-broker-scope class="picker-chev" aria-hidden="true">›</span></button>
         <div data-broker-scope v-if="trailerTypes.length" class="filter-group"><h3 data-broker-scope>Trailer type</h3><div data-broker-scope class="chips"><button data-broker-scope v-for="type in trailerTypes" :key="type" type="button" :class="{ active: s.filter.trailers.includes(type) }" @click="toggleTrailer(type)">{{ type }}</button></div></div>
-        <div data-broker-scope class="filter-actions"><button data-broker-scope @click="s.resetFilters">Reset filters</button><button data-broker-scope class="primary" @click="emit('done')">Show {{ groupedOfferCount(s.rows) }} loads</button></div>
+        <div data-broker-scope class="filter-actions"><button data-broker-scope @click="s.resetFilters">Show all</button><button data-broker-scope class="primary" @click="emit('done')">Show {{ s.availability === 'locked' ? s.lockedRows.length : s.availableRows.length }} loads</button></div>
       </section>
       <section data-broker-scope v-if="pickedField" ref="optionPanel" class="sort-panel">
         <h3 data-broker-scope>{{ pickedField.label }}</h3>
@@ -27,6 +28,7 @@
 // A filter opens its options in place of the filter list, like Sort, so pad,
 // mouse and keyboard all pick the same way; B steps back to the list first.
 import BrokerStyles from './BrokerStyles.vue'
+import BrokerFilterSummary from './BrokerFilterSummary.vue'
 import { refocusIfLost } from '../../../composables/useScreenEntryFocus.js'
 import { computed, inject, onBeforeUnmount, ref } from 'vue'
 const emit = defineEmits(['done'])

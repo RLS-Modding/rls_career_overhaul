@@ -1,0 +1,84 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Configuration": "Nathan Campbell - Pro Turbo",
+  "Description": "Royal-blue high-RPM race-block DCT sprint coupe. Pro League / Pro Turbo. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Drivetrain": "RWD",
+  "Transmission": "DCT",
+  "Years": {
+    "min": 2020,
+    "max": 2022
+  },
+  "Motorsport": {
+    "version": 1,
+    "id": "scintilla/rls_proturbo_loworbit_02",
+    "configId": "rls_proturbo_loworbit_02",
+    "model": "scintilla",
+    "config": "/vehicles/scintilla/rls_proturbo_loworbit_02.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "dominic_toretto",
+    "driverName": "Nathan Campbell",
+    "builder": "Low Orbit Garage",
+    "classIds": [
+      "pro_turbo"
+    ],
+    "approvedClassIds": [
+      "pro_turbo"
+    ],
+    "leagueId": "pro_league",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "5c3b91b8e0701409667a74da3549f1f30dd866491a8b7593c80b516b83857822",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "7-speed DCT",
+      "induction": "Turbocharger",
+      "nitrous": false,
+      "years": {
+        "min": 2020,
+        "max": 2022
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_18x5",
+          "part": "tire_F_28_4_5_18_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_18x12_alt",
+          "part": "tire_R_28_13_5_18_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "scintilla_rollcage_hardtop",
+          "part": "scintilla_rollcage_hardtop"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 7.7208884352002,
+      "runId": "PT-008",
+      "evidenceConfigSHA256": "26862413b8f37eda23388e302e9accd49f2fe2405cac9a19c2eed4faa1dcbdb6",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/pro-turbo/final-results.json",
+      "acceptedConfig": "outputs/pro-turbo/accepted/rls_proturbo_loworbit_02/rls_proturbo_loworbit_02.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_pro_turbo"
+  }
+}

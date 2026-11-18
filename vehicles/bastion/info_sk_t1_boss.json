@@ -1,0 +1,33 @@
+{
+  "Name": "Cinder",
+  "Configuration": "sk_t1_boss",
+  "Value": 20000,
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": true
+  },
+  "Description": "Street Bastion \u2014 No Prep Knights boss.",
+  "Drag Times": {
+    "time_1000": 7.9250001013279,
+    "time_1_4": 9.2735001184046,
+    "time_1_8": 6.2755000777543,
+    "time_330": 4.3280000537634,
+    "time_60": 1.7475000210106,
+    "velAt_1_4": 74.701523941595,
+    "velAt_1_8": 58.138023196657
+  },
+  "Reaction Time": 0.25000000372529,
+  "Drivetrain": "RWD",
+  "Transmission": "Automatic",
+  "Fuel Type": "Gasoline",
+  "Years": {
+    "min": 2016,
+    "max": 2022
+  },
+  "dragConfigVersion": 3,
+  "dragFitmentVersion": 3,
+  "dragTimesRevalidated": false
+}

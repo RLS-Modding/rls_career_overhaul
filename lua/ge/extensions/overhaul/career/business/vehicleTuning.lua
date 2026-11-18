@@ -55,10 +55,7 @@ local function isOnBlackList(varData)
 end
 
 local function getPriceCategory(category)
-  if prices[category] then
-    return prices[category].price or prices.default.price
-  end
-  return prices.default.price
+  return 0 -- Weepy calibration is free; hardware is billed separately.
 end
 
 -- Each owned cheap-tunes level takes 20% off the cart.
@@ -242,7 +239,7 @@ local function calculateTuningCost(businessId, vehicleId, tuningVars, originalVa
 
   local shoppingCart = createShoppingCart(businessId, vehicleId, tuningVars, originalVars)
   if not shoppingCart then return nil end
-  local discountedTotal = shoppingCart.total * getCheapTunesDiscountMultiplier(businessId)
+  local discountedTotal = shoppingCart.total == 0 and 0 or shoppingCart.total * getCheapTunesDiscountMultiplier(businessId)
   return math.floor(discountedTotal + 0.5)
 end
 
@@ -410,12 +407,13 @@ local function ensurePreviewConfig(businessId, vehicleId)
 end
 
 -- Remembers each tank's fill as a fraction, so the respawned vehicle is topped up to the same level.
-local function captureFuelLevels(tankData)
+local function captureFuelLevels(vehObj, tankData)
   local storedFuelLevels = {}
   if tankData and tankData[1] then
     for _, tank in ipairs(tankData[1]) do
       if tank.energyType ~= "n2o" then
         storedFuelLevels[tank.name] = {
+          rlsFuelTank = overhaul_career_maintenance_fuelSystem and overhaul_career_maintenance_fuelSystem.captureTankForRebuild(vehObj:getID(), tank),
           currentEnergy = tank.currentEnergy,
           maxEnergy = tank.maxEnergy,
           energyType = tank.energyType,
@@ -431,8 +429,11 @@ local function restoreFuelLevels(vehObj, storedFuelLevels, newData)
   if not (storedFuelLevels and next(storedFuelLevels) and newData and newData[1]) then return end
   for _, tank in ipairs(newData[1]) do
     if tank.name and storedFuelLevels[tank.name] and tank.energyType ~= "n2o" then
-      local targetEnergy = storedFuelLevels[tank.name].relativeFuel * tank.maxEnergy
-      core_vehicleBridge.executeAction(vehObj, 'setEnergyStorageEnergy', tank.name, targetEnergy)
+      local stored = storedFuelLevels[tank.name]
+      local targetEnergy = stored.relativeFuel * tank.maxEnergy
+      if not (overhaul_career_maintenance_fuelSystem and overhaul_career_maintenance_fuelSystem.restoreTankAfterRebuild(vehObj, stored)) then
+        core_vehicleBridge.executeAction(vehObj, 'setEnergyStorageEnergy', tank.name, targetEnergy)
+      end
     end
   end
 end
@@ -508,7 +509,7 @@ local function applyTuningToVehicle(businessId, vehicleId, tuningVars, onComplet
     if not ready or not canContinue() then return end
   core_vehicleBridge.requestValue(vehObj, function(data)
     if not canContinue() then return end
-    local storedFuelLevels = captureFuelLevels(data)
+    local storedFuelLevels = captureFuelLevels(vehObj, data)
     respawnWithConfig(vehObj, vehId, modelKey, updatedConfig)
     previewOwner.applyPreviewConditions(businessId, vehicleId, vehObj, updatedConfig)
     core_vehicleBridge.requestValue(vehObj, function(newData)

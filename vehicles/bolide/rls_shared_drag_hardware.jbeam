@@ -1,0 +1,49 @@
+{
+  "rls_bolide_engine_internals_stage4_block": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Heavy Duty Block", "value":20000},
+    "slotType": "bolide_engine_internals",
+    "mainEngine": {
+      "maxTorqueRating": 3350,
+      "maxOverTorqueDamage": 1150,
+      "cylinderWallTemperatureDamageThreshold": 170,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1500000,
+      "pistonRingDamageThreshold": 1500000,
+      "connectingRodDamageThreshold": 2000000,
+      "maxPhysicalRPM": 9870
+    }
+  },
+  "rls_bolide_engine_internals_stage4_performance": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Performance Block", "value":22500},
+    "slotType": "bolide_engine_internals",
+    "mainEngine": {
+      "torqueModMult": [
+        ["rpm", "torque"],
+        [0, 1],
+        [1000, 0.87],
+        [3000, 1.0125],
+        [4000, 1.075],
+        [5000, 1.15],
+        [6000, 1.25],
+        [7000, 1.275],
+        [8000, 1.4125],
+        [9000, 1.825],
+        [10000, 2.5]
+      ],
+      "$+maxRPM": 400,
+      "$*friction": 1.1,
+      "$*dynamicFriction": 0.88,
+      "$*inertia": 0.9,
+      "$*engineBrakeTorque": 1.2,
+      "maxTorqueRating": 3350,
+      "maxOverTorqueDamage": 1150,
+      "cylinderWallTemperatureDamageThreshold": 170,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1500000,
+      "pistonRingDamageThreshold": 1500000,
+      "connectingRodDamageThreshold": 2000000,
+      "maxPhysicalRPM": 9870
+    },
+    "vehicleController": {"revMatchThrottle":0.35, "clutchLaunchStartRPM":2400, "clutchLaunchTargetRPM":3300}
+  }
+}

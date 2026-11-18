@@ -209,6 +209,8 @@ local function markOpen()
   if opensSuppressed() or isClosing then return end
   isPhoneOpen = true
   isClosing = false
+  -- Direct app routes can reuse a shell snapshot retained while the phone was closed.
+  guihooks.trigger('phoneShellStatus', currentStatus())
 end
 
 local function openRoute(routeName, params)
@@ -306,8 +308,15 @@ function M.onExtensionLoaded()
 end
 
 -- Both career exits and profile adoption pass through this hook. Use the
--- normal close path while the router and shell are still available.
+-- normal close path while the router and shell are still available. The
+-- Notification Center's list lives in the UI session, so the UI is told which
+-- career is loaded now: the same one (a map travel passes through here twice)
+-- keeps its list, any other starts it over, so one career's notifications never
+-- show, or open, in another's.
 function M.onOverhaulActive(active)
+  local saves = active and overhaul_career_saveSystem
+  local profile = saves and saves.getCurrentProfile and saves.getCurrentProfile() or nil
+  guihooks.trigger('PhoneNotificationCenterCareer', {active = active == true, profile = profile})
   if not active then closePhone() end
 end
 

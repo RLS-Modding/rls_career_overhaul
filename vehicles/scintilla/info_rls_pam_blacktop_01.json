@@ -1,0 +1,88 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Name": "Lillian Beckett",
+  "Configuration": "Lillian Beckett - Pro All-Motor",
+  "Description": "Blacktop Engineering. Naturally aspirated competition build; drag tires on both axles, lights, doors, hood and glass retained. Tested healthy at Alder: 8.758 s quarter-mile. Sequential; 912 engine hp, 1331 kg. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Induction Type": "NA",
+  "Drivetrain": "RWD",
+  "Transmission": "Sequential",
+  "Power": 912,
+  "Weight": 1331,
+  "Years": {
+    "max": 2022,
+    "min": 2020
+  },
+  "Motorsport": {
+    "version": 1,
+    "id": "scintilla/rls_pam_blacktop_01",
+    "configId": "rls_pam_blacktop_01",
+    "model": "scintilla",
+    "config": "/vehicles/scintilla/rls_pam_blacktop_01.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "clarence_callahan",
+    "driverName": "Lillian Beckett",
+    "builder": "Blacktop Engineering",
+    "classIds": [
+      "pro_motor"
+    ],
+    "approvedClassIds": [
+      "pro_motor"
+    ],
+    "leagueId": "pro_league",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "38fa58ce81edf4d38257726730e4c05b95748c6ba5eb98dfb855c591d8234732",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "Sequential",
+      "induction": "Naturally aspirated",
+      "nitrous": false,
+      "years": {
+        "max": 2022,
+        "min": 2020
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_18x5",
+          "part": "tire_F_28_4_5_18_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_18x12_alt",
+          "part": "tire_R_28_13_5_18_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "scintilla_rollcage_hardtop",
+          "part": "scintilla_rollcage_hardtop"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.75758622302,
+      "runId": "PAM-015",
+      "evidenceConfigSHA256": "1da5817f8f7f329228a7d6108547bac933a530e8c769e6b918a611e1f354c219",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/pro-allmotor/final-metadata.json",
+      "acceptedConfig": "outputs/pro-allmotor/accepted/rls_pam_blacktop_01/rls_pam_blacktop_01.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_pro_allmotor"
+  }
+}

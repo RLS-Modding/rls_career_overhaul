@@ -66,11 +66,11 @@ function buildNativeEngineConditionFindings({ live, pistonRingsDamaged }) {
   const findings = []
   if (live.engineHydrolocked) findings.push({ key: 'hydrolock', severity: 'high', title: 'Engine rotation obstructed', cause: 'Liquid intrusion into a combustion chamber is the likely cause.', effect: 'The engine cannot rotate safely.', action: 'Stop attempting to start the engine and inspect it before further operation.' })
   if (live.rodBearingsDamaged) findings.push({ key: 'rod-bearings', severity: 'high', title: 'Severe internal engine damage', cause: 'Bearing or lubrication-system damage is the likely cause.', effect: 'Continued operation may cause complete engine failure.', action: 'Stop the engine and repair the damaged long block.' })
-  if (live.headGasketDamaged) findings.push({ key: 'head-gasket', severity: 'high', title: 'Combustion/cooling sealing fault', cause: 'Cylinder-head or head-gasket sealing failure is the likely cause.', effect: 'Cooling and combustion performance may be compromised.', action: 'Inspect and repair the cylinder head and gasket.' })
+  if (live.headGasketDamaged) findings.push({ key: 'head-gasket', severity: 'high', title: 'Combustion/cooling sealing fault', cause: live.fuelSystem?.causedGasket === true ? 'Repeated knock from the fuel or tune damaged the head gasket.' : 'Cylinder-head or head-gasket sealing failure is the likely cause.', effect: 'Cooling and combustion performance may be compromised.', action: live.fuelSystem?.causedGasket === true ? 'Repair the head gasket, then correct the fuel and ignition tune.' : 'Inspect and repair the cylinder head and gasket.' })
   if (live.idleStability === 'unstable') findings.push({ key: 'idle-unstable', severity: 'high', title: 'Unstable idle', cause: 'Engine wear, damage, or overdue service has severely degraded idle-speed control.', effect: 'The engine may stall at idle or when the throttle is released.', action: 'Inspect the engine for wear and damage. A high-mileage engine may need an overhaul or replacement.' })
   else if (live.idleStability === 'rough') findings.push({ key: 'idle-rough', severity: 'medium', attention: false, title: 'Rough idle', cause: 'Engine wear, damage, or overdue service is reducing idle-speed stability.', effect: 'Idle speed may fluctuate and the engine may stumble.', action: 'Monitor idle quality and inspect the engine if it begins to stall.' })
   if (live.idleStability !== 'unstable' && live.recentIdleStall === true) findings.push({ key: 'recent-idle-stall', severity: 'medium', attention: false, recent: true, title: 'Recently observed — engine stalled at idle', cause: 'The engine stopped while idling with no load applied.', effect: 'The engine did not sustain idle speed.', action: 'Restart the engine and monitor idle quality. Inspect the engine if stalling returns.' })
-  if (pistonRingsDamaged) findings.push({ key: 'piston-rings', severity: 'high', title: 'Cylinder sealing fault suspected', cause: 'Piston-ring or cylinder sealing deterioration is the likely cause.', effect: 'Oil consumption and power loss may increase.', action: 'Inspect compression and repair the engine internals.' })
+  if (pistonRingsDamaged) findings.push({ key: 'piston-rings', severity: 'high', title: 'Cylinder sealing fault suspected', cause: live.fuelSystem?.causedRings === true ? 'Repeated knock or a lean mixture from the fuel tune damaged the piston rings.' : 'Piston-ring or cylinder sealing deterioration is the likely cause.', effect: 'Oil consumption and power loss may increase.', action: live.fuelSystem?.causedRings === true ? 'Repair the engine internals, then correct the fuel and ignition tune.' : 'Inspect compression and repair the engine internals.' })
   return findings
 }
 
@@ -115,6 +115,33 @@ function buildMaintenanceFindings(context) {
     const stored = recentSymptom(radiator, 'radiator')
     if (stored && !representedByNativeFinding && !representedByRestriction) findings.push(coolingSymptomFinding(stored, false))
   }
+  return findings
+}
+
+function fuelFinding(key, severity, title, cause, effect, action) {
+  return { key, severity, title, cause, effect, action }
+}
+
+// Active only. An empty tank does not count as the wrong fuel; the vehicle
+// side already withholds those alerts until there is fuel to judge.
+function buildFuelFindings({ live }) {
+  const fuel = live.fuelSystem
+  if (!fuel || fuel.monitored !== true) return []
+  const alerts = fuel.alerts || {}
+  const findings = []
+  if (alerts.nitroKit === true) findings.push(fuelFinding('fuel-nitro-kit', 'high', 'Nitro fuel in an unconverted system', 'The tank contains nitromethane, and this engine does not have a Nitro 90 system.', 'Fuel delivery can be far below what this fuel needs.', 'Drain the tank, or install a Nitro 90 system before using this fuel.'))
+  if (alerts.nitroBlend === true) findings.push(fuelFinding('fuel-nitro-blend', 'high', 'Nitro 90 blend is off', 'This system is calibrated for 90% nitromethane and 10% methanol.', 'The engine is not running the blend it was set up for.', 'Drain the tank and refill with Nitro 90.'))
+  if (alerts.methanolKit === true) findings.push(fuelFinding('fuel-methanol-kit', 'high', 'Methanol in an incompatible system', 'The tank contains methanol, and this engine does not have an M100 system.', 'The current calibration cannot compensate for this fuel.', 'Drain the tank, or install an M100 system before using methanol.'))
+  if (alerts.methanolPurity === true) findings.push(fuelFinding('fuel-methanol-purity', 'high', 'M100 system is not on methanol', 'This system expects nearly pure methanol.', 'The mixture can run excessively rich.', 'Drain the tank and refill with M100.'))
+  if (alerts.mixedMethanol === true) findings.push(fuelFinding('fuel-mixed-methanol', 'medium', 'Mixed methanol fuel', 'The tank contains methanol mixed with other fuel.', 'This mixture is not a supported calibration.', 'Drain the tank before refueling.'))
+  if (alerts.ethanolUnconverted === true) findings.push(fuelFinding('fuel-ethanol-unconverted', 'high', 'Ethanol blend in an unconverted system', 'Ethanol content is above what the standard gasoline system is calibrated for.', 'Fuel delivery and mixture can be outside the tune.', 'Drain the tank, or install a flex-fuel system before using this blend.'))
+  if (alerts.octaneShort === true) findings.push(fuelFinding('fuel-octane-short', 'medium', 'Octane below engine requirement', fuel.requirementEstimated === true ? 'The fuel octane is below the octane this engine is estimated to need.' : 'The fuel octane is below the octane this engine requires.', 'High-load operation can cause knock and engine damage.', 'Use a higher-octane fuel, or reduce load until the tank is refilled.'))
+  if (alerts.knock === true && fuel.knockControl === true) findings.push(fuelFinding('fuel-knock', 'high', 'Knock is getting past protection', 'The engine is knocking even with ignition retarded as far as its protection allows.', 'Continued high-load knock damages the engine.', 'Lift off, then use higher-octane fuel or retard the ignition tune.'))
+  else if (alerts.knock === true) findings.push(fuelFinding('fuel-knock', 'high', 'Engine is knocking', 'The engine is knocking under the current fuel and tune, and it has no knock protection.', 'Continued high-load knock damages the engine.', 'Lift off, then use higher-octane fuel or retard the ignition tune.'))
+  else if (alerts.knockRetard === true) findings.push(fuelFinding('fuel-knock-retard', 'medium', 'Knock protection is active', 'Ignition is being retarded to keep knock down.', 'Timing is later than the tune asked for.', 'Review fuel octane and the ignition tune if this stays on under load.'))
+  if (alerts.boostCut === true) findings.push(fuelFinding('fuel-boost-cut', 'medium', 'Boost cut active', 'Boost is above the pressure the fuel calibration allows, so fuel is being cut.', 'Power drops out in bursts at full throttle.', 'Lower the boost, or raise the boost cut in Fuel & Ignition with enough fuel delivery and octane for it.'))
+  if (alerts.lean === true) findings.push(fuelFinding('fuel-lean', 'high', 'Mixture is lean under load', 'The engine is running leaner than is safe under load.', 'Combustion can overheat pistons and valves.', 'Check the fuel, the tank blend, and whether delivery is keeping up.'))
+  if (alerts.rich === true) findings.push(fuelFinding('fuel-rich', 'medium', 'Mixture is excessively rich', 'The engine is running richer than the tune intends.', 'Running can be poor, and spark plugs can foul.', 'Correct the mixture before continued hard use.'))
   return findings
 }
 
@@ -164,7 +191,7 @@ export function buildDiagnosticFindings(context) {
   const sources = [buildPneumaticFindings(context), buildNativeDamageEventFindings(context)]
   if (context.live.hasElectricDrive) sources.push(buildElectricDriveFindings(context))
   if (!context.live.isElectric) {
-    sources.push(buildNativeEngineConditionFindings(context), buildMaintenanceFindings(context), buildDrivetrainFindings(context))
+    sources.push(buildNativeEngineConditionFindings(context), buildFuelFindings(context), buildMaintenanceFindings(context), buildDrivetrainFindings(context))
   }
   const findings = sources.flat()
     .filter((finding, index, all) => all.findIndex(candidate => candidate.key === finding.key) === index)

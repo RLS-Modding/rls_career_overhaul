@@ -5,6 +5,8 @@ local part = {}
 -- Each construction shares state and helpers with that owner load.
 function part.new(inputs)
   local fleetState = inputs.fleetState
+  local callbacks = require('overhaul/lib/vehicles/callbacks')
+  local CONFIG_REQUEST_TIMEOUT_SECONDS = 30
 
   -- Spawning --------------------------------------------------------------------------------------
 
@@ -216,6 +218,17 @@ function part.new(inputs)
 
   -- Removal and clearing --------------------------------------------------------------------------
 
+  -- Omitting the spawned ID releases this owner's entire set during teardown.
+  local function cancelConfigRequests(spawnedId)
+    if not next(inputs.pendingConfigCallbacks) then return end
+    for requestId, pending in pairs(inputs.pendingConfigCallbacks) do
+      if not spawnedId or pending.spawnedId == spawnedId then
+        callbacks.close(requestId)
+        inputs.pendingConfigCallbacks[requestId] = nil
+      end
+    end
+  end
+
   local function removeBusinessVehicleObject(businessId, vehicleId)
     if not businessId or not vehicleId then
       return
@@ -228,6 +241,8 @@ function part.new(inputs)
     end
 
     local vehId = fleetState.spawnedBusinessVehicles[businessId][vehicleId]
+    -- Deletion need not emit an engine event before the same fleet row is rebuilt.
+    cancelConfigRequests(vehId)
     local vehObj = getObjectByID(vehId)
     if vehObj then
       overhaul_career_maintenance_tireSystem.unregisterBusinessVehicle(businessId, vehicleId, vehId)
@@ -250,6 +265,7 @@ function part.new(inputs)
     for _, vehicle in ipairs(vehicles) do
       inputs.clearCachesForStoredVehicle(businessId, vehicle)
       if vehicle and vehicle.vehicleId ~= nil then
+        inputs.clearDynoHistoryForVehicle(businessId, vehicle.vehicleId)
         removeBusinessVehicleObject(businessId, vehicle.vehicleId)
       end
     end
@@ -358,18 +374,45 @@ function part.new(inputs)
 
   -- Vehicles without a stored config get it read back from the vehicle, keyed by a callback id.
   local function requestMissingVehicleConfig(vehObj, vehicle, businessId, vehicleId)
-    local callbackId = tostring(businessId) .. "_" .. tostring(vehicleId) .. "_" .. tostring(os.time())
+    if vehicle.config then return end
+
+    local callbackId = callbacks.open('businessVehicleConfig', {
+      owner = 'businessFleetConfig', vehId = vehObj:getID(), timeout = CONFIG_REQUEST_TIMEOUT_SECONDS,
+      endsWith = {'career', 'map', 'profile'},
+      onFail = function(requestId) inputs.pendingConfigCallbacks[requestId] = nil end,
+    })
+    if not callbackId then return end
     inputs.pendingConfigCallbacks[callbackId] = {
       businessId = businessId,
-      vehicleId = vehicleId
+      vehicleId = vehicleId,
+      spawnedId = vehObj:getID(),
+      vehicle = vehicle,
     }
 
-    if not vehicle.config then
-      vehObj:queueLuaCommand([[
-        local configData = serialize(v.config)
-        obj:queueGameEngineLua(require('vehicle/overhaul/geCallback').reply(]] .. require('overhaul/lib/vehicles/callbacks').open('businessVehicleConfig', {owner = 'businessInventory', timeout = false}) .. [[, 'businessVehicleConfig', "']] .. callbackId ..
-                               [[', " .. configData))
-      ]])
+    local command = [[
+      local configData = serialize(v.config)
+      obj:queueGameEngineLua(require('vehicle/overhaul/geCallback').reply(]] .. callbackId .. [[, 'businessVehicleConfig', "]] .. callbackId .. [[, " .. configData))
+    ]]
+    local ok = pcall(vehObj.queueLuaCommand, vehObj, command)
+    if not ok then
+      callbacks.close(callbackId)
+      inputs.pendingConfigCallbacks[callbackId] = nil
+      log('W', 'businessInventory.pullOut', 'Could not queue vehicle config readback')
+    end
+  end
+
+  -- Registry expiry is lazy; lost replies must also expire when no new requests are opened.
+  local function updateConfigRequests()
+    if not next(inputs.pendingConfigCallbacks) then return end
+    local nowSeconds = os.clockhp and os.clockhp() or os.clock()
+    for requestId, pending in pairs(inputs.pendingConfigCallbacks) do
+      local request = callbacks.getPending(requestId)
+      if not request or (request.deadline and nowSeconds >= request.deadline)
+        or inputs.getSpawnedVehicleId(pending.businessId, pending.vehicleId) ~= pending.spawnedId
+        or not getObjectByID(pending.spawnedId) then
+        callbacks.close(requestId)
+        inputs.pendingConfigCallbacks[requestId] = nil
+      end
     end
   end
 
@@ -446,6 +489,7 @@ function part.new(inputs)
   end
 
   return {
+    cancelConfigRequests = cancelConfigRequests,
     clearBusinessInventory = clearBusinessInventory,
     pullOutVehicle = pullOutVehicle,
     registerFleetVehicleDeliveredDriveIn = registerFleetVehicleDeliveredDriveIn,
@@ -453,6 +497,7 @@ function part.new(inputs)
     spawnBusinessVehicle = spawnBusinessVehicle,
     teleportToBusinessGarage = teleportToBusinessGarage,
     teleportVehicleExact = teleportVehicleExact,
+    updateConfigRequests = updateConfigRequests,
   }
 end
 

@@ -136,7 +136,8 @@ local function addGuidanceApi(api, inputs)
 
   api.refreshActiveTaskGuidance = function()
     local shift = state.shift
-    if not shift or (not shift.awaitingPark and not shift.spawnBlocked and (shift.paused or shift.phase == "loopComplete")) then return end
+    if not shift or (not shift.awaitingPark and not shift.spawnBlocked
+        and (shift.paused or (shift.phase == "loopComplete" and not shift.loopChoiceDeferred))) then return end
     api.refreshTaskGuidance(true)
     if shared.kindPolicy(shift.jobKind).materialContract and not shift.awaitingPark and not shift.spawnBlocked then
       local mgr = shared.materials()

@@ -1,0 +1,26 @@
+{
+  "Configuration": "Adrian Saye - No Prep",
+  "Description": "Golden Receipt. Tier 3 racer. Highway no-prep quarter-mile: 10.923s at 150.02mph. Corner Shop Motors. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Corner Shop Motors",
+  "Name": "Adrian Saye",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 9.3821294259799,
+    "time_1_4": 10.922735426344,
+    "time_1_8": 7.4911552608799,
+    "time_330": 5.1084174203118,
+    "time_60": 1.9776185589165,
+    "velAt_1_4": 67.063643154613,
+    "velAt_1_8": 48.564937350832
+  },
+  "Reaction Time": 0.29772365310768,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

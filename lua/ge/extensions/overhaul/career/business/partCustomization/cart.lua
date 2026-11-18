@@ -134,24 +134,6 @@ function installer.new(inputs)
     return session, vehObj
   end
 
-  -- The transaction's restore: puts the initial config back over the vehicle, keeping the tuning vars given.
-  local function cartRestorer(session, initialVehicle, vehObj, rollbackConfig)
-    return function(tuningVars)
-      session.previewGeneration = (session.previewGeneration or 0) + 1
-      local restoredConfig = deepcopy(rollbackConfig)
-      if tuningVars then restoredConfig.vars = deepcopy(tuningVars) end
-      session.preview = {config = deepcopy(restoredConfig), partList = sharedParts.baseline.flattenPartsTree(restoredConfig.partsTree or {}),
-        partConditions = deepcopy(initialVehicle.partConditions or {}), model = initialVehicle.model}
-      sharedParts.preview.replaceVehicleWithFuelHandling(vehObj, initialVehicle.model, restoredConfig, function()
-        require('overhaul/lib/business/partConditions').applyInitPartConditions(vehObj,
-          initialVehicle.partConditions or {}, nil, nil, nil, sharedParts.preview.getPartConditionApplyOpts(restoredConfig))
-      end, function(ok)
-        session.operationInProgress = false
-        if ok ~= false then sharedParts.conditions.captureCurrentBuild(session); sharedParts.conditions.release(session) end
-      end)
-    end
-  end
-
   local function notifyCartApplyFailed(businessId, vehicleId, message, operationId)
     ui_message(message, 6, "Business Computer", "error")
     guihooks.trigger('businessComputer:onPartCartApplyFailed', {
@@ -162,6 +144,43 @@ function installer.new(inputs)
     })
   end
 
+  local function recoverFailedCartRestore(businessId, vehicleId, session, operationId)
+    if runtime.currentSession ~= session or session.discarding then return end
+    session.operationInProgress = false
+    notifyCartApplyFailed(businessId, vehicleId,
+      "The paid vehicle build could not be restored. Close the computer to retry restoration.", operationId)
+    -- The recovery owner keeps the save hold until the paid build is safe again.
+    sharedParts.cartBuild.clearPreviewVehicle(businessId)
+  end
+
+  -- The transaction's restore: puts the initial config back over the vehicle, keeping the tuning vars given.
+  local function cartRestorer(businessId, vehicleId, session, initialVehicle, vehObj, rollbackConfig)
+    return function(tuningVars)
+      session.operationInProgress = true
+      session.previewGeneration = (session.previewGeneration or 0) + 1
+      session.replacementParts = nil
+      local restoredConfig = deepcopy(rollbackConfig)
+      if tuningVars then restoredConfig.vars = deepcopy(tuningVars) end
+      session.preview = {config = deepcopy(restoredConfig), partList = sharedParts.baseline.flattenPartsTree(restoredConfig.partsTree or {}),
+        partConditions = deepcopy(initialVehicle.partConditions or {}), model = initialVehicle.model}
+      sharedParts.preview.replaceVehicleWithFuelHandling(vehObj, initialVehicle.model, restoredConfig, function()
+        require('overhaul/lib/business/partConditions').applyInitPartConditions(vehObj,
+          initialVehicle.partConditions or {}, nil, nil, nil, sharedParts.preview.getPartConditionApplyOpts(restoredConfig))
+      end, function(ok)
+        if ok == false then
+          recoverFailedCartRestore(businessId, vehicleId, session)
+        else
+          session.operationInProgress = false
+          sharedParts.conditions.captureCurrentBuild(session)
+          sharedParts.conditions.release(session)
+          capabilities.get("businessComputer").requestVehiclePartsTree(businessId, vehicleId)
+          overhaul_career_business_vehicleTuning.clearTuningDataCache()
+          sharedParts.baseline.requestVehiclePowerWeight(vehObj, businessId, vehicleId)
+        end
+      end)
+    end
+  end
+
   -- The replace failed: puts the rollback config back on the vehicle, then reports the failure.
   local function restoreAfterFailedReplace(businessId, vehicleId, session, vehObj, initialVehicle, rollbackConfig, transaction, message, finish, operationId)
     local function restoreConditions()
@@ -170,13 +189,18 @@ function installer.new(inputs)
     end
     sharedParts.preview.replaceVehicleWithFuelHandling(vehObj, initialVehicle.model, rollbackConfig, restoreConditions, function(ok)
       if transaction and transaction.cancelled then return end
-      if ok == false then session.operationInProgress = false; finish(false); return end
+      if ok == false then
+        recoverFailedCartRestore(businessId, vehicleId, session, operationId)
+        finish(false)
+        return
+      end
       session.preview = {
         config = deepcopy(rollbackConfig),
         partList = sharedParts.baseline.flattenPartsTree(rollbackConfig.partsTree or {}),
         partConditions = deepcopy(initialVehicle.partConditions or {}),
         model = initialVehicle.model
       }
+      session.replacementParts = nil
       session.operationInProgress = false
       sharedParts.conditions.captureCurrentBuild(session)
       sharedParts.conditions.release(session)
@@ -240,7 +264,7 @@ function installer.new(inputs)
     session.replacementParts = deepcopy(parts or {})
     local rollbackConfig = deepcopy(initialVehicle.config)
     if transaction then
-      transaction.restore = cartRestorer(session, initialVehicle, vehObj, rollbackConfig)
+      transaction.restore = cartRestorer(businessId, vehicleId, session, initialVehicle, vehObj, rollbackConfig)
     end
     local completeConfig = deepcopy(initialVehicle.config)
     sharedParts.preview.mergePreviewTuningVarsIntoConfig(completeConfig, session)

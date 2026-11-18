@@ -78,6 +78,10 @@ end
 -- Progress calls this before removing a completed native contract.
 M.cargoDelivered = M.sync
 
+function M.retainsJob(brokerContext, job)
+  return job.map == brokerContext.mapId() and brokerContext.materials().getContractById(job.nativeId) ~= nil
+end
+
 function M.reserve(brokerContext, job, row)
   if not brokerContext.materials().acceptBrokerContract(row.nativeId) then
     return false, "This contract is no longer available."

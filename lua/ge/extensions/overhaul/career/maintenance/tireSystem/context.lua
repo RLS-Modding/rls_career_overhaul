@@ -12,8 +12,42 @@ function partFactory.new(inputs)
 
   -- Vehicle state reports ---------------------------------------------------------------------------
 
-  -- Stores one reported wheel. Returns the stored wheel, and whether the state had to be created (a correction).
-  local function storeReportedWheel(vehicleData, owner, inventoryId, reported)
+  local function findFittedPath(node, path, slot)
+    if type(node) ~= "table" then return nil end
+    local chosen = node.chosenPartName
+    local fittedPath = node.partPath or
+      (type(node.path) == "string" and chosen and (node.path .. chosen) or nil)
+    if chosen and chosen ~= "" and ((path and fittedPath == path) or (slot and node.path == slot)) then
+      return fittedPath
+    end
+    for _, child in pairs(node.children or {}) do
+      local found = findFittedPath(child, path, slot)
+      if found then return found end
+    end
+  end
+
+  local function previousFittedWheelState(vehicleData, inventoryId, part, reported)
+    local currentPath = part and part.partPath or reported.partPath
+    for _, wheel in ipairs(vehicleData.rlsTireLayout and vehicleData.rlsTireLayout.wheels or {}) do
+      if wheel.name == reported.name and wheel.partPath and wheel.partPath ~= currentPath then
+        local previousPart
+        if inventoryId then
+          local _, candidatePart = inputs.findPersonalPart(inventoryId, wheel.partPath)
+          previousPart = candidatePart
+        end
+        local fittedPart = previousPart and previousPart.partPath == wheel.partPath
+        local fittedFallback = not part and findFittedPath(vehicleData.config and vehicleData.config.partsTree, wheel.partPath)
+        if fittedPart or fittedFallback then
+          local state = (fittedPart and inputs.partState(previousPart)) or
+            (vehicleData.rlsTireStateByPartPath and vehicleData.rlsTireStateByPartPath[wheel.partPath])
+          return state and state.wheels and state.wheels[reported.name]
+        end
+      end
+    end
+  end
+
+  -- Returns the stored wheel and whether its owner needs a corrected context.
+  local function storeReportedWheel(vehicleData, owner, inventoryId, reported, previousPath)
     local partId, part
     if owner.kind == "personal" then
       partId, part = inputs.findPersonalPart(inventoryId, reported.partPath, reported.partOrigin, reported.containingSlot)
@@ -31,11 +65,20 @@ function partFactory.new(inputs)
       storedWheel, _, created = inputs.ensureVehicleFallbackState(vehicleData, path, reported.name,
         inputs.tireModel.remainingFromMiles(fallbackMiles))
     end
-    if not created then
+    -- An identity correction leaves the previous owner fitted; a physical
+    -- replacement removes it. Preserve existing wear only for the former.
+    local previousWheel = created and previousFittedWheelState(vehicleData, inventoryId, part, reported)
+    -- The first report for a different owner may still carry the previous
+    -- context's mileage default. Its saved condition stays authoritative.
+    local identityChanged = previousPath and previousPath ~= ((part and part.partPath) or reported.partPath)
+    if previousWheel then
+      storedWheel.remaining = inputs.tireModel.clamp(previousWheel.remaining, 0, 1)
+      storedWheel.flat = previousWheel.flat == true
+    elseif not created and not identityChanged then
       storedWheel.remaining = inputs.tireModel.clamp(reported.remaining, 0, 1)
       storedWheel.flat = reported.flat == true
     end
-    return storedWheel, partId, part, created
+    return storedWheel, partId, part, created or identityChanged
   end
 
   -- One layout row for a reported wheel, after its stored state has been updated.
@@ -49,7 +92,7 @@ function partFactory.new(inputs)
     return {
       name = tostring(reported.name),
       partId = partId,
-      partPath = reported.partPath or (part and part.partPath),
+      partPath = (part and part.partPath) or reported.partPath,
       partOrigin = reported.partOrigin or (part and part.name),
       containingSlot = (part and part.containingSlot) or reported.containingSlot,
       width = tonumber(reported.width),
@@ -83,6 +126,14 @@ function partFactory.new(inputs)
     if not vehicleData then
       return false
     end
+    local revisionKey = owner.kind == 'business' and
+      ('b:' .. tostring(owner.businessId) .. ':' .. tostring(owner.vehicleId)) or tonumber(inventoryId)
+    -- Reports queued before a physical part swap belong to the previous tire owner.
+    -- Revision bumps must resend the context so the provider can report the newly installed physical parts.
+    if (tonumber(payload.stateRevision) or 0) ~= (tonumber(inputs.partRevisions[revisionKey]) or 0) then return false end
+    if owner.kind == 'business' and inputs.dynoOverrides['b:' .. tostring(owner.businessId) .. ':' .. tostring(owner.vehicleId)] then
+      return true
+    end
     local providerChanged = false
     if type(payload.provider) == "table" then
       local previousProvider = serialize(vehicleData.overhaulTires)
@@ -93,20 +144,29 @@ function partFactory.new(inputs)
     end
     local persistenceEnabled = (inputs.isMaintenanceEnabled() or
       (owner.kind == "personal" and inputs.burnoutOverrides[tonumber(inventoryId)] == true)) and
-      not (owner.kind == "personal" and inputs.dynoOverrides[tonumber(inventoryId)] == true)
+      not (owner.kind == "personal" and inputs.dynoOverrides[tonumber(inventoryId)] == true) and
+      not (owner.kind == "business" and inputs.dynoOverrides['b:' .. tostring(owner.businessId) .. ':' .. tostring(owner.vehicleId)] == true)
     if not persistenceEnabled then
       if providerChanged then inputs.markOwnerDirty(owner) end
       return true
     end
 
     local previousSignature = inputs.currentTireSignature(vehicleData)
+    local previousPaths = {}
+    for _, wheel in ipairs(vehicleData.rlsTireLayout and vehicleData.rlsTireLayout.wheels or {}) do
+      previousPaths[tostring(wheel.name)] = wheel.partPath
+    end
     local layout = {schemaVersion = 1, wheels = {}}
     local stateCorrectionNeeded = false
+    local ownershipChanged = false
     for _, reported in ipairs(payload.wheels or {}) do
       if type(reported) == "table" and reported.name then
-        local storedWheel, partId, part, created = storeReportedWheel(vehicleData, owner, inventoryId, reported)
-        if created then stateCorrectionNeeded = true end
-        table.insert(layout.wheels, layoutRowFor(reported, storedWheel, partId, part))
+        local storedWheel, partId, part, corrected = storeReportedWheel(vehicleData, owner, inventoryId, reported,
+          previousPaths[tostring(reported.name)])
+        local row = layoutRowFor(reported, storedWheel, partId, part)
+        if corrected then stateCorrectionNeeded = true end
+        if previousPaths[row.name] ~= row.partPath then ownershipChanged = true end
+        table.insert(layout.wheels, row)
       end
     end
     if #layout.wheels > 0 then
@@ -116,7 +176,7 @@ function partFactory.new(inputs)
 
     local changed = previousSignature ~= inputs.currentTireSignature(vehicleData)
     changed = inputs.maybeInvalidateInspection(vehicleData) or changed
-    if changed or providerChanged then inputs.markOwnerDirty(owner) end
+    if changed or providerChanged or stateCorrectionNeeded or ownershipChanged then inputs.markOwnerDirty(owner) end
     if stateCorrectionNeeded then
       local revisionKey = owner.kind == "business" and
                             ("b:" .. tostring(owner.businessId) .. ":" .. tostring(owner.vehicleId)) or
@@ -260,20 +320,91 @@ function partFactory.new(inputs)
     return index and index[tonumber(inventoryId)] or inputs.personalPartsAt(inventoryId)
   end
 
-  local function buildInitialWheelState(inventoryId, vehicleData, partIndex)
-    local result = {}
-    if inventoryId ~= nil then
-      local parts = partsForInventory(inventoryId, partIndex)
-      for index = 1, #parts do
-        local state = inputs.partState(parts[index])
-        for wheelName, wheelState in pairs(state and state.wheels or {}) do
-          result[wheelName] = inputs.deepCopy(wheelState)
+  local function isTireStateOwner(path, slot, origin)
+    if type(path) ~= "string" then return false end
+    slot = slot or path:match("^(.*[/])[^/]+$")
+    local name = string.lower(tostring(slot and slot:match("([^/]+)/?$") or ""))
+    return name:match("^tire_") or name:match("_tire_") or
+      string.lower(tostring(origin or path:match("([^/]+)$"))):match("^tire_")
+  end
+
+  local function sharedPathLength(first, second)
+    local shared = 0
+    first = tostring(first or "")
+    for index = 1, math.min(#first, #second) do
+      if first:sub(index, index) ~= second:sub(index, index) then break end
+      if first:sub(index, index) == "/" then shared = index end
+    end
+    return shared
+  end
+
+  local function findTireStateOwner(inventoryId, vehicleData, wheel, partIndex)
+    local selected, bestScore = nil, -1
+    local function consider(path, state, slot, origin)
+      if not (state and state.wheels and state.wheels[wheel.name] and isTireStateOwner(path, slot, origin)) then return end
+      local score = sharedPathLength(wheel.partPath, path)
+      if score > bestScore then selected, bestScore = path, score
+      elseif score == bestScore and selected ~= path then selected = false end
+    end
+    if inventoryId then
+      for _, part in ipairs(partsForInventory(inventoryId, partIndex)) do
+        consider(part.partPath, inputs.partState(part), part.containingSlot, part.name)
+      end
+    end
+    for path, state in pairs(vehicleData.rlsTireStateByPartPath or {}) do
+      if findFittedPath(vehicleData.config and vehicleData.config.partsTree, path) then consider(path, state) end
+    end
+    return selected or nil
+  end
+
+  local function fittedOwnerPath(inventoryId, vehicleData, wheel, partIndex)
+    local slot = wheel.containingSlot
+    local replacementPath, originPath
+    if inventoryId then
+      for _, part in ipairs(partsForInventory(inventoryId, partIndex)) do
+        if wheel.partPath and part.partPath == wheel.partPath then return part.partPath end
+        if slot and part.containingSlot == slot then
+          if part.name == wheel.partOrigin then return part.partPath end
+          replacementPath = part.partPath
+        elseif not slot and wheel.partOrigin and part.name == wheel.partOrigin then
+          originPath = part.partPath
         end
       end
     end
-    for _, state in pairs(vehicleData.rlsTireStateByPartPath or {}) do
+    -- Shopping may fit a different tire before the provider updates its old
+    -- layout. The fitted slot, rather than the removed name, identifies it.
+    if replacementPath or originPath then return replacementPath or originPath end
+    slot = slot or (type(wheel.partPath) == "string" and wheel.partPath:match("^(.*[/])[^/]+$") or nil)
+    local fitted = findFittedPath(vehicleData.config and vehicleData.config.partsTree, wheel.partPath, slot)
+    if fitted then return fitted end
+    -- A rim change removes the old tire slot as well as its part. Restore the
+    -- fitted tire's saved wheel state, keeping obsolete spindle records inert.
+    return findTireStateOwner(inventoryId, vehicleData, wheel, partIndex) or wheel.partPath
+  end
+
+  local function buildInitialWheelState(inventoryId, vehicleData, partIndex)
+    local result = {}
+    local ownerPaths = {}
+    for _, wheel in ipairs(vehicleData.rlsTireLayout and vehicleData.rlsTireLayout.wheels or {}) do
+      ownerPaths[wheel.name] = fittedOwnerPath(inventoryId, vehicleData, wheel, partIndex)
+    end
+    -- A provider can resolve a tire previously attributed to its spindle. Only
+    -- the reported fitted path owns that wheel; obsolete readings stay inert.
+    if inventoryId ~= nil then
+      local parts = partsForInventory(inventoryId, partIndex)
+      for index = 1, #parts do
+        local part = parts[index]
+        local state = inputs.partState(part)
+        for wheelName, wheelState in pairs(state and state.wheels or {}) do
+          if not ownerPaths[wheelName] or ownerPaths[wheelName] == part.partPath then
+            result[wheelName] = inputs.deepCopy(wheelState)
+          end
+        end
+      end
+    end
+    for path, state in pairs(vehicleData.rlsTireStateByPartPath or {}) do
       for wheelName, wheelState in pairs(state and state.wheels or {}) do
-        if not result[wheelName] then
+        if not result[wheelName] and (not ownerPaths[wheelName] or ownerPaths[wheelName] == path) then
           result[wheelName] = inputs.deepCopy(wheelState)
         end
       end
@@ -319,13 +450,25 @@ function partFactory.new(inputs)
   end
 
   local function traceInitialState(inventoryId, vehicleData, partIndex)
+    for _, wheel in ipairs(vehicleData.rlsTireLayout and vehicleData.rlsTireLayout.wheels or {}) do
+      tracePut(wheel.name)
+      tracePut(wheel.partPath)
+      tracePut(wheel.partOrigin)
+      tracePut(wheel.containingSlot)
+      tracePut(fittedOwnerPath(inventoryId, vehicleData, wheel, partIndex))
+    end
+    tracePut(TABLE_END)
     local parts = partsForInventory(inventoryId, partIndex)
     for index = 1, #parts do
+      tracePut(parts[index].partPath)
+      tracePut(parts[index].name)
+      tracePut(parts[index].containingSlot)
       local state = inputs.partState(parts[index])
       traceTable(state and state.wheels or nil)
     end
     tracePut(TABLE_END)
-    for _, state in pairs(vehicleData.rlsTireStateByPartPath or {}) do
+    for path, state in pairs(vehicleData.rlsTireStateByPartPath or {}) do
+      tracePut(path)
       traceTable(state and state.wheels or nil)
     end
   end
@@ -474,12 +617,15 @@ function partFactory.new(inputs)
     }
     local excludedReason = vehicleTypeIsTrailer(vehicleData) and "trailer" or (isTowedChild(vehId) and "towed" or nil)
     local revisionKey = "b:" .. tostring(businessId) .. ":" .. tostring(vehicleId)
+    local dyno = inputs.dynoOverrides[revisionKey] == true
+    if dyno then excludedReason = 'dyno' end
     local tireRuntimeEnabled = inputs.isMaintenanceEnabled() and excludedReason == nil
     local context = addTireWeatherContext({
       apiVersion = 1,
       ownerKind = "business",
       businessId = businessId,
       businessVehicleId = tonumber(vehicleId) or vehicleId,
+      dynoOverride = dyno,
       enabled = tireRuntimeEnabled,
       maintenanceEnabled = inputs.isMaintenanceEnabled(),
       burnoutOverride = false,
@@ -739,7 +885,8 @@ function partFactory.new(inputs)
 
   local function restoreDynoSnapshot(inventoryId)
     local snapshot = inputs.dynoSnapshots[inventoryId]
-    local vehicleData = inputs.vehicleDataForInventory(inventoryId)
+    local vehicleData = snapshot and snapshot.businessId and inputs.businessVehicleData(snapshot.businessId, snapshot.vehicleId)
+      or inputs.vehicleDataForInventory(inventoryId)
     if not snapshot or not vehicleData then
       return false
     end
@@ -748,7 +895,7 @@ function partFactory.new(inputs)
     vehicleData.rlsTireLayout = inputs.deepCopy(snapshot.vehicleLayout)
     vehicleData.overhaulTires = inputs.deepCopy(snapshot.provider)
 
-    local inventory = inputs.personalInventory()
+    local inventory = snapshot.businessId and {} or inputs.personalInventory()
     for partId, saved in pairs(snapshot.parts or {}) do
       local part = inventory[partId]
       if part then
@@ -763,7 +910,11 @@ function partFactory.new(inputs)
     end
 
     inputs.partRevisions[inventoryId] = (tonumber(inputs.partRevisions[inventoryId]) or 0) + 1
-    inputs.markDirty(inventoryId)
+    if snapshot.businessId then
+      inputs.markOwnerDirty({kind = 'business', businessId = snapshot.businessId, vehicleId = snapshot.vehicleId})
+    else
+      inputs.markDirty(inventoryId)
+    end
     return true
   end
 
@@ -794,6 +945,37 @@ function partFactory.new(inputs)
       inputs.M.sendContextForVehicle(vehId, true)
     end
     return true
+  end
+
+  function inputs.M.beginBusinessDynoSession(businessId, vehicleId, liveState)
+    local record = inputs.businessVehicleData(businessId, vehicleId)
+    local fleet = capabilities.get('businessVehicles')
+    local vehId = fleet.getSpawnedVehicleId(businessId, vehicleId)
+    if not record or not vehId then return false end
+    local key = 'b:' .. tostring(businessId) .. ':' .. tostring(vehicleId)
+    if not inputs.dynoSnapshots[key] then
+      if type(liveState) == 'table' then
+        local payload = inputs.deepCopy(liveState)
+        payload.wheels = payload.wheels or payload.data or {}
+        inputs.M.receiveVehicleState(vehId, payload)
+      end
+      local snapshot = {businessId = businessId, vehicleId = vehicleId, parts = {},
+        vehicleStateByPartPath = inputs.deepCopy(record.rlsTireStateByPartPath),
+        vehicleLayout = inputs.deepCopy(record.rlsTireLayout), provider = inputs.deepCopy(record.overhaulTires)}
+      overlayLiveWheelState(snapshot, liveState)
+      inputs.dynoSnapshots[key] = snapshot
+    end
+    inputs.dynoOverrides[key] = true
+    inputs.M.sendContextForBusinessVehicle(businessId, vehicleId, true)
+    return true
+  end
+
+  function inputs.M.endBusinessDynoSession(businessId, vehicleId)
+    local key = 'b:' .. tostring(businessId) .. ':' .. tostring(vehicleId)
+    local restored = not inputs.dynoSnapshots[key] or restoreDynoSnapshot(key)
+    inputs.dynoSnapshots[key], inputs.dynoOverrides[key] = nil, nil
+    inputs.M.sendContextForBusinessVehicle(businessId, vehicleId, true)
+    return restored
   end
 
   function inputs.M.endDynoSession(inventoryId)

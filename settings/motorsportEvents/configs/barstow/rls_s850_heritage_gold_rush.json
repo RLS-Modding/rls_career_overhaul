@@ -1,0 +1,73 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "barstow/rls_s850_heritage_gold_rush",
+    "configId": "rls_s850_heritage_gold_rush",
+    "model": "barstow",
+    "config": "/vehicles/barstow/rls_s850_heritage_gold_rush.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "karol_monroe",
+    "driverName": "Carmen Brooks",
+    "builder": "Heritage Speed",
+    "classIds": [
+      "super_stick"
+    ],
+    "approvedClassIds": [
+      "super_stick"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "422177c11494d33bd609d1e78ef4aa14dfaf5bbbf0728a7029c620aa55c274a0",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "6-speed H-pattern manual",
+      "induction": "Supercharger",
+      "nitrous": true,
+      "years": {
+        "min": 1969,
+        "max": 1971
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x4",
+          "part": "tire_F_26_4_15_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_15x10",
+          "part": "tire_R_26_10_15_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "barstow_rollcage",
+          "part": "barstow_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.7976698199233,
+      "runId": "S850-002",
+      "evidenceConfigSHA256": "c8b78ffa67898db0b787d56a2b87f882a0547a0f10d9e45a20754257e6137095",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/stick850/final-results.json",
+      "acceptedConfig": "outputs/stick850/accepted/rls_s850_heritage_gold_rush/rls_s850_heritage_gold_rush.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_stickshift850"
+  }
+}

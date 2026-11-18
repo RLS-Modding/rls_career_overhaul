@@ -1,0 +1,88 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Name": "Parker Pierce",
+  "Configuration": "Parker Pierce - Pro All-Motor",
+  "Description": "Haulmark Racing. Naturally aspirated competition build; drag tires on both axles, lights, doors, hood and glass retained. Tested healthy at Alder: 11.166 s quarter-mile. Sequential; 369 engine hp, 1175 kg. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Induction Type": "NA",
+  "Drivetrain": "FWD",
+  "Transmission": "Sequential",
+  "Power": 369,
+  "Weight": 1175,
+  "Years": {
+    "max": 1992,
+    "min": 1986
+  },
+  "Motorsport": {
+    "version": 1,
+    "id": "covet/rls_pam_haulmark_03",
+    "configId": "rls_pam_haulmark_03",
+    "model": "covet",
+    "config": "/vehicles/covet/rls_pam_haulmark_03.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "cole_tanner",
+    "driverName": "Parker Pierce",
+    "builder": "Haulmark Racing",
+    "classIds": [
+      "pro_motor"
+    ],
+    "approvedClassIds": [
+      "pro_motor"
+    ],
+    "leagueId": "pro_league",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "613c413172ec1e7cf573c2e4741dac6c5722c37ea078f7360f5ee5db28403f18",
+    "traits": {
+      "drivetrain": "FWD",
+      "transmission": "Sequential",
+      "induction": "Naturally aspirated",
+      "nitrous": false,
+      "years": {
+        "max": 1992,
+        "min": 1986
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_13x7",
+          "part": "tire_F_24.5_8_13_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_13x7",
+          "part": "tire_R_24.5_8_13_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "covet_rollcage",
+          "part": "covet_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 11.166054185015,
+      "runId": "PAM-023",
+      "evidenceConfigSHA256": "f6f88bad5d4a72baf1f0363639f220fc5ec6780ce21e98e0deb6bcf05a620e47",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/pro-allmotor/final-metadata.json",
+      "acceptedConfig": "outputs/pro-allmotor/accepted/rls_pam_haulmark_03/rls_pam_haulmark_03.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_pro_allmotor"
+  }
+}

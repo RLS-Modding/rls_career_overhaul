@@ -1,0 +1,26 @@
+{
+  "Configuration": "Wade Ellis - No Prep",
+  "Description": "Sandbar Sprint. Tier 5 racer. Highway no-prep quarter-mile: 8.728s at 192.92mph. Gravel Union. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Gravel Union",
+  "Name": "Wade Ellis",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 7.522223182131,
+    "time_1_4": 8.7279639309846,
+    "time_1_8": 5.991495003476,
+    "time_330": 4.102112721611,
+    "time_60": 1.5705372960033,
+    "velAt_1_4": 86.242750305493,
+    "velAt_1_8": 59.970632541071
+  },
+  "Reaction Time": 0.26625480426673,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

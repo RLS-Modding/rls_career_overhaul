@@ -69,6 +69,13 @@ function shared.clearCachesForStoredVehicle(businessId, vehicle)
   if computer then computer.clearBusinessCachesForVehicle(businessId, vehicle.vehicleId) end
 end
 
+function shared.clearDynoHistoryForVehicle(businessId, vehicleId)
+  local dyno = capabilities.peek('businessSession')
+  if dyno and dyno.onOverhaulVehicleRemoved then
+    dyno.onOverhaulVehicleRemoved(parts.putAway.getBusinessVehicleIdentifier(businessId, vehicleId))
+  end
+end
+
 -- Saved fleet records ---------------------------------------------------------------------------
 
 -- Save file for one business's vehicles; nil outside an active career or without a profile.
@@ -309,9 +316,12 @@ local function removeVehicle(businessId, vehicleId)
   vehicleId = tonumber(vehicleId) or vehicleId
   local vehicles = shared.loadBusinessVehicles(businessId)
 
+  local dyno = capabilities.peek('businessSession')
+  if dyno and dyno.isFleetVehicleBusy and dyno.isFleetVehicleBusy(businessId, vehicleId) then return false end
   for i, vehicle in ipairs(vehicles) do
     local vehId = tonumber(vehicle.vehicleId) or vehicle.vehicleId
     if vehId == vehicleId then
+      shared.clearDynoHistoryForVehicle(businessId, vehicleId)
       table.remove(vehicles, i)
       fleetState.businessVehicles[businessId] = vehicles
       return true
@@ -575,6 +585,7 @@ end
 -- Samples a spawned vehicle's part conditions after a short settle, once per capture.
 local function onUpdate(dtReal, dtSim)
   parts.persistence.onUpdate(dtReal)
+  parts.garage.updateConfigRequests()
   for vehicle, capture in pairs(fleetState.fleetBaselineCaptures) do
     local sid = shared.getSpawnedVehicleId(capture.businessId, vehicle.vehicleId)
     local vehObj = sid and getObjectByID(sid)
@@ -597,8 +608,13 @@ end
 
 -- Lifecycle ---------------------------------------------------------------------------------------
 
-local function onCareerActivated()
+local function cancelPendingRequests()
   parts.persistence.cancel()
+  parts.garage.cancelConfigRequests()
+end
+
+local function onCareerActivated()
+  cancelPendingRequests()
   fleetState.businessVehicles = {}
   fleetState.pulledOutVehicles = {}
   fleetState.spawnedBusinessVehicles = {}
@@ -695,6 +711,7 @@ M.persistSpawnedFleetVehiclePartConditions = parts.putAway.persistSpawnedVehicle
 
 -- Condition and repair
 M.repairSpawnedBusinessVehicle = parts.condition.repairSpawnedBusinessVehicle
+M.replaceVehicleForDyno = parts.condition.replaceVehicleForDyno
 M.primeFleetRepairSnapshots = parts.condition.primeFleetRepairSnapshots
 
 -- Whether a fleet vehicle needs an insurance-style repair, and the deductible it would cost.
@@ -758,6 +775,10 @@ end
 M.onUpdate = onUpdate
 M.onCareerActivated = onCareerActivated
 
+function M.onOverhaulActive(isActive)
+  if not isActive then parts.garage.cancelConfigRequests() end
+end
+
 -- Fleet repair baseline replies from the vehicle, and per-frame baseline sampling.
 function M.onFleetRepairBaseline(businessId, vehicleId, spawnedId, conditions, damage)
   businessId = shared.normalizeBusinessId(businessId)
@@ -785,8 +806,8 @@ function M.onFleetRepairBaseline(businessId, vehicleId, spawnedId, conditions, d
 end
 
 M.onOverhaulSaveCurrentProfile = parts.persistence.save
-M.onOverhaulBeforeSetProfile = parts.persistence.cancel
-M.onExtensionUnloaded = parts.persistence.cancel
+M.onOverhaulBeforeSetProfile = cancelPendingRequests
+M.onExtensionUnloaded = cancelPendingRequests
 
 function M.onVehicleConfigReceived(callbackId, config)
   local callbackData = pendingConfigCallbacks[callbackId]
@@ -795,11 +816,16 @@ function M.onVehicleConfigReceived(callbackId, config)
   end
 
   pendingConfigCallbacks[callbackId] = nil
+  require('overhaul/lib/vehicles/callbacks').close(callbackId)
 
   local businessId = callbackData.businessId
   local vehicleId = callbackData.vehicleId
 
-  if not config then
+  -- Only the original, still-live row may accept its missing config readback.
+  local vehicle = shared.getVehicleById(businessId, vehicleId)
+  if type(config) ~= 'table' or vehicle ~= callbackData.vehicle or vehicle.config
+    or shared.getSpawnedVehicleId(businessId, vehicleId) ~= callbackData.spawnedId
+    or not getObjectByID(callbackData.spawnedId) then
     return
   end
 

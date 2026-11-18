@@ -1,0 +1,25 @@
+{
+  "Configuration": "Marshall Crowe - No Prep",
+  "Description": "Crimson Interceptor. Tier 1 racer. Highway no-prep quarter-mile: 12.980s at 110.00mph. Blacktop Engineering.",
+  "Author": "Blacktop Engineering",
+  "Name": "Marshall Crowe",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 10.909076739953,
+    "time_1_4": 12.979834391556,
+    "time_1_8": 8.4534595553665,
+    "time_330": 5.5718109329127,
+    "time_60": 1.9395593413456,
+    "velAt_1_4": 49.174382266612,
+    "velAt_1_8": 39.559957490749
+  },
+  "Reaction Time": 0.29593001629643,
+  "dragTimesRevalidated": true,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m"
+}

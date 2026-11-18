@@ -1,0 +1,90 @@
+{
+  "isAuxiliary": true,
+  "Configuration": "Gavin Marquez - Wrong-Wheel Drive",
+  "Description": "Driver: Gavin Marquez. Builder: Heritage Speed. Oxblood Express First healthy native Alder quarter-mile in the 9.50–10.00 bracket: 9.996 s. FWD, no first-gear nitrous. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Drivetrain": "FWD",
+  "Transmission": "Manual",
+  "Induction Type": "Turbo + N2O",
+  "Population": -1,
+  "Value": 65000,
+  "Name": "Gavin Marquez",
+  "Author": "RLS Modding",
+  "Years": {
+    "max": 1991,
+    "min": 1988
+  },
+  "Power": 1182,
+  "Weight": 1522,
+  "Motorsport": {
+    "version": 1,
+    "id": "pessima/rls_wrongwheel_heritage_03",
+    "configId": "rls_wrongwheel_heritage_03",
+    "model": "pessima",
+    "config": "/vehicles/pessima/rls_wrongwheel_heritage_03.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "nate_denver",
+    "driverName": "Gavin Marquez",
+    "builder": "Heritage Speed",
+    "leagueId": "street_kings",
+    "classIds": [
+      "wrong_wheel_drive"
+    ],
+    "approvedClassIds": [
+      "wrong_wheel_drive"
+    ],
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "8801394205d01f39df6e3c8c453aa9b70349a63ee55acfa40e53827b33396f8d",
+    "traits": {
+      "drivetrain": "FWD",
+      "transmission": "6-speed Manual",
+      "induction": "Turbo",
+      "nitrous": true,
+      "years": {
+        "max": 1991,
+        "min": 1988
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x8_alt",
+          "part": "tire_F_26_8_15_alt_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_15x7",
+          "part": "tire_R_195_60_15_standard",
+          "typeHint": null
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "pessima_rollcage",
+          "part": "pessima_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.9962660262478,
+      "runId": "WW-037",
+      "evidenceConfigSHA256": "4d344bced1e7a53e8768ad1d0d156902f9d6b7fa0d3418371e47b8488ddc9e60",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/wrongwheel/final-results.json",
+      "acceptedConfig": "outputs/wrongwheel/accepted/rls_wrongwheel_heritage_03/rls_wrongwheel_heritage_03.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_wrongwheel_drive"
+  }
+}

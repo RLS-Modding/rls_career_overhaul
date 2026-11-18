@@ -12,8 +12,8 @@
         @click="toggleLockScreenNotifications"
       >
         <span class="notif-copy">
-          <span class="notif-label">Lock screen notifications</span>
-          <span class="notif-desc">Show alerts on the lock screen when the phone is closed.</span>
+          <span class="notif-label">Closed-phone banners</span>
+          <span class="notif-desc">Show a banner on the phone while it is closed.</span>
         </span>
         <span class="notif-switch" :class="{ on: isLockScreenEnabled }">
           <span class="notif-knob"></span>
@@ -42,7 +42,7 @@
             <span class="notif-radio-label">Hide content</span>
           </button>
         </div>
-        <p class="notif-desc">Hide content shows the app name only on lock-screen alerts.</p>
+        <p class="notif-desc">Hide content shows only the app on those banners.</p>
       </div>
 
       <div class="setting-surface notif-pref-block">
@@ -50,7 +50,7 @@
           <span class="notif-label">Alert duration</span>
           <span class="notif-pref-value">{{ lockDisplayLabel }}s</span>
         </div>
-        <p class="notif-desc">How long lock-screen alerts stay visible.</p>
+        <p class="notif-desc">How long a closed-phone banner stays up.</p>
         <div class="career-scrollbar-slider-wrap">
           <input
             type="range"
@@ -59,7 +59,7 @@
             :min="NOTIFICATION_DISPLAY_MIN"
             :max="NOTIFICATION_DISPLAY_MAX"
             step="1"
-            aria-label="Lock screen alert duration"
+            aria-label="Closed-phone banner duration"
             @change="applyLockDisplaySeconds"
           />
           <div class="career-scrollbar-slider-labels">

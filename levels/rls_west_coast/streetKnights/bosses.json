@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "id": "rls_noprep_loworbit_02",
+      "tier": 1,
+      "name": "Dallas Rayne",
+      "model": "burnside",
+      "config": "/vehicles/burnside/rls_noprep_loworbit_02.pc",
+      "description": "Plum Boulevard — Low Orbit Garage",
+      "thumbnail": "/vehicles/burnside/rls_noprep_loworbit_02.jpg",
+      "personality": 3,
+      "provisional": false,
+      "launch": "auto",
+      "acquisition": "eventOnly"
+    },
+    {
+      "id": "rls_noprep_iron_03",
+      "tier": 2,
+      "name": "Alba Wynn",
+      "model": "moonhawk",
+      "config": "/vehicles/moonhawk/rls_noprep_iron_03.pc",
+      "description": "Golden Coupe — Iron Lantern Garage",
+      "thumbnail": "/vehicles/moonhawk/rls_noprep_iron_03.jpg",
+      "personality": 3,
+      "provisional": false,
+      "launch": "auto",
+      "acquisition": "eventOnly"
+    },
+    {
+      "id": "rls_noprep_neon_06",
+      "tier": 3,
+      "name": "Juno Rios",
+      "model": "bx",
+      "config": "/vehicles/bx/rls_noprep_neon_06.pc",
+      "description": "Golden Switchback — Neon Works",
+      "thumbnail": "/vehicles/bx/rls_noprep_neon_06.jpg",
+      "personality": 3,
+      "provisional": false,
+      "launch": "auto",
+      "acquisition": "eventOnly"
+    },
+    {
+      "id": "rls_noprep_apex_04",
+      "tier": 4,
+      "name": "Theo Soren",
+      "model": "scintilla",
+      "config": "/vehicles/scintilla/rls_noprep_apex_04.pc",
+      "description": "Pearl Meridian — Apex Yard",
+      "thumbnail": "/vehicles/scintilla/rls_noprep_apex_04.jpg",
+      "personality": 3,
+      "provisional": false,
+      "launch": "auto",
+      "acquisition": "eventOnly"
+    },
+    {
+      "id": "rls_noprep_heritage_02",
+      "tier": 5,
+      "name": "Jace Rowan",
+      "model": "sbr",
+      "config": "/vehicles/sbr/rls_noprep_heritage_02.pc",
+      "description": "Copper Flat-Four — Heritage Speed",
+      "thumbnail": "/vehicles/sbr/rls_noprep_heritage_02.jpg",
+      "personality": 3,
+      "provisional": false,
+      "launch": "auto",
+      "acquisition": "eventOnly"
+    }
+  ]
+}

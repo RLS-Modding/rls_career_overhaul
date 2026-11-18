@@ -1,6 +1,7 @@
 -- Import-time cash-out choices applied to an in-memory legacy save.
 -- Map: vehicle and part sales, property settlement, option selection, folder preprocessing and reports.
 local M = {}
+local serializedTable = require('overhaul/lib/save/serializedTable')
 
 local shapes = require("overhaul/lib/save/migrationShapes")
 
@@ -198,7 +199,7 @@ local function sellCashOutParts(files, appliedLookup, appliedVehicleIds, sellPar
   local partValue, soldPartCount = 0, 0
   local partInventoryJson = read(files, PART_INVENTORY_PATH)
   if type(partInventoryJson) == "table" and type(partInventoryJson[1]) == "string" then
-    local ok, partInventory = pcall(deserialize, partInventoryJson[1])
+    local ok, partInventory = pcall(serializedTable.decode, partInventoryJson[1])
     if not ok or type(partInventory) ~= "table" then
       return 0, 0, "The copied part inventory could not be decoded."
     end

@@ -1,0 +1,96 @@
+{
+  "rls_lansdale_engine_v6_internals_stage4_block": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Heavy Duty Block", "value":23000},
+    "slotType": "lansdale_engine_v6_internals",
+    "mainEngine": {
+      "maxTorqueRating": 3000,
+      "maxOverTorqueDamage": 1500,
+      "cylinderWallTemperatureDamageThreshold": 185,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1700000,
+      "pistonRingDamageThreshold": 1700000,
+      "connectingRodDamageThreshold": 2200000,
+      "maxPhysicalRPM": 7875
+    }
+  },
+  "rls_lansdale_engine_v8_internals_stage4_block": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Heavy Duty Block", "value":24000},
+    "slotType": "lansdale_engine_v8_internals",
+    "mainEngine": {
+      "maxTorqueRating": 5100,
+      "maxOverTorqueDamage": 1000,
+      "cylinderWallTemperatureDamageThreshold": 180,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1500000,
+      "pistonRingDamageThreshold": 1500000,
+      "connectingRodDamageThreshold": 2000000,
+      "maxPhysicalRPM": 7770
+    }
+  },
+  "rls_lansdale_engine_v6_internals_stage4_performance": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Performance Block", "value":25500},
+    "slotType": "lansdale_engine_v6_internals",
+    "mainEngine": {
+      "torqueModMult": [
+        ["rpm", "torque"],
+        [0, 1],
+        [1000, 1],
+        [2000, 1.0142857142857142],
+        [3000, 1.1471428571428572],
+        [4000, 1.2857142857142856],
+        [5000, 1.32],
+        [6000, 1.32],
+        [7000, 1.32],
+        [8000, 1.32]
+      ],
+      "maxTorqueRating": 3000,
+      "maxOverTorqueDamage": 1500,
+      "cylinderWallTemperatureDamageThreshold": 185,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1700000,
+      "pistonRingDamageThreshold": 1700000,
+      "connectingRodDamageThreshold": 2200000,
+      "maxPhysicalRPM": 7875,
+      "$+maxRPM": 500
+    }
+  },
+  "rls_lansdale_engine_v8_internals_stage4_performance": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Performance Block", "value":26500},
+    "slotType": "lansdale_engine_v8_internals",
+    "mainEngine": {
+      "torqueModMult": [
+        ["rpm", "torque"],
+        [0, 1],
+        [500, 1],
+        [1000, 0.83],
+        [1500, 0.77],
+        [2000, 0.8114285714285714],
+        [2500, 0.9257142857142856],
+        [3000, 1.042857142857143],
+        [3500, 1.2157142857142855],
+        [4000, 1.5535714285714284],
+        [4500, 1.9],
+        [5000, 2.3100000000000005],
+        [5500, 2.64],
+        [6000, 2.882000000000001],
+        [6500, 2.959],
+        [7000, 2.893],
+        [7500, 2.53],
+        [8000, 2.2]
+      ],
+      "$+maxRPM": 1600,
+      "$*friction": 0.9,
+      "$*dynamicFriction": 0.91,
+      "$*inertia": 1.1,
+      "$*engineBrakeTorque": 1.58,
+      "maxTorqueRating": 5100,
+      "maxOverTorqueDamage": 1000,
+      "cylinderWallTemperatureDamageThreshold": 180,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1500000,
+      "pistonRingDamageThreshold": 1500000,
+      "connectingRodDamageThreshold": 2000000,
+      "maxPhysicalRPM": 7770
+    }
+  }
+}

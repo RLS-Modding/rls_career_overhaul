@@ -1,0 +1,25 @@
+{
+  "Configuration": "Felix Arden - No Prep",
+  "Description": "Lemon Static. Tier 1 racer. Highway no-prep quarter-mile: 12.456s at 109.58mph. Apex Yard.",
+  "Author": "Apex Yard",
+  "Name": "Felix Arden",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 10.391131677526,
+    "time_1_4": 12.456436494551,
+    "time_1_8": 7.9557227415253,
+    "time_330": 5.1180197821315,
+    "time_60": 1.7307699994355,
+    "velAt_1_4": 48.986884766957,
+    "velAt_1_8": 39.200238494132
+  },
+  "Reaction Time": 0.29065849789088,
+  "dragTimesRevalidated": true,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m"
+}

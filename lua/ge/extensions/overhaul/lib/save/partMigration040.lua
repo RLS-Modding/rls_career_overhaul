@@ -1,6 +1,7 @@
 -- Import vehicle part topology and loose inventory into the 0.40 layout.
 -- Map: tree preparation, metadata rewrites, installed migration phases, loose parts, public API.
 local M = {}
+local serializedTable = require('overhaul/lib/save/serializedTable')
 local rules = require("overhaul/lib/save/partMigration040/rules")
 local unpack = unpack or table.unpack
 
@@ -238,8 +239,9 @@ local function prepareVehicleMigration(vehicle, inventory)
   local conditions = vehicle.partConditions
   local serializedConditions = type(conditions) == "string"
   if serializedConditions then
-    conditions = deserialize(conditions)
-    if type(conditions) ~= "table" then error("Unreadable conditions for vehicle " .. tostring(id)) end
+    local ok, decoded = pcall(serializedTable.decode, conditions)
+    if not ok or type(decoded) ~= "table" then error("Unreadable conditions for vehicle " .. tostring(id)) end
+    conditions = decoded
   end
   conditions = type(conditions) == "table" and conditions or {}
   local parts = type(config.parts) == "table" and config.parts or {}

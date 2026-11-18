@@ -68,6 +68,18 @@ local function repairPartConditions(data)
   end
 end
 
+-- Commit after outgoing capture so detached part rows and punctures agree with the replacement.
+local function repairVehicle(data)
+  repairPartConditions(data)
+  local inventoryId = data.inventoryId
+  overhaul_career_parts_partInventory.updatePartConditionsInInventory(inventoryId)
+  if overhaul_career_maintenance_tireSystem then
+    overhaul_career_maintenance_tireSystem.clearFlatsForVehicle(inventoryId)
+  end
+  overhaul_career_repair_damageManager.clearDamageState(inventoryId)
+  overhaul_career_garage_inventory.setVehicleDirty(inventoryId)
+end
+
 local function isMaintenanceFailureType(categoryName, failureType)
   if type(categoryName) ~= "string" or type(failureType) ~= "string" then
     return false
@@ -84,8 +96,8 @@ local function looksLikeMaintenancePowertrainFailure(categoryName, partCondition
   for _, deviceState in pairs(powertrainState) do
     if type(deviceState) == "table" then
       if categoryName == "engine" then
-        if deviceState.isBroken == true or type(deviceState.thermals) == "table" or deviceState.damageFrictionCoef ~= nil or
-            deviceState.damageDynamicFrictionCoef ~= nil or deviceState.damageIdleAVReadErrorRangeCoef ~= nil then
+        if deviceState.rlsMaintenanceFailure == true or (deviceState.isBroken == true and deviceState.damageFrictionCoef == 2.5 and
+            deviceState.damageDynamicFrictionCoef == 3.5 and deviceState.damageIdleAVReadErrorRangeCoef == 32) then
           return true
         end
       elseif categoryName == "radiator" then
@@ -109,6 +121,14 @@ end
 local function sanitizeMaintenanceConditionEntry(categoryName, partCondition, hasMaintenanceMarker)
   if type(partCondition) ~= "table" or not hasMaintenanceMarker then
     return false
+  end
+  if categoryName == "engine" and not looksLikeMaintenancePowertrainFailure(categoryName, partCondition) then
+    return false
+  end
+
+  local powertrainState = partCondition.integrityState and partCondition.integrityState.powertrain
+  for _, deviceState in pairs(type(powertrainState) == 'table' and powertrainState or {}) do
+    if type(deviceState) == 'table' and type(deviceState.rlsFuelEngineState) == 'table' then return false end
   end
 
   local didSanitize = false
@@ -135,6 +155,8 @@ local function sanitizeMaintenanceConditionEntry(categoryName, partCondition, ha
 end
 
 local function sanitizeMaintenancePartConditionsForVehicle(vehicleData, partConditions)
+  -- Inventory saves keep number keys, but conditions copied in from a JSON save can hold text gear keys.
+  partConditionCompatibility.sanitizeSynchroWearInConditions(partConditions)
   partConditionCompatibility.normalizeEmptyIntegrityStates(partConditions)
   if type(vehicleData) ~= "table" or type(partConditions) ~= "table" then
     return partConditions
@@ -184,6 +206,7 @@ local function sanitizeMaintenancePartConditionsForVehicle(vehicleData, partCond
 end
 
 M.repairCrashDamage = repairPartConditions
+M.repairVehicle = repairVehicle
 M.isMaintenanceFailureType = isMaintenanceFailureType
 M.looksLikeMaintenancePowertrainFailure = looksLikeMaintenancePowertrainFailure
 M.sanitizeMaintenanceConditionEntry = sanitizeMaintenanceConditionEntry

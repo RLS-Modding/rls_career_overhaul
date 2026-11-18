@@ -8,6 +8,7 @@
 -- Inventory load owns saved records, restoration outcomes and ordered career placement.
 -- Read in order: save decoding, world restoration, player placement, migration settlement, lifecycle retries.
 local setup = {}
+local serializedTable = require('overhaul/lib/save/serializedTable')
 local vehicleMap = require('overhaul/career/garage/inventory/vehicleMap')
 local levelData = require('overhaul/lib/world/levelData')
 
@@ -58,7 +59,9 @@ function setup.new(inputs)
       local vehicleData = jsonReadFile(files[i])
       if type(vehicleData) == "table" and vehicleData.id ~= nil then
         vehicleData.listedForAuction = vehicleData.listedForAuction == true or nil
-        vehicleData.partConditions = deserialize(vehicleData.partConditions)
+        if type(vehicleData.partConditions) == "string" then
+          vehicleData.partConditions = serializedTable.decode(vehicleData.partConditions)
+        end
         vehicleData.partConditions = inputs.sanitizeMaintenancePartConditionsForVehicle(vehicleData, vehicleData.partConditions)
         elapseDelayedAccess(vehicleData, saveInfo)
         vehicles[vehicleData.id] = vehicleData
@@ -122,10 +125,11 @@ function setup.new(inputs)
   local function storeSpawnedTransforms(rawSpawned)
     if rawSpawned[1] and type(rawSpawned[1]) == "table" and rawSpawned[1].pos and rawSpawned["1"] == nil then
       local onlyId = inputs.state.vehicleToEnterId or inputs.state.lastVehicle or inputs.state.favoriteVehicle
-      if onlyId and #rawSpawned == 1 then
+      if onlyId and next(rawSpawned, 1) == nil then
         storeLoadedTransform(onlyId, rawSpawned[1])
       else
-        for index, transform in ipairs(rawSpawned) do
+        -- Legacy arrays can contain nulls after a middle vehicle was removed.
+        for index, transform in pairs(rawSpawned) do
           storeLoadedTransform(tonumber(index), transform)
         end
       end
@@ -553,6 +557,7 @@ function setup.new(inputs)
     returnSavedRentals(rentalIdsToReturn)
     restorePlayer(levelName, justArrived)
     finalizeCareerPlacement(not data, levelName, justArrived)
+    if M.reconcileGarageLocations then M.reconcileGarageLocations() end
     commands.setGameCamera()
     log("I", "career.inventory", string.format(
       "setupInventory: end walking=%s current=%s freecam=%s",

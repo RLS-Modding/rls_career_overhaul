@@ -1,0 +1,217 @@
+{
+  "id": "configExport",
+  "maps": {
+    "tests": "autotest",
+    "thumbnail": "showroom_v2"
+  },
+  "defaultTimeoutS": 60,
+  "couplingReturn": {
+    "timeoutS": 10,
+    "checkIntervalS": 0.25
+  },
+  "runtimeReturn": {
+    "timeoutS": 10
+  },
+  "phases": {
+    "prepare": {
+      "stage": "prepare",
+      "timeoutS": 60
+    },
+    "checkpoint": {
+      "stage": "prepare",
+      "timeoutS": 60
+    },
+    "depart": {
+      "stage": "prepare",
+      "timeoutS": 60
+    },
+    "loadTests": {
+      "stage": "tests",
+      "timeoutS": 240
+    },
+    "tests": {
+      "stage": "tests",
+      "timeoutS": 720
+    },
+    "loadShowroom": {
+      "stage": "thumbnail",
+      "timeoutS": 240
+    },
+    "thumbnail": {
+      "stage": "thumbnail",
+      "timeoutS": 60
+    },
+    "stoppingThumbnail": {
+      "stage": "return",
+      "timeoutS": 60
+    },
+    "returning": {
+      "stage": "return",
+      "timeoutS": 240
+    },
+    "restoring": {
+      "stage": "return",
+      "timeoutS": 240
+    },
+    "verify": {
+      "stage": "return",
+      "timeoutS": 60
+    },
+    "recovery": {
+      "stage": "return",
+      "timeoutS": 60
+    },
+    "writing": {
+      "stage": "write",
+      "timeoutS": 60
+    },
+    "done": {
+      "stage": "write",
+      "timeoutS": 60
+    },
+    "failed": {
+      "stage": "write",
+      "timeoutS": 60
+    },
+    "cancelled": {
+      "stage": "write",
+      "timeoutS": 60
+    }
+  },
+  "worker": {
+    "weightStepKg": 5,
+    "resetWaitS": 2,
+    "launchWaitS": 4,
+    "settleWaitS": 5,
+    "accelerationTimeoutS": 400,
+    "launchTimeoutS": 10,
+    "stallTimeoutS": 20,
+    "stallSpeedMps": 1.3888888889,
+    "minVerificationThrottle": 0.95,
+    "brakingTimeoutS": 120,
+    "brakingProgressTimeoutS": 15,
+    "brakeStopTimeoutS": 60,
+    "offroadTimeoutS": 180,
+    "progressTimeoutS": 10,
+    "minStartSpeedMps": 0.15,
+    "minProgressM": 0.1,
+    "minOffroadDistanceM": 5,
+    "offroadDistanceM": 500,
+    "offroadSpeedMps": 2.7777777778,
+    "brakingTargetSpeedMps": 30.5556,
+    "stopSpeedMps": 0.5,
+    "minGravityMps2": 0.1,
+    "topSpeedDeltaMps": 0.1,
+    "topSpeedSettleS": 15,
+    "roadPosition": [
+      20,
+      0,
+      0.5,
+      0,
+      0,
+      0,
+      1
+    ],
+    "offroadPosition": [
+      0,
+      0,
+      0.5,
+      0,
+      0,
+      0,
+      1
+    ],
+    "roadTarget": [
+      20,
+      -10,
+      0.5
+    ],
+    "offroadTarget": [
+      0,
+      600,
+      0
+    ],
+    "accelerationTargets": [
+      {
+        "key": "0-60 mph",
+        "speedMps": 26.8224
+      },
+      {
+        "key": "0-100 km/h",
+        "speedMps": 27.77777778
+      },
+      {
+        "key": "0-200 km/h",
+        "speedMps": 55.55555556
+      },
+      {
+        "key": "0-300 km/h",
+        "speedMps": 83.3333333
+      },
+      {
+        "key": "0-100 mph",
+        "speedMps": 44.704
+      },
+      {
+        "key": "0-200 mph",
+        "speedMps": 89.408
+      }
+    ],
+    "brakingTargets": [
+      {
+        "key": "100-0 km/h",
+        "speedMps": 27.77777778,
+        "unitsPerM": 1
+      },
+      {
+        "key": "60-0 mph",
+        "speedMps": 26.8224,
+        "unitsPerM": 3.28084
+      }
+    ],
+    "transmissions": {
+      "automaticGearbox": "Automatic",
+      "manualGearbox": "Manual",
+      "dctGearbox": "DCT",
+      "cvtGearbox": "CVT",
+      "sequentialGearbox": "Sequential",
+      "electricMotor": "Other"
+    },
+    "fuels": {
+      "fuelTank:gasoline": "Gasoline",
+      "fuelTank:diesel": "Diesel",
+      "electricBattery": "Electric"
+    },
+    "stages": [
+      "offroad",
+      "acceleration",
+      "braking"
+    ],
+    "displayMeasurements": [
+      {
+        "label": "0–60 mph",
+        "key": "0-60 mph",
+        "format": "%.1f s",
+        "factor": 1
+      },
+      {
+        "label": "Top speed",
+        "key": "Top Speed",
+        "format": "%.0f mph",
+        "factor": 2.2369362921
+      },
+      {
+        "label": "Braking from 60 mph",
+        "key": "60-0 mph",
+        "format": "%.0f ft",
+        "factor": 1
+      },
+      {
+        "label": "Off-road score",
+        "key": "Off-Road Score",
+        "format": "%.0f",
+        "factor": 1
+      }
+    ]
+  }
+}

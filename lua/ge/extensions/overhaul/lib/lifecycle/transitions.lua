@@ -2,6 +2,7 @@
 -- Each patched call waits for the pending career save, then runs the original call unchanged.
 local lifecycle = require('overhaul/lib/lifecycle/host')
 local temporaryVehicles = require('overhaul/lib/vehicles/temporary')
+local forwarding = require('overhaul/lib/shell/wrapperLifetime').forwarding
 
 local M = {}
 
@@ -16,14 +17,14 @@ end
 
 -- save: the save system ({flushSaveForExit = fn}).
 local function flushThenCall(save, kind, via)
-  return function(original)
+  return forwarding(function(original)
     if type(original) ~= "function" then return end
     return function(...)
       local args = {...}
       local transition = lifecycle.begin(kind, {via = via})
       save.flushSaveForExit(function() lifecycle.finish(transition, "done"); original(unpack(args)) end)
     end
-  end
+  end)
 end
 
 function M.registerExitPatches(save, globalTable)
@@ -34,7 +35,7 @@ function M.registerExitPatches(save, globalTable)
     quit = flushThenCall(save, "exit", "quit"),
   })
   patches.registerFields("saveExitTorqueQuit", function() return rawget(globalTable, "TorqueScript") end, {
-    eval = function(original)
+    eval = forwarding(function(original)
       if type(original) ~= "function" then return end
       return function(command, ...)
         local args = {...}
@@ -45,17 +46,17 @@ function M.registerExitPatches(save, globalTable)
           return original(command, unpack(args))
         end
       end
-    end,
+    end),
   })
   patches.registerFields("saveExitStartFreeroam", function() return rawget(globalTable, "freeroam_freeroam") end, {
-    startFreeroam = function(original)
+    startFreeroam = forwarding(function(original)
       if type(original) ~= "function" then return end
       return function(...)
         local args, count = {...}, select('#', ...)
         local transition = lifecycle.begin("unload", {via = "startFreeroam"})
         return save.flushSaveForExit(function() lifecycle.finish(transition, "done"); original(unpack(args, 1, count)) end)
       end
-    end,
+    end),
   })
 end
 

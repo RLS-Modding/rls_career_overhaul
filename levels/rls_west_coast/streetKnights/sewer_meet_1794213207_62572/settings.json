@@ -1,0 +1,25 @@
+{
+  "canBeReseted":false,
+  "canBeTeleported":false,
+  "context":"streetKnights",
+  "dragType":"headsUpRace",
+  "phases":[
+    {
+      "dependency":true,
+      "name":"stage"
+    },
+    {
+      "dependency":true,
+      "name":"countdown"
+    },
+    {
+      "dependency":false,
+      "name":"race"
+    }
+  ],
+  "streetKnights":{
+    "distance":402.336,
+    "importantTimer":402.336
+  },
+  "stripId":"/levels/rls_west_coast/streetKnights/sewer_meet_1794213207_62572/strip.json"
+}

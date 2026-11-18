@@ -1,0 +1,18 @@
+{
+  "id": "fuelSystem",
+  "order": 51,
+  "callbacks": [
+    {
+      "id": "fuelReply",
+      "extension": "overhaul_career_maintenance_fuelSystem",
+      "fn": "onVehicleReply",
+      "guard": "function"
+    },
+    {
+      "id": "fuelRuntimeLoaded",
+      "extension": "overhaul_career_maintenance_fuelSystem",
+      "fn": "onRuntimeLoaded",
+      "guard": "function"
+    }
+  ]
+}

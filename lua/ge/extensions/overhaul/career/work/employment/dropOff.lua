@@ -741,7 +741,7 @@ local function addCompanyDropOffApi(api, inputs)
     end
     if shift.phase == "return" then
       -- Still need to collect return freight at another yard — pin that pickup, not the office.
-      if shift.returnNeedsPickup and not inputs.parcelLoading.assignedReturnCargoInVehicle(shift) then
+      if shift.returnNeedsPickup and (inputs.parcelLoading.parcelPickupPendingAtOrigin(shift) or not inputs.parcelLoading.assignedReturnCargoInVehicle(shift)) then
         return routing.routeToReturnPickup()
       end
       if inputs.parcelLoading.assignedReturnCargoInVehicle(shift) then

@@ -153,12 +153,12 @@
             <div class="line-identity">
               <h3 class="item-title">Line {{ line.id }}</h3>
               <span class="pill" :class="lineTone(line)">{{ lineStatus(line) }}</span>
-              <HouseButton v-if="line.id <= shop.lineCapacity && !line.broken && line.blueprintId && rawFor(line.blueprintId) < 1" class="material-shortcut" compact variant="quiet" @click="switchView('warehouse')">Order Material</HouseButton>
+              <HouseButton v-if="line.id <= shop.lineCapacity && !line.broken && line.blueprintId && !blueprintRemoved(line.blueprintId) && rawFor(line.blueprintId) < 1" class="material-shortcut" compact variant="quiet" @click="switchView('warehouse')">Order Material</HouseButton>
             </div>
             <div class="line-command">
               <HouseButton v-if="line.id > shop.lineCapacity" disabled>Locked</HouseButton>
               <HouseButton v-else-if="line.broken" class="warn-btn" :data-fk="'overhaulLine-' + line.id" @click="perform('overhaulLine', line.id)">Overhaul Line</HouseButton>
-              <HouseButton v-else-if="!line.running" :variant="String(primaryStartLineId) === String(line.id) ? 'primary' : 'neutral'" :disabled="!line.blueprintId" :data-fk="'setLineRunning-' + line.id" @click="perform('setLineRunning', line.id, true)">Start Line</HouseButton>
+              <HouseButton v-else-if="!line.running" :variant="String(primaryStartLineId) === String(line.id) ? 'primary' : 'neutral'" :disabled="!line.blueprintId || blueprintRemoved(line.blueprintId)" :data-fk="'setLineRunning-' + line.id" @click="perform('setLineRunning', line.id, true)">Start Line</HouseButton>
               <HouseButton v-else :data-fk="'setLineRunning-' + line.id" @click="perform('setLineRunning', line.id, false)">Stop Line</HouseButton>
             </div>
           </header>
@@ -219,10 +219,10 @@
 
       <section class="block">
         <div class="block-head"><span class="caption">Order raw materials</span><span class="hint">Orders are prepaid and collected manually at {{ shop.supplierName || 'the supplier' }}.</span></div>
-        <div v-if="shop.blueprints.length" class="sheet">
+        <div v-if="activeBlueprints.length" class="sheet">
           <div class="line col-head material-grid"><span>Blueprint</span><span>On hand</span><span>Per load</span><span>Quantity</span><span></span></div>
           <div class="lines">
-            <div v-for="bp in shop.blueprints" :key="bp.id" class="line material-grid" bng-nav-item tabindex="0" aria-label="Order quantity" :data-fk="`quantity-${bp.id}`" v-bng-on-ui-nav-focus.repeat="dir => stepQuantity(bp.id, dir)">
+            <div v-for="bp in activeBlueprints" :key="bp.id" class="line material-grid" bng-nav-item tabindex="0" aria-label="Order quantity" :data-fk="`quantity-${bp.id}`" v-bng-on-ui-nav-focus.repeat="dir => stepQuantity(bp.id, dir)">
               <strong class="row-name">{{ bp.name }}</strong>
               <span class="num">{{ bp.rawCount }} raw</span>
               <span class="num money"><BngIcon class="cur" :type="icons.beamCurrency" />{{ money(bp.freshValue) }}</span>
@@ -294,9 +294,9 @@
       </section>
 
       <section v-if="shop.blueprints.length" class="sales-list">
-        <article v-for="bp in shop.blueprints" :key="bp.id" class="panel sale-row">
+        <article v-for="bp in shop.blueprints" :key="bp.id" class="panel sale-row" :class="{ removed: bp.removed }">
           <div class="sale-product">
-            <span class="pill" :class="String(shop.salesCurrentBlueprintId) === String(bp.id) ? 'accent' : (bp.listed ? '' : 'soft')">{{ String(shop.salesCurrentBlueprintId) === String(bp.id) ? 'Selling next' : (bp.listed ? 'In queue' : 'Unlisted') }}</span>
+            <span class="pill" :class="bp.removed ? '' : String(shop.salesCurrentBlueprintId) === String(bp.id) ? 'accent' : (bp.listed ? '' : 'soft')">{{ bp.removed ? 'Removed' : String(shop.salesCurrentBlueprintId) === String(bp.id) ? 'Selling next' : (bp.listed ? 'In queue' : 'Unlisted') }}</span>
             <h3 class="item-title">{{ bp.name }}</h3>
             <p v-if="bp.certification?.status === 'failed' || bp.certification?.status === 'unknown'" class="status-note bad">{{ bp.certification.reason || 'Certification no longer passes the installed engine rating.' }} Listing and production are paused; your blueprint and stock are retained.</p>
             <div class="meta-row"><span class="num">{{ bp.finishedCount }} finished</span><span><b class="money num"><BngIcon class="cur" :type="icons.beamCurrency" />{{ money(bp.landedCost) }}</b> landed cost</span></div>
@@ -313,11 +313,12 @@
             </div>
           </div>
           <div class="price-control">
-            <label class="field-block" bng-nav-item tabindex="0" aria-label="Sale price" :data-fk="`price-field-${bp.id}`" v-bng-on-ui-nav-focus.repeat="dir => stepPrice(bp, dir)"><span class="caption">Sale price</span><input v-model.number="salePrice[bp.id]" class="field price-field" bng-no-nav="true" type="number" min="1" :max="bp.maxSalePrice" v-bng-text-input @focus="onInputFocus" @blur="onInputBlur" @input="markSalePriceDirty(bp.id)" @keydown.stop @keyup.stop @keypress.stop /></label>
-            <div class="cluster">
+            <label v-if="!bp.removed" class="field-block" bng-nav-item tabindex="0" aria-label="Sale price" :data-fk="`price-field-${bp.id}`" v-bng-on-ui-nav-focus.repeat="dir => stepPrice(bp, dir)"><span class="caption">Sale price</span><input v-model.number="salePrice[bp.id]" class="field price-field" bng-no-nav="true" type="number" min="1" :max="bp.maxSalePrice" v-bng-text-input @focus="onInputFocus" @blur="onInputBlur" @input="markSalePriceDirty(bp.id)" @keydown.stop @keyup.stop @keypress.stop /></label>
+            <div v-if="!bp.removed" class="cluster">
               <HouseButton compact @click="updateBlueprintPrice(bp)">Update Price</HouseButton>
               <HouseButton compact :variant="bp.listed ? 'quiet' : 'neutral'" :data-fk="'setBlueprintListed-' + bp.id" @click="perform('setBlueprintListed', bp.id, !bp.listed)">{{ bp.listed ? 'Stop Selling' : 'List Engine' }}</HouseButton>
             </div>
+            <EngineBlueprintControls :key="`${shop.businessId}:${bp.id}`" :blueprint="bp" :busy="busy" :perform="perform" />
           </div>
         </article>
       </section>
@@ -416,6 +417,7 @@ import { HouseButton, HouseMenu } from '../../../house/index.js'
 import { BngIcon, icons } from '@/common/components/base'
 import { useBusinessComputerStore } from "../../../../stores/businessComputerStore"
 import EngineShopOverview from './EngineShopOverview.vue'
+import EngineBlueprintControls from './EngineBlueprintControls.vue'
 
 const props = defineProps({ data: Object })
 const { units } = useBridge()
@@ -539,6 +541,7 @@ const activeLineCount = computed(() => shop.lines.filter(line => line.running).l
 const pendingCertificationCount = computed(() => shop.packages.filter(pkg => pkg.certification?.status === 'pending').length)
 const waitingReservationCount = computed(() => shop.reservations.filter(row => row.status === 'available').length)
 const listedCount = computed(() => shop.blueprints.filter(bp => bp.listed).length)
+const activeBlueprints = computed(() => shop.blueprints.filter(bp => !bp.removed))
 const recentSales = computed(() => [...shop.salesHistory].reverse().slice(0, 12))
 const salesCountdown = computed(() => shop.salesState === 'selling' ? duration(secondsUntil(shop.salesCycleExpiresAtSeconds, nowSeconds.value)) : shop.salesState === 'waitingForStock' ? 'Out of stock' : 'Not listed')
 const salesProgressPercent = computed(() => shop.salesState === 'selling' ? Math.max(0, Math.min(100, (Math.max(0, (Number(shop.salesCycleSeconds) || 0) - secondsUntil(shop.salesCycleExpiresAtSeconds, nowSeconds.value))) / Math.max(1, Number(shop.salesCycleSeconds) || 1) * 100)) : 0)
@@ -551,10 +554,10 @@ const warehousePercent = computed(() => Math.max(0, Math.min(100, (Number(shop.w
 const productionItems = computed(() => {
   const rows = [{ label: 'Select a certified blueprint', value: '' }], seen = new Set()
   for (const pkg of shop.packages) {
-    if (pkg.certified && pkg.blueprintId && !seen.has(String(pkg.blueprintId))) { rows.push({ label: `✓ ${pkg.name} (certified)`, value: String(pkg.blueprintId) }); seen.add(String(pkg.blueprintId)) }
-    else if (!pkg.certified) rows.push({ label: `○ ${pkg.name} (not certified)`, value: `package:${pkg.id}`, disabled: true })
+    if (pkg.certified && pkg.blueprintId && !blueprintRemoved(pkg.blueprintId) && !seen.has(String(pkg.blueprintId))) { rows.push({ label: `${pkg.name} (certified)`, value: String(pkg.blueprintId) }); seen.add(String(pkg.blueprintId)) }
+    else if (!pkg.certified) rows.push({ label: `${pkg.name} (not certified)`, value: `package:${pkg.id}`, disabled: true })
   }
-  for (const bp of shop.blueprints) if (!seen.has(String(bp.id))) rows.push({ label: `✓ ${bp.name} (certified blueprint)`, value: String(bp.id) })
+  for (const bp of activeBlueprints.value) if (!seen.has(String(bp.id))) rows.push({ label: `${bp.name} (certified blueprint)`, value: String(bp.id) })
   return rows
 })
 
@@ -618,6 +621,7 @@ async function perform(method, ...args) {
     message.value = result?.message || ''
     if (method === 'setBlueprintPrice' && result?.success !== false) clearSalePriceDirty(args[0])
     if (!['openEnginePackages', 'openParts', 'openMyParts', 'openTuning', 'openRepair'].includes(method)) await refresh(true)
+    return result
   }
   catch (error) { messageError.value = true; message.value = String(error) }
   })
@@ -655,10 +659,11 @@ async function confirmSale() {
 async function debugTests() { const result = await lua.overhaul_career_business_computer.runEngineShopInvariantTests(); messageError.value = !result?.success; message.value = result?.success ? `All ${result.checks} invariant groups passed.` : `Failures: ${(result?.failures || []).join(', ')}` }
 function onInputFocus() { inputFocused = true }
 function onInputBlur() { inputFocused = false }
-function certificationLabel(pkg) { if (pkg.certification?.status === 'unknown') return 'Rating unknown'; if (pkg.certified) return 'Certified recipe'; if (pkg.certification?.status === 'pending') return 'Testing'; if (pkg.certification?.status === 'failed') return 'Failed'; return 'Uncertified' }
+function certificationLabel(pkg) { if (pkg.certification?.status === 'unknown') return 'Rating unknown'; if (pkg.certified) return 'Certified recipe'; if (pkg.certification?.status === 'pending') return 'Testing'; if (pkg.certification?.status === 'failed') return 'Failed'; if (pkg.blueprintDeleted) return 'Blueprint deleted'; return 'Uncertified' }
 function certClass(pkg) { if (pkg.certified) return 'certified'; if (pkg.certification?.status === 'pending') return 'pending'; if (pkg.certification?.status === 'failed') return 'failed'; return '' }
 function packageStatus(pkg) { return pkg.status === 'installed' ? `Installed in vehicle #${pkg.installedInventoryId}` : pkg.status === 'stored' ? 'Stored' : 'Incomplete package' }
 function blueprintName(id) { return shop.blueprints.find(bp => String(bp.id) === String(id))?.name || `Blueprint ${id}` }
+function blueprintRemoved(id) { return shop.blueprints.some(bp => String(bp.id) === String(id) && bp.removed) }
 function rawFor(id) { return id ? Number(shop.rawStock?.[id] || 0) : 0 }
 function finishedFor(id) { return id ? shop.warehousePackages.filter(pkg => String(pkg.blueprintId) === String(id)).length : 0 }
 function lineElapsedSeconds(line) {
@@ -667,7 +672,7 @@ function lineElapsedSeconds(line) {
     : Number(line.progressSeconds) || 0
 }
 function lineProgress(line) { return Math.max(0, Math.min(100, lineElapsedSeconds(line) / Math.max(1, Number(line.cycleSeconds) || 1) * 100)) }
-function lineStatus(line) { if (line.id > shop.lineCapacity) return 'Locked'; if (line.broken) return 'Breakdown'; if (!line.blueprintId) return 'Needs blueprint'; if (rawFor(line.blueprintId) < 1) return 'Waiting for material'; return line.running ? 'Producing' : 'Ready' }
+function lineStatus(line) { if (line.id > shop.lineCapacity) return 'Locked'; if (line.broken) return 'Breakdown'; if (!line.blueprintId) return 'Needs blueprint'; if (blueprintRemoved(line.blueprintId)) return 'Blueprint removed'; if (rawFor(line.blueprintId) < 1) return 'Waiting for material'; return line.running ? 'Producing' : 'Ready' }
 function lineStateClass(line) { if (line.id > shop.lineCapacity) return 'muted'; if (line.broken || rawFor(line.blueprintId) < 1) return 'alert'; if (line.running) return 'active'; return '' }
 function lineUpgradeBonus(line, kind) { if (kind === 'speed') return `${duration(line.cycleSeconds)} active time per engine`; if (kind === 'quality') return `${number((line.successChance || 0) * 100)}% success chance`; return `${number((line.breakdownChance || 0) * 100)}% breakdown, ${number((line.maintenanceDiscount || 0) * 100)}% overhaul discount` }
 // null once maxed; the template shows the cost with the currency glyph
@@ -677,8 +682,8 @@ function upgradeName(id) { return shop.upgrades.find(row => row.id === id)?.name
 function duration(value) { const total = Math.max(0, Math.ceil(Number(value) || 0)); const hours = Math.floor(total / 3600); const minutes = Math.floor((total % 3600) / 60); const seconds = total % 60; return hours ? `${hours}h ${minutes}m` : minutes ? `${minutes}m ${seconds.toString().padStart(2, '0')}s` : `${seconds}s` }
 // display-only helpers: pill tones, reservation wording, scaleX fills, the one orange Start Line
 function certTone(pkg) { if (pkg.certification?.status === 'unknown') return 'warn'; if (pkg.certified) return 'ok'; if (pkg.certification?.status === 'pending') return 'accent'; if (pkg.certification?.status === 'failed') return 'bad'; return '' }
-function lineTone(line) { return { Producing: 'accent', 'Needs blueprint': 'warn', 'Waiting for material': 'warn', Breakdown: 'bad' }[lineStatus(line)] || '' }
-const primaryStartLineId = computed(() => shop.lines.find(line => line.id <= shop.lineCapacity && !line.broken && !line.running && line.blueprintId && rawFor(line.blueprintId) >= 1)?.id)
+function lineTone(line) { return { Producing: 'accent', 'Needs blueprint': 'warn', 'Blueprint removed': 'warn', 'Waiting for material': 'warn', Breakdown: 'bad' }[lineStatus(line)] || '' }
+const primaryStartLineId = computed(() => shop.lines.find(line => line.id <= shop.lineCapacity && !line.broken && !line.running && line.blueprintId && !blueprintRemoved(line.blueprintId) && rawFor(line.blueprintId) >= 1)?.id)
 function reservationLabel(status) { return { available: 'Awaiting pickup', inTransit: 'In transit', delivered: 'Delivered', cancelled: 'Cancelled' }[status] || status }
 function fill(percent) { return { transform: `scaleX(${Math.max(0, Math.min(100, Number(percent) || 0)) / 100})` } }
 function saleTime(row) { const minute = Number(row?.minuteOfDay); if (!Number.isFinite(minute)) return `Day ${Number(row?.day) || 0}`; const hours = Math.floor(minute / 60).toString().padStart(2, '0'); const minutes = Math.floor(minute % 60).toString().padStart(2, '0'); return `D${Number(row?.day) || 0} ${hours}:${minutes}` }
@@ -1002,6 +1007,12 @@ b { font-weight: 800; }
 .awareness { display: grid; gap: 0.45em; justify-content: stretch; }
 .awareness-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1em; }
 .price-control { display: grid; gap: 0.6em; align-content: start; }
+/* removed blueprint: still on file but dormant, so its figures step back and Restore keeps full strength */
+.sale-row.removed {
+  .item-title { color: var(--muted); }
+  .meta-row, .profit, .sale-terms { opacity: 0.6; }
+  .track > span { background: rgba(255, 255, 255, 0.5); }
+}
 .history-grid { display: grid; grid-template-columns: 6em minmax(12em, 1fr) 4em 8em 9em; align-items: center; gap: 1em; }
 
 /* ---------- upgrades ---------- */

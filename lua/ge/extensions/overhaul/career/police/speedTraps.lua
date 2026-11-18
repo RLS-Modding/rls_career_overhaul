@@ -49,17 +49,20 @@ local function getFineFromSpeed(overSpeed)
 end
 
 local function hasLicensePlate(inventoryId, vehicle)
-  -- Owned vehicles have their plate part in the career part inventory. Work
-  -- loaners are temporary inventory records, however, so their installed plate
-  -- never appears there even though it is visible and readable in the world.
+  -- Temporary loaners may lack career part rows. Check their fitted parts too:
+  -- registration text can survive plate removal until the vehicle is respawned.
   for _, part in pairs(overhaul_career_parts_partInventory.getInventory() or {}) do
     if part.location == inventoryId and type(part.name) == "string" and string.find(part.name, "licenseplate") then
       return true
     end
   end
 
-  local plateText = vehicle and core_vehicles.getVehicleLicenseText(vehicle)
-  return type(plateText) == "string" and plateText:match("%S") ~= nil
+  local vehicleData = vehicle and core_vehicle_manager.getVehicleData(vehicle:getID())
+  local activeParts = vehicleData and vehicleData.vdata and vehicleData.vdata.activePartsData
+  for partName in pairs(activeParts or {}) do
+    if string.find(partName, "licenseplate") then return true end
+  end
+  return false
 end
 
 -- Handles a triggered speed trap: validates context and vehicle, then issues fines or reputation penalties, adds tickets, plays audio, shows UI messages, and updates speed-trap leaderboards.

@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "units": {"launchRecoveryRatePerSecond": "throttle fraction per second"},
+  "launchRecoveryRatePerSecond": {
+    "barstow/rls_problown_heritage_02": 0.65,
+    "barstow/rls_problown_heritage_03": 0.65,
+    "barstow/rls_problown_heritage_04": 0.65,
+    "bluebuck/rls_problown_haulmark_01": 0.65,
+    "bluebuck/rls_problown_haulmark_02": 0.65,
+    "bluebuck/rls_problown_haulmark_03": 1.5,
+    "bluebuck/rls_problown_haulmark_04": 0.65,
+    "moonhawk/rls_problown_loworbit_01": 0.65,
+    "moonhawk/rls_problown_loworbit_04": 0.65,
+    "scintilla/rls_problown_neon_01": 0.65,
+    "scintilla/rls_problown_neon_03": 1.1
+  },
+  "utilityModels": {"pickup": true, "roamer": true, "hopper": true, "van": true, "lansdale": true, "us_semi": true}
+}

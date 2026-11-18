@@ -100,7 +100,7 @@ const displayName = computed(() => {
 
 const partConditionAvg = computed(() => props.data?.conditionAvg ?? 1)
 const conditionPct = computed(() => Math.round(partConditionAvg.value * 100))
-const isDamaged = computed(() => !!props.data?.needsRepair || partConditionAvg.value < 1)
+const isDamaged = computed(() => !!props.data?.needsRepair)
 
 const thumbUrl = computed(() => (props.data.thumbnail ? `${props.data.thumbnail}?${props.data.dirtyDate}` : null))
 watch(thumbUrl, () => (thumbBroken.value = false))

@@ -46,7 +46,7 @@
       "uiOrder": 97,
       "luaOrder": 50,
       "backTarget": "phone-notification-settings",
-      "title": "Lock screen"
+      "title": "Closed phone"
     },
     {
       "name": "phone-notification-dnd",
@@ -56,6 +56,15 @@
       "luaOrder": 49,
       "backTarget": "phone-notification-settings",
       "title": "Do not disturb"
+    },
+    {
+      "name": "phone-notification-center",
+      "path": "phone-notification-center",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneNotificationCenter.vue",
+      "uiOrder": 109,
+      "luaOrder": 69,
+      "backTarget": "phone-main",
+      "title": "Notifications"
     }
   ]
 }

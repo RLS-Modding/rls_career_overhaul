@@ -1,5 +1,6 @@
 -- Engine maintenance: oil and ignition wear, output effects, symptoms and hard failures.
 -- Read tuning, service drain, severity forecasts, derived effects, runtime progression and device application.
+local fuelDamage = require('vehicle/rlsFuelDamage')
 local M = {}
 
 local common = require('vehicle/overhaul/maintenance/common')
@@ -392,15 +393,13 @@ local function resetEngineState(engine, base, derived, includeDamage)
   if base.dynamicFriction ~= nil then
     engine.dynamicFriction = base.dynamicFriction
   end
-  if base.originalMaxTorqueLimit ~= nil then
-    engine.maxTorqueLimit = base.originalMaxTorqueLimit
-  end
   if base.idleAVReadErrorRangeHalf ~= nil then
     engine.idleAVReadErrorRangeHalf = base.idleAVReadErrorRangeHalf
   end
   if base.idleAVReadErrorRange ~= nil then
     engine.idleAVReadErrorRange = base.idleAVReadErrorRange
   end
+  if engine.rlsFuelContext then fuelDamage.apply(engine, engine.rlsFuelContext.state) end
 end
 
 -- Severities and failure rates --------------------------------------------------------------------
@@ -446,7 +445,7 @@ end
 local function calculateCriticalOilFailureSeverities(
   oilHeatFactor, oilOverheatFactor, loadFactor, rpmFactor, limitStressFactor,
   oilLevelDriveSeverity, oilStarvationSeverity, oilConditionSeverity, oilConditionDriveSeverity,
-  integritySeverity, catastrophicOilStarvation, dryOilLockup, lubricationThermalSeverity
+  integritySeverity, catastrophicOilStarvation, dryOilLockup, lubricationThermalSeverity, lubricationFaultSeverity
 )
   local lubricationCollapseSeverity = common.clamp(
     max(lubricationThermalSeverity * 0.9, oilStarvationSeverity * 0.95 + oilConditionSeverity * 0.55 + integritySeverity * 0.22),
@@ -456,7 +455,8 @@ local function calculateCriticalOilFailureSeverities(
   local lubricationDriveSeverity = common.clamp(
     oilLevelDriveSeverity * 0.74 + oilConditionDriveSeverity * 0.52 + integritySeverity * 0.32 +
         max(oilLevelDriveSeverity - 0.08, 0) * loadFactor * 0.34 + max(oilLevelDriveSeverity - 0.08, 0) * rpmFactor * 0.18 +
-        max(oilConditionDriveSeverity - 0.1, 0) * loadFactor * 0.14 + common.clamp(limitStressFactor, 0, 1.4) * 0.08,
+        max(oilConditionDriveSeverity - 0.1, 0) * loadFactor * 0.14 +
+        common.clamp(limitStressFactor, 0, 1.4) * 0.08 * lubricationFaultSeverity,
     0,
     1.85
   )
@@ -510,16 +510,24 @@ local function calculateEngineLubricationSeverity(inputs)
   local severeOilStarvation = oilLevel <= 0.05 and oilCondition <= 0.14
   local catastrophicOilStarvation = oilLevel <= 0.015 and oilCondition <= 0.05
   local dryOilLockup = oilLevel <= 0.001
+  -- Load and RPM accelerate service wear, but are not lubrication faults.
+  -- Only existing oil/engine impairment or actual overheating can turn that
+  -- operating stress into immediate rough running or random power-loss events.
+  local lubricationFaultSeverity = common.clamp(max(
+    oilLevelDriveSeverity, oilConditionDriveSeverity, oilStarvationSeverity,
+    integritySeverity, oilOverheatFactor
+  ), 0, 1)
   local lubricationThermalSeverity = common.clamp(
-    oilHeatFactor * 0.18 + oilOverheatFactor * 0.42 + oilStarvationSeverity * 0.52 + oilConditionSeverity * 0.28 +
-        loadFactor * 0.10 + rpmFactor * 0.08 + common.clamp(limitStressFactor, 0, 1.4) * 0.05,
+    oilOverheatFactor * 0.42 + oilStarvationSeverity * 0.52 + oilConditionSeverity * 0.28 +
+        (oilHeatFactor * 0.18 + loadFactor * 0.10 + rpmFactor * 0.08 +
+          common.clamp(limitStressFactor, 0, 1.4) * 0.05) * lubricationFaultSeverity,
     0,
     1.45
   )
   local lubricationCollapseSeverity, lubricationDriveSeverity, criticalOilFailureSeverity, cylinderWallThreatSeverity = calculateCriticalOilFailureSeverities(
     oilHeatFactor, oilOverheatFactor, loadFactor, rpmFactor, limitStressFactor,
     oilLevelDriveSeverity, oilStarvationSeverity, oilConditionSeverity, oilConditionDriveSeverity,
-    integritySeverity, catastrophicOilStarvation, dryOilLockup, lubricationThermalSeverity
+    integritySeverity, catastrophicOilStarvation, dryOilLockup, lubricationThermalSeverity, lubricationFaultSeverity
   )
   return {
     oilLevelDriveSeverity = oilLevelDriveSeverity,
@@ -1163,7 +1171,6 @@ end
 local function applyEngineThermalsAndStall(
   runtime, derived, symptom, symptomRoughnessCoef, entry, engine, base, lubricationDamageStage
 )
-  entry.engineAppliedMaxTorqueLimit = engine.maxTorqueLimit
   engine.idleAVReadErrorRangeHalf = (base.idleAVReadErrorRangeHalf or engine.idleAVReadErrorRangeHalf or 0) *
                                         derived.roughnessCoef * symptomRoughnessCoef
   engine.idleAVReadErrorRange = (base.idleAVReadErrorRange or engine.idleAVReadErrorRange or 0) *
@@ -1211,9 +1218,10 @@ local function applyEngineThermalsAndStall(
     engine.stallTimer = 0
     runtime.stallApplied = true
   end
+  if engine.rlsFuelContext then fuelDamage.apply(engine, engine.rlsFuelContext.state) end
 end
 
-local function calculateEngineTorqueCeiling(
+local function calculateEngineOutputHold(
   derived, symptomTorqueCoef, symptomFrictionCoef, symptomIgnitionBonus, engine, base,
   directDriveSeverity
 )
@@ -1234,7 +1242,6 @@ local function calculateEngineTorqueCeiling(
       common.clamp(derived.ignitionErrorChance + symptomIgnitionBonus * 1.15, 0, 0.12)))
   end
 
-  local baseMaxTorque = base.maxTorque or engine.maxTorque or 0
   local baseMaxPowerRaw = base.maxPower or engine.maxPower or 0
   local baseMaxPowerWatts = common.getBeamPowerWatts(baseMaxPowerRaw)
   local engineAV = max(abs(engine.outputAV1 or engine.inputAV or engine.outputAV2 or 0), 1)
@@ -1251,18 +1258,13 @@ local function calculateEngineTorqueCeiling(
     {1.45, 0.16},
     {1.80, 0.03}
   })
-  local torqueCap = baseMaxTorque * liveTorqueHoldCoef * symptomTorqueCoef * lubricationTorqueCapCoef
-  return baseMaxTorque, baseMaxPowerWatts, engineAV, torqueCap
+  local torqueHold = liveTorqueHoldCoef * symptomTorqueCoef * lubricationTorqueCapCoef
+  return baseMaxPowerWatts, engineAV, torqueHold
 end
 
-local function applyEngineMinimumTorqueLimit(
-  derived, symptom, engine, base, lubricationDamageStage, directDriveSeverity, baseMaxTorque,
-  appliedLimit
+local function applyEngineMinimumOutputHold(
+  derived, symptom, engine, lubricationDamageStage, directDriveSeverity, appliedHold
 )
-  if base.originalMaxTorqueLimit and base.originalMaxTorqueLimit < math.huge then
-    appliedLimit = min(appliedLimit, base.originalMaxTorqueLimit)
-  end
-
   local floorSeverity = common.clamp(
     max(derived.oilStarvationSeverity or 0, (derived.oilConditionSeverity or 0) * 0.7, (derived.integritySeverity or 0) * 0.9,
       lubricationDamageStage * 0.95, directDriveSeverity * 0.85),
@@ -1277,11 +1279,10 @@ local function applyEngineMinimumTorqueLimit(
     {1.35, symptom == 'stall' and 0.02 or 0.05},
     {1.60, symptom == 'stall' and 0.01 or 0.03}
   })
-  local minimumLimit = baseMaxTorque * minimumLimitCoef
-  engine.maxTorqueLimit = max(appliedLimit, minimumLimit)
+  common.setOutputDerating(engine, 'engine', max(appliedHold, minimumLimitCoef))
 end
 
-local function applyEnginePowerCeiling(
+local function applyEngineOutputDerating(
   runtime, derived, symptom, symptomTorqueCoef, symptomPowerCoef, symptomFrictionCoef,
   symptomIgnitionBonus, entry
 )
@@ -1293,13 +1294,14 @@ local function applyEnginePowerCeiling(
     0,
     1.8
   )
-  local baseMaxTorque, baseMaxPowerWatts, engineAV, torqueCap = calculateEngineTorqueCeiling(
+  local baseMaxPowerWatts, engineAV, torqueHold = calculateEngineOutputHold(
     derived, symptomTorqueCoef, symptomFrictionCoef, symptomIgnitionBonus, engine, base,
     directDriveSeverity
   )
-  local appliedLimit = torqueCap
+  local appliedHold = torqueHold
 
-  -- Limit horsepower only with a useful base rating at high engine speed.
+  -- Keep the high-RPM fault gate, but reduce tuned output proportionally.
+  -- Static peak ratings are not ceilings for fuel, timing, boost or nitrous.
   local shouldUsePowerCap = baseMaxPowerWatts > 0 and engineAV > 220 and
                                  (symptom == 'powerFade' or symptom == 'stall' or directDriveSeverity >= 0.35 or
                                      (derived.ignitionSeverity or 0) >= 0.45)
@@ -1312,22 +1314,21 @@ local function applyEnginePowerCeiling(
       {1.50, 0.10},
       {1.80, 0.04}
     })
-    local powerTorqueCap = max((baseMaxPowerWatts * derived.powerHoldCoef * symptomPowerCoef) / engineAV, baseMaxTorque * powerFloorCoef)
-    appliedLimit = min(torqueCap, powerTorqueCap)
-    if powerTorqueCap < torqueCap - 0.001 then
+    local powerHold = max(derived.powerHoldCoef * symptomPowerCoef, powerFloorCoef)
+    appliedHold = min(torqueHold, powerHold)
+    if powerHold < torqueHold - 0.001 then
       runtime.lastPowerLimitReason = getPowerLimitReason(derived, symptom, directDriveSeverity, true, lubricationDamageStage)
       runtime.lastPowerLimitActive = true
     end
   end
 
-  if not runtime.lastPowerLimitReason and torqueCap < baseMaxTorque * 0.995 then
+  if not runtime.lastPowerLimitReason and torqueHold < 0.995 then
     runtime.lastPowerLimitReason = getPowerLimitReason(derived, symptom, directDriveSeverity, false, lubricationDamageStage)
     runtime.lastPowerLimitActive = true
   end
 
-  applyEngineMinimumTorqueLimit(
-    derived, symptom, engine, base, lubricationDamageStage, directDriveSeverity, baseMaxTorque,
-    appliedLimit
+  applyEngineMinimumOutputHold(
+    derived, symptom, engine, lubricationDamageStage, directDriveSeverity, appliedHold
   )
   -- Radiator scaling must start from the current engine values.
   entry.engineAppliedFriction = engine.friction
@@ -1366,7 +1367,7 @@ local function apply(context, state, runtime, derived)
   runtime.lastPowerLimitActive = false
 
   for _, entry in ipairs(context.devices or {}) do
-    local engine, base, lubricationDamageStage = applyEnginePowerCeiling(
+    local engine, base, lubricationDamageStage = applyEngineOutputDerating(
       runtime, derived, symptom, symptomTorqueCoef, symptomPowerCoef, symptomFrictionCoef,
       symptomIgnitionBonus, entry
     )
@@ -1415,6 +1416,7 @@ local function clearFailureRuntime(context)
     local engine = entry.device
     local base = entry.base or {}
     resetEngineState(engine, base, nil, true)
+    common.setOutputDerating(engine, 'engine', 1)
 
     if engine.isStalled ~= nil then
       engine.isStalled = false
@@ -1423,7 +1425,12 @@ local function clearFailureRuntime(context)
       engine.stallTimer = 0
     end
 
-    if type(engine.thermals) == "table" then
+    -- Maintenance initialization can precede the fuel adapter binding. Preserve
+    -- native gasoline failures in that order too, or the adapter would replay
+    -- their torque penalties when it subsequently restores the saved fuel state.
+    local preserveCombustionDamage = engine.rlsFuelContext or
+      (tostring(engine.type or ''):find('combustionEngine', 1, true) and engine.requiredEnergyType == 'gasoline')
+    if type(engine.thermals) == "table" and not preserveCombustionDamage then
       if engine.thermals.headGasketBlown ~= nil then
         engine.thermals.headGasketBlown = false
       end

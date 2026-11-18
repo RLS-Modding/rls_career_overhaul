@@ -1,0 +1,322 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "etk800/rls_streetheat_haulmark_luke_hobson",
+    "configId": "rls_streetheat_haulmark_luke_hobson",
+    "model": "etk800",
+    "config": "/vehicles/etk800/rls_streetheat_haulmark_luke_hobson.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "luke_hobson",
+    "driverName": "Logan Braddock",
+    "builder": "Haulmark Racing",
+    "leagueId": "street_kings",
+    "classIds": [
+      "street_heat"
+    ],
+    "approvedClassIds": [
+      "street_heat"
+    ],
+    "eligibilityStatus": "Roster approval retained. Current build has separate assessor-accepted quarter-mile qualification evidence; recorded historical ETs remain historical estimates.",
+    "sourceConfigSHA256": "47cd7cc9ec1692248be5749ac8c77c06acb017333445f9a1358ccfb6cb791bf4",
+    "traits": {
+      "configId": "etk800/rls_streetheat_haulmark_luke_hobson",
+      "diesel": true,
+      "drivetrain": "AWD",
+      "manual": false,
+      "model": "etk800",
+      "nitrous": true,
+      "rollCage": false,
+      "sportTires": true,
+      "supercharger": false,
+      "tireFriction": {
+        "complete": true,
+        "source": "compiled-tread-nodes",
+        "wheels": [
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "FL"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "FR"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "RL"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "RR"
+          }
+        ]
+      },
+      "tireFrictionCoefMax": 1,
+      "tireType": "sport",
+      "tireTypes": [
+        "sport"
+      ],
+      "tires": [
+        {
+          "part": "tire_f_245_35_19_sport",
+          "slot": "/etk800_body/etk800_suspension_f/wheel_f_5/tire_f_19x9/tire_f_245_35_19_sport",
+          "source": "installed-part-label",
+          "type": "sport"
+        },
+        {
+          "part": "tire_r_245_35_19_sport",
+          "slot": "/etk800_body/etk800_suspension_r/wheel_r_5/tire_r_19x9/tire_r_245_35_19_sport",
+          "source": "installed-part-label",
+          "type": "sport"
+        }
+      ],
+      "truck": false,
+      "turbocharger": true,
+      "year": 2018,
+      "transmission": "8-speed automatic",
+      "induction": "Turbocharger",
+      "years": {
+        "max": 2018,
+        "min": 2013
+      }
+    },
+    "equipment": {
+      "evidence": "Hash-matched live class inspection and installed-parts tree; no new timing approval is asserted.",
+      "selectedTires": [
+        {
+          "slot": "/etk800_body/etk800_suspension_f/wheel_f_5/tire_f_19x9/tire_f_245_35_19_sport",
+          "part": "tire_f_245_35_19_sport",
+          "typeHint": "sport",
+          "source": "installed-part-label"
+        },
+        {
+          "slot": "/etk800_body/etk800_suspension_r/wheel_r_5/tire_r_19x9/tire_r_245_35_19_sport",
+          "part": "tire_r_245_35_19_sport",
+          "typeHint": "sport",
+          "source": "installed-part-label"
+        }
+      ],
+      "selectedRollCageParts": [],
+      "rollCage": false,
+      "tireFriction": {
+        "complete": true,
+        "source": "compiled-tread-nodes",
+        "wheels": [
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "FL"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "FR"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "RL"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "RR"
+          }
+        ]
+      },
+      "nitrous": {
+        "addedPower": 40,
+        "cutInRPM": 3000,
+        "minimumGear": 2,
+        "purgeValves_nodes": [
+          215,
+          197
+        ],
+        "addedPowerUnits": "kW"
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 11.318666354826,
+      "runId": "SH-20261020-075642",
+      "evidenceConfigSHA256": "5f0a82a0a5421b5ceb1b607c7fc93d365f502cfe8985bcf8696f3cfab03f2c11",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/street-heat/final-results.json",
+      "acceptedConfig": "outputs/street-heat/accepted/rls_streetheat_haulmark_luke_hobson/rls_streetheat_haulmark_luke_hobson.pc",
+      "indexRecoveryMetadata": {
+        "sourceProofFile": "outputs/drag-rebuild-20261028/continuation-ledger/attempts/accf8ec4241e085828e6dca4f37c881aa31fedf890d16c2969912ba568613cc3.json",
+        "sourceProofSHA256": "accf8ec4241e085828e6dca4f37c881aa31fedf890d16c2969912ba568613cc3",
+        "attemptId": "etk800__rls_streetheat_haulmark_luke_hobson-L1-P1-index-recovery-03-55b2a96e",
+        "configSHA256": "47cd7cc9ec1692248be5749ac8c77c06acb017333445f9a1358ccfb6cb791bf4",
+        "evidenceScope": "Hardware declarations only; historical ET receipts and class approvals retained. PC identity is guarded; native/VFS dependency freshness and performance are not certified here."
+      }
+    },
+    "sourcePack": "rls_street_heat",
+    "currentQualification": {
+      "schema": "rls.index-recovery.current-qualification/1",
+      "status": "assessor-accepted",
+      "originalKey": "etk800/rls_streetheat_haulmark_luke_hobson",
+      "testedKey": "etk800/rls_streetheat_haulmark_luke_hobson",
+      "configSHA256": "47cd7cc9ec1692248be5749ac8c77c06acb017333445f9a1358ccfb6cb791bf4",
+      "quarterMileSeconds": 11.111451682632,
+      "attemptId": "etk800__rls_streetheat_haulmark_luke_hobson-L1-P1-index-recovery-03-55b2a96e",
+      "capturedAt": "2026-10-28T19:16:26Z",
+      "classId": "street_heat",
+      "lower": 10.5,
+      "upper": 11.25,
+      "classProof": {
+        "classEntryAllowed": true,
+        "classId": "street_heat",
+        "classResultAllowed": true,
+        "leagueId": "street_kings",
+        "lower": 10.5,
+        "nitrousAddedPower": 40,
+        "nitrousMinimumGear": 2,
+        "traits": {
+          "configId": "etk800/rls_streetheat_haulmark_luke_hobson",
+          "diesel": true,
+          "drivetrain": "AWD",
+          "manual": false,
+          "model": "etk800",
+          "nitrous": true,
+          "rollCage": false,
+          "sportTires": true,
+          "supercharger": false,
+          "tireFriction": {
+            "complete": true,
+            "source": "compiled-tread-nodes",
+            "wheels": [
+              {
+                "frictionCoefMax": 1,
+                "frictionCoefMin": 1,
+                "nodeCount": 32,
+                "slidingFrictionCoefMax": 1,
+                "slidingFrictionCoefMin": 1,
+                "source": "compiled-tread-nodes",
+                "wheel": "FL"
+              },
+              {
+                "frictionCoefMax": 1,
+                "frictionCoefMin": 1,
+                "nodeCount": 32,
+                "slidingFrictionCoefMax": 1,
+                "slidingFrictionCoefMin": 1,
+                "source": "compiled-tread-nodes",
+                "wheel": "FR"
+              },
+              {
+                "frictionCoefMax": 1,
+                "frictionCoefMin": 1,
+                "nodeCount": 32,
+                "slidingFrictionCoefMax": 1,
+                "slidingFrictionCoefMin": 1,
+                "source": "compiled-tread-nodes",
+                "wheel": "RL"
+              },
+              {
+                "frictionCoefMax": 1,
+                "frictionCoefMin": 1,
+                "nodeCount": 32,
+                "slidingFrictionCoefMax": 1,
+                "slidingFrictionCoefMin": 1,
+                "source": "compiled-tread-nodes",
+                "wheel": "RR"
+              }
+            ]
+          },
+          "tireFrictionCoefMax": 1,
+          "tireType": "sport",
+          "tireTypes": [
+            "sport"
+          ],
+          "tires": [
+            {
+              "part": "tire_f_245_35_19_sport",
+              "slot": "/etk800_body/etk800_suspension_f/wheel_f_5/tire_f_19x9/tire_f_245_35_19_sport",
+              "source": "installed-part-label",
+              "type": "sport"
+            },
+            {
+              "part": "tire_r_245_35_19_sport",
+              "slot": "/etk800_body/etk800_suspension_r/wheel_r_5/tire_r_19x9/tire_r_245_35_19_sport",
+              "source": "installed-part-label",
+              "type": "sport"
+            }
+          ],
+          "truck": false,
+          "turbocharger": true,
+          "year": 2018
+        },
+        "upper": 11.25
+      },
+      "health": {
+        "status": "no-observed-faults",
+        "engineFaults": [],
+        "maxTurboPsi": 34.34475327,
+        "capViolation": false,
+        "telemetryDropped": 0
+      },
+      "physical": {
+        "issues": [],
+        "newBroken": [],
+        "deformed": [],
+        "partDamage": [],
+        "triggered": [],
+        "damageDelta": 0,
+        "scope": "Sparse getBeamDeformation delta >0.01, broken beam IDs, tires, part damage and native trigger changes. beamstate.damage/energy delta is reported, not treated as damage proof."
+      },
+      "source": {
+        "status": "current-in-covered-sources",
+        "scope": "Saved repository source list and compiled chosen parts only; native/game/VFS dependencies and runtime cache are not certified. Additional current inventory is not evidence of historical changes."
+      },
+      "evidence": {
+        "assessmentFile": "outputs/drag-rebuild-20261028/index-recovery/latest.json",
+        "assessmentSHA256": "03d04ab7739919d0e455f3afaf7e9e794f200f4698433f6cbffa1f7acd663b89",
+        "rawFile": "outputs/drag-rebuild-20261028/continuation-ledger/attempts/accf8ec4241e085828e6dca4f37c881aa31fedf890d16c2969912ba568613cc3.json",
+        "rawSHA256": "accf8ec4241e085828e6dca4f37c881aa31fedf890d16c2969912ba568613cc3",
+        "ledgerFile": "outputs/drag-rebuild-20261028/continuation-ledger/latest.json",
+        "ledgerSHA256": "a05efb2449df6019312ea0c14ae689f46be53147fa47dd7024f788869686f80b"
+      },
+      "scope": "One assessor-accepted current-build quarter-mile result in the original index through index+0.75 window. Health and source coverage retain the assessor/ledger scope; no repeatability guarantee or complete native/VFS certification. Historical performance and approval remain separate."
+    }
+  }
+}

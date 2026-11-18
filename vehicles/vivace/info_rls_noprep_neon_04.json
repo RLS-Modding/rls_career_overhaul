@@ -1,0 +1,25 @@
+{
+  "Configuration": "Raina Talbot - No Prep",
+  "Description": "Magenta Signal. Tier 2 racer. Highway no-prep quarter-mile: 11.378s at 125.84mph. Neon Works.",
+  "Author": "Neon Works",
+  "Name": "Raina Talbot",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 9.5621680526754,
+    "time_1_4": 11.378039327098,
+    "time_1_8": 7.3771721512084,
+    "time_330": 4.8398855033142,
+    "time_60": 1.7757006665296,
+    "velAt_1_4": 56.256453974348,
+    "velAt_1_8": 44.086428425666
+  },
+  "Reaction Time": 0.30439082141326,
+  "dragTimesRevalidated": true,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m"
+}

@@ -16,9 +16,42 @@
 
         <h3>Weather</h3>
         <div class="rls-tester__row">
-          <button type="button" @click="run('sunny')">Sunny</button>
-          <button type="button" @click="run('rain')">Heavy Rain</button>
-          <button type="button" @click="run('overcast')">Overcast</button>
+          <BngDropdown
+            class="rls-tester__dropdown"
+            aria-label="Set weather"
+            :items="weatherOptions"
+            :model-value="null"
+            :disabled="!weatherOptions.length"
+            @update:model-value="setWeather"
+          >
+            <template #display>Set weather…</template>
+          </BngDropdown>
+        </div>
+
+        <h3>Drag racing</h3>
+        <div class="rls-tester__row">
+          <BngDropdown
+            class="rls-tester__dropdown"
+            aria-label="No Prep Knights venue"
+            :items="npkVenues"
+            :model-value="null"
+            :disabled="!npkVenues.length"
+            @update:model-value="setNpkVenue"
+          >
+            <template #display>{{ npkVenues.length ? "No Prep Knights venue…" : "No Prep Knights: no venues on this map" }}</template>
+          </BngDropdown>
+        </div>
+        <div class="rls-tester__row">
+          <BngDropdown
+            class="rls-tester__dropdown"
+            aria-label="Sanctioned Drags league"
+            :items="dragLeagues"
+            :model-value="null"
+            :disabled="!dragLeagues.length"
+            @update:model-value="setDragLeague"
+          >
+            <template #display>Sanctioned Drags league…</template>
+          </BngDropdown>
         </div>
 
         <h3>Time of day</h3>
@@ -63,7 +96,13 @@
           <button type="button" @click="run('switcher')">Open map switcher</button>
           <button type="button" @click="run('waypoint')">Teleport to waypoint</button>
           <button type="button" @click="run('repair')">Repair + refuel</button>
+          <HouseButton @click="run('dyno')">Teleport to dyno</HouseButton>
           <button type="button" @click="run('save')">Save career</button>
+        </div>
+
+        <h3>Fuel</h3>
+        <div class="rls-tester__row">
+          <HouseButton @click="run('fuel')">Open Fuel &amp; Ignition</HouseButton>
         </div>
 
         <h3>Clean Up Club</h3>
@@ -86,10 +125,11 @@
 </template>
 
 <script setup>
+import { HouseButton } from "./house/index.js"
 import EntryOverlayPopup from "./EntryOverlayPopup.vue"
 import { ref, computed, onMounted, onBeforeUnmount } from "vue"
 import { useBridge } from "@/bridge"
-import { BngIcon, icons } from "@/common/components/base"
+import { BngDropdown, BngIcon, icons } from "@/common/components/base"
 import { vBngOnUiNav, vBngUiNavScroll } from "@/common/directives"
 import { callModLuaIfAvailable } from "../utils/installLuaBridgeFallbacks"
 
@@ -102,6 +142,9 @@ const toggleControl = ref("f9")
 const toggleLabel = ref("")
 const deviceName = ref("keyboard0")
 const capturing = ref(false)
+const weatherOptions = ref([])
+const npkVenues = ref([])
+const dragLeagues = ref([])
 
 function formatShortcut(control, device) {
   const c = String(control || "")
@@ -149,6 +192,10 @@ function applyPayload(raw) {
   if (typeof data.money === "number") money.value = data.money
   if (typeof data.status === "string") status.value = data.status
   statusIsError.value = data.statusIsError === true
+  if (Array.isArray(data.weatherOptions)) weatherOptions.value = data.weatherOptions
+  // Lua sends an empty list as {}; treat anything that is not an array as no choices.
+  npkVenues.value = Array.isArray(data.npkVenues) ? data.npkVenues : []
+  dragLeagues.value = Array.isArray(data.dragLeagues) ? data.dragLeagues : []
   if (typeof data.toggleControl === "string" && data.toggleControl) toggleControl.value = data.toggleControl
   if (typeof data.deviceName === "string" && data.deviceName) deviceName.value = data.deviceName
   if (typeof data.toggleLabel === "string" && data.toggleLabel) {
@@ -245,6 +292,18 @@ function stopCapture(cancelLua) {
 
 function run(actionId) {
   callModLuaIfAvailable("overhaul_dev_testerMenu.run", String(actionId || ""))
+}
+
+function setWeather(condition) {
+  if (condition) run("weather:" + condition)
+}
+
+function setNpkVenue(venueId) {
+  if (venueId) run("npkVenue:" + venueId)
+}
+
+function setDragLeague(leagueId) {
+  if (leagueId) run("dragLeague:" + leagueId)
 }
 
 function hide() {
@@ -346,6 +405,10 @@ button {
   &.focus-visible::before {
     display: none !important;
   }
+}
+.rls-tester__dropdown {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 button.listening {
   background: #b45309;

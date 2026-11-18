@@ -210,6 +210,23 @@ function M.upsertTune(data, modelKey, name, variables, replaceExisting, options)
   return candidate, {success = true, tune = deepCopy(tune), replaced = duplicate ~= nil}
 end
 
+function M.renameTune(data, modelKey, tuneId, name, now)
+  local key = M.normalizeModelKey(modelKey)
+  local tune, index = M.findTune(data, key, tuneId)
+  if not tune then return nil, {success = false, reason = "tune_not_found"} end
+  local valid, normalizedName = M.validateName(name)
+  if not valid then return nil, {success = false, reason = normalizedName} end
+  local duplicate = findTuneByName(data.models[key], normalizedName)
+  if duplicate and duplicate.id ~= tuneId then
+    return nil, {success = false, reason = "duplicate_name"}
+  end
+  local candidate = deepCopy(data)
+  local renamed = candidate.models[key].tunes[index]
+  renamed.name = normalizedName
+  renamed.updatedAt = now or os.time()
+  return candidate, {success = true}
+end
+
 function M.deleteTune(data, modelKey, tuneId)
   local key = M.normalizeModelKey(modelKey)
   local group = key and data and data.models and data.models[key] or nil

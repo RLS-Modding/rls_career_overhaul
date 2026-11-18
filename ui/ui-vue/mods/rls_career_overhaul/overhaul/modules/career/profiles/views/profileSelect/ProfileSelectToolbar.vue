@@ -3,12 +3,10 @@
     <div class="pt-search">
       <input
         v-model="search"
+        v-bng-text-input
         class="pt-input"
-        bng-scoped-nav-autofocus
         placeholder="Search profiles..."
-        :disabled="disabled"
-        @focus="emit('search-focus')"
-        @blur="emit('search-blur')" />
+        :disabled="disabled" />
     </div>
 
     <div class="pt-controls">
@@ -95,7 +93,7 @@
 // The search box and the sort and filter dropdowns above the save strip. It draws what the view passes in and reports
 // what was picked. The view keeps the saves, the filter sets, and which menu is open.
 import { computed } from "vue"
-import { vBngScopedNav, vBngOnUiNav } from "@/common/directives"
+import { vBngScopedNav, vBngOnUiNav, vBngTextInput } from "@/common/directives"
 import {
   DIFFICULTY_FILTER_OPTIONS as difficultyFilterOptions,
   PATH_FILTER_OPTIONS as pathFilterOptions,
@@ -123,8 +121,6 @@ const props = defineProps({
 
 const emit = defineEmits([
   "update:searchQuery",
-  "search-focus",
-  "search-blur",
   "toggle-sort",
   "select-sort",
   "close-sort",

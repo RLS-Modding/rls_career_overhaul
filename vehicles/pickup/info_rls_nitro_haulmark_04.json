@@ -1,0 +1,92 @@
+{
+  "isAuxiliary": true,
+  "Configuration": "Jocelyn Reyes - Spray and Pray",
+  "Description": "Driver: Jocelyn Reyes. Builder: Haulmark Racing. Haulmark Racing: Burnt-orange long-bed farm hauler with an open cargo bed and cream secondary paint. 6.9L V8, race NA intake, independent Stage 4 race block; naturally aspirated with nitrous from second gear. 4-speed automatic. Three-pass development result at West Coast: 8.901 s. Spray and Pray class. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Transmission": "Automatic",
+  "Drivetrain": "RWD",
+  "Induction Type": "NA + N2O",
+  "Population": -1,
+  "Value": 65000,
+  "Power": 1575,
+  "Weight": 2233,
+  "Years": {
+    "min": 1992,
+    "max": 1997
+  },
+  "Motorsport": {
+    "version": 1,
+    "id": "pickup/rls_nitro_haulmark_04",
+    "configId": "rls_nitro_haulmark_04",
+    "model": "pickup",
+    "config": "/vehicles/pickup/rls_nitro_haulmark_04.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "luke_darrow",
+    "driverName": "Jocelyn Reyes",
+    "builder": "Haulmark Racing",
+    "classIds": [
+      "spray_and_pray"
+    ],
+    "approvedClassIds": [
+      "spray_and_pray"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "ec082b5cc93454d42bf5f70a4128077c688aa0d8604ef6d8c8c92b6ff2c94277",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "4-speed automatic",
+      "induction": "Naturally aspirated + nitrous",
+      "nitrous": true,
+      "years": {
+        "min": 1992,
+        "max": 1997
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x8_alt",
+          "part": "tire_F_235_60_15_alt_sport",
+          "typeHint": "sport"
+        },
+        {
+          "slot": "tire_R_15x14",
+          "part": "tire_R_31_14_15_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "pickup_rollcage",
+          "part": "pickup_rollcage"
+        },
+        {
+          "slot": "pickup_rollcage_bedbars",
+          "part": "pickup_rollcage_bedbars"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.9006141230693,
+      "runId": null,
+      "evidenceConfigSHA256": "aca27d21d6abcf80f1a63ee47fd53b7208e6a699c278541b537feeed4aa50aa7",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/nitrous/final-results.json",
+      "acceptedConfig": "outputs/nitrous/accepted/rls_nitro_haulmark_04/rls_nitro_haulmark_04.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_nitrous_builders"
+  }
+}

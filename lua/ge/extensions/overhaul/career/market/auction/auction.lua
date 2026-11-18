@@ -1,5 +1,6 @@
 -- Used-car auction owner: the vault's state and saved settings, entry and registration payments, the trigger and lifecycle hooks, and the parts they drive.
 -- Notable: the state table is created once and reset in place; sessions and lot parts get copy and reset helpers from here.
+-- Related: view.lua builds UI payloads; AuctionStripOverlay.vue resyncs on UI mount, even outside career.
 
 local constants = require('overhaul/career/market/auction/constants')
 local bidding = require('overhaul/career/market/auction/bidding')
@@ -208,8 +209,15 @@ end
 
 -- The parts, in dependency order: each sees only the parts created before it.
 local parts = {}
+local inactiveHudState = {sessionActive = false}
 local function publishAuctionState(force)
   local send = force == false and statePush.refresh or statePush.send
+  local career = rawget(_G, 'overhaul_career_career')
+  if not career or not career.isActive() or not rawget(_G, 'overhaul_career_economy_playerAttributes') then
+    -- Clear a previously visible strip without touching unloaded career dependencies.
+    send('UsedAuctionState', inactiveHudState)
+    return
+  end
   send('UsedAuctionState', parts.view.requestAuctionHudState())
 end
 parts.motion = motion.create()

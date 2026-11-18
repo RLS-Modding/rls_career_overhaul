@@ -1,0 +1,79 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Name": "Clayton Harker",
+  "Configuration": "Clayton Harker - Street Heat",
+  "Description": "Driver: Clayton Harker. Builder: Blacktop Engineering. Supercharged 6.5L RWD automatic street sedan; copper finish, factory graphics and full interior. Sport tires at all four corners. Alder quarter-mile: 10.927 s at 129.2 mph. Two healthy timed passes and a straight-line braking check.",
+  "Config Type": "Custom",
+  "Author": "RLS Modding",
+  "Drivetrain": "RWD",
+  "Transmission": "Automatic",
+  "Years": {
+    "min": 2016,
+    "max": 2022
+  },
+  "Weight": 2229.058896,
+  "Motorsport": {
+    "version": 1,
+    "id": "bastion/rls_streetheat_blacktop_clarence_callahan",
+    "configId": "rls_streetheat_blacktop_clarence_callahan",
+    "model": "bastion",
+    "config": "/vehicles/bastion/rls_streetheat_blacktop_clarence_callahan.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "clarence_callahan",
+    "driverName": "Clayton Harker",
+    "builder": "Blacktop Engineering",
+    "leagueId": "street_kings",
+    "classIds": [
+      "street_heat"
+    ],
+    "approvedClassIds": [
+      "street_heat"
+    ],
+    "eligibilityStatus": "Assigned primary build class; approved from completed collection records and exact current config hash.",
+    "sourceConfigSHA256": "b858aa56e5abbcc39844de8eead24dd85b491beef4c012df13d27ca9d2635efc",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "8-speed auto",
+      "induction": "Supercharger",
+      "nitrous": false,
+      "years": {
+        "min": 2016,
+        "max": 2022
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_20x11",
+          "part": "tire_F_305_35_20_sport",
+          "typeHint": "sport"
+        },
+        {
+          "slot": "tire_R_20x11",
+          "part": "tire_R_305_35_20_sport",
+          "typeHint": "sport"
+        }
+      ],
+      "selectedRollCageParts": [],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 10.927017519559,
+      "runId": "SH-20261020-074317",
+      "evidenceConfigSHA256": "b858aa56e5abbcc39844de8eead24dd85b491beef4c012df13d27ca9d2635efc",
+      "configHashMatches": true,
+      "status": "recorded-pass-matching-config"
+    },
+    "provenance": {
+      "metadata": "outputs/street-heat/final-results.json",
+      "acceptedConfig": "outputs/street-heat/accepted/rls_streetheat_blacktop_clarence_callahan/rls_streetheat_blacktop_clarence_callahan.pc"
+    },
+    "sourcePack": "rls_street_heat"
+  }
+}

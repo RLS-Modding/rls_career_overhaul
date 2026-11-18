@@ -14,6 +14,7 @@
 
       <div class="dyno-body">
         <div class="vehicle-name">{{ sessionData.vehicleName || "Current Vehicle" }}</div>
+        <p v-if="sessionData.payerLabel" class="description">Paid by {{ sessionData.payerLabel }}.</p>
 
         <p v-if="sessionData.phase === 'offer' || sessionData.phase === 'starting'" class="description">
           <template v-if="sessionData.ownerBenefit"><strong>Free — Owner benefit</strong>. Unlimited pulls.</template><template v-else>Run a three-pull dyno session for <strong><BngIcon class="cur" :type="icons.beamCurrency" />{{ sessionData.fee }}</strong>.</template> Your vehicle will be placed on the dyno, dyno hubs will be fitted to all wheels, and tire wear and thermals will be disabled for the session.
@@ -60,6 +61,18 @@
           {{ sessionData.error }}
         </p>
 
+        <fieldset v-if="['ready','complete','pulling'].includes(sessionData.phase)" class="session-panel" :disabled="busy || sessionData.phase === 'pulling'">
+          <legend>Dyno Load</legend>
+          <HouseMenu aria-label="Dyno load" v-model="selectedLoadPreset" :items="loadPresetOptions" :disabled="busy || sessionData.phase === 'pulling'" />
+          <small>Resistance is matched to your engine and gear. Light lets it accelerate faster; Heavy adds resistance. The load curve stays fixed during the pull.</small>
+        </fieldset>
+        <fieldset v-if="sessionData.transmission?.supported && ['ready','complete','pulling'].includes(sessionData.phase)" class="session-panel" :disabled="busy || sessionData.phase === 'pulling'">
+          <legend>Transmission</legend>
+          <label>Hold gear <HouseMenu aria-label="Hold gear" v-model="selectedHoldGear" :items="holdGearOptions" :disabled="busy || sessionData.phase === 'pulling'" /></label>
+          <small v-if="selectedHoldGear">Start the pull and select Drive. The gearbox shifts to this gear and holds until the run ends.</small>
+          <label v-if="selectedHoldGear && sessionData.transmission.lockupSupported"><input type="checkbox" v-model="converterLockup" /> Converter lockup during pull</label>
+          <small v-if="selectedHoldGear && converterLockup">Uses the fitted lockup clutch; slip can remain if its capacity is exceeded.</small>
+        </fieldset>
         <div v-if="sessionData.phase === 'ready' || sessionData.phase === 'pulling'" class="session-panel">
           <div class="panel-row">
             <span class="panel-label">Session State</span>
@@ -103,14 +116,7 @@
               <span class="metric-value">{{ liveThrottle }}</span>
             </div>
           </div>
-          <div class="panel-row">
-            <span class="panel-label">Accepted Samples</span>
-            <span class="panel-value">{{ sessionData.acceptedSampleCount || 0 }}</span>
-          </div>
-          <div class="panel-row">
-            <span class="panel-label">Rejected Samples</span>
-            <span class="panel-value">{{ sessionData.rejectedSampleCount || 0 }}</span>
-          </div>
+
         </div>
 
         <div v-if="sessionData.phase === 'complete' && displayedResult" class="results-panel">
@@ -124,11 +130,7 @@
             <span class="result-value">{{ formattedTorque }}</span>
             <span class="result-detail">{{ formattedTorqueRpm }}</span>
           </div>
-          <div class="result-card">
-            <span class="result-label">Pull Quality</span>
-            <span class="result-value">{{ resultQualityLabel }}</span>
-            <span class="result-detail">{{ resultSampleCounts }}</span>
-          </div>
+
         </div>
 
         <div v-if="curvePoints" class="curve-panel">
@@ -172,17 +174,11 @@
                 <strong>{{ formatSavedPullDate(pull.savedAt) }}</strong>
                 <small>{{ formatSavedPullSummary(pull) }}</small>
               </span>
-              <BngButton :accent="ACCENTS.secondary" @click.prevent="handleDeleteSavedPull(pull)">Delete</BngButton>
+              <BngButton :accent="ACCENTS.secondary" :disabled="busy" @click.stop.prevent="handleDeleteSavedPull(pull)">Delete</BngButton>
             </label>
           </div>
         </div>
 
-        <div v-if="qualityFlagLabels.length" class="warnings-panel">
-          <span class="warnings-title">Warnings</span>
-          <div class="warning-list">
-            <span v-for="flag in qualityFlagLabels" :key="flag" class="warning-pill">{{ flag }}</span>
-          </div>
-        </div>
 
         <div class="button-row" v-if="sessionData.phase === 'offer' || sessionData.phase === 'starting'">
           <BngButton
@@ -332,7 +328,7 @@
           <li>Apply at least <strong>90% throttle</strong>. Recording starts automatically.</li>
           <li>Hold the same gear and throttle through the pull. Lift below <strong>75% throttle</strong> to finish.</li>
         </ol>
-        <p>Avoid shifting or braking while recording; either will be reported in the pull warnings.</p>
+        <p>For automatics and DCTs, select Hold gear before arming. Choose that gear in the car to engage the hold. It releases when recording ends.</p>
         <label class="how-to-preference">
           <input v-model="dontShowHowToAgain" class="pad-check" type="checkbox" />
           <span>Don't show this automatically again</span>
@@ -354,7 +350,7 @@ import { lua, useBridge } from "@/bridge"
 import { LayoutSingle } from "@/common/layouts"
 import { BngButton, ACCENTS, BngCard, BngCardHeading, BngIcon, icons } from "@/common/components/base"
 import { vBngOnUiNav, vBngScopedNav } from "@/common/directives"
-import { openHouseConfirmation } from "../components/house/index.js"
+import { HouseMenu, openHouseConfirmation } from "../components/house/index.js"
 import { refocusIfLost } from "../composables/useScreenEntryFocus"
 import { callModLua } from "../utils/installLuaBridgeFallbacks"
 
@@ -366,6 +362,10 @@ const showHowTo = ref(false)
 const dontShowHowToAgain = ref(false)
 const selectedComparisonId = ref(null)
 const selectedHubId = ref("rls")
+const selectedHoldGear = ref(0)
+const selectedLoadPreset = ref('standard')
+const loadPresetOptions = [{label:'Light',value:'light'},{label:'Standard',value:'standard'},{label:'Heavy',value:'heavy'}]
+const converterLockup = ref(false)
 const sessionData = ref({
   ownerBenefit: false,
   unlimitedPulls: false,
@@ -457,6 +457,8 @@ function applySessionData(payload) {
   if (sameVehicle && data.resultRevision != null && data.resultRevision === previous.resultRevision) {
     data = { ...data, result: previous.result }
   }
+  if (!Array.isArray(data.savedPulls)) data.savedPulls = []
+  if (data.transmission && !Array.isArray(data.transmission.gears)) data.transmission.gears = []
   sessionData.value = data
   hasSessionData = true
   ++stateVersion
@@ -516,6 +518,8 @@ function onHudShow(snapshot) {
   applySessionData(snapshot?.state)
 }
 
+const holdGearOptions = computed(() => [{label:"Off",value:0}, ...(sessionData.value.transmission?.gears || []).map(g => ({label:"Gear " + g.gear + " — " + Number(g.ratio).toFixed(3) + ":1",value:g.gear}))])
+const transmissionOptions = () => ({holdGear:selectedHoldGear.value,lockup:converterLockup.value && selectedHoldGear.value>0,loadPreset:selectedLoadPreset.value})
 const selectedHubLabel = computed(() => {
   const hubId = sessionData.value?.active ? sessionData.value?.selectedHubId : selectedHubId.value
   const option = sessionData.value?.hubOptions?.find(hub => hub.id === hubId)
@@ -541,11 +545,13 @@ const stageLabel = computed(() => {
 
 const guideText = computed(() => {
   const stage = sessionData.value?.pullStage || currentSample.value?.stage
+  if (currentSample.value?.transmission?.pending) return `Waiting for gear ${currentSample.value.transmission.selectedGear}. Select Drive; slow down if a downshift would overrev.`
+  if (currentSample.value?.transmission?.active) return `Gear ${currentSample.value.transmission.selectedGear} held. Hold throttle; lift to finish.`
   if (stage === "armed") return "Hold the selected high gear steady."
   if (stage === "ready") return "Apply at least 90% throttle to start recording."
   if (stage === "recording") return "Hold gear and throttle; lift below 75% to finish."
   if (stage === "finishing") return "Processing pull."
-  return "Start the engine, select a high gear, then arm the pull."
+  return "Arm the pull to start the engine, then select a high forward gear."
 })
 
 const liveRpm = computed(() => {
@@ -628,6 +634,7 @@ const flagNames = {
   timeout: "Timeout",
   unstableRpm: "Unstable RPM",
   powerSpike: "Power Spike",
+  parkingBrakeInput: "Parking Brake Applied",
   sustainedTorqueRoughness: "Sustained Torque Fluctuation",
 }
 
@@ -737,13 +744,13 @@ async function handleOpenTuning() {
 
 async function handleStartPull() {
   await withBusy(async () => {
-    await lua.overhaul_career_parts_dyno_dynoSession.startPull()
+    await lua.overhaul_career_parts_dyno_dynoSession.startPull(transmissionOptions())
   })
 }
 
 async function handleRetryPull() {
   await withBusy(async () => {
-    await lua.overhaul_career_parts_dyno_dynoSession.retryPull()
+    await lua.overhaul_career_parts_dyno_dynoSession.retryPull(transmissionOptions())
   })
 }
 
@@ -754,18 +761,16 @@ async function handleSavePull() {
 }
 
 async function handleDeleteSavedPull(pull) {
-  if (!pull) return
-  // house popup instead of window.confirm: it has pad focus and B = cancel
-  const confirmed = await openHouseConfirmation("Delete saved pull", "Delete this saved dyno pull?", [
-    { label: "Delete", value: true, extras: { destructive: true } },
-    { label: "Cancel", value: false, extras: { cancel: true, default: true } },
-  ])
-  if (!confirmed) return
-  if (String(selectedComparisonId.value) === String(pull.id)) {
-    selectedComparisonId.value = null
-  }
+  if (!pull || busy.value) return
+  const pullId = pull.id
+  const inventoryId = sessionData.value.inventoryId
   await withBusy(async () => {
-    await lua.overhaul_career_parts_dyno_dynoSession.deleteSavedPull(pull.id)
+    if (!await openHouseConfirmation("Delete Saved Pull", "Delete this saved dyno pull?", [
+      { label: "Delete pull", value: true },
+      { label: "Cancel", value: false, extras: { cancel: true, default: true, outsideCancel: true, accent: ACCENTS.secondary } },
+    ])) return
+    const deleted = await lua.overhaul_career_parts_dyno_dynoSession.deleteSavedPull(pullId, inventoryId)
+    if (deleted && String(selectedComparisonId.value) === String(pullId)) selectedComparisonId.value = null
   })
 }
 

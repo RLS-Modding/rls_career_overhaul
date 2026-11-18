@@ -1,0 +1,13 @@
+{
+  "Name": "Rook",
+  "Configuration": "sk_t2_boss",
+  "Value": 35000,
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": true
+  },
+  "Description": "KCG Bastion \u2014 No Prep Knights boss."
+}

@@ -1,0 +1,30 @@
+{
+  "id": "overhaul_career_economy_streetKnights",
+  "order": 450,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 900,
+    "aliases": []
+  },
+  "routes": [
+    {
+      "name": "overhaul.streetKnights",
+      "order": 120,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "play"
+        }
+      }
+    },
+    {
+      "name": "phone-no-prep-knights",
+      "order": 122,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "car-meets-phone"
+        }
+      }
+    }
+  ]
+}

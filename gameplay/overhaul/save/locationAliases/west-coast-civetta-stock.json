@@ -1,0 +1,14 @@
+{
+  "id": "west-coast-civetta-stock",
+  "version": 1,
+  "aliases": [
+    {
+      "kind": "sellerStockRegeneration",
+      "from": "CivettaDealership",
+      "to": "regenerate",
+      "levelId": "rls_west_coast",
+      "facilityId": "CivettaDealership",
+      "maxSaveVersion": 1
+    }
+  ]
+}

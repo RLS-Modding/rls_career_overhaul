@@ -13,6 +13,7 @@ local M = {}
 local jbeamIO = require('jbeam/io')
 local partDifference = require('overhaul/career/market/valueCalculator/partDifference')
 local brokenParts = require('overhaul/career/market/valueCalculator/brokenParts')
+local configPartValues = require('overhaul/lib/vehicles/configPartValues')
 
 -- Config ------------------------------------------------------------------------------------------
 
@@ -107,7 +108,7 @@ local configInfosByModel
 -- PC part sums only depend on the installed vehicle files, so they persist across sessions in the temp folder, keyed by a stamp of those files; any stamp change rebuilds them from the jbeam.
 local PC_STATS_CACHE_DIR = "/temp/rls_career/valueCalculator/"
 local PC_STATS_CACHE_FILE = PC_STATS_CACHE_DIR .. "pcPartsStats.txt"
-local PC_STATS_CACHE_FORMAT = 1
+local PC_STATS_CACHE_FORMAT = 2
 local persistedPcStats
 local persistedPcStatsStamp
 local persistedPcStatsDirty = false
@@ -641,7 +642,7 @@ local function readPcPartsFile(modelName, configKey)
   }
   for _, candidate in ipairs(candidatePcPaths) do
     local data = jsonReadFile(candidate)
-    if data and type(data.parts) == "table" then
+    if data and (type(data.partsTree) == "table" or type(data.parts) == "table") then
       return data, candidatePcPaths
     end
   end
@@ -649,21 +650,10 @@ local function readPcPartsFile(modelName, configKey)
 end
 
 local function sumPcPartValues(ioCtx, pcData)
-  local accumulatedValue = 0
-  local highestValue = 0
-  local partCount = 0
-  for _, partName in pairs(pcData.parts) do
-    if partName and partName ~= "" then
-      local partData = jbeamIO.getPart(ioCtx, partName)
-      if partData and partData.information and partData.information.value then
-        local partValue = math.max(0, tonumber(partData.information.value) or 0)
-        accumulatedValue = accumulatedValue + partValue
-        highestValue = math.max(highestValue, partValue)
-        partCount = partCount + 1
-      end
-    end
-  end
-  return {total = accumulatedValue, highest = highestValue, count = partCount}
+  return configPartValues.sum(pcData, function(partName)
+    local partData = jbeamIO.getPart(ioCtx, partName)
+    return partData and partData.information and partData.information.value
+  end)
 end
 
 local function getVehiclePcPartsCatalogStats(modelName, configKey, logContext)
@@ -1374,6 +1364,35 @@ local function getVehicleConfigKey(vehicle)
   return vehicle.config.key
 end
 
+local FUEL_TUNE_PREMIUM_PER_GAIN = 0.5
+local FUEL_TUNE_PREMIUM_MAX = 0.10
+local function getFuelSystemValue(vehicle, baseValue)
+  local economy = require('common/rlsFuelEconomy')
+  local hardware, bestGain = 0, 0
+  local function visit(node)
+    if type(node) ~= "table" then return end
+    local state = node.rlsFuelEngineState
+    if type(state) == "table" then
+      if state.conversion and state.conversionPurchased then
+        local kind = state.conversionKind
+        hardware = hardware + (kind == 'nitromethane' and economy.nitroConversionPrice or
+          kind == 'methanol' and economy.methanolConversionPrice or economy.conversionPrice)
+      end
+      hardware = hardware + (require('common/rlsFuelHardware').installedValue(state,{fuelType=state.tune and state.tune.fuelType}) or economy.deliveryStagePrices[tonumber(state.deliveryStage) or 0] or 0)
+      local rating = state.rating
+      if type(rating) == "table" and rating.healthy == true and tonumber(rating.gain) then
+        bestGain = math.max(bestGain, tonumber(rating.gain))
+      end
+    end
+    for key, child in pairs(node) do
+      if key ~= "rlsFuelEngineState" and type(child) == "table" then visit(child) end
+    end
+  end
+  visit(vehicle.partConditions)
+  local premium = math.max(0, tonumber(baseValue) or 0) * clamp(bestGain * FUEL_TUNE_PREMIUM_PER_GAIN, 0, FUEL_TUNE_PREMIUM_MAX)
+  return ADDED_PART_VALUE_FACTOR * hardware + premium
+end
+
 local function getVehicleValue(configBaseValue, vehicle, ignoreDamage)
   local mileage = vehicle.mileage or 0
 
@@ -1405,8 +1424,9 @@ local function getVehicleValue(configBaseValue, vehicle, ignoreDamage)
     repairDetails.price = 0
   end
 
-  return getVehicleValueFromParts(adjustedBaseValue, originalParts, installedParts, vehicle.changedSlots,
+  local value = getVehicleValueFromParts(adjustedBaseValue, originalParts, installedParts, vehicle.changedSlots,
     ageFactor, mileageFactor, repairDetails.price)
+  return value + getFuelSystemValue(vehicle, value + repairDetails.price)
 end
 
 -- Desirability: meet-and-greet reputation raises the value, each accident takes a little off.
@@ -1477,4 +1497,5 @@ M.getNumberOfBrokenParts = getNumberOfBrokenParts
 M.partConditionsNeedRepair = partConditionsNeedRepair
 M.getSpawnedVehicleRepairPrice = getSpawnedVehicleRepairPrice
 M.getPartMarketMultiplier = getPartMarketMultiplier
+M.getFuelSystemValue = getFuelSystemValue
 return M

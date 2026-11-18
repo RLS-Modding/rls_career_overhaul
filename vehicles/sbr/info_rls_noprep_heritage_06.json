@@ -1,0 +1,26 @@
+{
+  "Configuration": "Ivy Rook - No Prep",
+  "Description": "Black Cherry. Tier 5 racer. Highway no-prep quarter-mile: 8.446s at 187.95mph. Heritage Speed. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Heritage Speed",
+  "Name": "Ivy Rook",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 7.2218332206185,
+    "time_1_4": 8.4461974251376,
+    "time_1_8": 5.751928924344,
+    "time_330": 3.9956357793597,
+    "time_60": 1.5805017365118,
+    "velAt_1_4": 84.020697685972,
+    "velAt_1_8": 65.973322363401
+  },
+  "Reaction Time": 0.23580848754547,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

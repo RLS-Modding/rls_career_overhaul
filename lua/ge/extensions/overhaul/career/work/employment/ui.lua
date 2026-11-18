@@ -627,8 +627,13 @@ local function refreshTaskGuidance(guidance, force)
     return
   end
   if shift.phase == "loopComplete" then
-    M.clearTaskGuidance(hooks)
-    purgeIndependent(guidance)
+    if shift.loopChoiceDeferred then
+      showMainTask(guidance, hooks, force, guidance.header, "Assignment complete",
+        "Return to office or use app to continue working or end day", shift)
+    else
+      M.clearTaskGuidance(hooks)
+      purgeIndependent(guidance)
+    end
     return
   end
   if guidance.policy.kindPolicy(shift.jobKind).materialContract and materialsContractActive(guidance) then

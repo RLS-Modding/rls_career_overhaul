@@ -26,6 +26,7 @@
       ref="list"
       v-if="open"
       :style="teleport ? listStyle : undefined"
+      :data-phone-surface="inPhone || undefined"
       @focusout="onFocusOut"
       @keydown="onKeydown"
       class="rls-house menu-list house-menu-list"
@@ -58,6 +59,7 @@
 import { useDropdown } from "../../composables/useDropdown.js"
 import { returnFocusToOpener } from "../../composables/useScreenEntryFocus"
 import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue"
+import { isInsidePhone } from "../../composables/usePhoneScreen.js"
 import { vBngSoundClass, vBngScopedNav, vBngOnUiNav, vBngUiNavScroll } from "@/common/directives"
 
 const props = defineProps({
@@ -70,6 +72,8 @@ const props = defineProps({
   active: { type: Boolean, default: true },
 })
 const emit = defineEmits(["update:modelValue", "change"])
+// Inside the phone, a teleported list keeps the phone's colours.
+const inPhone = isInsidePhone()
 
 const root = ref(null)
 const btn = ref(null)

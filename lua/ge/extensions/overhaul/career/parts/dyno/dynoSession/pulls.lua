@@ -2,6 +2,7 @@
 -- Map: Session data for the HUD and UI; Saved pulls; HUD and pull start; Tuning and maintenance from the bay; Pull samples and results.
 
 local lib = {}
+local saveStore = require('overhaul/lib/save/store')
 local vehicleCommands = require("overhaul/lib/vehicles/vehicleCommands")
 
 -- Reasons the vehicle reports while a pull is still settling; they are not rejected samples.
@@ -11,6 +12,7 @@ local EXPECTED_EXCLUSION_REASONS = {
 }
 
 function lib.create(inputs)
+  local inventory = inputs.inventory or overhaul_career_garage_inventory
   local parts = inputs.parts
   local dynoState = inputs.dynoState
   local dynoSession = inputs.dynoSession
@@ -36,7 +38,7 @@ function lib.create(inputs)
     if not dynoSession.active then
       return parts.vehicle.getCurrentVehicleContext()
     end
-    local vehicles = overhaul_career_garage_inventory.getVehicles()
+    local vehicles = inventory.getVehicles()
     local vehicleData = dynoSession.inventoryId and vehicles[dynoSession.inventoryId] or nil
     return {
       inventoryId = dynoSession.inventoryId,
@@ -164,6 +166,7 @@ function lib.create(inputs)
       phase = view.currentPhase,
       inventoryId = view.inventoryId,
       vehicleName = view.context and view.context.vehicleName or "Current Vehicle",
+      payerLabel = inputs.vehicleAccess and inputs.vehicleAccess.isTeam(view.inventoryId) and 'Racing Team account' or nil,
       selectedHubId = view.selectedHubId,
       hubOptions = view.hubOptions,
       repairRequired = view.repairRequired,
@@ -181,6 +184,8 @@ function lib.create(inputs)
       support = view.supportState,
       pullInProgress = view.pullState and view.pullState.inProgress or false,
       pullStage = view.pullState and view.pullState.pullStage or nil,
+      transmission = parts.history.safeDeepcopy(dynoSession.transmission),
+      transmissionSettings = parts.history.safeDeepcopy(dynoSession.transmissionSettings),
       liveSample = view.pullState and parts.history.safeDeepcopy(view.pullState.liveSample) or nil,
       pullQuality = view.pullState and view.pullState.pullQuality or (view.result and view.result.pullQuality or nil),
       qualityFlags = view.pullState and parts.history.safeDeepcopy(view.pullState.qualityFlags) or (view.result and parts.history.safeDeepcopy(view.result.qualityFlags) or {}),
@@ -225,7 +230,7 @@ function lib.create(inputs)
 
     parts.history.ensurePullHistoryLoaded()
     local inventoryKey = tostring(dynoSession.inventoryId)
-    local vehicleData = overhaul_career_garage_inventory.getVehicles()[dynoSession.inventoryId]
+    local vehicleData = inventory.getVehicles()[dynoSession.inventoryId]
     local entry = parts.history.safeDeepcopy(dynoSession.result)
     entry.liveSample = nil
     entry.id = dynoState.nextPullHistoryId
@@ -241,10 +246,11 @@ function lib.create(inputs)
     dynoSession.result.savedPullId = entry.id
     dynoSession.statusText = "Dyno pull saved to this car's history."
     dynoSession.error = nil
+    if overhaul_career_career.isAutosaveEnabled() then saveStore.request("dynoHistory") end
     return true
   end
 
-  local function deleteSavedPull(pullId)
+  local function deleteSavedPull(pullId, expectedInventoryId)
     parts.history.ensurePullHistoryLoaded()
     pullId = tonumber(pullId)
     if not pullId then
@@ -262,6 +268,10 @@ function lib.create(inputs)
       inventoryId = context.inventoryId
     end
 
+    if expectedInventoryId ~= nil and tostring(expectedInventoryId) ~= tostring(inventoryId) then
+      parts.vehicle.setDynoError("The selected car changed. Select the saved pull again.", dynoSession.phase)
+      return false
+    end
     local inventoryKey = tostring(inventoryId)
     local entries = dynoState.pullHistoryByVehicle[inventoryKey]
     if type(entries) ~= "table" then
@@ -292,6 +302,7 @@ function lib.create(inputs)
     end
     dynoSession.statusText = "Saved dyno pull deleted."
     dynoSession.error = nil
+    if overhaul_career_career.isAutosaveEnabled() then saveStore.request("dynoHistory") end
     return true
   end
 
@@ -329,10 +340,29 @@ function lib.create(inputs)
     return sessionVeh
   end
 
-  dynoState.startPull = function()
+local function setTransmissionSettings(options)
+  options=type(options)=='table' and options or dynoSession.transmissionSettings or {}
+  local gear=tonumber(options.holdGear) or 0
+  local lockup=options.lockup==true and gear>0
+  local loadPreset=options.loadPreset or 'standard'
+  if loadPreset~='light' and loadPreset~='standard' and loadPreset~='heavy' then
+    parts.vehicle.setDynoError("Choose a valid dyno load preset.",dynoSession.phase)
+    return false
+  end
+  local info=dynoSession.transmission or {}
+  local valid=gear==0
+  for _,entry in ipairs(info.gears or {})do if entry.gear==gear then valid=true end end
+  if gear~=gear or gear%1~=0 or gear<0 or not valid or (gear>0 and not info.supported) or (lockup and not info.lockupSupported) then
+    parts.vehicle.setDynoError("This transmission does not support the selected dyno gear or lockup.",dynoSession.phase)
+    return false
+  end
+  dynoSession.transmissionSettings={holdGear=gear,lockup=lockup,loadPreset=loadPreset}
+  return true
+end
+  dynoState.startPull = function(options)
     -- The legacy Angular HUD already routes its primary action through startPull. Reusing that stable action also lets a hot-loaded HUD retry without requiring a newly registered controller method.
     if dynoSession.active and dynoSession.phase == "complete" then
-      return dynoState.retryPull()
+      return dynoState.retryPull(options)
     end
 
     if not dynoSession.active or dynoSession.phase ~= "ready" then
@@ -351,6 +381,11 @@ function lib.create(inputs)
       return false
     end
 
+    if not require('overhaul/career/parts/dyno/dynoSession/driver').enter(sessionVeh) then
+      parts.vehicle.setDynoError("The driver's seat is unavailable. Return to the driver's seat before arming.", "ready")
+      return false
+    end
+    if not setTransmissionSettings(options) then return false end
     local pullId = string.format("%d_%d_%d", sessionVeh:getID(), os.time(), math.random(1000, 9999))
     dynoSession.pullsUsed = (tonumber(dynoSession.pullsUsed) or 0) + 1
 
@@ -372,11 +407,12 @@ function lib.create(inputs)
     parts.vehicle.setVehicleFreeze(sessionVeh, false)
 
     sessionVeh:queueLuaCommand(string.format([[
+      extensions.load("overhaulDynoTransmission")
       extensions.load("overhaulDynoSession")
       if overhaulDynoSession and overhaulDynoSession.startPull then
         %s
       end
-    ]], vehicleCommands.call("overhaulDynoSession", "startPull", pullId)))
+    ]], vehicleCommands.call("overhaulDynoSession", "startPull", pullId, dynoSession.transmissionSettings)))
 
     pushDynoHudState(true)
 
@@ -384,7 +420,8 @@ function lib.create(inputs)
   end
 
   -- Retry: the car is moved back onto the dyno spot and the next pull is armed after a short delay.
-  dynoState.retryPull = function()
+  dynoState.retryPull = function(options)
+    if not setTransmissionSettings(options) then return false end
     if not dynoSession.active or dynoSession.phase ~= "complete" then
       parts.vehicle.setDynoError("A completed dyno pull is required before retrying.", dynoSession.phase)
       pushDynoHudState(true)
@@ -496,7 +533,7 @@ function lib.create(inputs)
     parts.vehicle.protectDynoSteering(currentVeh)
     parts.vehicle.setVehicleFreeze(currentVeh, true)
     parts.vehicle.setVehicleIgnition(currentVeh, 0)
-    be:enterVehicle(0, currentVeh)
+    require('overhaul/career/parts/dyno/dynoSession/driver').enter(currentVeh)
     parts.vehicle.refreshDynoCamera(currentVeh)
     dynoSession.error = nil
     dynoSession.statusText = dynoSession.phase == "complete" and
@@ -512,7 +549,7 @@ function lib.create(inputs)
     end
 
     parts.setup.syncTunedVarsToOriginalConfig()
-    local currentVehId = overhaul_career_garage_inventory.getVehicleIdFromInventoryId(dynoSession.inventoryId)
+    local currentVehId = inventory.getVehicleIdFromInventoryId(dynoSession.inventoryId)
     local currentVeh = currentVehId and getObjectByID(currentVehId) or nil
     local displacedTransform = dynoState.serviceDisplacedTransform
     if not displacedTransform and currentVeh and parts.vehicle.isDisplacedFromDyno(currentVeh) then
@@ -573,6 +610,7 @@ function lib.create(inputs)
       gear = tonumber(sample.gear) or 0,
       throttle = tonumber(sample.throttle) or 0,
       brake = tonumber(sample.brake) or 0,
+      transmission = parts.history.safeDeepcopy(sample.transmission),
       wheelPower = tonumber(sample.wheelPower) or 0,
       wheelTorque = tonumber(sample.wheelTorque) or 0,
       rawWheelTorque = tonumber(sample.rawWheelTorque) or 0,
@@ -646,7 +684,7 @@ function lib.create(inputs)
       return
     end
 
-    local currentVehId = overhaul_career_garage_inventory.getVehicleIdFromInventoryId(dynoSession.inventoryId)
+    local currentVehId = inventory.getVehicleIdFromInventoryId(dynoSession.inventoryId)
     if not currentVehId then
       if dynoSession.serviceOpen then
         return

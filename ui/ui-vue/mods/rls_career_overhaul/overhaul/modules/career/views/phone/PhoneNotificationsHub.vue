@@ -34,6 +34,7 @@
 <script setup>
 import { computed } from 'vue'
 import { lua } from '@/bridge'
+import { setNotificationCenterReturn, usePhoneNotificationCenter } from '../../composables/usePhoneNotificationCenter'
 import {
   useNotificationAccentStyle,
   usePhoneNotificationSettings,
@@ -50,13 +51,21 @@ const {
 
 useNotificationSettingsLifecycle()
 
+const { entries: notificationCenterEntries } = usePhoneNotificationCenter()
+const notificationCenterMeta = computed(() => {
+  const count = notificationCenterEntries.value.length
+  return count === 1 ? '1 notification' : `${count || 'No'} notifications`
+})
+
 const notificationLinks = computed(() => [
+  { route: 'phone-notification-center', title: 'Notification Center', meta: notificationCenterMeta.value },
   { route: 'phone-notification-app-settings', title: 'App notifications', meta: appNotificationsSummaryMeta.value },
-  { route: 'phone-notification-lock-screen', title: 'Lock screen notifications', meta: lockScreenSummaryMeta.value },
+  { route: 'phone-notification-lock-screen', title: 'Closed-phone banners', meta: lockScreenSummaryMeta.value },
   { route: 'phone-notification-dnd', title: 'Do not disturb', meta: dndSummaryMeta.value },
 ])
 
 function goTo(name) {
+  if (name === 'phone-notification-center') setNotificationCenterReturn({ name: 'phone-notification-settings' })
   lua.extensions.ui_router.navigate(name)
 }
 </script>

@@ -32,10 +32,16 @@ function partFactory.new(inputs)
   end
 
   local function syncRuntimeState(inventoryId)
+    local access = inputs.getDynoAccess and inputs.getDynoAccess(inventoryId)
+    if access then
+      if not access.syncMaintenance(inventoryId) then error('The team dyno vehicle is unavailable.') end
+      return
+    end
     overhaul_vehicles_maintenanceBridge.syncVehicleMaintenance(tonumber(inventoryId))
   end
 
   local function syncDriveLock(inventoryId)
+    if inputs.getDynoAccess and inputs.getDynoAccess(inventoryId) then return end
     overhaul_vehicles_maintenanceBridge.syncMaintenanceDriveLock(tonumber(inventoryId))
   end
 
@@ -240,7 +246,7 @@ function partFactory.new(inputs)
       return nil, nil, nil, nil, buildErrorResult("Maintenance mode is not enabled.")
     end
 
-    inventoryId = tonumber(inventoryId)
+    inventoryId = inputs.normalizeInventoryId and inputs.normalizeInventoryId(inventoryId) or tonumber(inventoryId)
     if not inventoryId then
       return nil, nil, nil, nil, buildErrorResult("Invalid vehicle.")
     end
@@ -343,6 +349,9 @@ function partFactory.new(inputs)
 
   local function performService(inventoryId, categoryName, itemName, paymentContext)
     paymentContext = require("overhaul/lib/finance/metadata").copy(paymentContext or {})
+    local access = inputs.getDynoAccess and inputs.getDynoAccess(inventoryId)
+    local owner = access and access.service(inventoryId)
+    if owner then paymentContext = {mode = 'businessAccount', businessType = 'racingTeam', businessId = owner.businessId} end
     paymentContext.inventoryId = inventoryId
     local vehicleData, maintenanceState, uiState, itemDefinition, errorResult = prepareAction(inventoryId, categoryName, itemName)
     if errorResult then
@@ -401,7 +410,7 @@ function partFactory.new(inputs)
     if computerState.sessionMode ~= "dyno" then
       return nil
     end
-    local sameVehicle = tonumber(inventoryId) == tonumber(computerState.activeInventoryId)
+    local sameVehicle = inventoryId ~= nil and tostring(inventoryId) == tostring(computerState.activeInventoryId)
     if sameVehicle and inputs.DYNO_MAINTENANCE_CATEGORIES[tostring(categoryName)] then
       return nil
     end

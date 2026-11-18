@@ -3,6 +3,27 @@
 
 local recipes = {}
 
+local function recipeValuesEqual(left, right, root)
+  if type(left) ~= "table" or type(right) ~= "table" then
+    -- Match the digest/save representation so slider rounding survives reload.
+    return type(left) == type(right) and tostring(left) == tostring(right)
+  end
+  for key, value in pairs(left) do
+    local digest = root and (key == "signature" or key == "recipeSignature")
+    if not digest and not recipeValuesEqual(value, right[key]) then return false end
+  end
+  for key in pairs(right) do
+    local digest = root and (key == "signature" or key == "recipeSignature")
+    if not digest and left[key] == nil then return false end
+  end
+  return true
+end
+
+-- Digest metadata is root-only; nested slots with these names are hardware.
+function recipes.recipesMatch(left, right)
+  return type(left) == "table" and type(right) == "table" and recipeValuesEqual(left, right, true)
+end
+
 function recipes.create(inputs)
   local parts = inputs.parts
 
@@ -142,7 +163,8 @@ function recipes.create(inputs)
     local certification = package and package.engineShopCertification
     if not certification or not certification.recipeSignature then return end
     local recipe = getRecipeFromPackage(package)
-    if not recipe or tostring(recipe.signature) ~= tostring(certification.recipeSignature) then
+    if not recipe or tostring(recipe.signature) ~= tostring(certification.recipeSignature)
+        or (certification.recipe and not recipes.recipesMatch(recipe, certification.recipe)) then
       package.engineShopCertification = nil
     end
   end

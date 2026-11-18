@@ -1,0 +1,56 @@
+{
+  "Configuration": "30ft Gooseneck Raised Hitch (Wood Planks 5600kg)",
+  "Description": "30ft Hydraulic tilt gooseneck trailer with heavy duty suspension and a raised hitch, loaded with 5600kg of wood planks",
+  "Value": 26000,
+  "Weight": 8845,
+  "hasLoad": true,
+  "thumbnailConfig": {
+    "modelCamEnabled": false,
+    "configCamEnabled": false
+  },
+  "defaultMultiPaintSetup": {
+    "name": "rls_goose_wood_30_raised_hitch Multi Paint Setup",
+    "paint1": {
+      "baseColor": [
+        0.28000000119209,
+        0.050000000745058,
+        0.090000003576279,
+        1.2000000476837
+      ],
+      "class": "hidden",
+      "clearcoat": 1,
+      "clearcoatRoughness": 0.119999997,
+      "metallic": 0.5,
+      "name": "rls_goose_wood_30_raised_hitch Paint 1",
+      "roughness": 0.600000024
+    },
+    "paint2": {
+      "baseColor": [
+        0.28000000119209,
+        0.050000000745058,
+        0.090000003576279,
+        1.2000000476837
+      ],
+      "class": "hidden",
+      "clearcoat": 1,
+      "clearcoatRoughness": 0.119999997,
+      "metallic": 0.5,
+      "name": "rls_goose_wood_30_raised_hitch Paint 2",
+      "roughness": 0.600000024
+    },
+    "paint3": {
+      "baseColor": [
+        0.28000000119209,
+        0.050000000745058,
+        0.090000003576279,
+        1.2000000476837
+      ],
+      "class": "hidden",
+      "clearcoat": 1,
+      "clearcoatRoughness": 0.119999997,
+      "metallic": 0.5,
+      "name": "rls_goose_wood_30_raised_hitch Paint 3",
+      "roughness": 0.600000024
+    }
+  }
+}

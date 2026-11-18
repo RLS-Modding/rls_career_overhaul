@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "alignmentDistanceMeters": 8,
+  "mergeAdvanceMaxMeters": 8,
+  "mergeAdvanceFraction": 0.35,
+  "pullOutDistanceMeters": 7,
+  "forwardControlMaxMeters": 8,
+  "forwardControlFraction": 0.55,
+  "roadControlMaxMeters": 5,
+  "roadControlFraction": 0.4,
+  "leadInDistanceMeters": 3,
+  "mergeCurveStepsCount": 8,
+  "laneOverrunDistanceMeters": 2,
+  "minimumTimeoutSeconds": 30,
+  "timeoutSpeedMetersPerSecond": 2,
+  "timeoutPaddingSeconds": 15
+}

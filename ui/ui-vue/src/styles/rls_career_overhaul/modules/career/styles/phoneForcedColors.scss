@@ -1,0 +1,30 @@
+/* RLS Career Overhaul · https://github.com/RLS-Modding/rls_career_overhaul ; additional permission: licenses/RLS-BeamNG-Permission.txt
+ * Copyright (C) RLS Modding
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
+// Windows High Contrast makes the game UI report forced colours. Chromium then
+// swaps every colour for a system one and drops background fills and gradients,
+// so phone cards, icon tiles, wallpapers, button shapes and money or status
+// colours vanish. Only borders and text survive.
+//
+// The phone is a device in the game world with its own palette, so it keeps it.
+// Its sections, tiles and colour-coded fills (money, patience, selected options,
+// status) only survive with this opt-out; mapping them to system colours would
+// need rules in every one of dozens of bespoke apps and every add-on app.
+// forced-color-adjust inherits, so the roots are enough.
+@media (forced-colors: active) {
+  // Phone content teleported out of the shell opts in with data-phone-surface
+  // on its outermost element. Shared components bind it only inside the phone
+  // (isInsidePhone() in usePhoneScreen.js). A component inside a phone popup is
+  // outside the shell's tree, so it reads false; the popup rule below covers it
+  // unless it teleports again.
+  :where(.phone-shell, .phone-lock-root, .phone-tutorial-root, [data-phone-surface]),
+  // Popups, dropdowns and tooltips render in the game's shared layers, outside
+  // the shell. While the phone is open, every popup and popover keeps its own
+  // colours: in practice they come from the phone. Once it closes, they follow
+  // the system colours again.
+  body:has(.phone-shell.phone-entered) :where(.popup-wrapper, .popover-container) {
+    forced-color-adjust: none;
+  }
+}

@@ -1,0 +1,1433 @@
+{
+    "RLS_FuelFlame_gasoline_1":  {
+                                     "name":  "RLS_FuelFlame_gasoline_1",
+                                     "class":  "ParticleData",
+                                     "textureName":  "art/shapes/particles/afterfire_orange_flame2.dds",
+                                     "animTexName":  "art/shapes/particles/afterfire_orange_flame2.dds",
+                                     "lifetimeMS":  120,
+                                     "lifetimeVarianceMS":  20,
+                                     "inheritedVelFactor":  1,
+                                     "dragCoefficient":  1,
+                                     "gravityCoefficient":  -0.08,
+                                     "spinRandomMin":  -180,
+                                     "spinRandomMax":  180,
+                                     "spinSpeed":  10,
+                                     "colors":  [
+                                                    [
+                                                        1.45,
+                                                        1.15,
+                                                        0.65,
+                                                        0
+                                                    ],
+                                                    [
+                                                        1.65,
+                                                        1.35,
+                                                        0.75,
+                                                        0.75
+                                                    ],
+                                                    [
+                                                        1.55,
+                                                        0.75,
+                                                        0.25,
+                                                        0.41250000000000003
+                                                    ],
+                                                    [
+                                                        1,
+                                                        0.35,
+                                                        0.1,
+                                                        0
+                                                    ]
+                                                ],
+                                     "sizes":  [
+                                                   0.0176,
+                                                   0.055,
+                                                   0.22,
+                                                   0
+                                               ],
+                                     "times":  [
+                                                   0,
+                                                   0.12,
+                                                   0.35,
+                                                   1
+                                               ],
+                                     "useInvAlpha":  true
+                                 },
+    "RLS_FuelFlame_gasoline_2":  {
+                                     "name":  "RLS_FuelFlame_gasoline_2",
+                                     "class":  "ParticleData",
+                                     "textureName":  "art/shapes/particles/afterfire_orange_flame2.dds",
+                                     "animTexName":  "art/shapes/particles/afterfire_orange_flame2.dds",
+                                     "lifetimeMS":  180,
+                                     "lifetimeVarianceMS":  20,
+                                     "inheritedVelFactor":  1,
+                                     "dragCoefficient":  1,
+                                     "gravityCoefficient":  -0.08,
+                                     "spinRandomMin":  -180,
+                                     "spinRandomMax":  180,
+                                     "spinSpeed":  10,
+                                     "colors":  [
+                                                    [
+                                                        1.45,
+                                                        1.15,
+                                                        0.65,
+                                                        0
+                                                    ],
+                                                    [
+                                                        1.65,
+                                                        1.35,
+                                                        0.75,
+                                                        0.75
+                                                    ],
+                                                    [
+                                                        1.55,
+                                                        0.75,
+                                                        0.25,
+                                                        0.41250000000000003
+                                                    ],
+                                                    [
+                                                        1,
+                                                        0.35,
+                                                        0.1,
+                                                        0
+                                                    ]
+                                                ],
+                                     "sizes":  [
+                                                   0.0336,
+                                                   0.105,
+                                                   0.42,
+                                                   0
+                                               ],
+                                     "times":  [
+                                                   0,
+                                                   0.12,
+                                                   0.35,
+                                                   1
+                                               ],
+                                     "useInvAlpha":  true
+                                 },
+    "RLS_FuelFlame_gasoline_3":  {
+                                     "name":  "RLS_FuelFlame_gasoline_3",
+                                     "class":  "ParticleData",
+                                     "textureName":  "art/shapes/particles/afterfire_orange_flame2.dds",
+                                     "animTexName":  "art/shapes/particles/afterfire_orange_flame2.dds",
+                                     "lifetimeMS":  240,
+                                     "lifetimeVarianceMS":  20,
+                                     "inheritedVelFactor":  1,
+                                     "dragCoefficient":  1,
+                                     "gravityCoefficient":  -0.08,
+                                     "spinRandomMin":  -180,
+                                     "spinRandomMax":  180,
+                                     "spinSpeed":  10,
+                                     "colors":  [
+                                                    [
+                                                        1.45,
+                                                        1.15,
+                                                        0.65,
+                                                        0
+                                                    ],
+                                                    [
+                                                        1.65,
+                                                        1.35,
+                                                        0.75,
+                                                        0.75
+                                                    ],
+                                                    [
+                                                        1.55,
+                                                        0.75,
+                                                        0.25,
+                                                        0.41250000000000003
+                                                    ],
+                                                    [
+                                                        1,
+                                                        0.35,
+                                                        0.1,
+                                                        0
+                                                    ]
+                                                ],
+                                     "sizes":  [
+                                                   0.056,
+                                                   0.175,
+                                                   0.7,
+                                                   0
+                                               ],
+                                     "times":  [
+                                                   0,
+                                                   0.12,
+                                                   0.35,
+                                                   1
+                                               ],
+                                     "useInvAlpha":  true
+                                 },
+    "RLS_FuelFlame_diesel_1":  {
+                                   "name":  "RLS_FuelFlame_diesel_1",
+                                   "class":  "ParticleData",
+                                   "textureName":  "art/shapes/particles/afterfire_orange_flame2.dds",
+                                   "animTexName":  "art/shapes/particles/afterfire_orange_flame2.dds",
+                                   "lifetimeMS":  120,
+                                   "lifetimeVarianceMS":  20,
+                                   "inheritedVelFactor":  1,
+                                   "dragCoefficient":  1,
+                                   "gravityCoefficient":  -0.08,
+                                   "spinRandomMin":  -180,
+                                   "spinRandomMax":  180,
+                                   "spinSpeed":  10,
+                                   "colors":  [
+                                                  [
+                                                      2,
+                                                      1.15,
+                                                      0.6,
+                                                      0
+                                                  ],
+                                                  [
+                                                      2,
+                                                      1.15,
+                                                      0.6,
+                                                      0.85
+                                                  ],
+                                                  [
+                                                      2,
+                                                      1.15,
+                                                      0.6,
+                                                      0.35
+                                                  ],
+                                                  [
+                                                      2,
+                                                      1.15,
+                                                      0.6,
+                                                      0
+                                                  ]
+                                              ],
+                                   "sizes":  [
+                                                 0.0176,
+                                                 0.055,
+                                                 0.22,
+                                                 0
+                                             ],
+                                   "times":  [
+                                                 0,
+                                                 0.12,
+                                                 0.35,
+                                                 1
+                                             ],
+                                   "useInvAlpha":  true
+                               },
+    "RLS_FuelFlame_diesel_2":  {
+                                   "name":  "RLS_FuelFlame_diesel_2",
+                                   "class":  "ParticleData",
+                                   "textureName":  "art/shapes/particles/afterfire_orange_flame2.dds",
+                                   "animTexName":  "art/shapes/particles/afterfire_orange_flame2.dds",
+                                   "lifetimeMS":  180,
+                                   "lifetimeVarianceMS":  20,
+                                   "inheritedVelFactor":  1,
+                                   "dragCoefficient":  1,
+                                   "gravityCoefficient":  -0.08,
+                                   "spinRandomMin":  -180,
+                                   "spinRandomMax":  180,
+                                   "spinSpeed":  10,
+                                   "colors":  [
+                                                  [
+                                                      2,
+                                                      1.15,
+                                                      0.6,
+                                                      0
+                                                  ],
+                                                  [
+                                                      2,
+                                                      1.15,
+                                                      0.6,
+                                                      0.85
+                                                  ],
+                                                  [
+                                                      2,
+                                                      1.15,
+                                                      0.6,
+                                                      0.35
+                                                  ],
+                                                  [
+                                                      2,
+                                                      1.15,
+                                                      0.6,
+                                                      0
+                                                  ]
+                                              ],
+                                   "sizes":  [
+                                                 0.0336,
+                                                 0.105,
+                                                 0.42,
+                                                 0
+                                             ],
+                                   "times":  [
+                                                 0,
+                                                 0.12,
+                                                 0.35,
+                                                 1
+                                             ],
+                                   "useInvAlpha":  true
+                               },
+    "RLS_FuelFlame_diesel_3":  {
+                                   "name":  "RLS_FuelFlame_diesel_3",
+                                   "class":  "ParticleData",
+                                   "textureName":  "art/shapes/particles/afterfire_orange_flame2.dds",
+                                   "animTexName":  "art/shapes/particles/afterfire_orange_flame2.dds",
+                                   "lifetimeMS":  240,
+                                   "lifetimeVarianceMS":  20,
+                                   "inheritedVelFactor":  1,
+                                   "dragCoefficient":  1,
+                                   "gravityCoefficient":  -0.08,
+                                   "spinRandomMin":  -180,
+                                   "spinRandomMax":  180,
+                                   "spinSpeed":  10,
+                                   "colors":  [
+                                                  [
+                                                      2,
+                                                      1.15,
+                                                      0.6,
+                                                      0
+                                                  ],
+                                                  [
+                                                      2,
+                                                      1.15,
+                                                      0.6,
+                                                      0.85
+                                                  ],
+                                                  [
+                                                      2,
+                                                      1.15,
+                                                      0.6,
+                                                      0.35
+                                                  ],
+                                                  [
+                                                      2,
+                                                      1.15,
+                                                      0.6,
+                                                      0
+                                                  ]
+                                              ],
+                                   "sizes":  [
+                                                 0.056,
+                                                 0.175,
+                                                 0.7,
+                                                 0
+                                             ],
+                                   "times":  [
+                                                 0,
+                                                 0.12,
+                                                 0.35,
+                                                 1
+                                             ],
+                                   "useInvAlpha":  true
+                               },
+    "RLS_FuelFlame_methanol_1":  {
+                                     "name":  "RLS_FuelFlame_methanol_1",
+                                     "class":  "ParticleData",
+                                     "textureName":  "art/shapes/particles/afterfire_orange_flame2.dds",
+                                     "animTexName":  "art/shapes/particles/afterfire_orange_flame2.dds",
+                                     "lifetimeMS":  120,
+                                     "lifetimeVarianceMS":  20,
+                                     "inheritedVelFactor":  1,
+                                     "dragCoefficient":  1,
+                                     "gravityCoefficient":  -0.08,
+                                     "spinRandomMin":  -180,
+                                     "spinRandomMax":  180,
+                                     "spinSpeed":  10,
+                                     "colors":  [
+                                                    [
+                                                        1.45,
+                                                        1.15,
+                                                        0.65,
+                                                        0
+                                                    ],
+                                                    [
+                                                        1.65,
+                                                        1.35,
+                                                        0.75,
+                                                        0.28
+                                                    ],
+                                                    [
+                                                        1.55,
+                                                        0.75,
+                                                        0.25,
+                                                        0.15400000000000003
+                                                    ],
+                                                    [
+                                                        1,
+                                                        0.35,
+                                                        0.1,
+                                                        0
+                                                    ]
+                                                ],
+                                     "sizes":  [
+                                                   0.0176,
+                                                   0.055,
+                                                   0.22,
+                                                   0
+                                               ],
+                                     "times":  [
+                                                   0,
+                                                   0.12,
+                                                   0.35,
+                                                   1
+                                               ],
+                                     "useInvAlpha":  true
+                                 },
+    "RLS_FuelFlame_methanol_2":  {
+                                     "name":  "RLS_FuelFlame_methanol_2",
+                                     "class":  "ParticleData",
+                                     "textureName":  "art/shapes/particles/afterfire_orange_flame2.dds",
+                                     "animTexName":  "art/shapes/particles/afterfire_orange_flame2.dds",
+                                     "lifetimeMS":  180,
+                                     "lifetimeVarianceMS":  20,
+                                     "inheritedVelFactor":  1,
+                                     "dragCoefficient":  1,
+                                     "gravityCoefficient":  -0.08,
+                                     "spinRandomMin":  -180,
+                                     "spinRandomMax":  180,
+                                     "spinSpeed":  10,
+                                     "colors":  [
+                                                    [
+                                                        1.45,
+                                                        1.15,
+                                                        0.65,
+                                                        0
+                                                    ],
+                                                    [
+                                                        1.65,
+                                                        1.35,
+                                                        0.75,
+                                                        0.28
+                                                    ],
+                                                    [
+                                                        1.55,
+                                                        0.75,
+                                                        0.25,
+                                                        0.15400000000000003
+                                                    ],
+                                                    [
+                                                        1,
+                                                        0.35,
+                                                        0.1,
+                                                        0
+                                                    ]
+                                                ],
+                                     "sizes":  [
+                                                   0.0336,
+                                                   0.105,
+                                                   0.42,
+                                                   0
+                                               ],
+                                     "times":  [
+                                                   0,
+                                                   0.12,
+                                                   0.35,
+                                                   1
+                                               ],
+                                     "useInvAlpha":  true
+                                 },
+    "RLS_FuelFlame_methanol_3":  {
+                                     "name":  "RLS_FuelFlame_methanol_3",
+                                     "class":  "ParticleData",
+                                     "textureName":  "art/shapes/particles/afterfire_orange_flame2.dds",
+                                     "animTexName":  "art/shapes/particles/afterfire_orange_flame2.dds",
+                                     "lifetimeMS":  240,
+                                     "lifetimeVarianceMS":  20,
+                                     "inheritedVelFactor":  1,
+                                     "dragCoefficient":  1,
+                                     "gravityCoefficient":  -0.08,
+                                     "spinRandomMin":  -180,
+                                     "spinRandomMax":  180,
+                                     "spinSpeed":  10,
+                                     "colors":  [
+                                                    [
+                                                        1.45,
+                                                        1.15,
+                                                        0.65,
+                                                        0
+                                                    ],
+                                                    [
+                                                        1.65,
+                                                        1.35,
+                                                        0.75,
+                                                        0.28
+                                                    ],
+                                                    [
+                                                        1.55,
+                                                        0.75,
+                                                        0.25,
+                                                        0.15400000000000003
+                                                    ],
+                                                    [
+                                                        1,
+                                                        0.35,
+                                                        0.1,
+                                                        0
+                                                    ]
+                                                ],
+                                     "sizes":  [
+                                                   0.056,
+                                                   0.175,
+                                                   0.7,
+                                                   0
+                                               ],
+                                     "times":  [
+                                                   0,
+                                                   0.12,
+                                                   0.35,
+                                                   1
+                                               ],
+                                     "useInvAlpha":  true
+                                 },
+    "RLS_FuelFlame_nitromethane_1":  {
+                                         "name":  "RLS_FuelFlame_nitromethane_1",
+                                         "class":  "ParticleData",
+                                         "textureName":  "/art/rlsFuel/flames/nitromethane_neutral.png",
+                                         "animTexName":  "/art/rlsFuel/flames/nitromethane_neutral.png",
+                                         "lifetimeMS":  120,
+                                         "lifetimeVarianceMS":  20,
+                                         "inheritedVelFactor":  1,
+                                         "dragCoefficient":  1,
+                                         "gravityCoefficient":  -0.08,
+                                         "spinRandomMin":  -45,
+                                         "spinRandomMax":  45,
+                                         "spinSpeed":  0,
+                                         "colors":  [
+                                                        [
+                                                            1,
+                                                            0.96,
+                                                            0.5,
+                                                            0
+                                                        ],
+                                                        [
+                                                            1,
+                                                            0.9,
+                                                            0.2,
+                                                            1
+                                                        ],
+                                                        [
+                                                            1,
+                                                            0.65,
+                                                            0.04,
+                                                            0.6
+                                                        ],
+                                                        [
+                                                            1,
+                                                            0.45,
+                                                            0.01,
+                                                            0
+                                                        ]
+                                                    ],
+                                         "sizes":  [
+                                                       0.0176,
+                                                       0.0484,
+                                                       0.143,
+                                                       0
+                                                   ],
+                                         "times":  [
+                                                       0,
+                                                       0.12,
+                                                       0.35,
+                                                       1
+                                                   ],
+                                         "useInvAlpha":  true
+                                     },
+    "RLS_FuelFlame_nitromethane_2":  {
+                                         "name":  "RLS_FuelFlame_nitromethane_2",
+                                         "class":  "ParticleData",
+                                         "textureName":  "/art/rlsFuel/flames/nitromethane_neutral.png",
+                                         "animTexName":  "/art/rlsFuel/flames/nitromethane_neutral.png",
+                                         "lifetimeMS":  180,
+                                         "lifetimeVarianceMS":  20,
+                                         "inheritedVelFactor":  1,
+                                         "dragCoefficient":  1,
+                                         "gravityCoefficient":  -0.08,
+                                         "spinRandomMin":  -45,
+                                         "spinRandomMax":  45,
+                                         "spinSpeed":  0,
+                                         "colors":  [
+                                                        [
+                                                            1,
+                                                            0.96,
+                                                            0.5,
+                                                            0
+                                                        ],
+                                                        [
+                                                            1,
+                                                            0.9,
+                                                            0.2,
+                                                            1
+                                                        ],
+                                                        [
+                                                            1,
+                                                            0.65,
+                                                            0.04,
+                                                            0.6
+                                                        ],
+                                                        [
+                                                            1,
+                                                            0.45,
+                                                            0.01,
+                                                            0
+                                                        ]
+                                                    ],
+                                         "sizes":  [
+                                                       0.0336,
+                                                       0.0924,
+                                                       0.273,
+                                                       0
+                                                   ],
+                                         "times":  [
+                                                       0,
+                                                       0.12,
+                                                       0.35,
+                                                       1
+                                                   ],
+                                         "useInvAlpha":  true
+                                     },
+    "RLS_FuelFlame_nitromethane_3":  {
+                                         "name":  "RLS_FuelFlame_nitromethane_3",
+                                         "class":  "ParticleData",
+                                         "textureName":  "/art/rlsFuel/flames/nitromethane_neutral.png",
+                                         "animTexName":  "/art/rlsFuel/flames/nitromethane_neutral.png",
+                                         "lifetimeMS":  240,
+                                         "lifetimeVarianceMS":  20,
+                                         "inheritedVelFactor":  1,
+                                         "dragCoefficient":  1,
+                                         "gravityCoefficient":  -0.08,
+                                         "spinRandomMin":  -45,
+                                         "spinRandomMax":  45,
+                                         "spinSpeed":  0,
+                                         "colors":  [
+                                                        [
+                                                            1,
+                                                            0.96,
+                                                            0.5,
+                                                            0
+                                                        ],
+                                                        [
+                                                            1,
+                                                            0.9,
+                                                            0.2,
+                                                            1
+                                                        ],
+                                                        [
+                                                            1,
+                                                            0.65,
+                                                            0.04,
+                                                            0.6
+                                                        ],
+                                                        [
+                                                            1,
+                                                            0.45,
+                                                            0.01,
+                                                            0
+                                                        ]
+                                                    ],
+                                         "sizes":  [
+                                                       0.056,
+                                                       0.154,
+                                                       0.455,
+                                                       0
+                                                   ],
+                                         "times":  [
+                                                       0,
+                                                       0.12,
+                                                       0.35,
+                                                       1
+                                                   ],
+                                         "useInvAlpha":  true
+                                     },
+    "RLS_FuelFlame_ethanol_1":  {
+                                    "name":  "RLS_FuelFlame_ethanol_1",
+                                    "class":  "ParticleData",
+                                    "textureName":  "art/shapes/particles/afterfire_orange_flame2.dds",
+                                    "animTexName":  "art/shapes/particles/afterfire_orange_flame2.dds",
+                                    "lifetimeMS":  120,
+                                    "lifetimeVarianceMS":  20,
+                                    "inheritedVelFactor":  1,
+                                    "dragCoefficient":  1,
+                                    "gravityCoefficient":  -0.08,
+                                    "spinRandomMin":  -180,
+                                    "spinRandomMax":  180,
+                                    "spinSpeed":  10,
+                                    "colors":  [
+                                                   [
+                                                       1.45,
+                                                       1.15,
+                                                       0.65,
+                                                       0
+                                                   ],
+                                                   [
+                                                       1.65,
+                                                       1.35,
+                                                       0.75,
+                                                       0.48
+                                                   ],
+                                                   [
+                                                       1.55,
+                                                       0.75,
+                                                       0.25,
+                                                       0.264
+                                                   ],
+                                                   [
+                                                       1,
+                                                       0.35,
+                                                       0.1,
+                                                       0
+                                                   ]
+                                               ],
+                                    "sizes":  [
+                                                  0.0176,
+                                                  0.055,
+                                                  0.22,
+                                                  0
+                                              ],
+                                    "times":  [
+                                                  0,
+                                                  0.12,
+                                                  0.35,
+                                                  1
+                                              ],
+                                    "useInvAlpha":  true
+                                },
+    "RLS_FuelFlame_ethanol_2":  {
+                                    "name":  "RLS_FuelFlame_ethanol_2",
+                                    "class":  "ParticleData",
+                                    "textureName":  "art/shapes/particles/afterfire_orange_flame2.dds",
+                                    "animTexName":  "art/shapes/particles/afterfire_orange_flame2.dds",
+                                    "lifetimeMS":  180,
+                                    "lifetimeVarianceMS":  20,
+                                    "inheritedVelFactor":  1,
+                                    "dragCoefficient":  1,
+                                    "gravityCoefficient":  -0.08,
+                                    "spinRandomMin":  -180,
+                                    "spinRandomMax":  180,
+                                    "spinSpeed":  10,
+                                    "colors":  [
+                                                   [
+                                                       1.45,
+                                                       1.15,
+                                                       0.65,
+                                                       0
+                                                   ],
+                                                   [
+                                                       1.65,
+                                                       1.35,
+                                                       0.75,
+                                                       0.48
+                                                   ],
+                                                   [
+                                                       1.55,
+                                                       0.75,
+                                                       0.25,
+                                                       0.264
+                                                   ],
+                                                   [
+                                                       1,
+                                                       0.35,
+                                                       0.1,
+                                                       0
+                                                   ]
+                                               ],
+                                    "sizes":  [
+                                                  0.0336,
+                                                  0.105,
+                                                  0.42,
+                                                  0
+                                              ],
+                                    "times":  [
+                                                  0,
+                                                  0.12,
+                                                  0.35,
+                                                  1
+                                              ],
+                                    "useInvAlpha":  true
+                                },
+    "RLS_FuelFlame_ethanol_3":  {
+                                    "name":  "RLS_FuelFlame_ethanol_3",
+                                    "class":  "ParticleData",
+                                    "textureName":  "art/shapes/particles/afterfire_orange_flame2.dds",
+                                    "animTexName":  "art/shapes/particles/afterfire_orange_flame2.dds",
+                                    "lifetimeMS":  240,
+                                    "lifetimeVarianceMS":  20,
+                                    "inheritedVelFactor":  1,
+                                    "dragCoefficient":  1,
+                                    "gravityCoefficient":  -0.08,
+                                    "spinRandomMin":  -180,
+                                    "spinRandomMax":  180,
+                                    "spinSpeed":  10,
+                                    "colors":  [
+                                                   [
+                                                       1.45,
+                                                       1.15,
+                                                       0.65,
+                                                       0
+                                                   ],
+                                                   [
+                                                       1.65,
+                                                       1.35,
+                                                       0.75,
+                                                       0.48
+                                                   ],
+                                                   [
+                                                       1.55,
+                                                       0.75,
+                                                       0.25,
+                                                       0.264
+                                                   ],
+                                                   [
+                                                       1,
+                                                       0.35,
+                                                       0.1,
+                                                       0
+                                                   ]
+                                               ],
+                                    "sizes":  [
+                                                  0.056,
+                                                  0.175,
+                                                  0.7,
+                                                  0
+                                              ],
+                                    "times":  [
+                                                  0,
+                                                  0.12,
+                                                  0.35,
+                                                  1
+                                              ],
+                                    "useInvAlpha":  true
+                                },
+    "RLS_FuelFlame_gasolineCore_1":  {
+                                         "name":  "RLS_FuelFlame_gasolineCore_1",
+                                         "class":  "ParticleData",
+                                         "textureName":  "art/shapes/particles/afterfire_blue_flame1.dds",
+                                         "animTexName":  "art/shapes/particles/afterfire_blue_flame1.dds",
+                                         "lifetimeMS":  70,
+                                         "lifetimeVarianceMS":  10,
+                                         "inheritedVelFactor":  1,
+                                         "dragCoefficient":  1,
+                                         "gravityCoefficient":  -0.08,
+                                         "spinRandomMin":  -45,
+                                         "spinRandomMax":  45,
+                                         "spinSpeed":  10,
+                                         "colors":  [
+                                                        [
+                                                            0.7,
+                                                            0.9,
+                                                            1.2,
+                                                            0
+                                                        ],
+                                                        [
+                                                            0.7,
+                                                            0.9,
+                                                            1.2,
+                                                            0.08
+                                                        ],
+                                                        [
+                                                            0.9,
+                                                            1,
+                                                            1.15,
+                                                            0.04
+                                                        ],
+                                                        [
+                                                            1,
+                                                            1,
+                                                            1,
+                                                            0
+                                                        ]
+                                                    ],
+                                         "sizes":  [
+                                                       0.0088,
+                                                       0.0506,
+                                                       0.039599999999999996,
+                                                       0
+                                                   ],
+                                         "times":  [
+                                                       0,
+                                                       0.18,
+                                                       0.5,
+                                                       1
+                                                   ],
+                                         "useInvAlpha":  true
+                                     },
+    "RLS_FuelFlame_gasolineCore_2":  {
+                                         "name":  "RLS_FuelFlame_gasolineCore_2",
+                                         "class":  "ParticleData",
+                                         "textureName":  "art/shapes/particles/afterfire_blue_flame1.dds",
+                                         "animTexName":  "art/shapes/particles/afterfire_blue_flame1.dds",
+                                         "lifetimeMS":  90,
+                                         "lifetimeVarianceMS":  10,
+                                         "inheritedVelFactor":  1,
+                                         "dragCoefficient":  1,
+                                         "gravityCoefficient":  -0.08,
+                                         "spinRandomMin":  -45,
+                                         "spinRandomMax":  45,
+                                         "spinSpeed":  10,
+                                         "colors":  [
+                                                        [
+                                                            0.7,
+                                                            0.9,
+                                                            1.2,
+                                                            0
+                                                        ],
+                                                        [
+                                                            0.7,
+                                                            0.9,
+                                                            1.2,
+                                                            0.08
+                                                        ],
+                                                        [
+                                                            0.9,
+                                                            1,
+                                                            1.15,
+                                                            0.04
+                                                        ],
+                                                        [
+                                                            1,
+                                                            1,
+                                                            1,
+                                                            0
+                                                        ]
+                                                    ],
+                                         "sizes":  [
+                                                       0.0168,
+                                                       0.0966,
+                                                       0.0756,
+                                                       0
+                                                   ],
+                                         "times":  [
+                                                       0,
+                                                       0.18,
+                                                       0.5,
+                                                       1
+                                                   ],
+                                         "useInvAlpha":  true
+                                     },
+    "RLS_FuelFlame_gasolineCore_3":  {
+                                         "name":  "RLS_FuelFlame_gasolineCore_3",
+                                         "class":  "ParticleData",
+                                         "textureName":  "art/shapes/particles/afterfire_blue_flame1.dds",
+                                         "animTexName":  "art/shapes/particles/afterfire_blue_flame1.dds",
+                                         "lifetimeMS":  110,
+                                         "lifetimeVarianceMS":  10,
+                                         "inheritedVelFactor":  1,
+                                         "dragCoefficient":  1,
+                                         "gravityCoefficient":  -0.08,
+                                         "spinRandomMin":  -45,
+                                         "spinRandomMax":  45,
+                                         "spinSpeed":  10,
+                                         "colors":  [
+                                                        [
+                                                            0.7,
+                                                            0.9,
+                                                            1.2,
+                                                            0
+                                                        ],
+                                                        [
+                                                            0.7,
+                                                            0.9,
+                                                            1.2,
+                                                            0.08
+                                                        ],
+                                                        [
+                                                            0.9,
+                                                            1,
+                                                            1.15,
+                                                            0.04
+                                                        ],
+                                                        [
+                                                            1,
+                                                            1,
+                                                            1,
+                                                            0
+                                                        ]
+                                                    ],
+                                         "sizes":  [
+                                                       0.027999999999999997,
+                                                       0.161,
+                                                       0.126,
+                                                       0
+                                                   ],
+                                         "times":  [
+                                                       0,
+                                                       0.18,
+                                                       0.5,
+                                                       1
+                                                   ],
+                                         "useInvAlpha":  true
+                                     },
+    "RLS_FuelFlame_ethanolCore_1":  {
+                                        "name":  "RLS_FuelFlame_ethanolCore_1",
+                                        "class":  "ParticleData",
+                                        "textureName":  "art/shapes/particles/afterfire_blue_flame1.dds",
+                                        "animTexName":  "art/shapes/particles/afterfire_blue_flame1.dds",
+                                        "lifetimeMS":  100,
+                                        "lifetimeVarianceMS":  10,
+                                        "inheritedVelFactor":  1,
+                                        "dragCoefficient":  1,
+                                        "gravityCoefficient":  -0.08,
+                                        "spinRandomMin":  -45,
+                                        "spinRandomMax":  45,
+                                        "spinSpeed":  10,
+                                        "colors":  [
+                                                       [
+                                                           0.7,
+                                                           0.9,
+                                                           1.2,
+                                                           0
+                                                       ],
+                                                       [
+                                                           0.7,
+                                                           0.9,
+                                                           1.2,
+                                                           0.25
+                                                       ],
+                                                       [
+                                                           0.9,
+                                                           1,
+                                                           1.15,
+                                                           0.125
+                                                       ],
+                                                       [
+                                                           1,
+                                                           1,
+                                                           1,
+                                                           0
+                                                       ]
+                                                   ],
+                                        "sizes":  [
+                                                      0.0088,
+                                                      0.0594,
+                                                      0.0484,
+                                                      0
+                                                  ],
+                                        "times":  [
+                                                      0,
+                                                      0.12,
+                                                      0.65,
+                                                      1
+                                                  ],
+                                        "useInvAlpha":  true
+                                    },
+    "RLS_FuelFlame_ethanolCore_2":  {
+                                        "name":  "RLS_FuelFlame_ethanolCore_2",
+                                        "class":  "ParticleData",
+                                        "textureName":  "art/shapes/particles/afterfire_blue_flame1.dds",
+                                        "animTexName":  "art/shapes/particles/afterfire_blue_flame1.dds",
+                                        "lifetimeMS":  140,
+                                        "lifetimeVarianceMS":  10,
+                                        "inheritedVelFactor":  1,
+                                        "dragCoefficient":  1,
+                                        "gravityCoefficient":  -0.08,
+                                        "spinRandomMin":  -45,
+                                        "spinRandomMax":  45,
+                                        "spinSpeed":  10,
+                                        "colors":  [
+                                                       [
+                                                           0.7,
+                                                           0.9,
+                                                           1.2,
+                                                           0
+                                                       ],
+                                                       [
+                                                           0.7,
+                                                           0.9,
+                                                           1.2,
+                                                           0.25
+                                                       ],
+                                                       [
+                                                           0.9,
+                                                           1,
+                                                           1.15,
+                                                           0.125
+                                                       ],
+                                                       [
+                                                           1,
+                                                           1,
+                                                           1,
+                                                           0
+                                                       ]
+                                                   ],
+                                        "sizes":  [
+                                                      0.0168,
+                                                      0.1134,
+                                                      0.0924,
+                                                      0
+                                                  ],
+                                        "times":  [
+                                                      0,
+                                                      0.12,
+                                                      0.65,
+                                                      1
+                                                  ],
+                                        "useInvAlpha":  true
+                                    },
+    "RLS_FuelFlame_ethanolCore_3":  {
+                                        "name":  "RLS_FuelFlame_ethanolCore_3",
+                                        "class":  "ParticleData",
+                                        "textureName":  "art/shapes/particles/afterfire_blue_flame1.dds",
+                                        "animTexName":  "art/shapes/particles/afterfire_blue_flame1.dds",
+                                        "lifetimeMS":  180,
+                                        "lifetimeVarianceMS":  10,
+                                        "inheritedVelFactor":  1,
+                                        "dragCoefficient":  1,
+                                        "gravityCoefficient":  -0.08,
+                                        "spinRandomMin":  -45,
+                                        "spinRandomMax":  45,
+                                        "spinSpeed":  10,
+                                        "colors":  [
+                                                       [
+                                                           0.7,
+                                                           0.9,
+                                                           1.2,
+                                                           0
+                                                       ],
+                                                       [
+                                                           0.7,
+                                                           0.9,
+                                                           1.2,
+                                                           0.25
+                                                       ],
+                                                       [
+                                                           0.9,
+                                                           1,
+                                                           1.15,
+                                                           0.125
+                                                       ],
+                                                       [
+                                                           1,
+                                                           1,
+                                                           1,
+                                                           0
+                                                       ]
+                                                   ],
+                                        "sizes":  [
+                                                      0.028,
+                                                      0.189,
+                                                      0.154,
+                                                      0
+                                                  ],
+                                        "times":  [
+                                                      0,
+                                                      0.12,
+                                                      0.65,
+                                                      1
+                                                  ],
+                                        "useInvAlpha":  true
+                                    },
+    "RLS_FuelFlame_methanolCore_1":  {
+                                         "name":  "RLS_FuelFlame_methanolCore_1",
+                                         "class":  "ParticleData",
+                                         "textureName":  "art/shapes/particles/afterfire_blue_flame1.dds",
+                                         "animTexName":  "art/shapes/particles/afterfire_blue_flame1.dds",
+                                         "lifetimeMS":  110,
+                                         "lifetimeVarianceMS":  10,
+                                         "inheritedVelFactor":  1,
+                                         "dragCoefficient":  1,
+                                         "gravityCoefficient":  -0.08,
+                                         "spinRandomMin":  -45,
+                                         "spinRandomMax":  45,
+                                         "spinSpeed":  10,
+                                         "colors":  [
+                                                        [
+                                                            0.7,
+                                                            0.9,
+                                                            1.2,
+                                                            0
+                                                        ],
+                                                        [
+                                                            0.7,
+                                                            0.9,
+                                                            1.2,
+                                                            0.35
+                                                        ],
+                                                        [
+                                                            0.9,
+                                                            1,
+                                                            1.15,
+                                                            0.175
+                                                        ],
+                                                        [
+                                                            1,
+                                                            1,
+                                                            1,
+                                                            0
+                                                        ]
+                                                    ],
+                                         "sizes":  [
+                                                       0.0088,
+                                                       0.0594,
+                                                       0.0484,
+                                                       0
+                                                   ],
+                                         "times":  [
+                                                       0,
+                                                       0.12,
+                                                       0.65,
+                                                       1
+                                                   ],
+                                         "useInvAlpha":  true
+                                     },
+    "RLS_FuelFlame_methanolCore_2":  {
+                                         "name":  "RLS_FuelFlame_methanolCore_2",
+                                         "class":  "ParticleData",
+                                         "textureName":  "art/shapes/particles/afterfire_blue_flame1.dds",
+                                         "animTexName":  "art/shapes/particles/afterfire_blue_flame1.dds",
+                                         "lifetimeMS":  150,
+                                         "lifetimeVarianceMS":  10,
+                                         "inheritedVelFactor":  1,
+                                         "dragCoefficient":  1,
+                                         "gravityCoefficient":  -0.08,
+                                         "spinRandomMin":  -45,
+                                         "spinRandomMax":  45,
+                                         "spinSpeed":  10,
+                                         "colors":  [
+                                                        [
+                                                            0.7,
+                                                            0.9,
+                                                            1.2,
+                                                            0
+                                                        ],
+                                                        [
+                                                            0.7,
+                                                            0.9,
+                                                            1.2,
+                                                            0.35
+                                                        ],
+                                                        [
+                                                            0.9,
+                                                            1,
+                                                            1.15,
+                                                            0.175
+                                                        ],
+                                                        [
+                                                            1,
+                                                            1,
+                                                            1,
+                                                            0
+                                                        ]
+                                                    ],
+                                         "sizes":  [
+                                                       0.0168,
+                                                       0.1134,
+                                                       0.0924,
+                                                       0
+                                                   ],
+                                         "times":  [
+                                                       0,
+                                                       0.12,
+                                                       0.65,
+                                                       1
+                                                   ],
+                                         "useInvAlpha":  true
+                                     },
+    "RLS_FuelFlame_methanolCore_3":  {
+                                         "name":  "RLS_FuelFlame_methanolCore_3",
+                                         "class":  "ParticleData",
+                                         "textureName":  "art/shapes/particles/afterfire_blue_flame1.dds",
+                                         "animTexName":  "art/shapes/particles/afterfire_blue_flame1.dds",
+                                         "lifetimeMS":  190,
+                                         "lifetimeVarianceMS":  10,
+                                         "inheritedVelFactor":  1,
+                                         "dragCoefficient":  1,
+                                         "gravityCoefficient":  -0.08,
+                                         "spinRandomMin":  -45,
+                                         "spinRandomMax":  45,
+                                         "spinSpeed":  10,
+                                         "colors":  [
+                                                        [
+                                                            0.7,
+                                                            0.9,
+                                                            1.2,
+                                                            0
+                                                        ],
+                                                        [
+                                                            0.7,
+                                                            0.9,
+                                                            1.2,
+                                                            0.35
+                                                        ],
+                                                        [
+                                                            0.9,
+                                                            1,
+                                                            1.15,
+                                                            0.175
+                                                        ],
+                                                        [
+                                                            1,
+                                                            1,
+                                                            1,
+                                                            0
+                                                        ]
+                                                    ],
+                                         "sizes":  [
+                                                       0.028,
+                                                       0.189,
+                                                       0.154,
+                                                       0
+                                                   ],
+                                         "times":  [
+                                                       0,
+                                                       0.12,
+                                                       0.65,
+                                                       1
+                                                   ],
+                                         "useInvAlpha":  true
+                                     },
+    "RLS_FuelFlame_nitromethaneCore_1":  {
+                                             "name":  "RLS_FuelFlame_nitromethaneCore_1",
+                                             "class":  "ParticleData",
+                                             "textureName":  "/art/rlsFuel/flames/nitromethane_neutral.png",
+                                             "animTexName":  "/art/rlsFuel/flames/nitromethane_neutral.png",
+                                             "lifetimeMS":  114,
+                                             "lifetimeVarianceMS":  10,
+                                             "inheritedVelFactor":  1,
+                                             "dragCoefficient":  1,
+                                             "gravityCoefficient":  -0.08,
+                                             "spinRandomMin":  -20,
+                                             "spinRandomMax":  20,
+                                             "spinSpeed":  0,
+                                             "colors":  [
+                                                            [
+                                                                1,
+                                                                1,
+                                                                1,
+                                                                0
+                                                            ],
+                                                            [
+                                                                1,
+                                                                1,
+                                                                1,
+                                                                1
+                                                            ],
+                                                            [
+                                                                1,
+                                                                1,
+                                                                0.97,
+                                                                0.8
+                                                            ],
+                                                            [
+                                                                1,
+                                                                0.95,
+                                                                0.72,
+                                                                0
+                                                            ]
+                                                        ],
+                                             "sizes":  [
+                                                           0.01496,
+                                                           0.04114,
+                                                           0.12155,
+                                                           0
+                                                       ],
+                                             "times":  [
+                                                           0,
+                                                           0.12,
+                                                           0.35,
+                                                           1
+                                                       ],
+                                             "useInvAlpha":  true
+                                         },
+    "RLS_FuelFlame_nitromethaneCore_2":  {
+                                             "name":  "RLS_FuelFlame_nitromethaneCore_2",
+                                             "class":  "ParticleData",
+                                             "textureName":  "/art/rlsFuel/flames/nitromethane_neutral.png",
+                                             "animTexName":  "/art/rlsFuel/flames/nitromethane_neutral.png",
+                                             "lifetimeMS":  171,
+                                             "lifetimeVarianceMS":  10,
+                                             "inheritedVelFactor":  1,
+                                             "dragCoefficient":  1,
+                                             "gravityCoefficient":  -0.08,
+                                             "spinRandomMin":  -20,
+                                             "spinRandomMax":  20,
+                                             "spinSpeed":  0,
+                                             "colors":  [
+                                                            [
+                                                                1,
+                                                                1,
+                                                                1,
+                                                                0
+                                                            ],
+                                                            [
+                                                                1,
+                                                                1,
+                                                                1,
+                                                                1
+                                                            ],
+                                                            [
+                                                                1,
+                                                                1,
+                                                                0.97,
+                                                                0.8
+                                                            ],
+                                                            [
+                                                                1,
+                                                                0.95,
+                                                                0.72,
+                                                                0
+                                                            ]
+                                                        ],
+                                             "sizes":  [
+                                                           0.02856,
+                                                           0.07854,
+                                                           0.23205,
+                                                           0
+                                                       ],
+                                             "times":  [
+                                                           0,
+                                                           0.12,
+                                                           0.35,
+                                                           1
+                                                       ],
+                                             "useInvAlpha":  true
+                                         },
+    "RLS_FuelFlame_nitromethaneCore_3":  {
+                                             "name":  "RLS_FuelFlame_nitromethaneCore_3",
+                                             "class":  "ParticleData",
+                                             "textureName":  "/art/rlsFuel/flames/nitromethane_neutral.png",
+                                             "animTexName":  "/art/rlsFuel/flames/nitromethane_neutral.png",
+                                             "lifetimeMS":  228,
+                                             "lifetimeVarianceMS":  10,
+                                             "inheritedVelFactor":  1,
+                                             "dragCoefficient":  1,
+                                             "gravityCoefficient":  -0.08,
+                                             "spinRandomMin":  -20,
+                                             "spinRandomMax":  20,
+                                             "spinSpeed":  0,
+                                             "colors":  [
+                                                            [
+                                                                1,
+                                                                1,
+                                                                1,
+                                                                0
+                                                            ],
+                                                            [
+                                                                1,
+                                                                1,
+                                                                1,
+                                                                1
+                                                            ],
+                                                            [
+                                                                1,
+                                                                1,
+                                                                0.97,
+                                                                0.8
+                                                            ],
+                                                            [
+                                                                1,
+                                                                0.95,
+                                                                0.72,
+                                                                0
+                                                            ]
+                                                        ],
+                                             "sizes":  [
+                                                           0.0476,
+                                                           0.1309,
+                                                           0.38675,
+                                                           0
+                                                       ],
+                                             "times":  [
+                                                           0,
+                                                           0.12,
+                                                           0.35,
+                                                           1
+                                                       ],
+                                             "useInvAlpha":  true
+                                         }
+}

@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_events_streetKnightsSafety",
+  "order": 456,
+  "module": "overhaul/events/streetKnightsSafety",
+  "scopes": [
+    {
+      "id": "children",
+      "order": 6,
+      "parent": "overhaul_career_economy_streetKnights"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "canBeReseted":false,
+  "canBeTeleported":false,
+  "context":"streetKnights",
+  "dragType":"headsUpRace",
+  "phases":[
+    {
+      "dependency":true,
+      "name":"stage"
+    },
+    {
+      "dependency":true,
+      "name":"countdown"
+    },
+    {
+      "dependency":false,
+      "name":"race"
+    }
+  ],
+  "streetKnights":{
+    "distance":777.76238162578,
+    "importantTimer":777.76238162578
+  },
+  "stripId":"/levels/rls_west_coast/streetKnights/highway_meet_1794212886_96272/strip.json"
+}

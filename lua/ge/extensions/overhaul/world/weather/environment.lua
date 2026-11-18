@@ -215,6 +215,10 @@ function M.new(inputs)
     local baseline = {groundModels = {}}
     runtime.baseline = baseline
     baseline.fogDensity = core_environment and core_environment.getFogDensity and core_environment.getFogDensity() or 0.001
+    if runtime.profile.syncAmbientTemperature and core_environment and core_environment.getState then
+      local native = core_environment.getState()
+      baseline.temperatureCurveOverrideC = model.copyTable(native and native.temperatureCurveOverrideC or false)
+    end
     baseline.cloudLayers = {}
     -- Layers are captured before setCloudCover mutates them, including coverage above 1.
     captureCloudLayers(baseline, cloudNames())
@@ -416,7 +420,8 @@ function M.new(inputs)
     if rainLevel > RAIN_AUDIO_MIN_LEVEL then
       runtime.audioRainTimer = runtime.audioRainTimer - dt
       if runtime.audioRainTimer <= 0 then
-        local result = playWeatherSound("jbw_rain2.ogg", 0.35 + 0.20 * rainLevel, RAIN_LOOP_FADE_IN_SECONDS)
+        local gain = math.min(1, effect.rain / model.EFFECTS.drizzle.rain)
+        local result = playWeatherSound("jbw_rain2.ogg", (0.35 + 0.20 * rainLevel) * gain, RAIN_LOOP_FADE_IN_SECONDS)
         runtime.audioRainTimer = result and result.len and result.len > RAIN_LOOP_MIN_LENGTH_SECONDS
           and (result.len - RAIN_LOOP_FADE_IN_SECONDS) or RAIN_LOOP_FALLBACK_SECONDS
       end
@@ -486,6 +491,20 @@ function M.new(inputs)
     end
   end
 
+  -- Keep vehicle thermals on the same ambient temperature as the forecast.
+  -- Maps opt in explicitly; other maps retain their authored native curve.
+  local function applyAmbientTemperature(temperatureC)
+    if not runtime.profile.syncAmbientTemperature or not runtime.state.settings.dynamicWeather
+      or not core_environment or not core_environment.setState then return end
+    captureBaseline()
+    if runtime.appliedTemperatureC == temperatureC then return end
+    runtime.writingEnvironment = true
+    core_environment.setState({temperatureCurveOverrideC = {{0, temperatureC}, {1, temperatureC}}})
+    runtime.writingEnvironment = false
+    runtime.appliedTemperatureC = temperatureC
+    runtime.environmentApplied = true
+  end
+
   local function restoreFog(baseline)
     if core_environment and core_environment.setFogDensity and baseline.fogDensity then core_environment.setFogDensity(baseline.fogDensity) end
     local info = levelInfo()
@@ -522,6 +541,12 @@ function M.new(inputs)
     setRain(0)
     restoreClouds(baseline)
     restoreFog(baseline)
+    if runtime.appliedTemperatureC ~= nil and core_environment and core_environment.setState then
+      runtime.writingEnvironment = true
+      core_environment.setState({temperatureCurveOverrideC = baseline.temperatureCurveOverrideC or false})
+      runtime.writingEnvironment = false
+    end
+    runtime.appliedTemperatureC = nil
     restoreSky(baseline)
     restoreGroundModels()
     -- Teardown and editor saves cannot depend on future onUpdate calls to dry the roads.
@@ -539,7 +564,7 @@ function M.new(inputs)
   -- Visual effects ---------------------------------------------------------------------------------
 
   local function applyCloudCover(cover)
-    cover = model.clamp(tonumber(cover) or 0, 0, 1)
+    cover = model.clamp(tonumber(cover) or 0, 0, 3)
     local names = cloudNames()
     captureCloudLayers(runtime.baseline, names)
     local changed = false
@@ -566,14 +591,40 @@ function M.new(inputs)
   local function effectFor(condition, fogFactor, fog)
     local target = model.copyTable(model.EFFECTS[condition] or model.EFFECTS.clear)
     target.fogAdd = math.max(target.fogAdd or 0, fogFactor * (fog and fog.maxDensity or 0))
+    target.fogHeight = fogFactor > 0 and fog and tonumber(fog.atmosphereHeight) or nil
+    target.cloudCover = model.CLOUD_COVER[condition] or model.CLOUD_COVER.clear
     return target
+  end
+
+  local function interpolatedCloudCover(progress)
+    local target = runtime.effectTarget.cloudCover
+    if target == nil then return nil end
+    if progress >= 1 then return target end
+    return model.lerp(runtime.effectFrom.cloudCover or target, target, progress)
+  end
+
+  local function visualCloudCover(effect, progress)
+    if runtime.state and runtime.state.forceClearFog then return 0 end
+    local cover = progress and interpolatedCloudCover(progress) or effect and effect.cloudCover
+    if cover ~= nil then return cover end
+    return model.CLOUD_COVER[runtime.currentConditionName] or model.CLOUD_COVER.clear
+  end
+
+  local function visualFogHeight(effect, progress)
+    local authored = runtime.baseline and runtime.baseline.fogAtmosphereHeight
+    if not progress then return effect.fogHeight or authored end
+    local target = runtime.effectTarget.fogHeight or authored
+    local source = runtime.effectFrom.fogHeight or authored
+    if not source or not target or progress >= 1 then return target end
+    return model.lerp(source, target, progress)
   end
 
   local function interpolateCurrentEffect()
     local p = model.clamp(runtime.transitionElapsed / math.max(0.01, runtime.transitionDuration), 0, 1)
     local current, source, target = runtime.currentEffect, runtime.effectFrom, runtime.effectTarget
     for _, key in ipairs(M.EFFECT_KEYS) do current[key] = p >= 1 and target[key] or model.lerp(source[key] or target[key], target[key], p) end
-    current.rain = p >= 0.35 and target.rain or (source.rain or 0)
+    current.cloudCover = interpolatedCloudCover(p)
+    current.fogHeight = visualFogHeight(nil, p)
     current.wetRough = target.wetRough
     current.tint = current.tint or {1, 1, 1}
     for channel = 1, 3 do
@@ -587,6 +638,10 @@ function M.new(inputs)
     if runtime.transitioning then interpolateCurrentEffect() end
     runtime.effectFrom = model.copyTable(runtime.currentEffect)
     if not runtime.effectFrom.sky then runtime.effectFrom = model.copyTable(model.EFFECTS.clear) end
+    if runtime.effectFrom.cloudCover == nil then
+      local cover = core_environment and core_environment.getCloudCover and core_environment.getCloudCover()
+      runtime.effectFrom.cloudCover = tonumber(cover) or model.CLOUD_COVER.clear
+    end
     runtime.effectTarget = target
     runtime.transitionElapsed = 0
     runtime.transitionDuration = model.clamp(runtime.profile.transitionMinutes * 1.5, 8, 45)
@@ -594,7 +649,7 @@ function M.new(inputs)
     runtime.previousVisualCandidateValues = nil
   end
 
-  local function applyFog(effect, fog, clearFog, baseline)
+  local function applyFog(effect, clearFog, baseline)
     local info, values = levelInfo()
     if not info then return end
     local density = clearFog and 0 or ((baseline.fogDensity or 0) + (effect.fogAdd or 0))
@@ -602,7 +657,7 @@ function M.new(inputs)
       if core_environment and core_environment.setFogDensity then core_environment.setFogDensity(density) end
       values.fogDensity = tonumber(info.fogDensity) == density and density or nil
     end
-    local height = clearFog and (baseline.fogAtmosphereHeight or 0) or (fog and fog.atmosphereHeight or baseline.fogAtmosphereHeight)
+    local height = clearFog and baseline.fogAtmosphereHeight or visualFogHeight(effect)
     local observedHeight = tonumber(info.fogAtmosphereHeight)
     if height and (values.fogHeight ~= height or values.observedFogHeight ~= observedHeight) then
       if core_environment and core_environment.setFogAtmosphereHeight then
@@ -646,7 +701,7 @@ function M.new(inputs)
     if changed then sky:postApply() end
   end
 
-  local function transitionStepChanged(effect, fog, finalStep, progress)
+  local function transitionStepChanged(effect, finalStep, progress)
     local source, target = runtime.effectFrom, runtime.effectTarget
     local function scalar(key, fallback)
       if progress then return model.lerp(source[key] or target[key], target[key], progress) end
@@ -661,14 +716,13 @@ function M.new(inputs)
     local values = runtime.visualStepValues or {}
     runtime.visualStepValues = values
     values.fogDensity = clearFog and 0 or (baseline.fogDensity or 0) + scalar("fogAdd", 0)
-    values.fogHeight = clearFog and (baseline.fogAtmosphereHeight or 0) or (fog and fog.atmosphereHeight or baseline.fogAtmosphereHeight)
+    values.fogHeight = clearFog and baseline.fogAtmosphereHeight or visualFogHeight(effect, progress)
     values.skyBrightness = (baseline.skyBrightness or 1) * scalar("sky", 1)
     values.brightness = baseline.brightness and baseline.brightness * scalar("brightness")
     values.sunSize = baseline.sunSize and baseline.sunSize * scalar("sun")
     values.flareScale = baseline.flareScale and baseline.flareScale * scalar("sun")
-    values.cloudCover = clearFog and 0 or model.CLOUD_COVER[runtime.currentConditionName] or model.CLOUD_COVER.clear
-    if progress then values.rain = progress >= 0.35 and target.rain or (source.rain or 0)
-    else values.rain = effect.rain or 0 end
+    values.cloudCover = visualCloudCover(effect, progress)
+    values.rain = math.floor(math.max(0, scalar("rain", 0)))
     local function color(key, multiplier)
       local original = baseline[key]
       if not original then return end
@@ -708,16 +762,15 @@ function M.new(inputs)
     return true
   end
 
-  local function writeVisualEffect(effect, fog)
+  local function writeVisualEffect(effect)
     runtime.environmentApplied = true
     local baseline = runtime.baseline
     local state = runtime.state
     local clearFog = state and state.forceClearFog == true
     runtime.writingEnvironment = true
-    applyFog(effect, fog, clearFog, baseline)
+    applyFog(effect, clearFog, baseline)
     applySky(effect, baseline)
-    local cover = (clearFog and 0) or model.CLOUD_COVER[runtime.currentConditionName] or model.CLOUD_COVER.clear
-    applyCloudCover(cover)
+    applyCloudCover(visualCloudCover(effect))
     setRain(effect.rain or 0)
     runtime.writingEnvironment = false
     runtime.scenePass = nil
@@ -729,24 +782,24 @@ function M.new(inputs)
     for _, name in ipairs(cloudNames()) do sceneObject("cloud:" .. name, {name}, "CloudLayer") end
   end
 
-  local function applyVisualEffect(effect, fog, transitionStep, finalStep)
+  local function applyVisualEffect(effect, transitionStep, finalStep)
     runtime.scenePass = {}
     captureBaseline()
     refreshSceneObjects()
-    if transitionStep and not transitionStepChanged(effect, fog, finalStep) then runtime.scenePass = nil; return false end
+    if transitionStep and not transitionStepChanged(effect, finalStep) then runtime.scenePass = nil; return false end
     if not transitionStep then runtime.lastVisualStepValues = nil end
-    writeVisualEffect(effect, fog)
+    writeVisualEffect(effect)
     return true
   end
 
-  local function applyTransitionEffect(fog)
+  local function applyTransitionEffect()
     runtime.scenePass = {}
     captureBaseline()
     refreshSceneObjects()
     local progress = model.clamp(runtime.transitionElapsed / math.max(0.01, runtime.transitionDuration), 0, 1)
-    if not transitionStepChanged(nil, fog, progress >= 1, progress) then runtime.scenePass = nil; return false end
+    if not transitionStepChanged(nil, progress >= 1, progress) then runtime.scenePass = nil; return false end
     interpolateCurrentEffect()
-    writeVisualEffect(runtime.currentEffect, fog)
+    writeVisualEffect(runtime.currentEffect)
     return true
   end
 
@@ -841,6 +894,7 @@ function M.new(inputs)
     startTransition = startTransition,
     applyVisualEffect = applyVisualEffect,
     applyGroundGrip = applyGroundGrip,
+    applyAmbientTemperature = applyAmbientTemperature,
     getTireWeatherState = getTireWeatherState,
     clearRainObject = clearRainObject,
   }
@@ -849,7 +903,7 @@ end
 
 -- Public API --------------------------------------------------------------------------------------
 
-M.EFFECT_KEYS = {"fogAdd", "sky", "sun", "ambient", "brightness", "wind"}
+M.EFFECT_KEYS = {"fogAdd", "sky", "sun", "ambient", "brightness", "wind", "rain"}
 M.clearRainObject = clearRainObject
 
 return M

@@ -9,13 +9,13 @@
 -- Read config/state, tethers and travel, then inspection steps, lifecycle and the public hooks.
 
 local M = {}
+local vehicleFreeze = require('overhaul/lib/vehicles/freeze')
 
 local capabilities = require("overhaul/lib/platform/capabilities")
 
 -- Config ------------------------------------------------------------------------------------------
 
 local config = {
-  LEAVE_SALE_DIST = 25, -- the car is released once the player drives this far from it
   VEH_TO_SALE_POS_DIST = 10, -- the car moved this far from its bay cancels the sale
   ARRIVE_TO_VEH_INSPECTION_DIST = 20,
   PURCHASE_TETHER_DIST = 3,
@@ -28,7 +28,6 @@ local state = {
   didTestDrive = nil,
   testDriveDamageDetected = false,
   leavingSale = false,
-  leaveSaleTether = nil,
   purchaseTether = nil,
   testDriveInfo = nil,
   testDriveVehInfo = nil,
@@ -189,19 +188,9 @@ local function removeVehTetherToSalePos()
   state.checkTestDriveVehMovedFlag = false
 end
 
-local function addSaleTether()
-  state.leaveSaleTether = overhaul_career_maintenance_tether.startVehicleTether(state.testDriveVehInfo.vehId, config.LEAVE_SALE_DIST, false, function()
-    M.leaveSaleCallback("flagForDeletion", true, true)
-  end)
-end
-
-local function removeSaleTether()
-  if state.leaveSaleTether then
-    overhaul_career_maintenance_tether.removeTether(state.leaveSaleTether)
-    state.leaveSaleTether = nil
-  end
-end
-
+-- Distance only closes the purchase menu. Keep the inspected car and POI until an
+-- explicit sale/lifecycle action ends the inspection, so passing sellers in a
+-- taxi or leaving temporarily cannot invalidate the sale.
 local function openPurchaseMenuWithTether(shopId)
   overhaul_career_market_vehicleShopping.openPurchaseMenu("inspect", shopId)
   local playerVeh = getPlayerVehicle(0)
@@ -216,6 +205,7 @@ end
 -- Clears every inspection field; the seam is told which car it no longer owns.
 local function resetInspectionData()
   local inspectedVehId = state.testDriveVehInfo and state.testDriveVehInfo.vehId or nil
+  if inspectedVehId then vehicleFreeze.releaseOwner('overhaul_career_market_inspectVehicle', inspectedVehId) end
   state.didTestDrive = false
   state.testDriveDamageDetected = false
   state.leavingSale = false
@@ -225,7 +215,6 @@ local function resetInspectionData()
   state.testDriveVehInfo = nil
   inspectSeam.unregisterInspection(inspectedVehId)
 
-  removeSaleTether()
   removeVehTetherToSalePos()
   overhaul_career_maintenance_tether.removeTether(state.purchaseTether)
   state.purchaseTether = nil
@@ -247,7 +236,7 @@ local function spawnVehicle(shopId)
   local newVeh = core_vehicles.spawnNewVehicle(vehicleInfo.model_key, spawnOptions)
   if newVeh then
     core_vehicleBridge.executeAction(newVeh, 'setIgnitionLevel', 0)
-    core_vehicleBridge.executeAction(newVeh, 'setFreeze', true)
+    vehicleFreeze.set('overhaul_career_market_inspectVehicle', newVeh:getID(), true)
     local conditionMileage = vehicleInfo.wearMileage or vehicleInfo.Mileage -- wear mileage, not the listed one
     newVeh:queueLuaCommand(string.format("partCondition.initConditions(nil, %d, nil, %f)", conditionMileage, overhaul_career_market_vehicleShopping.getVisualValueFromMileage(conditionMileage)))
     inspectSeam.registerInspection(newVeh, vehicleInfo)
@@ -354,7 +343,7 @@ local function disposeSaleVehicle(despawnPreviousVehMode, vehId, freezePreviousV
   end
   local veh = getObjectByID(vehId)
   if veh then
-    core_vehicleBridge.executeAction(veh, 'setFreeze', freezePreviousVeh)
+    vehicleFreeze.set('overhaul_career_market_inspectVehicle', vehId, freezePreviousVeh)
   end
 end
 
@@ -367,8 +356,9 @@ local function runLeaveSaleJob(job, despawnPreviousVehMode, vehId, freezePreviou
     inspectSeam.checkTestDriveDamage(job, vehId) -- insurance settles test-drive damage
   end
 
-  disposeSaleVehicle(despawnPreviousVehMode, vehId, freezePreviousVeh)
   resetInspectionData()
+  -- A departed preview stays parked until deletion, independently of the next inspection.
+  disposeSaleVehicle(despawnPreviousVehMode, vehId, freezePreviousVeh)
 end
 
 local function leaveSaleCallback(despawnPreviousVehMode, freezePreviousVeh, checkDamage, defaultLeaveMessage)
@@ -477,7 +467,6 @@ local function startInspectionJob(job, vehicleInfo, teleportToVehicle, atSeller)
 
   defineTestDriveParameters(vehicleInfo, parkingSpot, doesThePlayerHaveToDriveThere)
   if not doesThePlayerHaveToDriveThere then
-    addSaleTether()
     addVehTetherToSalePos()
   end
   gameplay_rawPois.clear()
@@ -618,14 +607,15 @@ end
 -- Game hooks: test drive and sale lifetime --------------------------------------------------------
 
 local function onOverhaulTestDriveStarted()
+  local vehicleId = state.testDriveVehInfo and state.testDriveVehInfo.vehId
+  if vehicleId then vehicleFreeze.releaseOwner('overhaul_career_market_inspectVehicle', vehicleId) end
   state.didTestDrive = true
   state.testDriveDamageDetected = false
-  -- the player is in the test car now, so the sale tether would pull it back
-  removeSaleTether()
+  -- The test-drive module owns the car movement rules while driving.
   removeVehTetherToSalePos()
 end
 
--- A player who walks off before arriving forfeits the car to the seller.
+-- Arrival stops the seller travel timeout; departure does not discard the inspection.
 local function checkIfPlayerHasArrivedToVehInspection(playerVehObj, vehObj)
   local distanceToVeh = vehObj:getPosition():distance(playerVehObj:getPosition())
   if distanceToVeh < config.ARRIVE_TO_VEH_INSPECTION_DIST then
@@ -633,7 +623,6 @@ local function checkIfPlayerHasArrivedToVehInspection(playerVehObj, vehObj)
     local vehDist = castRayStatic(playerVehObj:getPosition(), scratchDir, config.ARRIVE_TO_VEH_INSPECTION_DIST)
     if vehDist >= distanceToVeh then
       state.hasPlayerArrivedToVehInspection = true
-      addSaleTether()
       addVehTetherToSalePos()
       -- navigation stays until the ground-marker arrival distance, not the stock 20 m
     end
@@ -693,8 +682,8 @@ end
 
 local function onOverhaulTestDriveEndedAfterFade()
   if state.testDriveVehInfo then
-    log("D", "inspectVehicle", "onOverhaulTestDriveEndedAfterFade: re-arming tethers for vehId=" .. tostring(state.testDriveVehInfo.vehId))
-    addSaleTether()
+    vehicleFreeze.set('overhaul_career_market_inspectVehicle', state.testDriveVehInfo.vehId, true)
+    log("D", "inspectVehicle", "onOverhaulTestDriveEndedAfterFade: restoring inspection for vehId=" .. tostring(state.testDriveVehInfo.vehId))
     addVehTetherToSalePos()
     gameplay_rawPois.clear()
 
@@ -703,7 +692,7 @@ local function onOverhaulTestDriveEndedAfterFade()
       openPurchaseMenuWithTether(state.testDriveInfo.vehicleInfo.shopId)
     end
   else
-    log("W", "inspectVehicle", "onOverhaulTestDriveEndedAfterFade fired without testDriveVehInfo; sale tether will NOT be re-armed")
+    log("W", "inspectVehicle", "onOverhaulTestDriveEndedAfterFade fired without testDriveVehInfo; inspection cannot be restored")
   end
 end
 
@@ -711,7 +700,7 @@ local function onVehicleSwitched(oldId, newId, player)
   if state.testDriveVehInfo and newId == state.testDriveVehInfo.vehId and not overhaul_career_market_testDrive.isActive() then
     local veh = getObjectByID(newId)
     if veh then
-      core_vehicleBridge.executeAction(veh, 'setFreeze', true)
+      vehicleFreeze.set('overhaul_career_market_inspectVehicle', newId, true)
     end
   end
 end
@@ -741,7 +730,7 @@ M.onTestDriveAbandoned = onTestDriveAbandoned
 M.onOverhaulTestDriveEndedAfterFade = onOverhaulTestDriveEndedAfterFade
 M.onVehicleSwitched = onVehicleSwitched
 
--- internal only: the sale tether and the bay check call back into this
+-- internal only: sale actions and the bay check call back into this
 M.leaveSaleCallback = leaveSaleCallback
 
 return M

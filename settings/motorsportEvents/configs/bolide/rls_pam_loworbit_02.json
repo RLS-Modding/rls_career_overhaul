@@ -1,0 +1,73 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "bolide/rls_pam_loworbit_02",
+    "configId": "rls_pam_loworbit_02",
+    "model": "bolide",
+    "config": "/vehicles/bolide/rls_pam_loworbit_02.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "dominic_toretto",
+    "driverName": "Jasper Holland",
+    "builder": "Low Orbit Garage",
+    "classIds": [
+      "pro_motor"
+    ],
+    "approvedClassIds": [
+      "pro_motor"
+    ],
+    "leagueId": "pro_league",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "c20cbabf9a3d942e7f7afcdaaf67cdfb19aa6a10671b260f818c9d683843e12a",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "Manual",
+      "induction": "Naturally aspirated",
+      "nitrous": false,
+      "years": {
+        "max": 1988,
+        "min": 1981
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_18x5",
+          "part": "tire_F_28_4_5_18_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_18x12_alt",
+          "part": "tire_R_28_13_5_18_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "bolide_rollcage",
+          "part": "bolide_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 10.274138129513,
+      "runId": "PAM-043",
+      "evidenceConfigSHA256": "17c2083dd0cc9a0dc945ba65919b3528f4fa9b7f26ca1404fcf2e1e657dc736a",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/pro-allmotor/final-metadata.json",
+      "acceptedConfig": "outputs/pro-allmotor/accepted/rls_pam_loworbit_02/rls_pam_loworbit_02.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_pro_allmotor"
+  }
+}

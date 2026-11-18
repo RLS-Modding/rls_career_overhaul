@@ -15,7 +15,12 @@
       <!-- no inner heading: the page title already says Tuning (context still switches to the cart) -->
       <div ref="actionRoot" class="inner-tuning-card">
         <div v-if="loading" class="state-message">Loading tuning data…</div>
-        <div v-else-if="buckets.length" class="tuning-form" v-bng-ui-nav-scroll>
+        <HouseButton v-if="!loading && sessionStore.hasCapability('fleetVehicles')"
+          :disabled="applying || hasChanges || sessionStore.isDamageLocked"
+          :icon="icons.sliders" @click="lua.overhaul_career_maintenance_fuelSystem.openBusinessTuning(sessionStore.businessId, sessionStore.pulledOutVehicle?.vehicleId)">
+          Fuel &amp; Ignition — Tune &amp; Tank
+        </HouseButton>
+        <div v-if="!loading && buckets.length" class="tuning-form" v-bng-ui-nav-scroll>
           <section v-for="category in buckets" :key="category.name" class="tuning-category">
             <h2 class="category-heading">{{ category.name }}</h2>
             <div v-for="subCategory in category.items" :key="subCategory.name" class="tuning-subcategory">

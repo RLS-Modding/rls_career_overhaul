@@ -356,7 +356,7 @@ requestDropOffWeightUpdate = function(settling)
   settling.weightUpdateGeneration = (settling.weightUpdateGeneration or 0) + 1
   local generation = settling.weightUpdateGeneration
   deliveryServices.general.requestUpdateContainerWeights()
-  deliveryServices.general.updateContainerWeights(function(data)
+  deliveryServices.general.updateContainerWeights(function(data, release)
     if confirmedDropOffData ~= settling or settling.weightUpdateGeneration ~= generation
         or settling.weightUpdateComplete or settling.payoutComplete then return end
     data = data or {}
@@ -371,17 +371,11 @@ requestDropOffWeightUpdate = function(settling)
         core_jobsystem.create(function(job)
           job.sleep(maxDelay + 0.5)
           if dropOffSettlementGeneration ~= settling.generation then return end
-          for vehId in pairs(data) do
-            local veh = scenetree.findObjectById(vehId)
-            if veh then core_vehicleBridge.executeAction(veh, 'setFreeze', false) end
-          end
+          release()
         end)
       end
     else
-      for vehId in pairs(data) do
-        local veh = scenetree.findObjectById(vehId)
-        if veh then core_vehicleBridge.executeAction(veh, 'setFreeze', false) end
-      end
+      release()
     end
     M.confirmDropOffCheckComplete()
   end)

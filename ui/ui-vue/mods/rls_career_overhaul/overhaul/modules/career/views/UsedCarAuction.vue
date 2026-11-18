@@ -66,7 +66,7 @@
           ><div class="ua-stat-sep"></div>
           <div class="ua-stat-item"
             ><span class="ua-stat-k">Balance</span
-            ><span class="ua-stat-v">${{ formatCurrency(state.playerBalance) }}</span></div
+            ><span class="ua-stat-v">${{ formatCurrency(state.playerBalance, 2) }}</span></div
           >
           <template v-if="showMainAuctionPanel && activeLot"
             ><div class="ua-stat-sep"></div
@@ -816,10 +816,10 @@ const formatMileage = (mileage) => {
   return formatOdometer(units, metres, displayValue > 0 && displayValue < 1 ? 2 : 0)
 }
 
-const formatCurrency = (amount) => {
-  const n = Number(amount)
-  if (!Number.isFinite(n) || n < 0) return '0'
-  return n.toLocaleString()
+const formatCurrency = (amount, fractionDigits) => {
+  const parsed = Number(amount)
+  const n = Number.isFinite(parsed) && parsed >= 0 ? parsed : 0
+  return n.toLocaleString(undefined, { minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits })
 }
 
 let isUnmounted = false

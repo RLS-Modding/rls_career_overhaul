@@ -1,0 +1,77 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Configuration": "Kian Banks - Pro Turbo",
+  "Description": "Sea Glass; Heritage Speed turbo-only Pro League build. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Drivetrain": "AWD",
+  "Transmission": "Sequential",
+  "Motorsport": {
+    "version": 1,
+    "id": "sbr/rls_proturbo_heritage_02",
+    "configId": "rls_proturbo_heritage_02",
+    "model": "sbr",
+    "config": "/vehicles/sbr/rls_proturbo_heritage_02.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "karol_monroe",
+    "driverName": "Kian Banks",
+    "builder": "Heritage Speed",
+    "classIds": [
+      "pro_turbo"
+    ],
+    "approvedClassIds": [
+      "pro_turbo"
+    ],
+    "leagueId": "pro_league",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "910e765918fbb5fd27a1fafb09d09398978fb39c5aa833f47e7b08ab695f4d6a",
+    "traits": {
+      "drivetrain": "AWD",
+      "transmission": "6-speed Sequential",
+      "induction": "Stage 4 variable boost twin turbochargers",
+      "nitrous": false,
+      "years": null
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x8_alt",
+          "part": "tire_F_26_8_15_alt_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_15x10",
+          "part": "tire_R_26_10_15_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "sbr_rollcage",
+          "part": "sbr_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 7.9786830457381,
+      "runId": "PT-053",
+      "evidenceConfigSHA256": "c73511e88e33bc00556e2b202de817ba03fb4b2d332f6aa7a9cfa8df7dad7a50",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/pro-turbo/final-results.json",
+      "acceptedConfig": "outputs/pro-turbo/accepted/rls_proturbo_heritage_02/rls_proturbo_heritage_02.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_pro_turbo"
+  }
+}

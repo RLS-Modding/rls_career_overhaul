@@ -19,6 +19,12 @@ local function validate(data)
     if not data.component and not catalog.string(data.routeTarget) then return "entry needs component or routeTarget" end
     if not catalog.string(data.namespace) then return "new entries need a namespace" end
   end
+  if data.navigation ~= nil then
+    if type(data.navigation)~='table' then return 'invalid navigation callbacks' end
+    for key,method in pairs(data.navigation) do
+      if (key~='canLeave' and key~='back') or type(method)~='string' or not method:match('^[%w_]+%.[%w_]+$') then return 'invalid navigation callback' end
+    end
+  end
   if data.availability ~= nil then
     local gate = data.availability
     if type(gate) ~= "table" then return "invalid availability gate" end

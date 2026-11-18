@@ -23,6 +23,8 @@ local FIFTHWHEEL_UNLOCK_TAGS = {
   trailerLogTrailer = true,
   trailerFlatbed = true,
   trailerContainer = true,
+  emptyLargeTrailer = true,
+  loadedLargeTrailers = true,
 }
 
 local MODEL_CLASS_PRIORITY = {
@@ -354,6 +356,9 @@ end
 function M.resolveTrailerCouplerClass(connector, unlockTag)
   local conn = type(connector) == "string" and string.lower(connector) or ""
   local tag = type(unlockTag) == "string" and unlockTag or ""
+  -- Specialized authored connectors outrank broad body/pay tags. Keep the
+  -- legacy generic towhitch fallback below: old semi filters used it too.
+  if conn == "gooseneck" or conn == "pintle" then return conn end
   if FIFTHWHEEL_UNLOCK_TAGS[tag] then return "fifthwheel" end
   if tag == "trailerDolly" then return "pintle" end
   if conn == "fifthwheel" or conn == "fifth_wheel" then return "fifthwheel" end
@@ -376,6 +381,8 @@ function M.getOfferCouplerClass(offer)
       unlockTag = unlockTag or filter.unlockTag
     end
   end
+  local explicit = type(connector) == "string" and string.lower(connector) or ""
+  if explicit == "gooseneck" or explicit == "pintle" then return explicit end
   if FIFTHWHEEL_UNLOCK_TAGS[unlockTag] then return "fifthwheel" end
   if unlockTag == "trailerDolly" then return "pintle" end
 
@@ -956,7 +963,6 @@ local function companyVehicleUiRow(item, vehicleType, serviceFleet)
     thumbnail = item.thumbnail or (configInfo and configInfo.preview) or "/ui/images/appDefault.png",
     available = item._unlocked ~= false,
     disableReason = item.disableReason,
-    serviceUnlockLabel = item.serviceUnlockLabel,
     reputationLevel = tonumber(item.reputationLvl),
     logisticsLevel = not serviceFleet and tonumber(item.deliveryLvl) or nil,
     fromLoanerPool = item._fromEmploymentPool and true or false,
@@ -1135,7 +1141,7 @@ function M.getRoleplayFleetForUi(facility)
       thumbnail = item.thumbnail or (info and info.preview) or "/ui/images/appDefault.png",
       available = available,
       disableReason = item.disableReason,
-      serviceUnlockLabel = item.serviceUnlockLabel,
+      lockReason = item.lockReason,
       reputationLevel = tonumber(item.reputationLvl),
     }
   end

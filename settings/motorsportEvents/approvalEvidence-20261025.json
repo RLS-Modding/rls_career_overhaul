@@ -1,0 +1,1424 @@
+{
+  "version": 1,
+  "audit": "drag-behavior-sweep-20261025",
+  "updatedAt": "2026-10-25T22:14:35Z",
+  "gameVersion": "0.40.3.0.290897",
+  "level": "rls_west_coast",
+  "method": "Production event runner, native AI and cooldown; isolated freeroam storage and direct lane-spawn infrastructure.",
+  "modules": {
+    "lua/vehicle/extensions/overhaulMotorsportLaunch.lua": "57e57508c43cde7cffa681429fbb112e9d0e9199c2fc3473db7be25f0d64140d",
+    "lua/ge/extensions/overhaul/events/motorsportEvents/drag/runner.lua": "f13214c91fe14b88b25ae77dc6946c9338c38aeed6227d856273be5ccb32fe53",
+    "lua/vehicle/extensions/overhaulMotorsportCooldown.lua": "1c944aa783c4e19716648f4e5349b6fd08786ab676506d5555b39af8026ac405"
+  },
+  "configs": [
+    {
+      "id": "autobello/rls_stu_neon_02",
+      "classIds": [
+        "stu_leonard_850"
+      ],
+      "sourceConfigSHA256": "2c25f36646ff9b31e4293b5f9ec293b603bff9d6b887c4b85377d22186fad41a",
+      "eligibleForApproval": true,
+      "flags": [],
+      "techFailures": [],
+      "runs": [
+        {
+          "side": "left",
+          "mode": "paired",
+          "time": 8.9260398200793,
+          "startedAt": "2026-10-25T21:59:41Z",
+          "clean": true,
+          "flags": {},
+          "result": {
+            "nativeValid": true,
+            "time": 8.9260398200793,
+            "reaction": 0.30440793317326,
+            "finishOrder": 719.66507706593,
+            "entrantId": "autobello/rls_stu_neon_02:left",
+            "qualifyingRedLight": false,
+            "boundaryViolation": false,
+            "valid": true
+          },
+          "tech": {
+            "stu_leonard_850": {
+              "ok": true
+            }
+          },
+          "inspection": {
+            "year": 1968,
+            "turbocharger": true,
+            "drivetrain": "RWD",
+            "supercharger": false,
+            "truck": false,
+            "rollCage": true,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_f_26_4_15_drag",
+                "source": "installed-part-label",
+                "slot": "/autobello_body/autobello_suspension_f/wheel_f_5/tire_f_15x4/tire_f_26_4_15_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_r_29_12_15_drag",
+                "source": "installed-part-label",
+                "slot": "/autobello_body/autobello_suspension_r/wheel_r_5/tire_r_15x12_alt/tire_r_29_12_15_drag"
+              }
+            ],
+            "tireTypes": [
+              "drag"
+            ],
+            "sportTires": false,
+            "tireType": "drag",
+            "model": "autobello",
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": true,
+            "diesel": false,
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 32,
+                  "wheel": "FL",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "slidingFrictionCoefMax": 1.26,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 32,
+                  "wheel": "FR",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "slidingFrictionCoefMax": 1.26,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 40,
+                  "wheel": "RL",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 40,
+                  "wheel": "RR",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "frictionCoefMin": 1.3
+                }
+              ]
+            },
+            "manual": true
+          }
+        },
+        {
+          "side": "right",
+          "mode": "paired",
+          "time": 8.9184486461079,
+          "startedAt": "2026-10-25T21:59:41Z",
+          "clean": true,
+          "flags": {},
+          "result": {
+            "nativeValid": true,
+            "time": 8.9184486461079,
+            "reaction": 0.28168066787666,
+            "finishOrder": 718.74633647707,
+            "entrantId": "autobello/rls_stu_neon_02:right",
+            "qualifyingRedLight": false,
+            "boundaryViolation": false,
+            "valid": true
+          },
+          "tech": {
+            "stu_leonard_850": {
+              "ok": true
+            }
+          },
+          "inspection": {
+            "year": 1968,
+            "turbocharger": true,
+            "drivetrain": "RWD",
+            "supercharger": false,
+            "truck": false,
+            "rollCage": true,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_f_26_4_15_drag",
+                "source": "installed-part-label",
+                "slot": "/autobello_body/autobello_suspension_f/wheel_f_5/tire_f_15x4/tire_f_26_4_15_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_r_29_12_15_drag",
+                "source": "installed-part-label",
+                "slot": "/autobello_body/autobello_suspension_r/wheel_r_5/tire_r_15x12_alt/tire_r_29_12_15_drag"
+              }
+            ],
+            "tireTypes": [
+              "drag"
+            ],
+            "sportTires": false,
+            "tireType": "drag",
+            "model": "autobello",
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": true,
+            "diesel": false,
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 32,
+                  "wheel": "FL",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "slidingFrictionCoefMax": 1.26,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 32,
+                  "wheel": "FR",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "slidingFrictionCoefMax": 1.26,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 40,
+                  "wheel": "RL",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 40,
+                  "wheel": "RR",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "frictionCoefMin": 1.3
+                }
+              ]
+            },
+            "manual": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "burnside/rls_stu_loworbit_02",
+      "classIds": [
+        "stu_leonard_850"
+      ],
+      "sourceConfigSHA256": "ff1fde521ce8abd9ff3ca061e081aaf7bd2cf6c471c62630aa105c32c8ff98b5",
+      "eligibleForApproval": false,
+      "flags": [
+        "missions.dragRace.gameplay.disqualified.jumping"
+      ],
+      "techFailures": [
+        "A roll cage is required for a pass below 9.50 seconds (Nine exempt)."
+      ],
+      "runs": [
+        {
+          "side": "right",
+          "mode": "paired",
+          "startedAt": "2026-10-25T22:00:23Z",
+          "clean": false,
+          "flags": [
+            "missions.dragRace.gameplay.disqualified.jumping"
+          ],
+          "result": {
+            "reaction": 0,
+            "boundaryViolation": false,
+            "reason": "missions.dragRace.gameplay.disqualified.jumping",
+            "nativeReason": "missions.dragRace.gameplay.disqualified.jumping",
+            "nativeValid": false,
+            "entrantId": "burnside/rls_stu_loworbit_02:right",
+            "qualifyingRedLight": false,
+            "time": 0,
+            "valid": false
+          },
+          "tech": {},
+          "inspection": {
+            "year": 1954,
+            "turbocharger": false,
+            "drivetrain": "RWD",
+            "supercharger": true,
+            "truck": false,
+            "rollCage": false,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_f_27.5_4_15_drag",
+                "source": "installed-part-label",
+                "slot": "/burnside_frame/burnside_suspension_f/wheel_f_5/tire_f_15x4/tire_f_27.5_4_15_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_r_28_9_15_drag",
+                "source": "installed-part-label",
+                "slot": "/burnside_frame/burnside_suspension_r/wheel_r_5/tire_r_15x9/tire_r_28_9_15_drag"
+              }
+            ],
+            "tireTypes": [
+              "drag"
+            ],
+            "sportTires": false,
+            "tireType": "drag",
+            "model": "burnside",
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": true,
+            "diesel": false,
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 32,
+                  "wheel": "FL",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "slidingFrictionCoefMax": 1.26,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 32,
+                  "wheel": "FR",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "slidingFrictionCoefMax": 1.26,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 40,
+                  "wheel": "RL",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 40,
+                  "wheel": "RR",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "frictionCoefMin": 1.3
+                }
+              ]
+            },
+            "manual": false
+          }
+        },
+        {
+          "side": "left",
+          "mode": "paired",
+          "startedAt": "2026-10-25T22:00:23Z",
+          "clean": false,
+          "flags": [
+            "missions.dragRace.gameplay.disqualified.jumping"
+          ],
+          "result": {
+            "reaction": 0,
+            "boundaryViolation": false,
+            "reason": "missions.dragRace.gameplay.disqualified.jumping",
+            "nativeReason": "missions.dragRace.gameplay.disqualified.jumping",
+            "nativeValid": false,
+            "entrantId": "burnside/rls_stu_loworbit_02:left",
+            "qualifyingRedLight": false,
+            "time": 0,
+            "valid": false
+          },
+          "tech": {},
+          "inspection": {
+            "year": 1954,
+            "turbocharger": false,
+            "drivetrain": "RWD",
+            "supercharger": true,
+            "truck": false,
+            "rollCage": false,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_f_27.5_4_15_drag",
+                "source": "installed-part-label",
+                "slot": "/burnside_frame/burnside_suspension_f/wheel_f_5/tire_f_15x4/tire_f_27.5_4_15_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_r_28_9_15_drag",
+                "source": "installed-part-label",
+                "slot": "/burnside_frame/burnside_suspension_r/wheel_r_5/tire_r_15x9/tire_r_28_9_15_drag"
+              }
+            ],
+            "tireTypes": [
+              "drag"
+            ],
+            "sportTires": false,
+            "tireType": "drag",
+            "model": "burnside",
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": true,
+            "diesel": false,
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 32,
+                  "wheel": "FL",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "slidingFrictionCoefMax": 1.26,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 32,
+                  "wheel": "FR",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "slidingFrictionCoefMax": 1.26,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 40,
+                  "wheel": "RL",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 40,
+                  "wheel": "RR",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "frictionCoefMin": 1.3
+                }
+              ]
+            },
+            "manual": false
+          }
+        },
+        {
+          "side": "left",
+          "mode": "solo",
+          "startedAt": "2026-10-25T22:00:46Z",
+          "clean": false,
+          "flags": [
+            "missions.dragRace.gameplay.disqualified.jumping"
+          ],
+          "result": {
+            "reaction": 0,
+            "boundaryViolation": false,
+            "reason": "missions.dragRace.gameplay.disqualified.jumping",
+            "nativeReason": "missions.dragRace.gameplay.disqualified.jumping",
+            "nativeValid": false,
+            "entrantId": "burnside/rls_stu_loworbit_02:left",
+            "qualifyingRedLight": false,
+            "time": 0,
+            "valid": false
+          },
+          "tech": {},
+          "inspection": {
+            "year": 1954,
+            "turbocharger": false,
+            "drivetrain": "RWD",
+            "supercharger": true,
+            "truck": false,
+            "rollCage": false,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_f_27.5_4_15_drag",
+                "source": "installed-part-label",
+                "slot": "/burnside_frame/burnside_suspension_f/wheel_f_5/tire_f_15x4/tire_f_27.5_4_15_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_r_28_9_15_drag",
+                "source": "installed-part-label",
+                "slot": "/burnside_frame/burnside_suspension_r/wheel_r_5/tire_r_15x9/tire_r_28_9_15_drag"
+              }
+            ],
+            "tireTypes": [
+              "drag"
+            ],
+            "sportTires": false,
+            "tireType": "drag",
+            "model": "burnside",
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": true,
+            "diesel": false,
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 32,
+                  "wheel": "FL",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "slidingFrictionCoefMax": 1.26,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 32,
+                  "wheel": "FR",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "slidingFrictionCoefMax": 1.26,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 40,
+                  "wheel": "RL",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 40,
+                  "wheel": "RR",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "frictionCoefMin": 1.3
+                }
+              ]
+            },
+            "manual": false
+          }
+        },
+        {
+          "side": "right",
+          "mode": "solo",
+          "time": 8.8968379148243,
+          "startedAt": "2026-10-25T22:01:05Z",
+          "clean": true,
+          "flags": {},
+          "result": {
+            "nativeValid": true,
+            "time": 8.8968379148243,
+            "reaction": 0.42062794720181,
+            "finishOrder": 723.43835529984,
+            "entrantId": "burnside/rls_stu_loworbit_02:right",
+            "qualifyingRedLight": false,
+            "boundaryViolation": false,
+            "valid": true
+          },
+          "tech": {
+            "stu_leonard_850": {
+              "ok": false,
+              "code": "tech",
+              "reason": "A roll cage is required for a pass below 9.50 seconds (Nine exempt)."
+            }
+          },
+          "inspection": {
+            "year": 1954,
+            "turbocharger": false,
+            "drivetrain": "RWD",
+            "supercharger": true,
+            "truck": false,
+            "rollCage": false,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_f_27.5_4_15_drag",
+                "source": "installed-part-label",
+                "slot": "/burnside_frame/burnside_suspension_f/wheel_f_5/tire_f_15x4/tire_f_27.5_4_15_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_r_28_9_15_drag",
+                "source": "installed-part-label",
+                "slot": "/burnside_frame/burnside_suspension_r/wheel_r_5/tire_r_15x9/tire_r_28_9_15_drag"
+              }
+            ],
+            "tireTypes": [
+              "drag"
+            ],
+            "sportTires": false,
+            "tireType": "drag",
+            "model": "burnside",
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": true,
+            "diesel": false,
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 32,
+                  "wheel": "FL",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "slidingFrictionCoefMax": 1.26,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 32,
+                  "wheel": "FR",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "slidingFrictionCoefMax": 1.26,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 40,
+                  "wheel": "RL",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 40,
+                  "wheel": "RR",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "frictionCoefMin": 1.3
+                }
+              ]
+            },
+            "manual": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "nine/rls_stu_haulmark_03",
+      "classIds": [
+        "stu_leonard_850"
+      ],
+      "sourceConfigSHA256": "cf97194ae522f15199db82deb3fed86ad9c571266a4db1815e38a27e19922845",
+      "eligibleForApproval": true,
+      "flags": [
+        "missions.dragRace.gameplay.disqualified.outOfLane"
+      ],
+      "techFailures": [],
+      "runs": [
+        {
+          "side": "right",
+          "mode": "paired",
+          "time": 8.9187570109229,
+          "startedAt": "2026-10-25T22:01:44Z",
+          "clean": true,
+          "flags": {},
+          "result": {
+            "nativeValid": true,
+            "time": 8.9187570109229,
+            "reaction": 0.45866421438673,
+            "finishOrder": 762.36124566033,
+            "entrantId": "nine/rls_stu_haulmark_03:right",
+            "qualifyingRedLight": false,
+            "boundaryViolation": false,
+            "valid": true
+          },
+          "tech": {
+            "stu_leonard_850": {
+              "ok": true
+            }
+          },
+          "inspection": {
+            "year": 1934,
+            "turbocharger": false,
+            "drivetrain": "RWD",
+            "supercharger": true,
+            "truck": false,
+            "rollCage": false,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_f_26_4_15_drag",
+                "source": "installed-part-label",
+                "slot": "/nine_frame/nine_suspension_f_custom/nine_spindles_f_custom/wheel_f_5/tire_f_15x4/tire_f_26_4_15_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_r_28_9_15_drag",
+                "source": "installed-part-label",
+                "slot": "/nine_frame/nine_suspension_r_custom_4link/wheel_r_5/tire_r_15x9/tire_r_28_9_15_drag"
+              }
+            ],
+            "tireTypes": [
+              "drag"
+            ],
+            "sportTires": false,
+            "tireType": "drag",
+            "model": "nine",
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": true,
+            "diesel": false,
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 32,
+                  "wheel": "FL",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "slidingFrictionCoefMax": 1.26,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 32,
+                  "wheel": "FR",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "slidingFrictionCoefMax": 1.26,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 40,
+                  "wheel": "RL",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 40,
+                  "wheel": "RR",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "frictionCoefMin": 1.3
+                }
+              ]
+            },
+            "manual": false
+          }
+        },
+        {
+          "side": "left",
+          "mode": "paired",
+          "time": 8.9165234288203,
+          "startedAt": "2026-10-25T22:01:44Z",
+          "clean": false,
+          "flags": [
+            "missions.dragRace.gameplay.disqualified.outOfLane"
+          ],
+          "result": {
+            "reaction": 0.42744278148233,
+            "finishOrder": 761.37582879724,
+            "boundaryViolation": false,
+            "reason": "missions.dragRace.gameplay.disqualified.outOfLane",
+            "nativeReason": "missions.dragRace.gameplay.disqualified.outOfLane",
+            "nativeValid": false,
+            "time": 8.9165234288203,
+            "entrantId": "nine/rls_stu_haulmark_03:left",
+            "qualifyingRedLight": false,
+            "retired": true,
+            "valid": false
+          },
+          "tech": {
+            "stu_leonard_850": {
+              "ok": true
+            }
+          },
+          "inspection": {
+            "year": 1934,
+            "turbocharger": false,
+            "drivetrain": "RWD",
+            "supercharger": true,
+            "truck": false,
+            "rollCage": false,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_f_26_4_15_drag",
+                "source": "installed-part-label",
+                "slot": "/nine_frame/nine_suspension_f_custom/nine_spindles_f_custom/wheel_f_5/tire_f_15x4/tire_f_26_4_15_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_r_28_9_15_drag",
+                "source": "installed-part-label",
+                "slot": "/nine_frame/nine_suspension_r_custom_4link/wheel_r_5/tire_r_15x9/tire_r_28_9_15_drag"
+              }
+            ],
+            "tireTypes": [
+              "drag"
+            ],
+            "sportTires": false,
+            "tireType": "drag",
+            "model": "nine",
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": true,
+            "diesel": false,
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 32,
+                  "wheel": "FL",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "slidingFrictionCoefMax": 1.26,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 32,
+                  "wheel": "FR",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "slidingFrictionCoefMax": 1.26,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 40,
+                  "wheel": "RL",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 40,
+                  "wheel": "RR",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "frictionCoefMin": 1.3
+                }
+              ]
+            },
+            "manual": false
+          }
+        },
+        {
+          "side": "left",
+          "mode": "solo",
+          "time": 8.9243560315233,
+          "startedAt": "2026-10-25T22:02:22Z",
+          "clean": true,
+          "flags": {},
+          "result": {
+            "nativeValid": true,
+            "time": 8.9243560315233,
+            "reaction": 0.75716016496237,
+            "finishOrder": 755.55271863617,
+            "entrantId": "nine/rls_stu_haulmark_03:left",
+            "qualifyingRedLight": false,
+            "boundaryViolation": false,
+            "valid": true
+          },
+          "tech": {
+            "stu_leonard_850": {
+              "ok": true
+            }
+          },
+          "inspection": {
+            "year": 1934,
+            "turbocharger": false,
+            "drivetrain": "RWD",
+            "supercharger": true,
+            "truck": false,
+            "rollCage": false,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_f_26_4_15_drag",
+                "source": "installed-part-label",
+                "slot": "/nine_frame/nine_suspension_f_custom/nine_spindles_f_custom/wheel_f_5/tire_f_15x4/tire_f_26_4_15_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_r_28_9_15_drag",
+                "source": "installed-part-label",
+                "slot": "/nine_frame/nine_suspension_r_custom_4link/wheel_r_5/tire_r_15x9/tire_r_28_9_15_drag"
+              }
+            ],
+            "tireTypes": [
+              "drag"
+            ],
+            "sportTires": false,
+            "tireType": "drag",
+            "model": "nine",
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": true,
+            "diesel": false,
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 32,
+                  "wheel": "FL",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "slidingFrictionCoefMax": 1.26,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 32,
+                  "wheel": "FR",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "slidingFrictionCoefMax": 1.26,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 40,
+                  "wheel": "RL",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 40,
+                  "wheel": "RR",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "frictionCoefMin": 1.3
+                }
+              ]
+            },
+            "manual": false
+          }
+        },
+        {
+          "side": "right",
+          "mode": "solo",
+          "time": 8.9219661628791,
+          "startedAt": "2026-10-25T22:02:59Z",
+          "clean": true,
+          "flags": {},
+          "result": {
+            "nativeValid": true,
+            "time": 8.9219661628791,
+            "reaction": 0.75236785748736,
+            "finishOrder": 752.17678458377,
+            "entrantId": "nine/rls_stu_haulmark_03:right",
+            "qualifyingRedLight": false,
+            "boundaryViolation": false,
+            "valid": true
+          },
+          "tech": {
+            "stu_leonard_850": {
+              "ok": true
+            }
+          },
+          "inspection": {
+            "year": 1934,
+            "turbocharger": false,
+            "drivetrain": "RWD",
+            "supercharger": true,
+            "truck": false,
+            "rollCage": false,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_f_26_4_15_drag",
+                "source": "installed-part-label",
+                "slot": "/nine_frame/nine_suspension_f_custom/nine_spindles_f_custom/wheel_f_5/tire_f_15x4/tire_f_26_4_15_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_r_28_9_15_drag",
+                "source": "installed-part-label",
+                "slot": "/nine_frame/nine_suspension_r_custom_4link/wheel_r_5/tire_r_15x9/tire_r_28_9_15_drag"
+              }
+            ],
+            "tireTypes": [
+              "drag"
+            ],
+            "sportTires": false,
+            "tireType": "drag",
+            "model": "nine",
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": true,
+            "diesel": false,
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 32,
+                  "wheel": "FL",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "slidingFrictionCoefMax": 1.26,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 32,
+                  "wheel": "FR",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "slidingFrictionCoefMax": 1.26,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 40,
+                  "wheel": "RL",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 40,
+                  "wheel": "RR",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "frictionCoefMin": 1.3
+                }
+              ]
+            },
+            "manual": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "nine/rls_stu_haulmark_04",
+      "classIds": [
+        "stu_leonard_850"
+      ],
+      "sourceConfigSHA256": "2750fb95fb4e28158ecfbdec17056f2b3c766b2fc1b7dc44ef7e2cea169b4ce4",
+      "eligibleForApproval": false,
+      "flags": [
+        "missions.dragRace.gameplay.disqualified.jumping"
+      ],
+      "techFailures": [],
+      "runs": [
+        {
+          "side": "left",
+          "mode": "paired",
+          "startedAt": "2026-10-25T22:03:36Z",
+          "clean": false,
+          "flags": [
+            "missions.dragRace.gameplay.disqualified.jumping"
+          ],
+          "result": {
+            "reaction": 0,
+            "boundaryViolation": false,
+            "reason": "missions.dragRace.gameplay.disqualified.jumping",
+            "nativeReason": "missions.dragRace.gameplay.disqualified.jumping",
+            "nativeValid": false,
+            "entrantId": "nine/rls_stu_haulmark_04:left",
+            "qualifyingRedLight": false,
+            "time": 0,
+            "valid": false
+          },
+          "tech": {},
+          "inspection": {
+            "year": 1934,
+            "turbocharger": false,
+            "drivetrain": "RWD",
+            "supercharger": true,
+            "truck": false,
+            "rollCage": false,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_f_26_4_15_drag",
+                "source": "installed-part-label",
+                "slot": "/nine_frame/nine_suspension_f_custom/nine_spindles_f_custom/wheel_f_5/tire_f_15x4/tire_f_26_4_15_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_r_28_9_15_drag",
+                "source": "installed-part-label",
+                "slot": "/nine_frame/nine_suspension_r_custom_4link/wheel_r_5/tire_r_15x9/tire_r_28_9_15_drag"
+              }
+            ],
+            "tireTypes": [
+              "drag"
+            ],
+            "sportTires": false,
+            "tireType": "drag",
+            "model": "nine",
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": true,
+            "diesel": false,
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 32,
+                  "wheel": "FL",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "slidingFrictionCoefMax": 1.26,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 32,
+                  "wheel": "FR",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "slidingFrictionCoefMax": 1.26,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 40,
+                  "wheel": "RL",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 40,
+                  "wheel": "RR",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "frictionCoefMin": 1.3
+                }
+              ]
+            },
+            "manual": true
+          }
+        },
+        {
+          "side": "right",
+          "mode": "paired",
+          "startedAt": "2026-10-25T22:03:36Z",
+          "clean": false,
+          "flags": [
+            "missions.dragRace.gameplay.disqualified.jumping"
+          ],
+          "result": {
+            "reaction": 0,
+            "boundaryViolation": false,
+            "reason": "missions.dragRace.gameplay.disqualified.jumping",
+            "nativeReason": "missions.dragRace.gameplay.disqualified.jumping",
+            "nativeValid": false,
+            "entrantId": "nine/rls_stu_haulmark_04:right",
+            "qualifyingRedLight": false,
+            "time": 0,
+            "valid": false
+          },
+          "tech": {},
+          "inspection": {
+            "year": 1934,
+            "turbocharger": false,
+            "drivetrain": "RWD",
+            "supercharger": true,
+            "truck": false,
+            "rollCage": false,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_f_26_4_15_drag",
+                "source": "installed-part-label",
+                "slot": "/nine_frame/nine_suspension_f_custom/nine_spindles_f_custom/wheel_f_5/tire_f_15x4/tire_f_26_4_15_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_r_28_9_15_drag",
+                "source": "installed-part-label",
+                "slot": "/nine_frame/nine_suspension_r_custom_4link/wheel_r_5/tire_r_15x9/tire_r_28_9_15_drag"
+              }
+            ],
+            "tireTypes": [
+              "drag"
+            ],
+            "sportTires": false,
+            "tireType": "drag",
+            "model": "nine",
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": true,
+            "diesel": false,
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 32,
+                  "wheel": "FL",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "slidingFrictionCoefMax": 1.26,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 32,
+                  "wheel": "FR",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "slidingFrictionCoefMax": 1.26,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 40,
+                  "wheel": "RL",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 40,
+                  "wheel": "RR",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "frictionCoefMin": 1.3
+                }
+              ]
+            },
+            "manual": true
+          }
+        },
+        {
+          "side": "left",
+          "mode": "solo",
+          "time": 8.9601426186699,
+          "startedAt": "2026-10-25T22:03:48Z",
+          "clean": true,
+          "flags": {},
+          "result": {
+            "nativeValid": true,
+            "time": 8.9601426186699,
+            "reaction": 0.76158683217954,
+            "finishOrder": 749.29042687682,
+            "entrantId": "nine/rls_stu_haulmark_04:left",
+            "qualifyingRedLight": false,
+            "boundaryViolation": false,
+            "valid": true
+          },
+          "tech": {
+            "stu_leonard_850": {
+              "ok": true
+            }
+          },
+          "inspection": {
+            "year": 1934,
+            "turbocharger": false,
+            "drivetrain": "RWD",
+            "supercharger": true,
+            "truck": false,
+            "rollCage": false,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_f_26_4_15_drag",
+                "source": "installed-part-label",
+                "slot": "/nine_frame/nine_suspension_f_custom/nine_spindles_f_custom/wheel_f_5/tire_f_15x4/tire_f_26_4_15_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_r_28_9_15_drag",
+                "source": "installed-part-label",
+                "slot": "/nine_frame/nine_suspension_r_custom_4link/wheel_r_5/tire_r_15x9/tire_r_28_9_15_drag"
+              }
+            ],
+            "tireTypes": [
+              "drag"
+            ],
+            "sportTires": false,
+            "tireType": "drag",
+            "model": "nine",
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": true,
+            "diesel": false,
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 32,
+                  "wheel": "FL",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "slidingFrictionCoefMax": 1.26,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 32,
+                  "wheel": "FR",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "slidingFrictionCoefMax": 1.26,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 40,
+                  "wheel": "RL",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 40,
+                  "wheel": "RR",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "frictionCoefMin": 1.3
+                }
+              ]
+            },
+            "manual": true
+          }
+        },
+        {
+          "side": "right",
+          "mode": "solo",
+          "startedAt": "2026-10-25T22:04:25Z",
+          "clean": false,
+          "flags": [
+            "missions.dragRace.gameplay.disqualified.jumping"
+          ],
+          "result": {
+            "reaction": 0,
+            "boundaryViolation": false,
+            "reason": "missions.dragRace.gameplay.disqualified.jumping",
+            "nativeReason": "missions.dragRace.gameplay.disqualified.jumping",
+            "nativeValid": false,
+            "entrantId": "nine/rls_stu_haulmark_04:right",
+            "qualifyingRedLight": false,
+            "time": 0,
+            "valid": false
+          },
+          "tech": {},
+          "inspection": {
+            "year": 1934,
+            "turbocharger": false,
+            "drivetrain": "RWD",
+            "supercharger": true,
+            "truck": false,
+            "rollCage": false,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_f_26_4_15_drag",
+                "source": "installed-part-label",
+                "slot": "/nine_frame/nine_suspension_f_custom/nine_spindles_f_custom/wheel_f_5/tire_f_15x4/tire_f_26_4_15_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_r_28_9_15_drag",
+                "source": "installed-part-label",
+                "slot": "/nine_frame/nine_suspension_r_custom_4link/wheel_r_5/tire_r_15x9/tire_r_28_9_15_drag"
+              }
+            ],
+            "tireTypes": [
+              "drag"
+            ],
+            "sportTires": false,
+            "tireType": "drag",
+            "model": "nine",
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": true,
+            "diesel": false,
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 32,
+                  "wheel": "FL",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "slidingFrictionCoefMax": 1.26,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 32,
+                  "wheel": "FR",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "slidingFrictionCoefMax": 1.26,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 40,
+                  "wheel": "RL",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "frictionCoefMin": 1.3
+                },
+                {
+                  "frictionCoefMax": 1.3,
+                  "nodeCount": 40,
+                  "wheel": "RR",
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "frictionCoefMin": 1.3
+                }
+              ]
+            },
+            "manual": true
+          }
+        }
+      ]
+    }
+  ]
+}

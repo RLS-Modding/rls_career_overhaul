@@ -11,6 +11,7 @@ local M = {}
 local populationSelector = require("overhaul/career/market/vehicleShopping/populationSelector")
 local usedVehicleCondition = require("overhaul/lib/market/usedVehicleCondition")
 local jsonCatalog = require("overhaul/lib/platform/jsonCatalog")
+local vehicleListFilter = require("overhaul/lib/market/vehicleListFilter")
 
 function M.new(inputs)
   local service = {}
@@ -98,18 +99,8 @@ function M.new(inputs)
           end
 
           -- Facility-editor empty filters mean no constraint.
-          if next(parameters) ~= nil then
-            local passed = false
-            local aggregateValue = type(vehicleInfo.aggregates) == "table" and vehicleInfo.aggregates[filterName] or nil
-            for _, value in ipairs(parameters) do
-              if vehicleInfo[filterName] == value or (type(aggregateValue) == "table" and aggregateValue[value]) then
-                passed = true
-                break
-              end
-            end
-            if not passed then
-              return false
-            end
+          if next(parameters) ~= nil and not vehicleListFilter.matchesAny(vehicleInfo, filterName, parameters) then
+            return false
           end
         end
       end
@@ -328,6 +319,18 @@ function M.new(inputs)
     return filteredRegular, droppedForDealership, addedCount
   end
 
+  -- One seller's stock pool from its resolved filters (organization level, sub-filters, prestige), as the
+  -- full build, the single-dealership rebuild and the dev previews all need it.
+  local function collectSellerPool(dealership, regularEligibleVehicles, context)
+    local prestigeTopTrimLookup = dealership.selectionPolicy == 'prestige' and service.dealerPolicyValid(dealership)
+      and dependencies.validation.buildPrestigeTopTrimLookup(regularEligibleVehicles, dealership.selectionPolicyOptions) or {}
+    local filter, subFilters = resolveDealershipFilters(dealership)
+    local filters = buildDealershipAggregateFilters(filter, subFilters)
+    local filteredRegular, droppedForDealership, addedCount, conditionPolicyUnavailable =
+      collectDealershipCacheVehicles(dealership, filters, regularEligibleVehicles, prestigeTopTrimLookup, context)
+    return filters, filteredRegular, droppedForDealership, addedCount, conditionPolicyUnavailable
+  end
+
   local function prepareDealershipCache()
     state.vehicleCache.cacheValid = false
     state.vehicleCache.dealershipCache = {}
@@ -343,12 +346,8 @@ function M.new(inputs)
     if facilities and facilities.dealerships then
       for _, dealership in ipairs(facilities.dealerships) do
         local dealershipId = dealership.id
-        local prestigeTopTrimLookup = dealership.selectionPolicy == 'prestige' and service.dealerPolicyValid(dealership)
-          and dependencies.validation.buildPrestigeTopTrimLookup(regularEligibleVehicles, dealership.selectionPolicyOptions) or {}
-        local filter, subFilters = resolveDealershipFilters(dealership)
-        local filters = buildDealershipAggregateFilters(filter, subFilters)
-        local filteredRegular, droppedForDealership, addedCount, conditionPolicyUnavailable =
-          collectDealershipCacheVehicles(dealership, filters, regularEligibleVehicles, prestigeTopTrimLookup, "cacheDealers")
+        local filters, filteredRegular, droppedForDealership, addedCount, conditionPolicyUnavailable =
+          collectSellerPool(dealership, regularEligibleVehicles, "cacheDealers")
         totalPartsCalculated = totalPartsCalculated + addedCount
 
         state.vehicleCache.dealershipCache[dealershipId] = state.vehicleCache.dealershipCache[dealershipId] or {}
@@ -457,20 +456,9 @@ function M.new(inputs)
     end
   end
 
-  service.getRandomVehicleFromCache = function(sellerId, count, excludedConfigKeys, modelLimit, stockedModels)
-    if (tonumber(count) or 0) <= 0 then return {} end
-    if not state.vehicleCache.cacheValid then
-      log("W", "Career", "Vehicle cache invalid, rebuilding...")
-      service.cacheDealers()
-    end
-    local dealershipData = state.vehicleCache.dealershipCache[sellerId]
-    if not dealershipData then
-      log("W", "Career", "No cached data for seller: " .. tostring(sellerId))
-      return {}
-    end
+  -- Validate selected entries only because catalog construction already checked the full pool.
+  local function drawFromSellerPool(dealershipData, count, excludedConfigKeys, modelLimit, stockedModels)
     if not dealershipData.populationSelector then service.buildPopulationSelector(dealershipData) end
-
-    -- Validate selected entries only because catalog construction already checked the full pool.
     local selected = populationSelector.draw(dealershipData.populationSelector, count, excludedConfigKeys,
       function(vehicle)
         if dependencies.validation.isQuarantined(vehicle) then return false end
@@ -488,6 +476,46 @@ function M.new(inputs)
       table.insert(vehicles, vehicle)
     end
     return vehicles
+  end
+
+  service.getRandomVehicleFromCache = function(sellerId, count, excludedConfigKeys, modelLimit, stockedModels)
+    if (tonumber(count) or 0) <= 0 then return {} end
+    if not state.vehicleCache.cacheValid then
+      log("W", "Career", "Vehicle cache invalid, rebuilding...")
+      service.cacheDealers()
+    end
+    local dealershipData = state.vehicleCache.dealershipCache[sellerId]
+    if not dealershipData then
+      log("W", "Career", "No cached data for seller: " .. tostring(sellerId))
+      return {}
+    end
+    return drawFromSellerPool(dealershipData, count, excludedConfigKeys, modelLimit, stockedModels)
+  end
+
+  -- Dev previews of an authored seller (from its file or the Filter Debug text) build a throwaway pool the way
+  -- career stock does and draw from it, so a preview shows what the dealer can really stock. One preview is
+  -- one sampling batch: its pool is built once, from its own sanitized copies, and dropped with it.
+  service.previewSellerStock = function(seller, eligibleVehicles)
+    local copies = {}
+    for index, vehicleInfo in ipairs(eligibleVehicles or {}) do
+      copies[index] = dependencies.validation.copyCatalogEntry(vehicleInfo)
+    end
+    local sanitized = dependencies.validation.sanitizeVehicleInfoList(copies, "previewSeller")
+    local filters, pool, _, _, conditionPolicyUnavailable = collectSellerPool(seller, sanitized, "previewSeller")
+    local sellerPool = {regularVehicles = conditionPolicyUnavailable and {} or pool,
+      selectionPolicy = seller.selectionPolicy, filters = filters}
+
+    local preview = {}
+    -- Each car keeps the filter it was drawn for; a count above the pool size draws the whole pool.
+    function preview.draw(count)
+      if #sellerPool.regularVehicles == 0 then return {} end
+      local vehicles = drawFromSellerPool(sellerPool, math.min(tonumber(count) or 0, #sellerPool.regularVehicles))
+      for _, vehicle in ipairs(vehicles) do
+        vehicle.filter = service.choosePrecomputedFilter(vehicle)
+      end
+      return vehicles
+    end
+    return preview
   end
 
   service.invalidateVehicleCache = function()
@@ -535,13 +563,8 @@ function M.new(inputs)
       dependencies.validation.logVehicleSanitizationSummary("rebuildDealershipCache eligible vehicles", eligibleSummary)
       state.vehicleCache.regularVehicles = regularEligibleVehicles
     end
-    local prestigeTopTrimLookup = dealership.selectionPolicy == 'prestige' and service.dealerPolicyValid(dealership)
-      and dependencies.validation.buildPrestigeTopTrimLookup(regularEligibleVehicles, dealership.selectionPolicyOptions) or {}
-
-    local filter, subFilters = resolveDealershipFilters(dealership)
-    local filters = buildDealershipAggregateFilters(filter, subFilters)
-    local filteredRegular, droppedForDealership, _, conditionPolicyUnavailable = collectDealershipCacheVehicles(dealership, filters,
-      regularEligibleVehicles, prestigeTopTrimLookup, "rebuildDealershipCache")
+    local filters, filteredRegular, droppedForDealership, _, conditionPolicyUnavailable =
+      collectSellerPool(dealership, regularEligibleVehicles, "rebuildDealershipCache")
 
     local notConfigured = tableIsEmpty(filteredRegular)
     if notConfigured then

@@ -1,0 +1,91 @@
+{
+  "isAuxiliary": true,
+  "Configuration": "Fiona Manning - Wrong-Wheel Drive",
+  "Description": "Driver: Fiona Manning. Builder: Heritage Speed. Gold Circuit First healthy native Alder quarter-mile in the 9.50–10.00 bracket: 9.513 s. FWD, no first-gear nitrous. Tuning-only index compliance confirmed on 2026-10-26: 3 legal native passes, fastest 9.618693 s. Saved-build mean 9.649037 s. Parts and paint unchanged. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Drivetrain": "FWD",
+  "Transmission": "Sequential",
+  "Induction Type": "NA + N2O",
+  "Population": -1,
+  "Value": 65000,
+  "Name": "Fiona Manning",
+  "Author": "RLS Modding",
+  "Years": {
+    "max": 1991,
+    "min": 1988
+  },
+  "Power": 1025,
+  "Weight": 1401,
+  "Motorsport": {
+    "version": 1,
+    "id": "pessima/rls_wrongwheel_heritage_02",
+    "configId": "rls_wrongwheel_heritage_02",
+    "model": "pessima",
+    "config": "/vehicles/pessima/rls_wrongwheel_heritage_02.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "karol_monroe",
+    "driverName": "Fiona Manning",
+    "builder": "Heritage Speed",
+    "leagueId": "street_kings",
+    "classIds": [
+      "wrong_wheel_drive"
+    ],
+    "approvedClassIds": [
+      "wrong_wheel_drive"
+    ],
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "a47625bd5873a4721a92b7b082e5b7dccbb1516f491730f67be113e390eb89b6",
+    "traits": {
+      "drivetrain": "FWD",
+      "transmission": "6-speed Sequential",
+      "induction": "Naturally aspirated",
+      "nitrous": true,
+      "years": {
+        "max": 1991,
+        "min": 1988
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x8_alt",
+          "part": "tire_F_26_8_15_alt_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_15x7",
+          "part": "tire_R_195_60_15_standard",
+          "typeHint": null
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "pessima_rollcage",
+          "part": "pessima_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.6490366100182,
+      "runId": "COMPLIANCE-20261026-rls_wrongwheel_heritage_02",
+      "evidenceConfigSHA256": "9c729780925f248909416c69d9bfe4340043223c50dcdd666dc1b8ca58f7e432",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/wrongwheel/final-results.json",
+      "acceptedConfig": "outputs/wrongwheel/accepted/rls_wrongwheel_heritage_02/rls_wrongwheel_heritage_02.pc",
+      "tuningEvidence": "/settings/motorsportEvents/complianceEvidence-20261026.json",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_wrongwheel_drive"
+  }
+}

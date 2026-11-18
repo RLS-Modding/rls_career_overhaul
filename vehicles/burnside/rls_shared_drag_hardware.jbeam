@@ -1,0 +1,314 @@
+{
+  "rls_burnside_engine_internals_v8_423_stage4_block": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Heavy Duty Block", "value":33000},
+    "slotType": "burnside_engine_internals_v8_423",
+    "mainEngine": {
+      "maxTorqueRating": 5450,
+      "maxOverTorqueDamage": 1000,
+      "cylinderWallTemperatureDamageThreshold": 185,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1700000,
+      "pistonRingDamageThreshold": 1700000,
+      "connectingRodDamageThreshold": 2200000,
+      "maxPhysicalRPM": 8200
+    },
+    "flexbodies": [
+      ["mesh", "[group]:", "nonFlexMaterials"],
+      ["burnside_valvecover_v8_bigblock_performance", ["burnside_engine"]]
+    ]
+  },
+  "rls_burnside_engine_internals_v8_313_stage4_block": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Heavy Duty Block", "value":24000},
+    "slotType": "burnside_engine_internals_v8_313",
+    "mainEngine": {
+      "maxTorqueRating": 3500,
+      "maxOverTorqueDamage": 900,
+      "cylinderWallTemperatureDamageThreshold": 185,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1700000,
+      "pistonRingDamageThreshold": 1700000,
+      "connectingRodDamageThreshold": 2200000,
+      "maxPhysicalRPM": 6900
+    },
+    "flexbodies": [
+      ["mesh", "[group]:", "nonFlexMaterials"],
+      ["burnside_valvecover_v8_smallblock_heavyduty", ["burnside_engine"]]
+    ]
+  },
+  "rls_burnside_engine_internals_v8_274_stage4_block": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Heavy Duty Block", "value":24000},
+    "slotType": "burnside_engine_internals_v8_274",
+    "mainEngine": {
+      "maxTorqueRating": 3000,
+      "maxOverTorqueDamage": 1000,
+      "cylinderWallTemperatureDamageThreshold": 180,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1500000,
+      "pistonRingDamageThreshold": 1500000,
+      "connectingRodDamageThreshold": 2000000,
+      "maxPhysicalRPM": 7000
+    },
+    "flexbodies": [
+      ["mesh", "[group]:", "nonFlexMaterials"],
+      ["burnside_valvecover_v8_smallblock_performance", ["burnside_engine"]]
+    ]
+  },
+  "rls_burnside_intake_v8_423_stage4_turbo": {
+    "information": {"authors":"RLS / Low Orbit Garage", "name":"Stage 4 Turbocharger (Boost by Gear)", "value":20000},
+    "slotType": "burnside_intake_v8_423",
+    "mainEngine": {
+      "torqueModIntake": [
+        ["rpm", "torque"],
+        [0, 0],
+        [500, 0],
+        [1000, 0],
+        [1500, -5],
+        [2000, -5],
+        [2500, -5],
+        [3000, -12],
+        [3500, -16],
+        [4000, -20],
+        [4500, -28],
+        [5000, -42],
+        [5500, -65],
+        [6000, -80],
+        [6500, -80],
+        [7000, -80],
+        [7500, -80],
+        [8000, -80]
+      ],
+      "turbocharger": "turbocharger"
+    },
+    "flexbodies": [
+      ["mesh", "[group]:", "nonFlexMaterials"],
+      ["burnside_intake_v8_stock", ["burnside_engine", "burnside_airbox"]]
+    ],
+    "soundConfig": {"$+maxLoadMix":0, "$+intakeMuffling":0, "$+eqHighGain":0},
+    "soundConfigExhaust": {"$+maxLoadMix":0, "$+minLoadMix":0, "$+offLoadGain":0},
+    "nodes": [
+      ["id", "posX", "posY", "posZ"],
+      {"selfCollision":false},
+      {"collision":true},
+      {"nodeMaterial":"|NM_METAL"},
+      {"frictionCoef":0.5},
+      {"group":"burnside_airbox"},
+      {"engineGroup":"engine_intake"},
+      {"nodeWeight":2},
+      ["airb", 0, -1.37, 0.96],
+      {"engineGroup":""},
+      {"group":""}
+    ],
+    "beams": [
+      ["id1:", "id2:"],
+      {"beamType":"|NORMAL", "beamLongBound":1, "beamShortBound":1},
+      {"beamSpring":501000, "beamDamp":150},
+      {"beamDeform":12000, "beamStrength":36000},
+      {"deformGroup":"mainEngine_intake", "deformationTriggerRatio":0.01},
+      ["airb", "e1r"],
+      ["airb", "e2r"],
+      ["airb", "e3r"],
+      ["airb", "e4r"],
+      ["airb", "e1l"],
+      ["airb", "e2l"],
+      ["airb", "e3l"],
+      ["airb", "e4l"],
+      {"deformGroup":"", "deformationTriggerRatio":""},
+      {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1, "beamShortBound":1}
+    ],
+    "turbocharger": {
+      "bovSoundFileName": "event:>Vehicle>Forced_Induction>Turbo_03>turbo_bov_race",
+      "hissLoopEvent": "event:>Vehicle>Forced_Induction>Turbo_03>turbo_hiss_race",
+      "whineLoopEvent": "event:>Vehicle>Forced_Induction>Turbo_03>turbo_spin_race",
+      "bovEnabled": true,
+      "turboSizeCoef": 1,
+      "bovSoundVolumeCoef": 0.5,
+      "hissVolumePerPSI": 0.024,
+      "whineVolumePer10kRPM": 0.015,
+      "whinePitchPer10kRPM": 0.038,
+      "wastegateStart": ["$=min(max($rls_boost_1,0),42)", "$=min(max($rls_boost_2,0),42)", "$=min(max($rls_boost_3,0),42)", "$=min(max($rls_boost_4,0),42)", "$=min(max($rls_boost_5,0),42)", "$=min(max($rls_boost_6,0),42)", "$=min(max($rls_boost_7,0),42)", "$=min(max($rls_boost_8,0),42)", "$=min(max($rls_boost_9,0),42)", "$=min(max($rls_boost_10,0),42)"],
+      "wastegateLimit": ["$=min(max($rls_boost_1,0)+min(max($rls_boost_window_1,0),10),42)", "$=min(max($rls_boost_2,0)+min(max($rls_boost_window_2,0),10),42)", "$=min(max($rls_boost_3,0)+min(max($rls_boost_window_3,0),10),42)", "$=min(max($rls_boost_4,0)+min(max($rls_boost_window_4,0),10),42)", "$=min(max($rls_boost_5,0)+min(max($rls_boost_window_5,0),10),42)", "$=min(max($rls_boost_6,0)+min(max($rls_boost_window_6,0),10),42)", "$=min(max($rls_boost_7,0)+min(max($rls_boost_window_7,0),10),42)", "$=min(max($rls_boost_8,0)+min(max($rls_boost_window_8,0),10),42)", "$=min(max($rls_boost_9,0)+min(max($rls_boost_window_9,0),10),42)", "$=min(max($rls_boost_10,0)+min(max($rls_boost_window_10,0),10),42)"],
+      "maxExhaustPower": 9000,
+      "backPressureCoef": 0.000012,
+      "frictionCoef": 70,
+      "inertia": 1.8,
+      "pressureRatePSI": 100,
+      "damageThresholdTemperature": 900,
+      "pressurePSI": [
+        [0, -2.5],
+        [30000, -0.5],
+        [60000, 7],
+        [90000, 18],
+        [150000, 27],
+        [200000, 35],
+        [250000, 42]
+      ],
+      "engineDef": [
+        [0, 0, 0],
+        [650, 0.23, 0.12],
+        [1400, 0.35, 0.24],
+        [2000, 0.58, 0.55],
+        [3000, 0.84, 0.73],
+        [4000, 0.9, 0.84],
+        [5000, 0.95, 0.95],
+        [6000, 0.98, 0.98],
+        [7000, 0.97, 0.98],
+        [8000, 0.94, 0.94],
+        [9000, 0.9, 0.87]
+      ]
+    },
+    "variables": [
+      ["name", "type", "unit", "category", "default", "min", "max", "title", "description"],
+      ["$rls_boost_1", "range", "psi", "Engine", 12, 0, 42, "Gear 1 Boost", "Wastegate start; physical turbo capacity is limited to 80 PSI.", {"stepDis":0.1}],
+      ["$rls_boost_window_1", "range", "psi", "Engine", 1, 0, 10, "Gear 1 Boost Window", "Added target window, bounded by turbo pressure limit.", {"stepDis":0.1}],
+      ["$rls_boost_2", "range", "psi", "Engine", 12, 0, 42, "Gear 2 Boost", "Wastegate start; physical turbo capacity is limited to 80 PSI.", {"stepDis":0.1}],
+      ["$rls_boost_window_2", "range", "psi", "Engine", 1, 0, 10, "Gear 2 Boost Window", "Added target window, bounded by turbo pressure limit.", {"stepDis":0.1}],
+      ["$rls_boost_3", "range", "psi", "Engine", 12, 0, 42, "Gear 3 Boost", "Wastegate start; physical turbo capacity is limited to 80 PSI.", {"stepDis":0.1}],
+      ["$rls_boost_window_3", "range", "psi", "Engine", 1, 0, 10, "Gear 3 Boost Window", "Added target window, bounded by turbo pressure limit.", {"stepDis":0.1}],
+      ["$rls_boost_4", "range", "psi", "Engine", 12, 0, 42, "Gear 4 Boost", "Wastegate start; physical turbo capacity is limited to 80 PSI.", {"stepDis":0.1}],
+      ["$rls_boost_window_4", "range", "psi", "Engine", 1, 0, 10, "Gear 4 Boost Window", "Added target window, bounded by turbo pressure limit.", {"stepDis":0.1}],
+      ["$rls_boost_5", "range", "psi", "Engine", 12, 0, 42, "Gear 5 Boost", "Wastegate start; physical turbo capacity is limited to 80 PSI.", {"stepDis":0.1}],
+      ["$rls_boost_window_5", "range", "psi", "Engine", 1, 0, 10, "Gear 5 Boost Window", "Added target window, bounded by turbo pressure limit.", {"stepDis":0.1}],
+      ["$rls_boost_6", "range", "psi", "Engine", 12, 0, 42, "Gear 6 Boost", "Wastegate start; physical turbo capacity is limited to 80 PSI.", {"stepDis":0.1}],
+      ["$rls_boost_window_6", "range", "psi", "Engine", 1, 0, 10, "Gear 6 Boost Window", "Added target window, bounded by turbo pressure limit.", {"stepDis":0.1}],
+      ["$rls_boost_7", "range", "psi", "Engine", 12, 0, 42, "Gear 7 Boost", "Wastegate start; physical turbo capacity is limited to 80 PSI.", {"stepDis":0.1}],
+      ["$rls_boost_window_7", "range", "psi", "Engine", 1, 0, 10, "Gear 7 Boost Window", "Added target window, bounded by turbo pressure limit.", {"stepDis":0.1}],
+      ["$rls_boost_8", "range", "psi", "Engine", 12, 0, 42, "Gear 8 Boost", "Wastegate start; physical turbo capacity is limited to 80 PSI.", {"stepDis":0.1}],
+      ["$rls_boost_window_8", "range", "psi", "Engine", 1, 0, 10, "Gear 8 Boost Window", "Added target window, bounded by turbo pressure limit.", {"stepDis":0.1}],
+      ["$rls_boost_9", "range", "psi", "Engine", 12, 0, 42, "Gear 9 Boost", "Wastegate start; physical turbo capacity is limited to 80 PSI.", {"stepDis":0.1}],
+      ["$rls_boost_window_9", "range", "psi", "Engine", 1, 0, 10, "Gear 9 Boost Window", "Added target window, bounded by turbo pressure limit.", {"stepDis":0.1}],
+      ["$rls_boost_10", "range", "psi", "Engine", 12, 0, 42, "Gear 10 Boost", "Wastegate start; physical turbo capacity is limited to 80 PSI.", {"stepDis":0.1}],
+      ["$rls_boost_window_10", "range", "psi", "Engine", 1, 0, 10, "Gear 10 Boost Window", "Added target window, bounded by turbo pressure limit.", {"stepDis":0.1}]
+    ]
+  },
+  "rls_burnside_engine_internals_v8_423_stage4_performance": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Performance Block", "value":35500},
+    "slotType": "burnside_engine_internals_v8_423",
+    "mainEngine": {
+      "torqueModMult": [
+        ["rpm", "torque"],
+        [0, 0],
+        [500, 1.12],
+        [1000, 1.15],
+        [1500, 1.28],
+        [2000, 1.4707142857142856],
+        [2500, 1.5634285714285714],
+        [3000, 1.626857142857143],
+        [3500, 1.680857142857143],
+        [4000, 1.725],
+        [4500, 1.7805714285714282],
+        [5000, 1.87],
+        [5500, 1.936],
+        [6000, 1.98],
+        [6500, 2.145],
+        [7000, 2.552],
+        [7500, 3.2890000000000006],
+        [8000, 4.4]
+      ],
+      "$+maxRPM": 1600,
+      "$*friction": 0.91,
+      "$*dynamicFriction": 0.92,
+      "$*inertia": 1.1,
+      "$*engineBrakeTorque": 1.58,
+      "maxTorqueRating": 5450,
+      "maxOverTorqueDamage": 1000,
+      "cylinderWallTemperatureDamageThreshold": 185,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1700000,
+      "pistonRingDamageThreshold": 1700000,
+      "connectingRodDamageThreshold": 2200000,
+      "maxPhysicalRPM": 8200
+    },
+    "flexbodies": [
+      ["mesh", "[group]:", "nonFlexMaterials"],
+      ["burnside_valvecover_v8_bigblock_performance", ["burnside_engine"]]
+    ],
+    "vehicleController": {"$+highShiftUpRPM":1600}
+  },
+  "rls_burnside_engine_internals_v8_313_stage4_performance": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Performance Block", "value":26500},
+    "slotType": "burnside_engine_internals_v8_313",
+    "mainEngine": {
+      "torqueModMult": [
+        ["rpm", "torque"],
+        [0, 1],
+        [500, 1],
+        [1000, 1.01],
+        [1500, 1.04],
+        [2000, 1.065],
+        [2500, 1.0902857142857143],
+        [3000, 1.1367142857142858],
+        [3500, 1.1945714285714284],
+        [4000, 1.2642857142857142],
+        [4500, 1.433142857142857],
+        [5000, 1.7050000000000003],
+        [5500, 2.0570000000000004],
+        [6000, 2.398000000000001],
+        [6500, 2.7940000000000005],
+        [7000, 2.7940000000000005],
+        [7500, 2.7940000000000005],
+        [8000, 2.684]
+      ],
+      "$+maxRPM": 1500,
+      "$*friction": 0.91,
+      "$*dynamicFriction": 0.92,
+      "$*inertia": 1.1,
+      "$*engineBrakeTorque": 1.58,
+      "maxTorqueRating": 3500,
+      "maxOverTorqueDamage": 900,
+      "cylinderWallTemperatureDamageThreshold": 185,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1700000,
+      "pistonRingDamageThreshold": 1700000,
+      "connectingRodDamageThreshold": 2200000,
+      "maxPhysicalRPM": 6900
+    },
+    "flexbodies": [
+      ["mesh", "[group]:", "nonFlexMaterials"],
+      ["burnside_valvecover_v8_smallblock_heavyduty", ["burnside_engine"]]
+    ]
+  },
+  "rls_burnside_engine_internals_v8_274_stage4_performance": {
+    "information": {"authors":"RLS Modding", "name":"Stage 4 Performance Block", "value":26500},
+    "slotType": "burnside_engine_internals_v8_274",
+    "mainEngine": {
+      "torqueModMult": [
+        ["rpm", "torque"],
+        [0, 1],
+        [500, 1],
+        [1000, 1],
+        [1500, 1.01],
+        [2000, 1.0447142857142857],
+        [2500, 1.0799999999999998],
+        [3000, 1.1262857142857143],
+        [3500, 1.162857142857143],
+        [4000, 1.275],
+        [4500, 1.4765714285714286],
+        [5000, 1.837],
+        [5500, 2.3100000000000005],
+        [6000, 2.75],
+        [6500, 2.9810000000000003],
+        [7000, 2.6290000000000004],
+        [7500, 2.5410000000000004],
+        [8000, 2.5850000000000004]
+      ],
+      "$+maxRPM": 1500,
+      "$*friction": 0.91,
+      "$*dynamicFriction": 0.92,
+      "$*inertia": 1.1,
+      "$*engineBrakeTorque": 1.58,
+      "maxTorqueRating": 3000,
+      "maxOverTorqueDamage": 1000,
+      "cylinderWallTemperatureDamageThreshold": 180,
+      "engineBlockTemperatureDamageThreshold": 140,
+      "headGasketDamageThreshold": 1500000,
+      "pistonRingDamageThreshold": 1500000,
+      "connectingRodDamageThreshold": 2000000,
+      "maxPhysicalRPM": 7000
+    },
+    "flexbodies": [
+      ["mesh", "[group]:", "nonFlexMaterials"],
+      ["burnside_valvecover_v8_smallblock_performance", ["burnside_engine"]]
+    ],
+    "vehicleController": {"$+highShiftUpRPM":1500}
+  }
+}

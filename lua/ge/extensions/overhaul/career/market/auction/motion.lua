@@ -190,6 +190,7 @@ local function queueDelayedExactPath(veh, command, isCurrent)
     job.sleep(0.1)
     local routedVeh = getObjectByID(vehId)
     if routedVeh and (not isCurrent or isCurrent()) then
+      require('overhaul/lib/vehicles/freeze').setVehicle('overhaul_career_market_auction_auction', routedVeh, false)
       routedVeh:queueLuaCommand(command)
     end
   end)
@@ -266,7 +267,6 @@ local function exitScriptCommand(routePoints, targetPos, targetDir, options)
     elseif ai ~= overhaulAi then
       ai = overhaulAi
     end
-    if controller and controller.setFreeze then controller.setFreeze(0) end
     if electrics and electrics.setIgnitionLevel then electrics.setIgnitionLevel(3) end
     input.event("parkingbrake", 0, 1)
     input.event("brake", 0, 1)
@@ -338,6 +338,7 @@ local function driveLotVehicleExit(veh, routeSpots, aggression)
   local speed = constants.AI_MAX_SPEED_MPS
   local agg = aggression or 0.25
   local listStr = serialize(targets)
+  require('overhaul/lib/vehicles/freeze').setVehicle('overhaul_career_market_auction_auction', veh, false)
   veh:queueLuaCommand(string.format([[
     if not overhaulAi then
       extensions.load('overhaulAi')
@@ -345,7 +346,6 @@ local function driveLotVehicleExit(veh, routeSpots, aggression)
     elseif ai ~= overhaulAi then
       ai = overhaulAi
     end
-    if controller and controller.setFreeze then controller.setFreeze(0) end
     if electrics and electrics.setIgnitionLevel then electrics.setIgnitionLevel(3) end
     input.event("parkingbrake", 0, 1)
     input.event("brake", 0, 1)
@@ -382,6 +382,7 @@ local function driveVehicleToSpot(veh, fromSpot, toSpot, aggression)
 
   local pathStr = '{path = ' .. serialize(path)
   pathStr = pathStr .. string.format(', noOfLaps = 1, aggression = %.2f, avoidCars = "off", routeSpeed = %.4f, routeSpeedMode = "limit"}', aggression or 0.25, constants.AI_MAX_SPEED_MPS)
+  require('overhaul/lib/vehicles/freeze').setVehicle('overhaul_career_market_auction_auction', veh, false)
   veh:queueLuaCommand(string.format([[
     if not overhaulAi then
       extensions.load('overhaulAi')
@@ -389,7 +390,6 @@ local function driveVehicleToSpot(veh, fromSpot, toSpot, aggression)
     elseif ai ~= overhaulAi then
       ai = overhaulAi
     end
-    if controller and controller.setFreeze then controller.setFreeze(0) end
     if electrics and electrics.setIgnitionLevel then electrics.setIgnitionLevel(3) end
     input.event("parkingbrake", 0, 1)
     input.event("brake", 0, 1)
@@ -418,6 +418,7 @@ local function driveVehicleAlongRouteSpots(veh, routeSpots, aggression)
 
   local pathStr = '{path = ' .. serialize(combinedPath)
   pathStr = pathStr .. string.format(', noOfLaps = 1, aggression = %.2f, avoidCars = "on"}', aggression or 0.4)
+  require('overhaul/lib/vehicles/freeze').setVehicle('overhaul_career_market_auction_auction', veh, false)
   veh:queueLuaCommand(string.format([[
     if not overhaulAi then
       extensions.load('overhaulAi')
@@ -425,7 +426,6 @@ local function driveVehicleAlongRouteSpots(veh, routeSpots, aggression)
     elseif ai ~= overhaulAi then
       ai = overhaulAi
     end
-    if controller and controller.setFreeze then controller.setFreeze(0) end
     if electrics and electrics.setIgnitionLevel then electrics.setIgnitionLevel(3) end
     input.event("parkingbrake", 0, 1)
     input.event("brake", 0, 1)
@@ -476,7 +476,6 @@ local function driveVehicleToExactSpot(veh, routeSpots, targetSpot, aggression, 
     }
   }
   local command = [[
-    if controller and controller.setFreeze then controller.setFreeze(0) end
     if electrics and electrics.setIgnitionLevel then electrics.setIgnitionLevel(3) end
     input.event("parkingbrake", 0, 1)
     input.event("brake", 0, 1)

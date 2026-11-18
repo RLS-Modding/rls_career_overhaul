@@ -1,0 +1,162 @@
+{
+  "aiSide":"left",
+  "bossHeading":-78.270475721065,
+  "bossSpot":{
+    "x":-714.94573974609,
+    "y":2086.4521484375,
+    "z":78.848167419434
+  },
+  "enabled":true,
+  "grade":0.00033781554941591,
+  "heading":-13.07981829625,
+  "id":"refinery_meet",
+  "laneWidth":4.7692952156067,
+  "length":201.168,
+  "level":"rls_west_coast",
+  "name":"Refinery",
+  "parking":{
+    "x":-704.33929443359,
+    "y":2085.3754882812,
+    "z":78.851333618164
+  },
+  "parkingHeading":76.946493590478,
+  "props":[
+    {
+      "heading": 75.981739329439,
+      "pos": {
+        "x": -700.21124267578,
+        "y": 2082.3217773438,
+        "z": 78.903198242188
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "shape": "/art/shapes/race/rally/rally_assets/s_rally_gazebo_mod_frame_3x3.dae"
+    },
+    {
+      "heading": 75.981739329439,
+      "pos": {
+        "x": -700.21551513672,
+        "y": 2082.3081054688,
+        "z": 78.90934753418
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "shape": "/art/shapes/race/rally/rally_assets/s_rally_gazebo_mod_cover_dkblue_3x3.dae"
+    },
+    {
+      "heading": 167.03116497627747,
+      "pos": {
+        "x": -700.513306,
+        "y": 2081.94312,
+        "z": 79.6356201
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "shape": "/art/shapes/garage_and_dealership/garage/s_wrench_03.dae",
+      "rot": {
+        "x": 0.0032223943665236512,
+        "y": 0.01712468708238995,
+        "z": 0.6227504779943407,
+        "w": 0.7822264399933673
+      }
+    },
+    {
+      "heading": -124.2,
+      "pos": {
+        "x": -699.84137,
+        "y": 2081.62305,
+        "z": 78.8651428
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "shape": "/art/shapes/race/rally/rally_assets/s_rally_fold_chair_01.dae",
+      "rot": {
+        "x": -0.014831071355445273,
+        "y": 0.00914757111594461,
+        "z": 0.953491080852869,
+        "w": -0.3009171314484372
+      }
+    },
+    {
+      "heading": -77.83175340093055,
+      "pos": {
+        "x": -700.320984,
+        "y": 2082.28735,
+        "z": 78.8811646
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "shape": "/art/shapes/race/rally/rally_assets/s_rally_fold_table_01.dae",
+      "rot": {
+        "x": -0.012725669111964098,
+        "y": 0.01190361481407492,
+        "z": 0.9942004416764629,
+        "w": -0.10612183126170235
+      }
+    },
+    {
+      "heading": 17.43001720401638,
+      "pos": {
+        "x": -700.330139,
+        "y": 2082.53223,
+        "z": 79.6279907
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "shape": "/art/shapes/garage_and_dealership/garage/s_laptop.dae",
+      "rot": {
+        "x": 0.017370496027748327,
+        "y": 0.0013800664902972458,
+        "z": -0.5915910847686693,
+        "w": 0.8060498431898995
+      }
+    },
+    {
+      "heading": -86.34829146879204,
+      "pos": {
+        "x": -699.627563,
+        "y": 2082.47021,
+        "z": 78.8476562
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "shape": "/art/shapes/race/rally/rally_assets/s_rally_fold_chair_01.dae",
+      "rot": {
+        "x": -0.011806668444048613,
+        "y": 0.01281566866278119,
+        "z": 0.9993357329720908,
+        "w": -0.03200709330933335
+      }
+    }
+  ],
+  "settingsPath":"/levels/rls_west_coast/streetKnights/refinery_meet_1794210324_73886/settings.json",
+  "sitesPath":"/levels/rls_west_coast/streetKnights/refinery_meet_1794210324_73886/signup.sites.json",
+  "start":{
+    "x":-701.05303955078,
+    "y":2070.6970214844,
+    "z":78.865127563477
+  },
+  "stripPath":"/levels/rls_west_coast/streetKnights/refinery_meet_1794210324_73886/strip.json",
+  "version":1
+}

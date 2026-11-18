@@ -24,6 +24,7 @@
           <div class="car-copy">
             <span class="caption">Servicing</span>
             <strong class="car-name">{{ vehicleName }}</strong>
+            <span v-if="uiData.payerLabel" class="hint">Paid by {{ uiData.payerLabel }}</span>
           </div>
         </div>
 
@@ -131,7 +132,7 @@
               v-bng-sound-class="'bng_click_hover_generic'"
               :aria-expanded="isExpanded('tires')"
               @click="setExpanded('tires', !isExpanded('tires'))">
-              <BngIcon class="system-icon" :type="icons.tire" />
+              <BngIcon class="system-icon" :type="categoryIcon('tires')" />
               <span class="system-copy">
                 <span class="system-name">Tires</span>
                 <span v-if="tireMeta" class="system-meta">{{ tireMeta }}</span>
@@ -156,7 +157,7 @@
                   <HouseButton
                     class="act-wide"
                     compact
-                    :icon="isChecking('tires:check') ? icons.tire : icons.search"
+                    :icon="isChecking('tires:check') ? categoryIcon('tires') : icons.search"
                     :disabled="!!busyActionKey"
                     v-bng-tooltip="'Hold to check'"
                     v-bng-on-ui-nav:ok.asMouse.focusRequired
@@ -355,6 +356,7 @@ const vehicleThumb = computed(() => {
 })
 
 const CATEGORY_ICONS = {
+  tires: icons.tire3Fourth,
   engine: icons.engine,
   radiator: icons.coolantTemp,
   transmission: icons.transmissionM,
@@ -642,7 +644,7 @@ const runCheck = async row => {
   holdingKey.value = ""
   try {
     const result = await lua.overhaul_career_maintenance_maintenanceComputer.startCheck(
-      Number(uiData.value.inventoryId),
+      uiData.value.inventoryId,
       row.category,
       row.item
     )
@@ -664,7 +666,7 @@ const runTireCheck = async () => {
   busyActionKey.value = "tires:check"
   holdingKey.value = ""
   try {
-    const result = await lua.overhaul_career_maintenance_maintenanceComputer.inspectTires(Number(uiData.value.inventoryId))
+    const result = await lua.overhaul_career_maintenance_maintenanceComputer.inspectTires(uiData.value.inventoryId)
     if (!result?.ok) {
       errorMessage.value = result?.message || "Unable to inspect tires."
       return
@@ -692,7 +694,7 @@ const applyCart = async () => {
       quoteRevision: uiData.value.tireShop?.quoteRevision || "",
     })
     const result = await Promise.race([
-      callModLua("overhaul_career_maintenance_maintenanceComputer.checkoutCart", Number(uiData.value.inventoryId), payload),
+      callModLua("overhaul_career_maintenance_maintenanceComputer.checkoutCart", uiData.value.inventoryId, payload),
       new Promise((_, reject) => setTimeout(() => reject(new Error("Checkout timed out.")), 15000)),
     ])
     if ((result && result.ok === false) || result?.staleQuote) {

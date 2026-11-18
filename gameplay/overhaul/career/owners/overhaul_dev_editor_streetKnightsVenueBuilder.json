@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_dev_editor_streetKnightsVenueBuilder",
+  "order": 980,
+  "module": "overhaul/dev/editor/streetKnightsVenueBuilder",
+  "scopes": [
+    {
+      "id": "bootManual",
+      "order": 34
+    }
+  ],
+  "devKey": true
+}

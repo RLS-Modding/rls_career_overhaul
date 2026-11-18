@@ -1,0 +1,26 @@
+{
+  "Configuration": "Hugo Bell - No Prep",
+  "Description": "Copper Detour. Tier 4 racer. Highway no-prep quarter-mile: 9.849s at 154.27mph. Corner Shop Motors. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Corner Shop Motors",
+  "Name": "Hugo Bell",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 8.3583189088067,
+    "time_1_4": 9.8493887603898,
+    "time_1_8": 6.5244100450437,
+    "time_330": 4.3082821202762,
+    "time_60": 1.5526740794143,
+    "velAt_1_4": 68.966958662851,
+    "velAt_1_8": 52.47501731547
+  },
+  "Reaction Time": 0.23995700489449,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

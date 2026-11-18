@@ -1,0 +1,87 @@
+{
+  "isAuxiliary": true,
+  "Configuration": "Iris Nolan - Bedtime Bullies",
+  "Description": "Driver: Iris Nolan. Builder: Haulmark Racing. Haulmark Racing: Brick-red crew-cab work truck with cream secondary paint and matched race tires. 5.5L supercharged V8; Supercharger; nitrous Yes. 4-speed automatic. Bedtime Bullies: first clean West Coast quarter-mile in the 9.500-10.000 second window: 9.864 s. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Transmission": "Automatic",
+  "Drivetrain": "AWD",
+  "Config Type": "Custom",
+  "Population": -1,
+  "Value": 60000,
+  "Power": 1267,
+  "Weight": 2643,
+  "Years": {
+    "min": 1992,
+    "max": 1997
+  },
+  "Motorsport": {
+    "version": 1,
+    "id": "pickup/rls_bedtime_haulmark_03",
+    "configId": "rls_bedtime_haulmark_03",
+    "model": "pickup",
+    "config": "/vehicles/pickup/rls_bedtime_haulmark_03.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "cole_tanner",
+    "driverName": "Iris Nolan",
+    "builder": "Haulmark Racing",
+    "classIds": [
+      "bedtime_bullies"
+    ],
+    "approvedClassIds": [
+      "bedtime_bullies"
+    ],
+    "leagueId": "street_kings",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "816c518f4e3b760da8be72c39ac86227638e07f21add3f3acffd159bfc886b29",
+    "traits": {
+      "drivetrain": "AWD",
+      "transmission": "4-speed automatic",
+      "induction": "Supercharger",
+      "nitrous": true,
+      "years": {
+        "min": 1992,
+        "max": 1997
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "pickup_sparetire",
+          "part": "pickup_sparetire_6l",
+          "typeHint": null
+        },
+        {
+          "slot": "tire_F_15x10",
+          "part": "tire_F_285_40_15_race",
+          "typeHint": null
+        },
+        {
+          "slot": "tire_R_15x10",
+          "part": "tire_R_285_40_15_race",
+          "typeHint": null
+        }
+      ],
+      "selectedRollCageParts": [],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.8637943329871,
+      "runId": "BB-030",
+      "evidenceConfigSHA256": "565215d0e3382c478ef2d0a7bc55fea067cd6761964f6f8c1772a0d5c4814c1a",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/bedtime/final-results.json",
+      "acceptedConfig": "outputs/bedtime/accepted/rls_bedtime_haulmark_03/rls_bedtime_haulmark_03.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_bedtime_bullies"
+  }
+}

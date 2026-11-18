@@ -26,7 +26,7 @@
           <span v-if="marketValue != null">Est. market <span class="amt"><BngIcon :type="icons.beamCurrency" />{{ wholeMoney(marketValue) }}</span></span>
         </span>
       </div>
-      <div v-if="!isResolved" class="patience" :class="patienceTone" v-bng-tooltip="`${amISelling ? 'Buyer' : 'Seller'}'s patience`">
+      <div v-if="!isResolved" class="patience" :class="patienceTone" v-bng-tooltip="patienceLabel || `${amISelling ? 'Buyer' : 'Seller'}'s patience`">
         <span class="caption">Patience</span>
         <span class="patience-bar"><span :style="{ transform: `scaleX(${patienceFraction})` }" /></span>
       </div>
@@ -37,12 +37,13 @@
         compact
         :icon="icons.xmark"
         aria-label="Close"
-        :disabled="busy"
+        :disabled="busy && !closeWhileBusy"
         bng-no-nav="true"
         :tabindex="-1"
         @click="emit('close')" />
     </header>
 
+    <slot name="notice" />
     <!-- the conversation -->
     <div ref="chatEl" class="chat scroll" v-bng-ui-nav-scroll.force>
       <div v-for="msg in messages" :key="msg.key" class="msg" :class="[msg.from, msg.tone]">
@@ -63,6 +64,7 @@
           That's their final offer. Accept it or walk away.
         </p>
 
+        <slot name="offer-controls" :disabled="composerDisabled">
         <!-- A shortcut that would not change the offer is only dimmed ("off"), not disabled: disabling the
              button you just pressed drops controller focus. -->
         <div v-if="quickOffers.length" class="seg bar quick">
@@ -128,6 +130,7 @@
           </HouseButton>
         </div>
 
+        </slot>
         <div class="decide">
           <HouseButton variant="quiet-danger" :disabled="busy" @click="emit('walk-away')">
             Walk away
@@ -142,8 +145,10 @@
             v-bng-tooltip="'Hold to accept'"
             v-bng-on-ui-nav:ok.asMouse.focusRequired
             v-bng-click="{ holdCallback: () => emit('accept'), holdDelay: 1000, repeatInterval: 0 }">
-            {{ amISelling ? "Sell for" : "Buy for" }}
-            <span class="amt accept-amount"><BngIcon :type="icons.beamCurrency" />{{ wholeMoney(theirOffer || 0) }}</span>
+            <slot name="accept-terms">
+              {{ acceptLabel || (amISelling ? "Sell for" : "Buy for") }}
+              <span class="amt accept-amount"><BngIcon :type="icons.beamCurrency" />{{ wholeMoney(theirOffer || 0) }}</span>
+            </slot>
           </HouseButton>
         </div>
       </template>
@@ -209,6 +214,7 @@ const props = defineProps({
   // step button sizes (small, large); defaults to 10x and 100x the step (vehicles: 500 / 5,000)
   stepSizes: { type: Array, default: null },
   busy: Boolean,
+  closeWhileBusy: Boolean,
   resolvedTitle: String,
   resolvedTitleAmount: { type: Number, default: null },
   resolvedText: String,
@@ -216,6 +222,9 @@ const props = defineProps({
   resolvedAction: { type: String, default: "Continue" },
   resolvedAmount: { type: Number, default: null },
   showClose: { type: Boolean, default: true },
+  // hosts that are not a sale (a pink-slip race) name the accept button and the patience tooltip
+  acceptLabel: { type: String, default: null },
+  patienceLabel: { type: String, default: null },
   scopeId: { type: String, default: "vehicleNegotiation" },
   // phone: fill the host instead of being a centred window
   compact: Boolean,
@@ -389,7 +398,7 @@ const navScope = {
   scopeId: props.scopeId,
   activateOnMount: true,
   canDeactivate: () => {
-    if (!props.busy) emit("close")
+    if (!props.busy || props.closeWhileBusy) emit("close")
     return false
   },
 }

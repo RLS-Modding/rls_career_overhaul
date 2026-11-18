@@ -1,0 +1,25 @@
+{
+  "Configuration": "Damon Voss - No Prep",
+  "Description": "Graphite Current. Tier 2 racer. Highway no-prep quarter-mile: 11.459s at 136.38mph. Blacktop Engineering.",
+  "Author": "Blacktop Engineering",
+  "Name": "Damon Voss",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 9.7806510469548,
+    "time_1_4": 11.459397816528,
+    "time_1_8": 7.7823436168739,
+    "time_330": 5.3619759052217,
+    "time_60": 2.0835656670913,
+    "velAt_1_4": 60.966926972426,
+    "velAt_1_8": 47.294383408707
+  },
+  "Reaction Time": 0.33128042521622,
+  "dragTimesRevalidated": true,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m"
+}

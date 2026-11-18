@@ -1,0 +1,650 @@
+{
+  "RLS_DieselSoot_1_slow": {
+    "name": "RLS_DieselSoot_1_slow",
+    "class": "ParticleData",
+    "textureName": "/art/shapes/particles/particle_smoke_black_01.dds",
+    "animTexName": "/art/shapes/particles/particle_smoke_black_01.dds",
+    "lifetimeMS": 2200,
+    "lifetimeVarianceMS": 350,
+    "inheritedVelFactor": 1,
+    "dragCoefficient": 2.2,
+    "gravityCoefficient": -0.07,
+    "spinInitialMax": 360,
+    "spinRandomMin": -150,
+    "spinRandomMax": 150,
+    "spinSpeed": 0.25,
+    "colors": [
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.12
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.102
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.054
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.0
+      ]
+    ],
+    "sizes": [
+      0.12,
+      0.4,
+      1,
+      2.2
+    ],
+    "times": [
+      0,
+      0.08,
+      0.45,
+      1
+    ],
+    "useInvAlpha": true
+  },
+  "RLS_DieselSoot_1_moving": {
+    "name": "RLS_DieselSoot_1_moving",
+    "class": "ParticleData",
+    "textureName": "/art/shapes/particles/particle_smoke_black_01.dds",
+    "animTexName": "/art/shapes/particles/particle_smoke_black_01.dds",
+    "lifetimeMS": 2000,
+    "lifetimeVarianceMS": 350,
+    "inheritedVelFactor": 1,
+    "dragCoefficient": 1.5,
+    "gravityCoefficient": -0.07,
+    "spinInitialMax": 360,
+    "spinRandomMin": -150,
+    "spinRandomMax": 150,
+    "spinSpeed": 0.25,
+    "colors": [
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.12
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.102
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.054
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.0
+      ]
+    ],
+    "sizes": [
+      0.45,
+      0.85,
+      1.6,
+      3
+    ],
+    "times": [
+      0,
+      0.08,
+      0.45,
+      1
+    ],
+    "useInvAlpha": true
+  },
+  "RLS_DieselSoot_2_slow": {
+    "name": "RLS_DieselSoot_2_slow",
+    "class": "ParticleData",
+    "textureName": "/art/shapes/particles/particle_smoke_black_01.dds",
+    "animTexName": "/art/shapes/particles/particle_smoke_black_01.dds",
+    "lifetimeMS": 2200,
+    "lifetimeVarianceMS": 350,
+    "inheritedVelFactor": 1,
+    "dragCoefficient": 2.2,
+    "gravityCoefficient": -0.07,
+    "spinInitialMax": 360,
+    "spinRandomMin": -150,
+    "spinRandomMax": 150,
+    "spinSpeed": 0.25,
+    "colors": [
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.25
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.2125
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.1125
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.0
+      ]
+    ],
+    "sizes": [
+      0.12,
+      0.4,
+      1,
+      2.2
+    ],
+    "times": [
+      0,
+      0.08,
+      0.45,
+      1
+    ],
+    "useInvAlpha": true
+  },
+  "RLS_DieselSoot_2_moving": {
+    "name": "RLS_DieselSoot_2_moving",
+    "class": "ParticleData",
+    "textureName": "/art/shapes/particles/particle_smoke_black_01.dds",
+    "animTexName": "/art/shapes/particles/particle_smoke_black_01.dds",
+    "lifetimeMS": 2000,
+    "lifetimeVarianceMS": 350,
+    "inheritedVelFactor": 1,
+    "dragCoefficient": 1.5,
+    "gravityCoefficient": -0.07,
+    "spinInitialMax": 360,
+    "spinRandomMin": -150,
+    "spinRandomMax": 150,
+    "spinSpeed": 0.25,
+    "colors": [
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.25
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.2125
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.1125
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.0
+      ]
+    ],
+    "sizes": [
+      0.45,
+      0.85,
+      1.6,
+      3
+    ],
+    "times": [
+      0,
+      0.08,
+      0.45,
+      1
+    ],
+    "useInvAlpha": true
+  },
+  "RLS_DieselSoot_3_slow": {
+    "name": "RLS_DieselSoot_3_slow",
+    "class": "ParticleData",
+    "textureName": "/art/shapes/particles/particle_smoke_black_01.dds",
+    "animTexName": "/art/shapes/particles/particle_smoke_black_01.dds",
+    "lifetimeMS": 2200,
+    "lifetimeVarianceMS": 350,
+    "inheritedVelFactor": 1,
+    "dragCoefficient": 2.2,
+    "gravityCoefficient": -0.07,
+    "spinInitialMax": 360,
+    "spinRandomMin": -150,
+    "spinRandomMax": 150,
+    "spinSpeed": 0.25,
+    "colors": [
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.4
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.34
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.18
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.0
+      ]
+    ],
+    "sizes": [
+      0.12,
+      0.4,
+      1,
+      2.2
+    ],
+    "times": [
+      0,
+      0.08,
+      0.45,
+      1
+    ],
+    "useInvAlpha": true
+  },
+  "RLS_DieselSoot_3_moving": {
+    "name": "RLS_DieselSoot_3_moving",
+    "class": "ParticleData",
+    "textureName": "/art/shapes/particles/particle_smoke_black_01.dds",
+    "animTexName": "/art/shapes/particles/particle_smoke_black_01.dds",
+    "lifetimeMS": 2000,
+    "lifetimeVarianceMS": 350,
+    "inheritedVelFactor": 1,
+    "dragCoefficient": 1.5,
+    "gravityCoefficient": -0.07,
+    "spinInitialMax": 360,
+    "spinRandomMin": -150,
+    "spinRandomMax": 150,
+    "spinSpeed": 0.25,
+    "colors": [
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.4
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.34
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.18
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.0
+      ]
+    ],
+    "sizes": [
+      0.45,
+      0.85,
+      1.6,
+      3
+    ],
+    "times": [
+      0,
+      0.08,
+      0.45,
+      1
+    ],
+    "useInvAlpha": true
+  },
+  "RLS_DieselSoot_1_slow_afterFlame": {
+    "name": "RLS_DieselSoot_1_slow_afterFlame",
+    "class": "ParticleData",
+    "textureName": "/art/shapes/particles/particle_smoke_black_01.dds",
+    "animTexName": "/art/shapes/particles/particle_smoke_black_01.dds",
+    "lifetimeMS": 2200,
+    "lifetimeVarianceMS": 350,
+    "inheritedVelFactor": 1,
+    "dragCoefficient": 2.2,
+    "gravityCoefficient": -0.07,
+    "spinInitialMax": 360,
+    "spinRandomMin": -150,
+    "spinRandomMax": 150,
+    "spinSpeed": 0.25,
+    "colors": [
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.0
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.0
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.102
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.0
+      ]
+    ],
+    "sizes": [
+      0,
+      0,
+      0.12,
+      2.2
+    ],
+    "times": [
+      0,
+      0.08181818181818182,
+      0.11818181818181818,
+      1
+    ],
+    "useInvAlpha": true
+  },
+  "RLS_DieselSoot_1_moving_afterFlame": {
+    "name": "RLS_DieselSoot_1_moving_afterFlame",
+    "class": "ParticleData",
+    "textureName": "/art/shapes/particles/particle_smoke_black_01.dds",
+    "animTexName": "/art/shapes/particles/particle_smoke_black_01.dds",
+    "lifetimeMS": 2000,
+    "lifetimeVarianceMS": 350,
+    "inheritedVelFactor": 1,
+    "dragCoefficient": 1.5,
+    "gravityCoefficient": -0.07,
+    "spinInitialMax": 360,
+    "spinRandomMin": -150,
+    "spinRandomMax": 150,
+    "spinSpeed": 0.25,
+    "colors": [
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.0
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.0
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.102
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.0
+      ]
+    ],
+    "sizes": [
+      0,
+      0,
+      0.45,
+      3
+    ],
+    "times": [
+      0,
+      0.09,
+      0.13,
+      1
+    ],
+    "useInvAlpha": true
+  },
+  "RLS_DieselSoot_2_slow_afterFlame": {
+    "name": "RLS_DieselSoot_2_slow_afterFlame",
+    "class": "ParticleData",
+    "textureName": "/art/shapes/particles/particle_smoke_black_01.dds",
+    "animTexName": "/art/shapes/particles/particle_smoke_black_01.dds",
+    "lifetimeMS": 2200,
+    "lifetimeVarianceMS": 350,
+    "inheritedVelFactor": 1,
+    "dragCoefficient": 2.2,
+    "gravityCoefficient": -0.07,
+    "spinInitialMax": 360,
+    "spinRandomMin": -150,
+    "spinRandomMax": 150,
+    "spinSpeed": 0.25,
+    "colors": [
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.0
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.0
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.2125
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.0
+      ]
+    ],
+    "sizes": [
+      0,
+      0,
+      0.12,
+      2.2
+    ],
+    "times": [
+      0,
+      0.08181818181818182,
+      0.11818181818181818,
+      1
+    ],
+    "useInvAlpha": true
+  },
+  "RLS_DieselSoot_2_moving_afterFlame": {
+    "name": "RLS_DieselSoot_2_moving_afterFlame",
+    "class": "ParticleData",
+    "textureName": "/art/shapes/particles/particle_smoke_black_01.dds",
+    "animTexName": "/art/shapes/particles/particle_smoke_black_01.dds",
+    "lifetimeMS": 2000,
+    "lifetimeVarianceMS": 350,
+    "inheritedVelFactor": 1,
+    "dragCoefficient": 1.5,
+    "gravityCoefficient": -0.07,
+    "spinInitialMax": 360,
+    "spinRandomMin": -150,
+    "spinRandomMax": 150,
+    "spinSpeed": 0.25,
+    "colors": [
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.0
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.0
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.2125
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.0
+      ]
+    ],
+    "sizes": [
+      0,
+      0,
+      0.45,
+      3
+    ],
+    "times": [
+      0,
+      0.09,
+      0.13,
+      1
+    ],
+    "useInvAlpha": true
+  },
+  "RLS_DieselSoot_3_slow_afterFlame": {
+    "name": "RLS_DieselSoot_3_slow_afterFlame",
+    "class": "ParticleData",
+    "textureName": "/art/shapes/particles/particle_smoke_black_01.dds",
+    "animTexName": "/art/shapes/particles/particle_smoke_black_01.dds",
+    "lifetimeMS": 2200,
+    "lifetimeVarianceMS": 350,
+    "inheritedVelFactor": 1,
+    "dragCoefficient": 2.2,
+    "gravityCoefficient": -0.07,
+    "spinInitialMax": 360,
+    "spinRandomMin": -150,
+    "spinRandomMax": 150,
+    "spinSpeed": 0.25,
+    "colors": [
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.0
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.0
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.34
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.0
+      ]
+    ],
+    "sizes": [
+      0,
+      0.16,
+      0.24,
+      2.2
+    ],
+    "times": [
+      0,
+      0.02727272727272727,
+      0.045454545454545456,
+      1
+    ],
+    "useInvAlpha": true
+  },
+  "RLS_DieselSoot_3_moving_afterFlame": {
+    "name": "RLS_DieselSoot_3_moving_afterFlame",
+    "class": "ParticleData",
+    "textureName": "/art/shapes/particles/particle_smoke_black_01.dds",
+    "animTexName": "/art/shapes/particles/particle_smoke_black_01.dds",
+    "lifetimeMS": 2000,
+    "lifetimeVarianceMS": 350,
+    "inheritedVelFactor": 1,
+    "dragCoefficient": 1.5,
+    "gravityCoefficient": -0.07,
+    "spinInitialMax": 360,
+    "spinRandomMin": -150,
+    "spinRandomMax": 150,
+    "spinSpeed": 0.25,
+    "colors": [
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.0
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.0
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.34
+      ],
+      [
+        0.1,
+        0.1,
+        0.1,
+        0.0
+      ]
+    ],
+    "sizes": [
+      0,
+      0.35,
+      0.55,
+      3
+    ],
+    "times": [
+      0,
+      0.03,
+      0.05,
+      1
+    ],
+    "useInvAlpha": true
+  }
+}

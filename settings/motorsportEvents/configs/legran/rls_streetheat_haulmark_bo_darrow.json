@@ -1,0 +1,322 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "legran/rls_streetheat_haulmark_bo_darrow",
+    "configId": "rls_streetheat_haulmark_bo_darrow",
+    "model": "legran",
+    "config": "/vehicles/legran/rls_streetheat_haulmark_bo_darrow.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "bo_darrow",
+    "driverName": "Wyatt Mercer",
+    "builder": "Haulmark Racing",
+    "leagueId": "street_kings",
+    "classIds": [
+      "street_heat"
+    ],
+    "approvedClassIds": [
+      "street_heat"
+    ],
+    "eligibilityStatus": "Roster approval retained. Current build has separate assessor-accepted quarter-mile qualification evidence; recorded historical ETs remain historical estimates.",
+    "sourceConfigSHA256": "a8c6b041b39da7a9f3515c7df42bf220f685040c12c5082a0daaf2fbdd814c11",
+    "traits": {
+      "configId": "legran/rls_streetheat_haulmark_bo_darrow",
+      "diesel": false,
+      "drivetrain": "FWD",
+      "manual": true,
+      "model": "legran",
+      "nitrous": true,
+      "rollCage": false,
+      "sportTires": true,
+      "supercharger": true,
+      "tireFriction": {
+        "complete": true,
+        "source": "compiled-tread-nodes",
+        "wheels": [
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "FL"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "FR"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "RL"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "RR"
+          }
+        ]
+      },
+      "tireFrictionCoefMax": 1,
+      "tireType": "sport",
+      "tireTypes": [
+        "sport"
+      ],
+      "tires": [
+        {
+          "part": "tire_f_245_35_17_sport",
+          "slot": "/legran_body/legran_suspension_f/wheel_f_5/tire_f_17x9/tire_f_245_35_17_sport",
+          "source": "installed-part-label",
+          "type": "sport"
+        },
+        {
+          "part": "tire_r_245_35_17_sport",
+          "slot": "/legran_body/legran_suspension_r/wheel_r_5/tire_r_17x9/tire_r_245_35_17_sport",
+          "source": "installed-part-label",
+          "type": "sport"
+        }
+      ],
+      "truck": false,
+      "turbocharger": false,
+      "year": 1988,
+      "transmission": "5-speed H-pattern manual",
+      "induction": "Supercharger",
+      "years": {
+        "max": 1988,
+        "min": 1984
+      }
+    },
+    "equipment": {
+      "evidence": "Hash-matched live class inspection and installed-parts tree; no new timing approval is asserted.",
+      "selectedTires": [
+        {
+          "slot": "/legran_body/legran_suspension_f/wheel_f_5/tire_f_17x9/tire_f_245_35_17_sport",
+          "part": "tire_f_245_35_17_sport",
+          "typeHint": "sport",
+          "source": "installed-part-label"
+        },
+        {
+          "slot": "/legran_body/legran_suspension_r/wheel_r_5/tire_r_17x9/tire_r_245_35_17_sport",
+          "part": "tire_r_245_35_17_sport",
+          "typeHint": "sport",
+          "source": "installed-part-label"
+        }
+      ],
+      "selectedRollCageParts": [],
+      "rollCage": false,
+      "tireFriction": {
+        "complete": true,
+        "source": "compiled-tread-nodes",
+        "wheels": [
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "FL"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "FR"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "RL"
+          },
+          {
+            "frictionCoefMax": 1,
+            "frictionCoefMin": 1,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1,
+            "slidingFrictionCoefMin": 1,
+            "source": "compiled-tread-nodes",
+            "wheel": "RR"
+          }
+        ]
+      },
+      "nitrous": {
+        "addedPower": 245,
+        "cutInRPM": 4000,
+        "minimumGear": 2,
+        "purgeValves_nodes": [
+          211,
+          193
+        ],
+        "addedPowerUnits": "kW"
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 13.573614392872,
+      "runId": "SH-20261020-075458",
+      "evidenceConfigSHA256": "537ca264793f516803e09645fa5bc4fdc0fe2651ff5850f7453d4e96e8326cba",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/street-heat/final-results.json",
+      "acceptedConfig": "outputs/street-heat/accepted/rls_streetheat_haulmark_bo_darrow/rls_streetheat_haulmark_bo_darrow.pc",
+      "indexRecoveryMetadata": {
+        "sourceProofFile": "outputs/drag-rebuild-20261028/continuation-ledger/attempts/4c85e09768557df9357f8feddd6cb31d63dd72a89e620d1c75c47a4e49a096dd.json",
+        "sourceProofSHA256": "4c85e09768557df9357f8feddd6cb31d63dd72a89e620d1c75c47a4e49a096dd",
+        "attemptId": "legran__rls_streetheat_haulmark_bo_darrow-L1-P1-index-recovery-08-5704d200",
+        "configSHA256": "a8c6b041b39da7a9f3515c7df42bf220f685040c12c5082a0daaf2fbdd814c11",
+        "evidenceScope": "Hardware declarations only; historical ET receipts and class approvals retained. PC identity is guarded; native/VFS dependency freshness and performance are not certified here."
+      }
+    },
+    "sourcePack": "rls_street_heat",
+    "currentQualification": {
+      "schema": "rls.index-recovery.current-qualification/1",
+      "status": "assessor-accepted",
+      "originalKey": "legran/rls_streetheat_haulmark_bo_darrow",
+      "testedKey": "legran/rls_streetheat_haulmark_bo_darrow",
+      "configSHA256": "a8c6b041b39da7a9f3515c7df42bf220f685040c12c5082a0daaf2fbdd814c11",
+      "quarterMileSeconds": 11.226945954722,
+      "attemptId": "legran__rls_streetheat_haulmark_bo_darrow-L1-P1-index-recovery-08-5704d200",
+      "capturedAt": "2026-10-28T19:27:03Z",
+      "classId": "street_heat",
+      "lower": 10.5,
+      "upper": 11.25,
+      "classProof": {
+        "classEntryAllowed": true,
+        "classId": "street_heat",
+        "classResultAllowed": true,
+        "leagueId": "street_kings",
+        "lower": 10.5,
+        "nitrousAddedPower": 245,
+        "nitrousMinimumGear": 2,
+        "traits": {
+          "configId": "legran/rls_streetheat_haulmark_bo_darrow",
+          "diesel": false,
+          "drivetrain": "FWD",
+          "manual": true,
+          "model": "legran",
+          "nitrous": true,
+          "rollCage": false,
+          "sportTires": true,
+          "supercharger": true,
+          "tireFriction": {
+            "complete": true,
+            "source": "compiled-tread-nodes",
+            "wheels": [
+              {
+                "frictionCoefMax": 1,
+                "frictionCoefMin": 1,
+                "nodeCount": 32,
+                "slidingFrictionCoefMax": 1,
+                "slidingFrictionCoefMin": 1,
+                "source": "compiled-tread-nodes",
+                "wheel": "FL"
+              },
+              {
+                "frictionCoefMax": 1,
+                "frictionCoefMin": 1,
+                "nodeCount": 32,
+                "slidingFrictionCoefMax": 1,
+                "slidingFrictionCoefMin": 1,
+                "source": "compiled-tread-nodes",
+                "wheel": "FR"
+              },
+              {
+                "frictionCoefMax": 1,
+                "frictionCoefMin": 1,
+                "nodeCount": 32,
+                "slidingFrictionCoefMax": 1,
+                "slidingFrictionCoefMin": 1,
+                "source": "compiled-tread-nodes",
+                "wheel": "RL"
+              },
+              {
+                "frictionCoefMax": 1,
+                "frictionCoefMin": 1,
+                "nodeCount": 32,
+                "slidingFrictionCoefMax": 1,
+                "slidingFrictionCoefMin": 1,
+                "source": "compiled-tread-nodes",
+                "wheel": "RR"
+              }
+            ]
+          },
+          "tireFrictionCoefMax": 1,
+          "tireType": "sport",
+          "tireTypes": [
+            "sport"
+          ],
+          "tires": [
+            {
+              "part": "tire_f_245_35_17_sport",
+              "slot": "/legran_body/legran_suspension_f/wheel_f_5/tire_f_17x9/tire_f_245_35_17_sport",
+              "source": "installed-part-label",
+              "type": "sport"
+            },
+            {
+              "part": "tire_r_245_35_17_sport",
+              "slot": "/legran_body/legran_suspension_r/wheel_r_5/tire_r_17x9/tire_r_245_35_17_sport",
+              "source": "installed-part-label",
+              "type": "sport"
+            }
+          ],
+          "truck": false,
+          "turbocharger": false,
+          "year": 1988
+        },
+        "upper": 11.25
+      },
+      "health": {
+        "status": "no-observed-faults",
+        "engineFaults": [],
+        "maxTurboPsi": null,
+        "capViolation": false,
+        "telemetryDropped": 0
+      },
+      "physical": {
+        "issues": [],
+        "newBroken": [],
+        "deformed": [],
+        "partDamage": [],
+        "triggered": [],
+        "damageDelta": 0.1074279398,
+        "scope": "Sparse getBeamDeformation delta >0.01, broken beam IDs, tires, part damage and native trigger changes. beamstate.damage/energy delta is reported, not treated as damage proof."
+      },
+      "source": {
+        "status": "current-in-covered-sources",
+        "scope": "Saved repository source list and compiled chosen parts only; native/game/VFS dependencies and runtime cache are not certified. Additional current inventory is not evidence of historical changes."
+      },
+      "evidence": {
+        "assessmentFile": "outputs/drag-rebuild-20261028/index-recovery/latest.json",
+        "assessmentSHA256": "03d04ab7739919d0e455f3afaf7e9e794f200f4698433f6cbffa1f7acd663b89",
+        "rawFile": "outputs/drag-rebuild-20261028/continuation-ledger/attempts/4c85e09768557df9357f8feddd6cb31d63dd72a89e620d1c75c47a4e49a096dd.json",
+        "rawSHA256": "4c85e09768557df9357f8feddd6cb31d63dd72a89e620d1c75c47a4e49a096dd",
+        "ledgerFile": "outputs/drag-rebuild-20261028/continuation-ledger/latest.json",
+        "ledgerSHA256": "a05efb2449df6019312ea0c14ae689f46be53147fa47dd7024f788869686f80b"
+      },
+      "scope": "One assessor-accepted current-build quarter-mile result in the original index through index+0.75 window. Health and source coverage retain the assessor/ledger scope; no repeatability guarantee or complete native/VFS certification. Historical performance and approval remain separate."
+    }
+  }
+}

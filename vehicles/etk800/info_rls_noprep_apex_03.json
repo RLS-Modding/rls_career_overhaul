@@ -1,0 +1,25 @@
+{
+  "Configuration": "Iris Falk - No Prep",
+  "Description": "Silver Ledger. Tier 3 racer. Highway no-prep quarter-mile: 10.226s at 137.58mph. Apex Yard.",
+  "Author": "Apex Yard",
+  "Name": "Iris Falk",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 8.5742412437159,
+    "time_1_4": 10.225961384121,
+    "time_1_8": 6.6332801325121,
+    "time_330": 4.3655528484692,
+    "time_60": 1.6421455520309,
+    "velAt_1_4": 61.502514983757,
+    "velAt_1_8": 49.350021172237
+  },
+  "Reaction Time": 0.29178621759058,
+  "dragTimesRevalidated": true,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m"
+}

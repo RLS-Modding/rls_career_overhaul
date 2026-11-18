@@ -1,0 +1,311 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "nine/rls_stu_haulmark_02",
+    "configId": "rls_stu_haulmark_02",
+    "model": "nine",
+    "config": "/vehicles/nine/rls_stu_haulmark_02.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "sourcePack": "rls_stu_leonard",
+    "driverId": "luke_hobson",
+    "driverName": "Emmett Lawson",
+    "builder": "haulmark",
+    "classIds": [
+      "stu_leonard_850"
+    ],
+    "approvedClassIds": [
+      "stu_leonard_850"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained. Current build has separate assessor-accepted quarter-mile qualification evidence; recorded historical ETs remain historical estimates.",
+    "sourceConfigSHA256": "4e5edb93a19c97a7148e84ee777a341c8e036c410a1d3cba277e0059f36b946f",
+    "traits": {
+      "configId": "nine/rls_stu_haulmark_02",
+      "diesel": false,
+      "drivetrain": "RWD",
+      "manual": false,
+      "model": "nine",
+      "nitrous": false,
+      "rollCage": false,
+      "sportTires": false,
+      "supercharger": true,
+      "tireFriction": {
+        "complete": true,
+        "source": "compiled-tread-nodes",
+        "wheels": [
+          {
+            "frictionCoefMax": 1.3,
+            "frictionCoefMin": 1.3,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1.26,
+            "slidingFrictionCoefMin": 1.26,
+            "source": "compiled-tread-nodes",
+            "wheel": "FL"
+          },
+          {
+            "frictionCoefMax": 1.3,
+            "frictionCoefMin": 1.3,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1.26,
+            "slidingFrictionCoefMin": 1.26,
+            "source": "compiled-tread-nodes",
+            "wheel": "FR"
+          },
+          {
+            "frictionCoefMax": 1.3,
+            "frictionCoefMin": 1.3,
+            "nodeCount": 40,
+            "slidingFrictionCoefMax": 1.3,
+            "slidingFrictionCoefMin": 1.3,
+            "source": "compiled-tread-nodes",
+            "wheel": "RL"
+          },
+          {
+            "frictionCoefMax": 1.3,
+            "frictionCoefMin": 1.3,
+            "nodeCount": 40,
+            "slidingFrictionCoefMax": 1.3,
+            "slidingFrictionCoefMin": 1.3,
+            "source": "compiled-tread-nodes",
+            "wheel": "RR"
+          }
+        ]
+      },
+      "tireFrictionCoefMax": 1.3,
+      "tireType": "drag",
+      "tireTypes": [
+        "drag"
+      ],
+      "tires": [
+        {
+          "part": "tire_f_26_4_15_drag",
+          "slot": "/nine_frame/nine_suspension_f_custom/nine_spindles_f_custom/wheel_f_5/tire_f_15x4/tire_f_26_4_15_drag",
+          "source": "installed-part-label",
+          "type": "drag"
+        },
+        {
+          "part": "tire_r_28_9_15_drag",
+          "slot": "/nine_frame/nine_suspension_r_custom_4link/wheel_r_5/tire_r_15x9/tire_r_28_9_15_drag",
+          "source": "installed-part-label",
+          "type": "drag"
+        }
+      ],
+      "truck": false,
+      "turbocharger": false,
+      "year": 1934,
+      "transmission": "4-speed automatic",
+      "induction": "Supercharger",
+      "years": {
+        "min": 1934,
+        "max": 1934
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.9473656529606,
+      "runId": "STU-045",
+      "evidenceConfigSHA256": "7d869f61aab31f25c73dbdbee0859f74e7d1c6e35d23529e3c1c534d4e0499b9",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/stu-leonard/final-metadata.json",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json",
+      "indexRecoveryMetadata": {
+        "sourceProofFile": "outputs/drag-rebuild-20261028/continuation-ledger/attempts/d975ebc68b4909d5f6207ea27d744049e80ba82e86d4399926cca56e947285c8.json",
+        "sourceProofSHA256": "d975ebc68b4909d5f6207ea27d744049e80ba82e86d4399926cca56e947285c8",
+        "attemptId": "nine__rls_stu_haulmark_02-L1-P1-index-recovery-10-203a6d6e",
+        "configSHA256": "4e5edb93a19c97a7148e84ee777a341c8e036c410a1d3cba277e0059f36b946f",
+        "evidenceScope": "Hardware declarations only; historical ET receipts and class approvals retained. PC identity is guarded; native/VFS dependency freshness and performance are not certified here."
+      }
+    },
+    "currentQualification": {
+      "schema": "rls.index-recovery.current-qualification/1",
+      "status": "assessor-accepted",
+      "originalKey": "nine/rls_stu_haulmark_02",
+      "testedKey": "nine/rls_stu_haulmark_02",
+      "configSHA256": "4e5edb93a19c97a7148e84ee777a341c8e036c410a1d3cba277e0059f36b946f",
+      "quarterMileSeconds": 9.0753250911759,
+      "attemptId": "nine__rls_stu_haulmark_02-L1-P1-index-recovery-10-203a6d6e",
+      "capturedAt": "2026-10-28T19:34:06Z",
+      "classId": "stu_leonard_850",
+      "lower": 8.5,
+      "upper": 9.25,
+      "classProof": {
+        "classEntryAllowed": true,
+        "classId": "stu_leonard_850",
+        "classResultAllowed": true,
+        "leagueId": "slra",
+        "lower": 8.5,
+        "traits": {
+          "configId": "nine/rls_stu_haulmark_02",
+          "diesel": false,
+          "drivetrain": "RWD",
+          "manual": false,
+          "model": "nine",
+          "nitrous": false,
+          "rollCage": false,
+          "sportTires": false,
+          "supercharger": true,
+          "tireFriction": {
+            "complete": true,
+            "source": "compiled-tread-nodes",
+            "wheels": [
+              {
+                "frictionCoefMax": 1.3,
+                "frictionCoefMin": 1.3,
+                "nodeCount": 32,
+                "slidingFrictionCoefMax": 1.26,
+                "slidingFrictionCoefMin": 1.26,
+                "source": "compiled-tread-nodes",
+                "wheel": "FL"
+              },
+              {
+                "frictionCoefMax": 1.3,
+                "frictionCoefMin": 1.3,
+                "nodeCount": 32,
+                "slidingFrictionCoefMax": 1.26,
+                "slidingFrictionCoefMin": 1.26,
+                "source": "compiled-tread-nodes",
+                "wheel": "FR"
+              },
+              {
+                "frictionCoefMax": 1.3,
+                "frictionCoefMin": 1.3,
+                "nodeCount": 40,
+                "slidingFrictionCoefMax": 1.3,
+                "slidingFrictionCoefMin": 1.3,
+                "source": "compiled-tread-nodes",
+                "wheel": "RL"
+              },
+              {
+                "frictionCoefMax": 1.3,
+                "frictionCoefMin": 1.3,
+                "nodeCount": 40,
+                "slidingFrictionCoefMax": 1.3,
+                "slidingFrictionCoefMin": 1.3,
+                "source": "compiled-tread-nodes",
+                "wheel": "RR"
+              }
+            ]
+          },
+          "tireFrictionCoefMax": 1.3,
+          "tireType": "drag",
+          "tireTypes": [
+            "drag"
+          ],
+          "tires": [
+            {
+              "part": "tire_f_26_4_15_drag",
+              "slot": "/nine_frame/nine_suspension_f_custom/nine_spindles_f_custom/wheel_f_5/tire_f_15x4/tire_f_26_4_15_drag",
+              "source": "installed-part-label",
+              "type": "drag"
+            },
+            {
+              "part": "tire_r_28_9_15_drag",
+              "slot": "/nine_frame/nine_suspension_r_custom_4link/wheel_r_5/tire_r_15x9/tire_r_28_9_15_drag",
+              "source": "installed-part-label",
+              "type": "drag"
+            }
+          ],
+          "truck": false,
+          "turbocharger": false,
+          "year": 1934
+        },
+        "upper": 9.25
+      },
+      "health": {
+        "status": "no-observed-faults",
+        "engineFaults": [],
+        "maxTurboPsi": null,
+        "capViolation": false,
+        "telemetryDropped": 0
+      },
+      "physical": {
+        "issues": [],
+        "newBroken": [],
+        "deformed": [],
+        "partDamage": [],
+        "triggered": [],
+        "damageDelta": 16.03352547,
+        "scope": "Sparse getBeamDeformation delta >0.01, broken beam IDs, tires, part damage and native trigger changes. beamstate.damage/energy delta is reported, not treated as damage proof."
+      },
+      "source": {
+        "status": "current-in-covered-sources",
+        "scope": "Saved repository source list and compiled chosen parts only; native/game/VFS dependencies and runtime cache are not certified. Additional current inventory is not evidence of historical changes."
+      },
+      "evidence": {
+        "assessmentFile": "outputs/drag-rebuild-20261028/index-recovery/latest.json",
+        "assessmentSHA256": "03d04ab7739919d0e455f3afaf7e9e794f200f4698433f6cbffa1f7acd663b89",
+        "rawFile": "outputs/drag-rebuild-20261028/continuation-ledger/attempts/d975ebc68b4909d5f6207ea27d744049e80ba82e86d4399926cca56e947285c8.json",
+        "rawSHA256": "d975ebc68b4909d5f6207ea27d744049e80ba82e86d4399926cca56e947285c8",
+        "ledgerFile": "outputs/drag-rebuild-20261028/continuation-ledger/latest.json",
+        "ledgerSHA256": "a05efb2449df6019312ea0c14ae689f46be53147fa47dd7024f788869686f80b"
+      },
+      "scope": "One assessor-accepted current-build quarter-mile result in the original index through index+0.75 window. Health and source coverage retain the assessor/ledger scope; no repeatability guarantee or complete native/VFS certification. Historical performance and approval remain separate."
+    },
+    "equipment": {
+      "evidence": "Hash-matched live class inspection and installed-parts tree; no new timing approval is asserted.",
+      "selectedTires": [
+        {
+          "slot": "/nine_frame/nine_suspension_f_custom/nine_spindles_f_custom/wheel_f_5/tire_f_15x4/tire_f_26_4_15_drag",
+          "part": "tire_f_26_4_15_drag",
+          "typeHint": "drag",
+          "source": "installed-part-label"
+        },
+        {
+          "slot": "/nine_frame/nine_suspension_r_custom_4link/wheel_r_5/tire_r_15x9/tire_r_28_9_15_drag",
+          "part": "tire_r_28_9_15_drag",
+          "typeHint": "drag",
+          "source": "installed-part-label"
+        }
+      ],
+      "selectedRollCageParts": [],
+      "rollCage": false,
+      "tireFriction": {
+        "complete": true,
+        "source": "compiled-tread-nodes",
+        "wheels": [
+          {
+            "frictionCoefMax": 1.3,
+            "frictionCoefMin": 1.3,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1.26,
+            "slidingFrictionCoefMin": 1.26,
+            "source": "compiled-tread-nodes",
+            "wheel": "FL"
+          },
+          {
+            "frictionCoefMax": 1.3,
+            "frictionCoefMin": 1.3,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1.26,
+            "slidingFrictionCoefMin": 1.26,
+            "source": "compiled-tread-nodes",
+            "wheel": "FR"
+          },
+          {
+            "frictionCoefMax": 1.3,
+            "frictionCoefMin": 1.3,
+            "nodeCount": 40,
+            "slidingFrictionCoefMax": 1.3,
+            "slidingFrictionCoefMin": 1.3,
+            "source": "compiled-tread-nodes",
+            "wheel": "RL"
+          },
+          {
+            "frictionCoefMax": 1.3,
+            "frictionCoefMin": 1.3,
+            "nodeCount": 40,
+            "slidingFrictionCoefMax": 1.3,
+            "slidingFrictionCoefMin": 1.3,
+            "source": "compiled-tread-nodes",
+            "wheel": "RR"
+          }
+        ]
+      },
+      "nitrous": null
+    }
+  }
+}

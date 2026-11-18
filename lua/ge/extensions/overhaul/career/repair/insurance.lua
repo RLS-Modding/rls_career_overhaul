@@ -75,8 +75,8 @@ local function normalizeInvVehsKeys()
   end
 
   local needsKeyFix = false
-  for k, _ in pairs(insuranceState.invVehs) do
-    if type(k) == "string" and tonumber(k) ~= nil then
+  for k, v in pairs(insuranceState.invVehs) do
+    if (type(k) == "string" and tonumber(k) ~= nil) or (type(v) == "table" and tonumber(v.id) and tonumber(v.id) ~= k) then
       needsKeyFix = true
       break
     end
@@ -94,9 +94,9 @@ local function normalizeInvVehsKeys()
 
   local newInvVehs = {}
   for k, v in pairs(insuranceState.invVehs) do
-    local nk = k
-    if type(k) == "string" then
-      local n = tonumber(k)
+    local nk = type(v) == "table" and tonumber(v.id) or k
+    if type(nk) == "string" then
+      local n = tonumber(nk)
       if n ~= nil then nk = n end
     end
     if type(v) == "table" then

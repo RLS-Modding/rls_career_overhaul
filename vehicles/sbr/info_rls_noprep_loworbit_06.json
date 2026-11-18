@@ -1,0 +1,26 @@
+{
+  "Configuration": "Ronan Hale - No Prep",
+  "Description": "Bronze Eclipse. Tier 4 racer. Highway no-prep quarter-mile: 9.098s at 193.42mph. Low Orbit Garage. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Low Orbit Garage",
+  "Name": "Ronan Hale",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 7.9111804785534,
+    "time_1_4": 9.0975678720743,
+    "time_1_8": 6.4440870973777,
+    "time_330": 4.5924608319902,
+    "time_60": 1.8435467054283,
+    "velAt_1_4": 86.466142976604,
+    "velAt_1_8": 63.865293865522
+  },
+  "Reaction Time": 0.26213163738641,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

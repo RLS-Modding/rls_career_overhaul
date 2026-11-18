@@ -122,13 +122,10 @@ parts.ui = ui.new({
 local function interpolateEffect(dt)
   runtime.transitionElapsed = runtime.transitionElapsed + dt
   local p = model.clamp(runtime.transitionElapsed / math.max(0.01, runtime.transitionDuration), 0, 1)
-  local currentEffect = runtime.currentEffect
-  -- Rain audio keeps its original per-frame switch even when no visual tick is due.
-  currentEffect.rain = p >= 0.35 and runtime.effectTarget.rain or (runtime.effectFrom.rain or 0)
   local visualTimer = runtime.visualTimer
   if visualTimer:due() or p >= 1 then
     visualTimer:reset(0)
-    parts.environment.applyTransitionEffect(parts.ui.currentSnapshot().fog)
+    parts.environment.applyTransitionEffect()
   end
   if p >= 1 then runtime.transitioning = false end
 end
@@ -145,7 +142,7 @@ local function updateEffects(state, dt)
 end
 
 local function onUpdate(dtReal, dtSim)
-  if not runtime.worldReady or not runtime.loaded or not runtime.state then return end
+  if not runtime.careerActive or not runtime.worldReady or not runtime.loaded or not runtime.state then return end
   if runtime.travelJournalOverrideActive or runtime.editorSuspended or runtime.editorSaveDepth > 0 then return end
   -- Simulated time keeps the weather timers frozen while the game is paused.
   local dt = tonumber(dtSim) or 0
@@ -155,6 +152,8 @@ local function onUpdate(dtReal, dtSim)
   visualTimer:add(math.max(0, dt))
   if stateTimer:take() then
     parts.clock.stateStep()
+  elseif dt > 0 then
+    parts.clock.updateVisualClock(stateTimer:get())
   end
 
   updateEffects(runtime.state, dt)
@@ -194,6 +193,8 @@ local function resetWorldRuntime()
 end
 
 local function initializeCurrentWorld(forceReset)
+  -- Ordinary Free Roam belongs entirely to the native environment system.
+  if not runtime.careerActive then return false end
   -- The cold-start career callback loads owners before the native mission hooks.
   -- Early weather would enter the native snapshot, then lose its own baseline at StartMission.
   if worldReadyState ~= nil and worldReadyState ~= 2 then return false end
@@ -230,12 +231,18 @@ end
 local function onOverhaulActive(active)
   local nextActive = active == true
   if nextActive ~= runtime.careerActive then
-    if runtime.loaded and not runtime.careerActive then parts.persistence.saveState() end
     parts.environment.restoreEnvironment()
     parts.clock.restoreClock()
     resetWorldRuntime()
   end
   runtime.careerActive = nextActive
+  if not nextActive then
+    runtime.state = nil
+    runtime.profile = nil
+    runtime.loaded = false
+    runtime.worldReady = false
+    return
+  end
   initializeCurrentWorld(false)
 end
 
@@ -276,7 +283,6 @@ local function onClientStartMission()
 end
 
 local function onClientEndMission()
-  if runtime.loaded and not runtime.careerActive then parts.persistence.saveState() end
   parts.environment.restoreEnvironment()
   parts.clock.restoreClock()
   runtime.travelJournalOverrideActive = false
@@ -293,13 +299,12 @@ end
 
 local function onAnyMissionChanged(status, mission)
   if not mission then return end
-  if status == "started" then runtime.missionFrozen = true
-  elseif status == "stopped" then runtime.missionFrozen = false end
+  if status == "started" then parts.clock.setMissionFrozen(true)
+  elseif status == "stopped" then parts.clock.setMissionFrozen(false) end
   parts.ui.pushUiState(true)
 end
 
 local function onExtensionUnloaded()
-  if runtime.loaded and not runtime.careerActive then parts.persistence.saveState() end
   runtime.travelJournalOverrideActive = false
   runtime.uiScopes = {}
   unregisterCycleTimeOfDayPatch()
@@ -331,10 +336,10 @@ local function getDayNightCycle()
 end
 
 local function toggleDayNightCycle(value)
+  if not runtime.careerActive then return false end
   local state = runtime.state
-  if runtime.externalOverride or (not runtime.careerActive and state and not state.settings.dynamicWeather) then
+  if runtime.externalOverride then
     parts.clock.writeClock({play = value == true})
-    if not runtime.externalOverride then state.playCycle = value == true; parts.persistence.saveState(); parts.ui.pushUiState(true) end
     return true
   end
   if not state then return false end

@@ -17,6 +17,7 @@ local function serializedVehicleCall(functionName, ...)
 end
 
 function lib.create(inputs)
+  local inventory = inputs.inventory or overhaul_career_garage_inventory
   local parts = inputs.parts
   local dynoState = inputs.dynoState
   local dynoSession = inputs.dynoSession
@@ -30,7 +31,7 @@ function lib.create(inputs)
 
     -- Prefer the inventory's display name (same as the rest of the career UI) over the raw config id.
     if inventoryId then
-      local ok, niceName = pcall(overhaul_career_garage_inventory.getVehicleNiceNameTranslated, inventoryId)
+      local ok, niceName = pcall(inventory.getVehicleNiceNameTranslated, inventoryId)
       if ok and type(niceName) == "string" and niceName ~= "" then
         return niceName
       end
@@ -78,16 +79,16 @@ function lib.create(inputs)
     end
 
     -- The inventory cache can lag behind direct switches between already-spawned owned vehicles. The live object mapping is authoritative for a trigger the player is physically driving into; only fall back to the cache if needed.
-    local inventoryId = overhaul_career_garage_inventory.getInventoryIdFromVehicleId(veh:getID())
+    local inventoryId = inventory.getInventoryIdFromVehicleId(veh:getID())
     if not inventoryId then
-      inventoryId = overhaul_career_garage_inventory.getCurrentVehicle()
+      inventoryId = inventory.getCurrentVehicle()
     end
 
     if not inventoryId then
-      return nil, "Only owned inventory vehicles can use the dyno."
+      return nil, "Use a personal vehicle or an owned Racing Team vehicle at the dyno."
     end
 
-    local vehicleData = overhaul_career_garage_inventory.getVehicles()[inventoryId]
+    local vehicleData = inventory.getVehicles()[inventoryId]
     if not vehicleData then
       return nil, "Vehicle data could not be found."
     end
@@ -145,7 +146,6 @@ function lib.create(inputs)
     dynoState.serviceDisplacedTransform = nil
     dynoState.serviceRouteInitialized = nil
     if dynoSession.inventoryId then
-      local inventory = overhaul_career_garage_inventory
       local record = inventory.getVehicles()[dynoSession.inventoryId]
       if record and dynoSession.originalConfig then record.config = dynoSession.originalConfig end
       inventory.setTransientBuild(dynoSession.inventoryId, false)
@@ -156,6 +156,7 @@ function lib.create(inputs)
     dynoState.ownershipWaitCallbacks = {}
     hideDynoHud()
     clearPendingSnapshots()
+    if inputs.vehicleAccess then inputs.vehicleAccess.reset() end
     dynoSession.active = false
     dynoSession.inventoryId = nil
     dynoSession.sourceVehicleId = nil
@@ -168,6 +169,8 @@ function lib.create(inputs)
     dynoSession.hubConfigApplied = false
     dynoSession.pullState = nil
     dynoSession.result = nil
+    dynoSession.transmission = nil
+    dynoSession.transmissionSettings = nil
     dynoSession.pullsUsed = 0
     dynoSession.setupFeeRefundable = false
     dynoSession.feePaid = 0
@@ -181,11 +184,11 @@ function lib.create(inputs)
     dynoSession.statusText = nil
   end
 
-  local function flushConditionRefreshCallbacks()
+  local function flushConditionRefreshCallbacks(ok)
     local callbacks = dynoState.conditionRefreshCallbacks
     dynoState.conditionRefreshCallbacks = {}
     for _, callback in ipairs(callbacks) do
-      if callback then callback() end
+      if callback then callback(ok) end
     end
   end
 
@@ -204,13 +207,13 @@ function lib.create(inputs)
     dynoState.conditionRefreshPending = true
     dynoState.conditionRefreshToken = dynoState.conditionRefreshToken + 1
     local token = dynoState.conditionRefreshToken
-    local function finished()
+    local function finished(ok)
       if token ~= dynoState.conditionRefreshToken then return end
       dynoState.conditionRefreshPending = false
-      flushConditionRefreshCallbacks()
+      flushConditionRefreshCallbacks(ok)
     end
 
-    overhaul_career_garage_inventory.updatePartConditions(context.vehicleId, context.inventoryId, finished)
+    inventory.updatePartConditions(context.vehicleId, context.inventoryId, finished)
     return true
   end
 
@@ -274,21 +277,15 @@ function lib.create(inputs)
     return true
   end
 
-  -- core_vehicleBridge is a level preset; the respawn callback of finishSessionRestore can run after it unloaded, so freeze and ignition keep the direct vehicle command as the fallback.
   local function setVehicleFreeze(veh, shouldFreeze)
     if not veh then
       return
     end
 
-    if core_vehicleBridge and core_vehicleBridge.executeAction then
-      pcall(function()
-        core_vehicleBridge.executeAction(veh, "setFreeze", shouldFreeze and true or false)
-      end)
-    else
-      veh:queueLuaCommand(string.format("controller.setFreeze(%d)", shouldFreeze and 1 or 0))
-    end
+    require('overhaul/lib/vehicles/freeze').setVehicle('overhaul_career_parts_dyno_dynoSession', veh, shouldFreeze and true or false)
   end
 
+  -- Restore can finish after the level bridge unloaded, while the vehicle still exists.
   local function setVehicleIgnition(veh, level)
     if not veh then
       return
@@ -321,6 +318,8 @@ function lib.create(inputs)
     local config = getRuntimeFFBConfig(veh)
     veh:queueLuaCommand(string.format([[
       extensions.load("overhaulDynoControls")
+      extensions.load("overhaulDynoTransmission")
+      overhaulDynoTransmission.report()
       %s
       %s
     ]], serializedVehicleCall("protect", config), acknowledge and string.format(
@@ -332,6 +331,7 @@ function lib.create(inputs)
     inputs.protectedSteeringVehicles[veh:getID()] = nil
     local config = getRuntimeFFBConfig(veh)
     veh:queueLuaCommand(string.format([[
+      if overhaulDynoTransmission then overhaulDynoTransmission.release() end
       if overhaulDynoControls then %s end
     ]], serializedVehicleCall("release", config)))
   end
@@ -354,7 +354,7 @@ function lib.create(inputs)
   -- Spawn callbacks run before the new vehicle starts simulation. Queue the guard on the new VM as well as muting the old VM before asking inventory to rebuild.
   local function onVehicleSpawned(id)
     if not dynoSession.active then return end
-    local mapped = overhaul_career_garage_inventory.getVehicleIdFromInventoryId(dynoSession.inventoryId)
+    local mapped = inventory.getVehicleIdFromInventoryId(dynoSession.inventoryId)
     if id == dynoSession.sourceVehicleId or id == dynoSession.sessionVehicleId or id == mapped then
       protectDynoSteering(getObjectByID(id))
     end
@@ -431,7 +431,13 @@ function lib.create(inputs)
         if veh then
           -- Rebuild all camera modes from the vehicle's current camera definitions, including model-specific reference nodes, offsets and default distance.
           core_camera.onVehicleSpawned(id)
-          if be:getPlayerVehicleID(0) == id then core_camera.resetCamera(0) end
+          if be:getPlayerVehicleID(0) == id then
+            -- Reapply seat camera visibility after refreshing the camera definitions.
+            if gameplay_seatOccupants and gameplay_seatOccupants.onCameraChanged then
+              gameplay_seatOccupants.onCameraChanged(0, core_camera.getActiveCamName(0), id)
+            end
+            core_camera.resetCamera(0)
+          end
         end
       end
     end
@@ -474,7 +480,6 @@ function lib.create(inputs)
     showDynoHud = showDynoHud,
     hideDynoHud = hideDynoHud,
     startReadinessMessage = function(context)
-      local inventory = overhaul_career_garage_inventory
       if not context or not context.veh or not context.inventoryId then
         return "Your vehicle is unavailable. Drive into the dyno bay again."
       end

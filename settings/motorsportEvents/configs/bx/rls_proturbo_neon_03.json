@@ -1,0 +1,73 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "bx/rls_proturbo_neon_03",
+    "configId": "rls_proturbo_neon_03",
+    "model": "bx",
+    "config": "/vehicles/bx/rls_proturbo_neon_03.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "ryan_cooper",
+    "driverName": "Miles Maxwell",
+    "builder": "Neon Works",
+    "classIds": [
+      "pro_turbo"
+    ],
+    "approvedClassIds": [
+      "pro_turbo"
+    ],
+    "leagueId": "pro_league",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "e69eb3524e6ff6f9eab070cb604c6cab620677879ca56f372b702021b6c8ed6c",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "6-speed race manual",
+      "induction": "Turbocharger",
+      "nitrous": false,
+      "years": {
+        "min": 1989,
+        "max": 1994
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x4",
+          "part": "tire_F_26_4_15_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_15x10",
+          "part": "tire_R_26_10_15_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "bx_rollcage",
+          "part": "bx_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 7.8933922587604,
+      "runId": "PT-049",
+      "evidenceConfigSHA256": "28f42e34e273dfc60d3ede02c1889f397d101c3e742705ace54f6496e9bc51c0",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/pro-turbo/final-results.json",
+      "acceptedConfig": "outputs/pro-turbo/accepted/rls_proturbo_neon_03/rls_proturbo_neon_03.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_pro_turbo"
+  }
+}

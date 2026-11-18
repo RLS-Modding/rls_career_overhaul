@@ -9,13 +9,22 @@ local M = {}
 -- Metadata never refers back to its weak key: an abandoned wrapper can collect.
 local wrappers = setmetatable({}, {__mode = 'k'})
 local forwarders = setmetatable({}, {__mode = 'k'})
+local forwardingFactories = setmetatable({}, {__mode = 'k'})
+local forwardingOwners = setmetatable({}, {__mode = 'k'})
+local originalLinks = setmetatable({}, {__mode = 'k'})
+local bindingsByOwner = setmetatable({}, {__mode = 'kv'})
+
+local function forwardedOriginal(wrapper)
+  local link = originalLinks[wrapper]
+  return link and link.original or forwarders[wrapper]
+end
 
 -- Explicit forwarding metadata lets cooperating profilers and owners share a field.
 local function containsWrapper(current, replacement)
   if type(replacement) ~= 'function' then return false end
   while current do
     if current == replacement then return true end
-    current = forwarders[current]
+    current = forwardedOriginal(current)
   end
   return false
 end
@@ -28,10 +37,24 @@ function M.registerForwarder(wrapper, original)
   local current = original
   while current do
     assert(current ~= wrapper, 'forwarding metadata must not cycle')
-    current = forwarders[current]
+    current = forwardedOriginal(current)
   end
   forwarders[wrapper] = original
   return wrapper
+end
+
+-- A guard may defer or reject a call, but still preserves the preceding owner.
+-- Declare that contract at the factory so refresh sees through the default guard too.
+function M.forwarding(makeWrapper)
+  local function factory(original, target, state)
+    local replacement, guarded = makeWrapper(original, target, state)
+    if type(replacement) == 'function' and type(original) == 'function' and replacement ~= original then
+      M.registerForwarder(replacement, original)
+    end
+    return replacement, guarded
+  end
+  forwardingFactories[factory] = true
+  return factory
 end
 
 local function liveOriginal(original)
@@ -41,6 +64,16 @@ local function liveOriginal(original)
     owner = wrappers[original]
   end
   return original
+end
+
+-- Only declared forwarders receive a mutable original. Rewiring that link on
+-- retirement frees dead inner layers without rebuilding the surviving owner.
+local function releaseRetiredOriginals()
+  for owner in pairs(forwardingOwners) do
+    owner.original = liveOriginal(owner.original)
+    local binding = bindingsByOwner[owner]
+    if binding then binding.original = owner.original end
+  end
 end
 
 local function refreshHook(binding)
@@ -61,21 +94,33 @@ function M.prepare(target, key, makeWrapper, options)
   options = options or {}
   local state = options.state or {active = true}
   local original = liveOriginal(target[key])
-  local replacement, guarded = makeWrapper(original, target, state)
+  local owner = {original = original, state = state}
+  local before = original
+  if forwardingFactories[makeWrapper] and type(original) == 'function' then
+    owner.forwarding = true
+    before = function(...)
+      if type(owner.original) == 'function' then return owner.original(...) end
+    end
+    originalLinks[before] = owner
+  end
+  local replacement, guarded = makeWrapper(before, target, state)
   local release
   if type(replacement) == "function" and guarded ~= true and options.guard ~= false then
     local wrapped = replacement
-    replacement, release = (options.makeGuard or guardReplacement)(original, replacement, state)
+    replacement, release = (options.makeGuard or guardReplacement)(before, replacement, state)
     -- Keep only the original in metadata so retirement can release wrapped's owner.
-    if not options.makeGuard and containsWrapper(wrapped, original) then
-      M.registerForwarder(replacement, original)
+    if not options.makeGuard and containsWrapper(wrapped, before) then
+      M.registerForwarder(replacement, before)
     end
   end
   if type(replacement) == 'function' and replacement ~= original then
-    wrappers[replacement] = {original = original, state = state}
+    wrappers[replacement] = owner
+    if owner.forwarding then forwardingOwners[owner] = true end
   end
-  return {target = target, key = key, original = original, replacement = replacement, state = state,
+  local binding = {target = target, key = key, original = original, replacement = replacement, state = state,
     notify = options.notify, release = release}
+  bindingsByOwner[owner] = binding
+  return binding
 end
 
 function M.install(binding)
@@ -86,6 +131,7 @@ end
 function M.retire(binding, notify)
   binding.state.active = false
   if binding.release then binding.release(); binding.release = nil end
+  releaseRetiredOriginals()
   if binding.target[binding.key] ~= binding.replacement then return false end
   -- An inner owner may have unloaded before this one. Do not restore its dead layer.
   binding.target[binding.key] = liveOriginal(binding.original)

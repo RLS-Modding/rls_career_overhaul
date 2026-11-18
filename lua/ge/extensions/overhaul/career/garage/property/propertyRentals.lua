@@ -200,7 +200,7 @@ local function tryMoveVehicleToGarage(vehicleId, targetGarageId)
 end
 
 local function moveIfGarageHasSpace(vehicleId, targetGarageId)
-  local space = overhaul_career_garage_garageManager.isGarageSpace(targetGarageId)
+  local space = overhaul_career_garage_garageManager.isGarageSpace(targetGarageId, vehicleId)
   return space and space[1] and tryMoveVehicleToGarage(vehicleId, targetGarageId)
 end
 

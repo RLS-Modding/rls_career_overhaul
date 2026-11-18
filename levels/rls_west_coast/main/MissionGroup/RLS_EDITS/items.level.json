@@ -48,7 +48,6 @@
 {"name":"Movie_Rental","class":"SimGroup","__parent":"RLS_EDITS"}
 {"name":"rally_stage_3","class":"SimGroup","__parent":"RLS_EDITS"}
 {"name":"Highway_Drag","class":"SimGroup","__parent":"RLS_EDITS"}
-{"name":"drift Loop Remaster","class":"SimGroup","__parent":"RLS_EDITS","hidden":true}
 {"name":"driftLoopPitlaneWall","class":"SimGroup","__parent":"RLS_EDITS","hidden":true}
 {"class":"TSStatic","__parent":"RLS_EDITS","position":[1056.48206,899.343018,124.801003],"isRenderEnabled":false,"rotationMatrix":[-0.996871889,0.079033263,0,-0.079033263,-0.996871889,0,0,0,0.999999881],"shapeName":"/levels/rls_west_coast/art/shapes/objects/rls_hwy_signs/rlssign1.dae","useInstanceRenderData":true}
 {"name":"lenflaircurb","class":"MeshRoad","__parent":"RLS_EDITS","position":[-888.7771,-676.593567,106.120529],"hidden":true,"nodes":[[-889.643311,-677.393494,105.098717,3,1,0,0,1],[-881.419983,-668.06073,105.295616,3,1,0,0,1]]}
@@ -74,3 +73,4 @@
 {"name":"Recovery Yard","class":"SimGroup","__parent":"RLS_EDITS"}
 {"name":"tractor pull area","class":"SimGroup","__parent":"RLS_EDITS"}
 {"name":"repairSpots","class":"SimGroup","__parent":"RLS_EDITS"}
+{"name":"dragEvent_barriers","class":"SimGroup","__parent":"RLS_EDITS"}

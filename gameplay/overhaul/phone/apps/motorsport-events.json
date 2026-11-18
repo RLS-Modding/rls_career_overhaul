@@ -1,0 +1,23 @@
+{
+  "id": "motorsport-events",
+  "careerOnly": true,
+  "name": "Motorsport Events",
+  "icon": "raceFlag",
+  "route": "/overhaul/phone-motorsport-events",
+  "color": "#ff6600",
+  "category": "Activities",
+  "storeTagline": "Qualify. Compete. Win.",
+  "storeDescription": "Enter motorsport events, follow standings and brackets, and watch or bet on other heats.",
+  "defaultPage": 1,
+  "defaultPosition": 8,
+  "uiRoutes": [
+    {
+      "name": "phone-motorsport-events",
+      "path": "phone-motorsport-events",
+      "component": "/ui/ui-vue/mods/rls_career_overhaul/overhaul/modules/career/views/phone/PhoneMotorsportEvents.vue",
+      "uiOrder": 190,
+      "luaOrder": 190,
+      "backTarget": "phone-main"
+    }
+  ]
+}

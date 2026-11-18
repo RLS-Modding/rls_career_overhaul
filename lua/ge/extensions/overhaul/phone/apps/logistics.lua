@@ -2,6 +2,7 @@
 -- Owns the thin phone-side calls into the logistics broker; the broker itself owns the work.
 local M = {}
 local viewCache = require('overhaul/career/logistics/broker/viewCache')
+local access = require('overhaul/career/logistics/broker/access')
 local snapshots = viewCache.new()
 -- Cached UI revisions survive a Lua owner reload; a new owner needs a new namespace.
 local revisionSession = Engine.generateUUID()
@@ -28,12 +29,28 @@ end
 
 -- The broker is only reachable behind the active-career boundary; freeroam must not load it.
 local function careerActive()
-  return overhaul_career_career.isActive()
+  return overhaul_career_career and overhaul_career_career.isActive() or false
+end
+
+function M.isUnlocked()
+  if not careerActive() then return false end
+  local employment = overhaul_career_work_employment
+  return access.canBrowse(employment)
+end
+
+local function lockedState()
+  return {locked = true, lockReason = 'Logistics level 30 required', busy = false,
+    revision = revisionSession .. ':locked'}
 end
 
 local function broker()
   if not careerActive() then return nil end
   return overhaul_career_logistics_broker
+end
+
+function M.canOpen()
+  local jobBroker = broker()
+  return jobBroker ~= nil and (M.isUnlocked() or jobBroker.hasObligations())
 end
 
 local function rememberState(jobBroker, data, version, inputs)
@@ -73,7 +90,13 @@ end
 local function brokerState(data, version, yieldWork, inputs)
   local jobBroker = broker()
   if not jobBroker then return nil end
+  if not M.canOpen() then return lockedState() end
   data = data or jobBroker.getState()
+  if not M.isUnlocked() then
+    data.restricted, data.lockReason = true, 'Logistics level 30 required'
+    data.offers, data.loaners, data.plans, data.stops = {}, {}, {}, {}
+    data.route = {stops = 0, total = 0}
+  end
   data.requestId = requestId
   -- Clock ticks have their own tiny response and must not revise the board.
   local time, baseRevision = data.logisticsTime, currentState and currentState.revision
@@ -98,6 +121,9 @@ end
 function M.requestBrokerState(knownRevision)
   screenOpen = true
   cancelRefresh()
+  if careerActive() and not M.canOpen() then
+    return lockedState()
+  end
   local data = brokerState()
   if not data or data.revision == knownRevision then return nil end
   sentRevision = data.revision
@@ -114,6 +140,11 @@ end
 -- Unchanged polls inspect only position/profile/time. Changed boards are read
 -- from existing native offers in slices, without draining generation batches.
 function M.requestBrokerUpdates(knownRevision)
+  if not screenOpen then return nil end
+  if careerActive() and not M.canOpen() then
+    cancelRefresh()
+    return lockedState()
+  end
   local jobBroker = screenOpen and broker()
   if not jobBroker then return nil end
   -- Recover a missed change event without rebuilding the same board again.
@@ -203,26 +234,27 @@ M.onOverhaulMaterialContractAbandoned = nativeBrokerStateChanged
 
 function M.requestBrokerContainers()
   local jobBroker = broker()
-  if not jobBroker then return end
+  if not jobBroker or not M.canOpen() then return end
   jobBroker.requestContainers(function(data) guihooks.trigger('phoneBrokerContainers', data) end)
 end
 
 function M.requestRoutePreview(id)
   local jobBroker = broker()
-  if not jobBroker then return nil end
+  if not jobBroker or not M.canOpen() then return nil end
   return jobBroker.routePreview(id)
 end
 
 function M.requestPlanPreview()
   local jobBroker = broker()
-  if not jobBroker then return nil end
+  if not jobBroker or not M.isUnlocked() then return nil end
   return jobBroker.planPreview()
 end
 
 -- Each action calls one broker method. Collections also get `done`, which reports their outcome.
 function M.requestDiscardGroups(ids)
   local jobBroker = broker()
-  return jobBroker and jobBroker.requestDiscardGroups(ids) or {ok = false, message = "Career is not active."}
+  return jobBroker and M.canOpen() and jobBroker.requestDiscardGroups(ids)
+    or {ok = false, message = careerActive() and 'Logistics level 30 required' or 'Career is not active.'}
 end
 
 local BROKER_ACTIONS = {
@@ -251,11 +283,16 @@ local BROKER_ACTIONS = {
   navigateRental = function(jobBroker, payload) return jobBroker.navigateRental(payload.id) end,
 }
 
+local EXISTING_WORK_ACTIONS = {cancel = true, cancelMany = true, abandon = true, abandonMany = true,
+  discardSelectedCargo = true, pickup = true, pickupBatch = true, navigate = true, clearRoute = true,
+  preferences = true, cancelRental = true, returnRental = true, navigateRental = true, navigateDepot = true}
+
 function M.brokerAction(action, payload)
   payload = payload or {}
   local jobBroker = broker()
-  if not jobBroker then
-    return { ok = false, message = 'Career is not active.', requestId = payload.requestId, busy = false }
+  if not jobBroker or (not M.isUnlocked() and (not M.canOpen() or not EXISTING_WORK_ACTIONS[action])) then
+    return { ok = false, message = careerActive() and 'Logistics level 30 required' or 'Career is not active.',
+      requestId = payload.requestId, busy = false }
   end
   cancelRefresh()
   if action ~= 'preferences' then requestId = payload.requestId end

@@ -1,0 +1,25 @@
+{
+  "Configuration": "Nolan Decker - No Prep",
+  "Description": "Oxblood Four-Speed. Tier 1 racer. Highway no-prep quarter-mile: 12.048s at 117.44mph. Heritage Speed.",
+  "Author": "Heritage Speed Shop",
+  "Name": "Nolan Decker",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 10.112740438327,
+    "time_1_4": 12.048415719139,
+    "time_1_8": 7.79771643909,
+    "time_330": 5.0908675437725,
+    "time_60": 1.8117162110627,
+    "velAt_1_4": 52.498450768313,
+    "velAt_1_8": 41.215552340276
+  },
+  "Reaction Time": 0.28510590024281,
+  "dragTimesRevalidated": true,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m"
+}

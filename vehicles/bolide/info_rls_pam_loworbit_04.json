@@ -1,0 +1,88 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Name": "Joel Hudson",
+  "Configuration": "Joel Hudson - Pro All-Motor",
+  "Description": "Low Orbit Garage. Naturally aspirated competition build; drag tires on both axles, lights, doors, hood and glass retained. Tested healthy at Alder: 10.253 s quarter-mile. Manual; 529 engine hp, 1203 kg. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Induction Type": "NA",
+  "Drivetrain": "RWD",
+  "Transmission": "Manual",
+  "Power": 529,
+  "Weight": 1203,
+  "Years": {
+    "max": 1988,
+    "min": 1981
+  },
+  "Motorsport": {
+    "version": 1,
+    "id": "bolide/rls_pam_loworbit_04",
+    "configId": "rls_pam_loworbit_04",
+    "model": "bolide",
+    "config": "/vehicles/bolide/rls_pam_loworbit_04.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "roman_pearce",
+    "driverName": "Joel Hudson",
+    "builder": "Low Orbit Garage",
+    "classIds": [
+      "pro_motor"
+    ],
+    "approvedClassIds": [
+      "pro_motor"
+    ],
+    "leagueId": "pro_league",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "97cd21e9e5a1dec880a1011152512b3f43221f1ad5dfd3d504ec9b1585a5f74b",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "Manual",
+      "induction": "Naturally aspirated",
+      "nitrous": false,
+      "years": {
+        "max": 1988,
+        "min": 1981
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x4",
+          "part": "tire_F_26_4_15_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_15x10",
+          "part": "tire_R_26_10_15_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "bolide_rollcage",
+          "part": "bolide_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 10.253234111301,
+      "runId": "PAM-045",
+      "evidenceConfigSHA256": "9267749a62d41cd2bd4356f69f51fb7e959579012a7c0411532c554f21eea19f",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/pro-allmotor/final-metadata.json",
+      "acceptedConfig": "outputs/pro-allmotor/accepted/rls_pam_loworbit_04/rls_pam_loworbit_04.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_pro_allmotor"
+  }
+}

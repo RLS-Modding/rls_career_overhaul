@@ -201,6 +201,9 @@ local function requestVehicleConfigSnapshot(veh, requestType, extraData)
 end
 
 inputs.requestVehicleConfigSnapshot = requestVehicleConfigSnapshot
+local vehicleAccess = require('overhaul/career/parts/dyno/dynoSession/access').create(inputs)
+inputs.vehicleAccess = vehicleAccess
+inputs.inventory = vehicleAccess.inventory
 
 for _, name in ipairs({'history', 'hubs', 'vehicle', 'setup', 'pulls', 'recovery'}) do
   parts[name] = require('overhaul/career/parts/dyno/dynoSession/' .. name).create(inputs)
@@ -215,13 +218,20 @@ local function leaveDynoBay()
   dynoState.conditionRefreshCallbacks = {}
   if not dynoSession.active then
     parts.vehicle.closeDynoUi()
+    vehicleAccess.reset()
   end
 end
 
 -- Entering the bay starts an inspection of the car's damage before the offer opens.
 local function openOfferAfterInspection(context)
   local station = dynoState.station
-  local queued = parts.vehicle.refreshLiveVehicleConditions(context, function()
+  local queued = parts.vehicle.refreshLiveVehicleConditions(context, function(ok)
+    if not dynoState.playerInsideTrigger or dynoState.station ~= station or dynoSession.active then return end
+    if ok == false then
+      parts.vehicle.setDynoError('The vehicle condition inspection failed. Re-enter the dyno bay to try again.', 'offer')
+      parts.vehicle.openDynoUi()
+      return
+    end
     if dynoState.playerInsideTrigger and dynoState.station == station and not dynoSession.active then
       dynoSession.phase = "offer"
       dynoSession.error = nil
@@ -284,10 +294,11 @@ local function onVehicleSwitched(_, newId)
   end
 
   if dynoSession.sessionVehicleId and newId ~= dynoSession.sessionVehicleId then
-    local newInventoryId = overhaul_career_garage_inventory.getInventoryIdFromVehicleId(newId) or nil
-    local mappedVehicleId = overhaul_career_garage_inventory.getVehicleIdFromInventoryId(dynoSession.inventoryId) or nil
-    if tonumber(newInventoryId) == tonumber(dynoSession.inventoryId) or tonumber(mappedVehicleId) == tonumber(newId) or
-        (dynoSession.serviceOpen and newInventoryId == nil) then
+    local newInventoryId = inputs.inventory.getInventoryIdFromVehicleId(newId) or nil
+    local mappedVehicleId = inputs.inventory.getVehicleIdFromInventoryId(dynoSession.inventoryId) or nil
+    if (newInventoryId ~= nil and tostring(newInventoryId) == tostring(dynoSession.inventoryId)) or
+        (mappedVehicleId ~= nil and newId ~= nil and tonumber(mappedVehicleId) == tonumber(newId)) or
+        (dynoSession.serviceOpen and newInventoryId == nil and not vehicleAccess.isTeam(dynoSession.inventoryId)) then
       dynoSession.sessionVehicleId = newId
       parts.setup.beginTireProtection(dynoSession.inventoryId)
       return
@@ -368,6 +379,7 @@ end
 local function onClientEndMission()
   stationsByMap = {}
   parts.setup.finishSessionForTeardown(false)
+  vehicleAccess.reset()
   dynoState.playerInsideTrigger = false
 end
 
@@ -379,7 +391,19 @@ local function onExtensionUnloaded()
     parts.vehicle.releaseAllDynoSteering()
     parts.vehicle.resetDynoSessionState()
   end
+  vehicleAccess.retire()
 end
+-- Inventory ids can be reused after a sale; history belongs to the departing vehicle.
+local function clearPullHistoryForVehicle(inventoryId)
+  if inventoryId == nil then return end
+  parts.history.ensurePullHistoryLoaded()
+  dynoState.pullHistoryByVehicle[tostring(inventoryId)] = nil
+  dynoState.savedPullsRevision = dynoState.savedPullsRevision + 1
+  if tostring(dynoSession.inventoryId) == tostring(inventoryId) and dynoSession.result then
+    dynoSession.result.savedPullId = nil
+  end
+end
+
 -- Public API ---------------------------------------------------------------------------------------
 
 M.requestSessionData = dynoState.requestSessionData
@@ -401,6 +425,7 @@ M.isTransientConfigActive = parts.setup.isTransientConfigActive
 M.getInventorySaveOverride = parts.setup.getInventorySaveOverride
 M.applyInventorySpawnOverrides = parts.setup.applyInventorySpawnOverrides
 M.commitTuningPurchase = parts.setup.commitTuningPurchase
+M.onOverhaulConfirmedFuelSystemState = parts.setup.commitFuelSystemState
 M.buildInventorySaveOverride = parts.setup.buildInventorySaveOverride
 
 M.onVehicleConfigSnapshotReceived = parts.pulls.onVehicleConfigSnapshotReceived
@@ -408,9 +433,24 @@ M.onPullSample = parts.pulls.onPullSample
 M.onPullFinished = parts.pulls.onPullFinished
 
 -- Include asynchronous inspection/setup, not just an active pull.
+M.getVehicleAccess = function(id)
+  return vehicleAccess.service(id) and vehicleAccess or nil
+end
+M.getBusinessVehicleSaveOverride = function(businessId, vehicleId)
+  local session = dynoSession
+  local owner = session.inventoryId and vehicleAccess.owners[session.inventoryId]
+  if not session.active or not owner or tostring(owner.businessId) ~= tostring(businessId)
+    or tostring(owner.vehicleId) ~= tostring(vehicleId) then return nil end
+  return {config = deepcopy(session.originalConfig), vars = deepcopy(session.originalConfig and session.originalConfig.vars or {}),
+    partConditions = deepcopy(session.originalPartConditions)}
+end
+M.isFleetVehicleBusy = function(businessId, vehicleId)
+  return M.getBusinessVehicleSaveOverride(businessId, vehicleId) ~= nil
+end
 M.isBusinessSessionBusy = function(businessId)
   local policy = parts.history.currentPolicy()
-  return policy.businessId == businessId and (dynoSession.active or dynoState.conditionRefreshPending
+  local owner = dynoSession.inventoryId and vehicleAccess.owners[dynoSession.inventoryId]
+  return ((owner and tostring(owner.businessId) == tostring(businessId)) or policy.businessId == businessId) and (dynoSession.active or dynoState.conditionRefreshPending
     or #dynoState.ownershipWaitCallbacks > 0
     or next(pendingConfigSnapshots) ~= nil or dynoState.pendingSteeringSetup ~= nil
     or dynoSession.phase == "starting" or dynoSession.phase == "inspecting")
@@ -434,5 +474,21 @@ M.onExtensionLoaded = onExtensionLoaded
 M.onOverhaulSaveCurrentProfile = onOverhaulSaveCurrentProfile
 M.onCareerDeactivatedWhileLevelLoaded = onCareerDeactivatedWhileLevelLoaded
 M.onClientEndMission = onClientEndMission
+M.onOverhaulVehicleRemoved = clearPullHistoryForVehicle
+M.onOverhaulVehicleAdded = clearPullHistoryForVehicle
 
+function M.onTransmissionInfo(id, info)
+  if id == dynoSession.sessionVehicleId or id == dynoSession.sourceVehicleId then
+    dynoSession.transmission = info
+  end
+end
+
+function M.onPullStartFailed(pullId)
+  if not dynoSession.pullState or dynoSession.pullState.pullId ~= pullId then return end
+  dynoSession.pullState = nil
+  dynoSession.pullsUsed = math.max(0, (dynoSession.pullsUsed or 0) - 1)
+  dynoSession.phase = "ready"
+  dynoSession.transmissionSettings = {holdGear = 0, lockup = false}
+  dynoSession.error = "The selected transmission setting could not be applied."
+end
 return M

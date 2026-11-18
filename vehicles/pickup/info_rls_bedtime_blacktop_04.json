@@ -1,0 +1,84 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Configuration": "Hayden Montgomery - Bedtime Bullies",
+  "Description": "Driver: Hayden Montgomery. Builder: Blacktop Engineering. Blacktop Engineering: Pearl-white crew-cab short-bed street truck with charcoal wheels and a full interior. 6.9 L V8 with dedicated Stage 4 Race Block; Supercharger; nitrous No. 4-speed automatic. Bedtime Bullies: first clean West Coast quarter-mile in the 9.500-10.000 second window: 9.796 s. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Drivetrain": "AWD",
+  "Transmission": "Automatic",
+  "Fuel Type": "Gasoline",
+  "Induction Type": "Supercharger",
+  "Years": {
+    "min": 1998,
+    "max": 2003
+  },
+  "Value": 110000,
+  "Power": 1169,
+  "Weight": 2527,
+  "Motorsport": {
+    "version": 1,
+    "id": "pickup/rls_bedtime_blacktop_04",
+    "configId": "rls_bedtime_blacktop_04",
+    "model": "pickup",
+    "config": "/vehicles/pickup/rls_bedtime_blacktop_04.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "caleb_reece",
+    "driverName": "Hayden Montgomery",
+    "builder": "Blacktop Engineering",
+    "classIds": [
+      "bedtime_bullies"
+    ],
+    "approvedClassIds": [
+      "bedtime_bullies"
+    ],
+    "leagueId": "street_kings",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "56b09038e74ea74051eb1f7f462f7181d043e1a7111cbf5973e3f272b5fc52e4",
+    "traits": {
+      "drivetrain": "AWD",
+      "transmission": "4-speed automatic",
+      "induction": "Supercharger",
+      "nitrous": false,
+      "years": {
+        "min": 1998,
+        "max": 2003
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_17x9",
+          "part": "tire_F_255_60_17_sport",
+          "typeHint": "sport"
+        },
+        {
+          "slot": "tire_R_17x9",
+          "part": "tire_R_255_60_17_sport",
+          "typeHint": "sport"
+        }
+      ],
+      "selectedRollCageParts": [],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.7963765751309,
+      "runId": "BB-014",
+      "evidenceConfigSHA256": "bf4d9b0f647dfea33d6742d15d8ea13dad0401c3882a46ab25aa74d6e185dd26",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/bedtime/final-results.json",
+      "acceptedConfig": "outputs/bedtime/accepted/rls_bedtime_blacktop_04/rls_bedtime_blacktop_04.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_bedtime_bullies"
+  }
+}

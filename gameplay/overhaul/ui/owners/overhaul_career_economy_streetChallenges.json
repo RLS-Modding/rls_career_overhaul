@@ -1,0 +1,21 @@
+{
+  "id": "overhaul_career_economy_streetChallenges",
+  "order": 451,
+  "exports": {
+    "namespace": true,
+    "namespaceGroup": "careerModules",
+    "namespaceOrder": 901,
+    "aliases": []
+  },
+  "routes": [
+    {
+      "name": "overhaul.streetChallenges",
+      "order": 121,
+      "meta": {
+        "luaRoute": {
+          "backTarget": "play"
+        }
+      }
+    }
+  ]
+}

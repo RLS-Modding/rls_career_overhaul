@@ -4,6 +4,7 @@
 local M = {}
 
 local damageData = {}
+local torsionRestoration
 
 local nodeIDconvert = {}
 local beamIDconvert = {}
@@ -718,6 +719,68 @@ local function restoreSavedPartDamage(save, rotationDifference, beamsToAdjust, b
   end
 end
 
+local function torsionAngle(positions)
+  local axis = positions[3] - positions[2]
+  if axis:squaredLength() < 1e-12 then return end
+  axis:normalize()
+  local first, last = positions[1] - positions[2], positions[4] - positions[3]
+  first = first - axis * first:dot(axis)
+  last = last - axis * last:dot(axis)
+  if first:squaredLength() < 1e-12 or last:squaredLength() < 1e-12 then return end
+  return math.atan2(axis:dot(first:cross(last)), first:dot(last))
+end
+
+local function planTorsionRestoration(save)
+  local savedNodes, targets = {}, {}
+  for _, part in pairs(save.partStates) do
+    for cid, node in pairs(part.nodes or {}) do
+      local targetCid = nodeIDconvert[tostring(cid)]
+      if targetCid ~= nil then savedNodes[targetCid] = vec3(node.pos) end
+    end
+  end
+  for _, hydro in pairs(hydros.hydros or {}) do
+    if hydro.center ~= 0 or not hydro.id4 then goto nextTorsion end
+    if obj:torsionbarIsBroken(hydro.cid) then goto nextTorsion end
+    -- Avoid flattening authored asymmetric stiffness during the temporary unload.
+    if type(hydro.spring) ~= 'number' or (hydro.spring2 and hydro.spring2 ~= hydro.spring)
+        or (hydro.damp2 and hydro.damp2 ~= (hydro.damp or 0)) then goto nextTorsion end
+    local saved = {}
+    for index, cid in ipairs({hydro.id1, hydro.id2, hydro.id3, hydro.id4}) do
+      if not savedNodes[cid] then goto nextTorsion end
+      saved[index] = savedNodes[cid]
+    end
+    if #saved == 4 and torsionAngle(saved) then
+      targets[#targets + 1] = {hydro=hydro, spring=hydro.spring, damp=hydro.damp or 0}
+    end
+    ::nextTorsion::
+  end
+  return targets
+end
+
+local function cancelTorsionRestoration()
+  local restoration = torsionRestoration
+  torsionRestoration = nil
+  for _, target in ipairs(restoration and restoration.targets or {}) do
+    obj:setTorsionbarSpringDamp(target.hydro.cid, target.spring, target.damp)
+  end
+end
+
+local function finishTorsionRestoration()
+  local restoration = torsionRestoration
+  if not restoration or not restoration.physicsUpdated then return end
+  torsionRestoration = nil
+  -- Native angles refresh after the complete physics batch, not inside its callbacks.
+  for _, target in ipairs(restoration.targets) do
+    local hydro = target.hydro
+    if not obj:torsionbarIsBroken(hydro.cid) then
+      local angle = obj:getTorsionbarAngle(hydro.cid)
+      hydro.state, hydro.prevstate = angle, angle
+      obj:setTorsionbarAngle(hydro.cid, angle)
+    end
+    obj:setTorsionbarSpringDamp(hydro.cid, target.spring, target.damp)
+  end
+end
+
 local function loadDamageData(filename, partsToRepair, partsToRemove)
   if filename == nil then
     filename = defaultSaveFile()
@@ -741,9 +804,17 @@ local function loadDamageData(filename, partsToRepair, partsToRemove)
 
   local latches = save.latches or captureLatches()
   mechanisms.cancel()
+  cancelTorsionRestoration()
   omitRepairedLatches(latches, partsToRepair, partsToRemove)
   -- Calculate rotation difference between saved and current orientation
   local rotationDifference, beamsToAdjust, beamsToRemove = planDamageRestoration(partsToRepair, partsToRemove, save)
+  local torsionTargets = planTorsionRestoration(save)
+  if #torsionTargets > 0 then
+    -- The first native batch can still evaluate the old pose against a newly restored target.
+    torsionRestoration = {targets=torsionTargets, physicsUpdated=false}
+    for _, target in ipairs(torsionTargets) do obj:setTorsionbarSpringDamp(target.hydro.cid, 0, 0) end
+    enablePhysicsStepHook()
+  end
 
   restoreSavedPartDamage(save, rotationDifference, beamsToAdjust, beamsToRemove)
 
@@ -779,12 +850,17 @@ M.captureMechanismState = captureMechanismState
 M.restoreMechanismState = restoreMechanismState
 M.getMechanismRestoreState = mechanisms.state
 M.cancelMechanismRestore = mechanisms.cancel
-M.onPhysicsStep = mechanisms.update
+M.onPhysicsStep = function(dt)
+  if torsionRestoration then torsionRestoration.physicsUpdated = true end
+  mechanisms.update(dt)
+end
+M.updateGFX = finishTorsionRestoration
 M.onBeamBroke = markChanged
 M.onBeamDeformed = markChanged
 M.onTorsionbarBroken = markChanged
-M.onReset = function() mechanisms.cancel(); markChanged() end
+M.onReset = function() mechanisms.cancel(); cancelTorsionRestoration(); markChanged() end
 M.onExtensionLoaded = captureUndeformedRestState
+M.onExtensionUnloaded = cancelTorsionRestoration
 
 
 M.saveData = damageData
@@ -792,6 +868,7 @@ M.saveData = damageData
 -- Test reset function
 M.reset = function()
   mechanisms.cancel()
+  cancelTorsionRestoration()
   markChanged()
   for save in pairs(lastCapture) do lastCapture[save] = nil end
   -- Cleared in place: M.saveData is this same table, so it must never be replaced.

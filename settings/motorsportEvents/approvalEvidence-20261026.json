@@ -1,0 +1,2020 @@
+{
+  "version": 1,
+  "audit": "drag-behavior-repair-20261026",
+  "method": "Native paired lane runs with bounded solo confirmations; class legality and post-finish behavior recorded separately.",
+  "configs": [
+    {
+      "id": "barstow/rls_problown_heritage_02",
+      "sourceConfigSHA256": "ac15081709f5f8af26695572a2daa033fb2975afcd5e14a693344af9ad3ccca7",
+      "approvedClassIds": [
+        "pro_blower"
+      ],
+      "sourceAudit": "drag-behavior-repair-20261026b",
+      "modules": {
+        "lua/ge/extensions/overhaul/events/motorsportEvents/drag/classes.lua": "b4e98015a7739a36592635839bc119c4403a7e1cee5923f21bd14d78a9ee493f",
+        "lua/vehicle/extensions/overhaulMotorsportLaunch.lua": "57e57508c43cde7cffa681429fbb112e9d0e9199c2fc3473db7be25f0d64140d",
+        "lua/ge/extensions/overhaul/events/motorsportEvents/drag/runner.lua": "3cadfe951244e2f6bc7fd21f47a209fada74953bf04e9b34906d1a2fd05d9124",
+        "lua/vehicle/extensions/overhaulMotorsportCooldown.lua": "3ba1d1382036f677ca2ecff81a3d935348160aebdda3160676f5a17514d96225"
+      },
+      "cageWaiver": false,
+      "runs": [
+        {
+          "side": "right",
+          "mode": "paired",
+          "time": 7.7814396360553,
+          "clean": true,
+          "flags": {},
+          "result": {
+            "reaction": 0.4254235083473,
+            "finishOrder": 1454.9613965091,
+            "nativeValid": true,
+            "time": 7.7814396360553,
+            "boundaryViolation": false,
+            "entrantId": "barstow/rls_problown_heritage_02:right",
+            "qualifyingRedLight": false,
+            "valid": true
+          },
+          "tech": {
+            "pro_blower": {
+              "ok": true
+            }
+          },
+          "inspection": {
+            "truck": false,
+            "year": 1971,
+            "drivetrain": "RWD",
+            "supercharger": true,
+            "diesel": false,
+            "rollCage": true,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_f_26_4_15_drag",
+                "source": "installed-part-label",
+                "slot": "/barstow_body/barstow_subframe_f/barstow_suspension_f/wheel_f_5/tire_f_15x4/tire_f_26_4_15_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_r_26_10_15_drag",
+                "source": "installed-part-label",
+                "slot": "/barstow_body/barstow_suspension_r/wheel_r_5/tire_r_15x10/tire_r_26_10_15_drag"
+              }
+            ],
+            "tireFrictionCoefMax": 1.3,
+            "turbocharger": false,
+            "tireType": "drag",
+            "model": "barstow",
+            "tireTypes": [
+              "drag"
+            ],
+            "nitrous": false,
+            "manual": false,
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.26,
+                  "wheel": "FL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.26,
+                  "wheel": "FR"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 40,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 40,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RR"
+                }
+              ]
+            },
+            "sportTires": false
+          }
+        },
+        {
+          "side": "left",
+          "mode": "paired",
+          "time": 7.7817226718652,
+          "clean": true,
+          "flags": {},
+          "result": {
+            "reaction": 0.4097290306197,
+            "finishOrder": 1454.0273697212,
+            "nativeValid": true,
+            "time": 7.7817226718652,
+            "boundaryViolation": false,
+            "entrantId": "barstow/rls_problown_heritage_02:left",
+            "qualifyingRedLight": false,
+            "valid": true
+          },
+          "tech": {
+            "pro_blower": {
+              "ok": true
+            }
+          },
+          "inspection": {
+            "truck": false,
+            "year": 1971,
+            "drivetrain": "RWD",
+            "supercharger": true,
+            "diesel": false,
+            "rollCage": true,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_f_26_4_15_drag",
+                "source": "installed-part-label",
+                "slot": "/barstow_body/barstow_subframe_f/barstow_suspension_f/wheel_f_5/tire_f_15x4/tire_f_26_4_15_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_r_26_10_15_drag",
+                "source": "installed-part-label",
+                "slot": "/barstow_body/barstow_suspension_r/wheel_r_5/tire_r_15x10/tire_r_26_10_15_drag"
+              }
+            ],
+            "tireFrictionCoefMax": 1.3,
+            "turbocharger": false,
+            "tireType": "drag",
+            "model": "barstow",
+            "tireTypes": [
+              "drag"
+            ],
+            "nitrous": false,
+            "manual": false,
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.26,
+                  "wheel": "FL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.26,
+                  "wheel": "FR"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 40,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 40,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RR"
+                }
+              ]
+            },
+            "sportTires": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "barstow/rls_problown_heritage_04",
+      "sourceConfigSHA256": "0ff22a731e73c3153eb4bdf1b95edc211e8b00726cdb6b1a479629e50485d475",
+      "approvedClassIds": [
+        "pro_blower"
+      ],
+      "sourceAudit": "drag-behavior-repair-20261026d",
+      "modules": {
+        "lua/ge/extensions/overhaul/events/motorsportEvents/drag/laneZones.lua": "be0ee0729c9bd3f7ecae7fcbad3250a97cb0994ad1bfa183176cb7e01de0d547",
+        "lua/vehicle/extensions/overhaulMotorsportLaunch.lua": "57e57508c43cde7cffa681429fbb112e9d0e9199c2fc3473db7be25f0d64140d",
+        "lua/vehicle/extensions/overhaulMotorsportCooldown.lua": "f7cba3699c96d8505e6ccf113994ba8931cf1e9a271e14029433e90f6d9a5fc4",
+        "settings/motorsportEvents/competition.json": "447953cf5079041e59efb5c2acd152dfe1c5cd1c5486685ad111bbb36910b7da",
+        "lua/ge/extensions/overhaul/events/motorsportEvents/definitions.lua": "471747e20b0d89ac5001fc88b9ce5c4276f8e2860c6ab453695173429e1508ed",
+        "lua/ge/extensions/overhaul/events/motorsportEvents/drag/runner.lua": "d750afdb8d39825c87a8d66d7ed19e5eacb92f2a914e0c8ab1c8d0782d640117",
+        "lua/ge/extensions/overhaul/events/motorsportEvents/drag/classes.lua": "d60141ceb34aa601bb1535b81fef2ecfd17e405595dcade76a8d2bc5613ff20e"
+      },
+      "cageWaiver": false,
+      "runs": [
+        {
+          "side": "right",
+          "mode": "paired",
+          "time": 7.8978792465869,
+          "clean": true,
+          "flags": {},
+          "result": {
+            "reaction": 0.51818217430715,
+            "finishOrder": 675.45640318046,
+            "nativeValid": true,
+            "time": 7.8978792465869,
+            "boundaryViolation": false,
+            "entrantId": "barstow/rls_problown_heritage_04:right",
+            "qualifyingRedLight": false,
+            "valid": true
+          },
+          "tech": {
+            "pro_blower": {
+              "ok": true
+            }
+          },
+          "inspection": {
+            "supercharger": true,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_f_26_4_15_drag",
+                "source": "installed-part-label",
+                "slot": "/barstow_body/barstow_subframe_f/barstow_suspension_f/wheel_f_5/tire_f_15x4/tire_f_26_4_15_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_r_26_10_15_drag",
+                "source": "installed-part-label",
+                "slot": "/barstow_body/barstow_suspension_r/wheel_r_5/tire_r_15x10/tire_r_26_10_15_drag"
+              }
+            ],
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": false,
+            "tireTypes": [
+              "drag"
+            ],
+            "configId": "barstow/rls_problown_heritage_04",
+            "drivetrain": "RWD",
+            "rollCage": true,
+            "truck": false,
+            "turbocharger": false,
+            "sportTires": false,
+            "manual": false,
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.26,
+                  "wheel": "FL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.26,
+                  "wheel": "FR"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 40,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 40,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RR"
+                }
+              ]
+            },
+            "year": 1971,
+            "diesel": false,
+            "model": "barstow",
+            "tireType": "drag"
+          }
+        },
+        {
+          "side": "left",
+          "mode": "paired",
+          "time": 7.8959958481346,
+          "clean": true,
+          "flags": {},
+          "result": {
+            "reaction": 0.49201156346226,
+            "finishOrder": 674.606281682,
+            "nativeValid": true,
+            "time": 7.8959958481346,
+            "boundaryViolation": false,
+            "entrantId": "barstow/rls_problown_heritage_04:left",
+            "qualifyingRedLight": false,
+            "valid": true
+          },
+          "tech": {
+            "pro_blower": {
+              "ok": true
+            }
+          },
+          "inspection": {
+            "supercharger": true,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_f_26_4_15_drag",
+                "source": "installed-part-label",
+                "slot": "/barstow_body/barstow_subframe_f/barstow_suspension_f/wheel_f_5/tire_f_15x4/tire_f_26_4_15_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_r_26_10_15_drag",
+                "source": "installed-part-label",
+                "slot": "/barstow_body/barstow_suspension_r/wheel_r_5/tire_r_15x10/tire_r_26_10_15_drag"
+              }
+            ],
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": false,
+            "tireTypes": [
+              "drag"
+            ],
+            "configId": "barstow/rls_problown_heritage_04",
+            "drivetrain": "RWD",
+            "rollCage": true,
+            "truck": false,
+            "turbocharger": false,
+            "sportTires": false,
+            "manual": false,
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.26,
+                  "wheel": "FL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.26,
+                  "wheel": "FR"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 40,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 40,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RR"
+                }
+              ]
+            },
+            "year": 1971,
+            "diesel": false,
+            "model": "barstow",
+            "tireType": "drag"
+          }
+        }
+      ]
+    },
+    {
+      "id": "moonhawk/rls_problown_loworbit_04",
+      "sourceConfigSHA256": "e51bc097d19719d286326f47f1c2ca988374faaa40151529fbe16181d191bc8e",
+      "approvedClassIds": [
+        "pro_blower"
+      ],
+      "sourceAudit": "drag-behavior-repair-20261026d",
+      "modules": {
+        "lua/ge/extensions/overhaul/events/motorsportEvents/drag/laneZones.lua": "be0ee0729c9bd3f7ecae7fcbad3250a97cb0994ad1bfa183176cb7e01de0d547",
+        "lua/vehicle/extensions/overhaulMotorsportLaunch.lua": "57e57508c43cde7cffa681429fbb112e9d0e9199c2fc3473db7be25f0d64140d",
+        "lua/vehicle/extensions/overhaulMotorsportCooldown.lua": "f7cba3699c96d8505e6ccf113994ba8931cf1e9a271e14029433e90f6d9a5fc4",
+        "settings/motorsportEvents/competition.json": "447953cf5079041e59efb5c2acd152dfe1c5cd1c5486685ad111bbb36910b7da",
+        "lua/ge/extensions/overhaul/events/motorsportEvents/definitions.lua": "471747e20b0d89ac5001fc88b9ce5c4276f8e2860c6ab453695173429e1508ed",
+        "lua/ge/extensions/overhaul/events/motorsportEvents/drag/runner.lua": "d750afdb8d39825c87a8d66d7ed19e5eacb92f2a914e0c8ab1c8d0782d640117",
+        "lua/ge/extensions/overhaul/events/motorsportEvents/drag/classes.lua": "d60141ceb34aa601bb1535b81fef2ecfd17e405595dcade76a8d2bc5613ff20e"
+      },
+      "cageWaiver": false,
+      "runs": [
+        {
+          "side": "left",
+          "mode": "paired",
+          "time": 7.8307102045355,
+          "clean": true,
+          "flags": {},
+          "result": {
+            "reaction": 0.47966866740282,
+            "finishOrder": 733.11242752654,
+            "nativeValid": true,
+            "time": 7.8307102045355,
+            "boundaryViolation": false,
+            "entrantId": "moonhawk/rls_problown_loworbit_04:left",
+            "qualifyingRedLight": false,
+            "valid": true
+          },
+          "tech": {
+            "pro_blower": {
+              "ok": true
+            }
+          },
+          "inspection": {
+            "supercharger": true,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_f_27.5_4_15_drag",
+                "source": "installed-part-label",
+                "slot": "/moonhawk_frame/moonhawk_suspension_f/wheel_f_5/tire_f_15x4/tire_f_27.5_4_15_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_r_29_12_15_drag",
+                "source": "installed-part-label",
+                "slot": "/moonhawk_frame/moonhawk_suspension_r/wheel_r_5/tire_r_15x12_alt/tire_r_29_12_15_drag"
+              }
+            ],
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": false,
+            "tireTypes": [
+              "drag"
+            ],
+            "configId": "moonhawk/rls_problown_loworbit_04",
+            "drivetrain": "RWD",
+            "rollCage": true,
+            "truck": false,
+            "turbocharger": false,
+            "sportTires": false,
+            "manual": false,
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.26,
+                  "wheel": "FL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.26,
+                  "wheel": "FR"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 40,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 40,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RR"
+                }
+              ]
+            },
+            "year": 1978,
+            "diesel": false,
+            "model": "moonhawk",
+            "tireType": "drag"
+          }
+        },
+        {
+          "side": "right",
+          "mode": "paired",
+          "time": 7.8237779976724,
+          "clean": true,
+          "flags": {},
+          "result": {
+            "reaction": 0.44410626477486,
+            "finishOrder": 731.82982243294,
+            "nativeValid": true,
+            "time": 7.8237779976724,
+            "boundaryViolation": false,
+            "entrantId": "moonhawk/rls_problown_loworbit_04:right",
+            "qualifyingRedLight": false,
+            "valid": true
+          },
+          "tech": {
+            "pro_blower": {
+              "ok": true
+            }
+          },
+          "inspection": {
+            "supercharger": true,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_f_27.5_4_15_drag",
+                "source": "installed-part-label",
+                "slot": "/moonhawk_frame/moonhawk_suspension_f/wheel_f_5/tire_f_15x4/tire_f_27.5_4_15_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_r_29_12_15_drag",
+                "source": "installed-part-label",
+                "slot": "/moonhawk_frame/moonhawk_suspension_r/wheel_r_5/tire_r_15x12_alt/tire_r_29_12_15_drag"
+              }
+            ],
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": false,
+            "tireTypes": [
+              "drag"
+            ],
+            "configId": "moonhawk/rls_problown_loworbit_04",
+            "drivetrain": "RWD",
+            "rollCage": true,
+            "truck": false,
+            "turbocharger": false,
+            "sportTires": false,
+            "manual": false,
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.26,
+                  "wheel": "FL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.26,
+                  "wheel": "FR"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 40,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 40,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RR"
+                }
+              ]
+            },
+            "year": 1978,
+            "diesel": false,
+            "model": "moonhawk",
+            "tireType": "drag"
+          }
+        }
+      ]
+    },
+    {
+      "id": "scintilla/rls_problown_neon_01",
+      "sourceConfigSHA256": "17c19a5c5dc3e1f04dd9e6007ee1ed96aab6ffab1f67fc176bb575931c4fbafb",
+      "approvedClassIds": [
+        "pro_blower"
+      ],
+      "sourceAudit": "drag-behavior-repair-20261026c",
+      "modules": {
+        "lua/ge/extensions/overhaul/events/motorsportEvents/drag/laneZones.lua": "be0ee0729c9bd3f7ecae7fcbad3250a97cb0994ad1bfa183176cb7e01de0d547",
+        "lua/vehicle/extensions/overhaulMotorsportLaunch.lua": "57e57508c43cde7cffa681429fbb112e9d0e9199c2fc3473db7be25f0d64140d",
+        "lua/vehicle/extensions/overhaulMotorsportCooldown.lua": "3ba1d1382036f677ca2ecff81a3d935348160aebdda3160676f5a17514d96225",
+        "lua/ge/extensions/overhaul/events/motorsportEvents/drag/runner.lua": "d750afdb8d39825c87a8d66d7ed19e5eacb92f2a914e0c8ab1c8d0782d640117",
+        "lua/ge/extensions/overhaul/events/motorsportEvents/drag/classes.lua": "b4e98015a7739a36592635839bc119c4403a7e1cee5923f21bd14d78a9ee493f"
+      },
+      "cageWaiver": false,
+      "runs": [
+        {
+          "side": "right",
+          "mode": "paired",
+          "time": 8.1874519119206,
+          "clean": false,
+          "flags": [
+            "cooldown_turnaround",
+            "cooldown_lane_excursion"
+          ],
+          "result": {
+            "reaction": 0.50642425173061,
+            "finishOrder": 1136.1604736475,
+            "nativeValid": true,
+            "time": 8.1874519119206,
+            "boundaryViolation": false,
+            "entrantId": "scintilla/rls_problown_neon_01:right",
+            "qualifyingRedLight": false,
+            "valid": true
+          },
+          "tech": {
+            "pro_blower": {
+              "ok": true
+            }
+          },
+          "inspection": {
+            "truck": false,
+            "year": 2022,
+            "drivetrain": "RWD",
+            "supercharger": true,
+            "diesel": false,
+            "rollCage": true,
+            "manual": false,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_r_28_13_5_18_drag",
+                "source": "installed-part-label",
+                "slot": "/scintilla_chassis/scintilla_subframe_r/scintilla_suspension_r/scintilla_hub_r/wheel_r_5/tire_r_18x12_alt/tire_r_28_13_5_18_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_f_28_4_5_18_drag",
+                "source": "installed-part-label",
+                "slot": "/scintilla_chassis/scintilla_suspension_f/scintilla_hub_f/wheel_f_5/tire_f_18x5/tire_f_28_4_5_18_drag"
+              }
+            ],
+            "turbocharger": false,
+            "tireType": "drag",
+            "model": "scintilla",
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": false,
+            "tireTypes": [
+              "drag"
+            ],
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMin": 1,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1,
+                  "frictionCoefMax": 1,
+                  "slidingFrictionCoefMax": 1,
+                  "wheel": "FL"
+                },
+                {
+                  "frictionCoefMin": 1,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1,
+                  "frictionCoefMax": 1,
+                  "slidingFrictionCoefMax": 1,
+                  "wheel": "FR"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RR"
+                }
+              ]
+            },
+            "sportTires": false
+          }
+        },
+        {
+          "side": "left",
+          "mode": "paired",
+          "time": 8.2148992563826,
+          "clean": false,
+          "flags": [
+            "cooldown_turnaround",
+            "cooldown_lane_excursion"
+          ],
+          "result": {
+            "reaction": 0.49711403511049,
+            "finishOrder": 1136.7018804353,
+            "nativeValid": true,
+            "time": 8.2148992563826,
+            "boundaryViolation": false,
+            "entrantId": "scintilla/rls_problown_neon_01:left",
+            "qualifyingRedLight": false,
+            "valid": true
+          },
+          "tech": {
+            "pro_blower": {
+              "ok": true
+            }
+          },
+          "inspection": {
+            "truck": false,
+            "year": 2022,
+            "drivetrain": "RWD",
+            "supercharger": true,
+            "diesel": false,
+            "rollCage": true,
+            "manual": false,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_r_28_13_5_18_drag",
+                "source": "installed-part-label",
+                "slot": "/scintilla_chassis/scintilla_subframe_r/scintilla_suspension_r/scintilla_hub_r/wheel_r_5/tire_r_18x12_alt/tire_r_28_13_5_18_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_f_28_4_5_18_drag",
+                "source": "installed-part-label",
+                "slot": "/scintilla_chassis/scintilla_suspension_f/scintilla_hub_f/wheel_f_5/tire_f_18x5/tire_f_28_4_5_18_drag"
+              }
+            ],
+            "turbocharger": false,
+            "tireType": "drag",
+            "model": "scintilla",
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": false,
+            "tireTypes": [
+              "drag"
+            ],
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMin": 1,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1,
+                  "frictionCoefMax": 1,
+                  "slidingFrictionCoefMax": 1,
+                  "wheel": "FL"
+                },
+                {
+                  "frictionCoefMin": 1,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1,
+                  "frictionCoefMax": 1,
+                  "slidingFrictionCoefMax": 1,
+                  "wheel": "FR"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RR"
+                }
+              ]
+            },
+            "sportTires": false
+          }
+        },
+        {
+          "side": "left",
+          "mode": "solo",
+          "clean": false,
+          "flags": [
+            "None"
+          ],
+          "result": {
+            "reaction": 0,
+            "nativeValid": false,
+            "reason": "Did not stage",
+            "time": 0,
+            "boundaryViolation": false,
+            "retired": true,
+            "entrantId": "scintilla/rls_problown_neon_01:left",
+            "qualifyingRedLight": false,
+            "nativeReason": "Did not stage",
+            "valid": false
+          },
+          "tech": {},
+          "inspection": {
+            "truck": false,
+            "year": 2022,
+            "drivetrain": "RWD",
+            "supercharger": true,
+            "diesel": false,
+            "rollCage": true,
+            "manual": false,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_r_28_13_5_18_drag",
+                "source": "installed-part-label",
+                "slot": "/scintilla_chassis/scintilla_subframe_r/scintilla_suspension_r/scintilla_hub_r/wheel_r_5/tire_r_18x12_alt/tire_r_28_13_5_18_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_f_28_4_5_18_drag",
+                "source": "installed-part-label",
+                "slot": "/scintilla_chassis/scintilla_suspension_f/scintilla_hub_f/wheel_f_5/tire_f_18x5/tire_f_28_4_5_18_drag"
+              }
+            ],
+            "turbocharger": false,
+            "tireType": "drag",
+            "model": "scintilla",
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": false,
+            "tireTypes": [
+              "drag"
+            ],
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMin": 1,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1,
+                  "frictionCoefMax": 1,
+                  "slidingFrictionCoefMax": 1,
+                  "wheel": "FL"
+                },
+                {
+                  "frictionCoefMin": 1,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1,
+                  "frictionCoefMax": 1,
+                  "slidingFrictionCoefMax": 1,
+                  "wheel": "FR"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RR"
+                }
+              ]
+            },
+            "sportTires": false
+          }
+        },
+        {
+          "side": "right",
+          "mode": "solo",
+          "time": 8.7052081125208,
+          "clean": false,
+          "flags": [
+            "cooldown_turnaround",
+            "cooldown_lane_excursion"
+          ],
+          "result": {
+            "reaction": 0.43308342609818,
+            "finishOrder": 706.05428529517,
+            "nativeValid": true,
+            "time": 8.7052081125208,
+            "boundaryViolation": false,
+            "entrantId": "scintilla/rls_problown_neon_01:right",
+            "qualifyingRedLight": false,
+            "valid": true
+          },
+          "tech": {
+            "pro_blower": {
+              "ok": true
+            }
+          },
+          "inspection": {
+            "truck": false,
+            "year": 2022,
+            "drivetrain": "RWD",
+            "supercharger": true,
+            "diesel": false,
+            "rollCage": true,
+            "manual": false,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_r_28_13_5_18_drag",
+                "source": "installed-part-label",
+                "slot": "/scintilla_chassis/scintilla_subframe_r/scintilla_suspension_r/scintilla_hub_r/wheel_r_5/tire_r_18x12_alt/tire_r_28_13_5_18_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_f_28_4_5_18_drag",
+                "source": "installed-part-label",
+                "slot": "/scintilla_chassis/scintilla_suspension_f/scintilla_hub_f/wheel_f_5/tire_f_18x5/tire_f_28_4_5_18_drag"
+              }
+            ],
+            "turbocharger": false,
+            "tireType": "drag",
+            "model": "scintilla",
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": false,
+            "tireTypes": [
+              "drag"
+            ],
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMin": 1,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1,
+                  "frictionCoefMax": 1,
+                  "slidingFrictionCoefMax": 1,
+                  "wheel": "FL"
+                },
+                {
+                  "frictionCoefMin": 1,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1,
+                  "frictionCoefMax": 1,
+                  "slidingFrictionCoefMax": 1,
+                  "wheel": "FR"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RR"
+                }
+              ]
+            },
+            "sportTires": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "burnside/rls_stu_loworbit_02",
+      "sourceConfigSHA256": "0d3c44aaccab7f27182cf9e94042615281ded16e0c26b8bb433ffc0e42a8a1fd",
+      "approvedClassIds": [
+        "stu_leonard_850"
+      ],
+      "sourceAudit": "drag-behavior-repair-20261026g",
+      "modules": {
+        "lua/ge/extensions/overhaul/events/motorsportEvents/drag/laneZones.lua": "be0ee0729c9bd3f7ecae7fcbad3250a97cb0994ad1bfa183176cb7e01de0d547",
+        "lua/vehicle/extensions/overhaulMotorsportLaunch.lua": "57e57508c43cde7cffa681429fbb112e9d0e9199c2fc3473db7be25f0d64140d",
+        "lua/vehicle/extensions/overhaulMotorsportCooldown.lua": "f7cba3699c96d8505e6ccf113994ba8931cf1e9a271e14029433e90f6d9a5fc4",
+        "settings/motorsportEvents/competition.json": "447953cf5079041e59efb5c2acd152dfe1c5cd1c5486685ad111bbb36910b7da",
+        "lua/ge/extensions/overhaul/events/motorsportEvents/definitions.lua": "471747e20b0d89ac5001fc88b9ce5c4276f8e2860c6ab453695173429e1508ed",
+        "lua/ge/extensions/overhaul/events/motorsportEvents/drag/runner.lua": "954b215122306cd583652187b41de1b6b7fe2a9150312a45828c20d50a254a33",
+        "lua/ge/extensions/overhaul/events/motorsportEvents/drag/classes.lua": "d60141ceb34aa601bb1535b81fef2ecfd17e405595dcade76a8d2bc5613ff20e"
+      },
+      "cageWaiver": false,
+      "runs": [
+        {
+          "side": "right",
+          "mode": "paired",
+          "time": 8.9511891741225,
+          "clean": true,
+          "flags": {},
+          "result": {
+            "reaction": 0.3539486174701,
+            "finishOrder": 729.21629309105,
+            "nativeValid": true,
+            "time": 8.9511891741225,
+            "boundaryViolation": false,
+            "entrantId": "burnside/rls_stu_loworbit_02:right",
+            "qualifyingRedLight": false,
+            "valid": true
+          },
+          "tech": {
+            "stu_leonard_850": {
+              "ok": true
+            }
+          },
+          "inspection": {
+            "supercharger": true,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_f_27.5_4_15_drag",
+                "source": "installed-part-label",
+                "slot": "/burnside_frame/burnside_suspension_f/wheel_f_5/tire_f_15x4/tire_f_27.5_4_15_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_r_28_9_15_drag",
+                "source": "installed-part-label",
+                "slot": "/burnside_frame/burnside_suspension_r/wheel_r_5/tire_r_15x9/tire_r_28_9_15_drag"
+              }
+            ],
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": true,
+            "tireTypes": [
+              "drag"
+            ],
+            "configId": "burnside/rls_stu_loworbit_02",
+            "drivetrain": "RWD",
+            "rollCage": true,
+            "truck": false,
+            "turbocharger": false,
+            "sportTires": false,
+            "manual": false,
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.26,
+                  "wheel": "FL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.26,
+                  "wheel": "FR"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 40,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 40,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RR"
+                }
+              ]
+            },
+            "year": 1954,
+            "diesel": false,
+            "model": "burnside",
+            "tireType": "drag"
+          }
+        },
+        {
+          "side": "left",
+          "mode": "paired",
+          "time": 8.9600630728478,
+          "clean": true,
+          "flags": {},
+          "result": {
+            "reaction": 0.32682035189682,
+            "finishOrder": 728.6631304563,
+            "nativeValid": true,
+            "time": 8.9600630728478,
+            "boundaryViolation": false,
+            "entrantId": "burnside/rls_stu_loworbit_02:left",
+            "qualifyingRedLight": false,
+            "valid": true
+          },
+          "tech": {
+            "stu_leonard_850": {
+              "ok": true
+            }
+          },
+          "inspection": {
+            "supercharger": true,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_f_27.5_4_15_drag",
+                "source": "installed-part-label",
+                "slot": "/burnside_frame/burnside_suspension_f/wheel_f_5/tire_f_15x4/tire_f_27.5_4_15_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_r_28_9_15_drag",
+                "source": "installed-part-label",
+                "slot": "/burnside_frame/burnside_suspension_r/wheel_r_5/tire_r_15x9/tire_r_28_9_15_drag"
+              }
+            ],
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": true,
+            "tireTypes": [
+              "drag"
+            ],
+            "configId": "burnside/rls_stu_loworbit_02",
+            "drivetrain": "RWD",
+            "rollCage": true,
+            "truck": false,
+            "turbocharger": false,
+            "sportTires": false,
+            "manual": false,
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.26,
+                  "wheel": "FL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.26,
+                  "wheel": "FR"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 40,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 40,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RR"
+                }
+              ]
+            },
+            "year": 1954,
+            "diesel": false,
+            "model": "burnside",
+            "tireType": "drag"
+          }
+        }
+      ]
+    },
+    {
+      "id": "burnside/rls_stu_loworbit_04",
+      "sourceConfigSHA256": "f0c01d9b2bb7ec9b9a447b2a70d570266dbd11ede7da0cbd288309d028d8a138",
+      "approvedClassIds": [
+        "stu_leonard_850"
+      ],
+      "sourceAudit": "drag-behavior-repair-20261026d",
+      "modules": {
+        "lua/ge/extensions/overhaul/events/motorsportEvents/drag/laneZones.lua": "be0ee0729c9bd3f7ecae7fcbad3250a97cb0994ad1bfa183176cb7e01de0d547",
+        "lua/vehicle/extensions/overhaulMotorsportLaunch.lua": "57e57508c43cde7cffa681429fbb112e9d0e9199c2fc3473db7be25f0d64140d",
+        "lua/vehicle/extensions/overhaulMotorsportCooldown.lua": "f7cba3699c96d8505e6ccf113994ba8931cf1e9a271e14029433e90f6d9a5fc4",
+        "settings/motorsportEvents/competition.json": "447953cf5079041e59efb5c2acd152dfe1c5cd1c5486685ad111bbb36910b7da",
+        "lua/ge/extensions/overhaul/events/motorsportEvents/definitions.lua": "471747e20b0d89ac5001fc88b9ce5c4276f8e2860c6ab453695173429e1508ed",
+        "lua/ge/extensions/overhaul/events/motorsportEvents/drag/runner.lua": "d750afdb8d39825c87a8d66d7ed19e5eacb92f2a914e0c8ab1c8d0782d640117",
+        "lua/ge/extensions/overhaul/events/motorsportEvents/drag/classes.lua": "d60141ceb34aa601bb1535b81fef2ecfd17e405595dcade76a8d2bc5613ff20e"
+      },
+      "cageWaiver": true,
+      "runs": [
+        {
+          "side": "right",
+          "mode": "paired",
+          "time": 8.8174711436865,
+          "clean": true,
+          "flags": {},
+          "result": {
+            "reaction": 0.3877431434151,
+            "finishOrder": 742.99133810575,
+            "nativeValid": true,
+            "time": 8.8174711436865,
+            "boundaryViolation": false,
+            "entrantId": "burnside/rls_stu_loworbit_04:right",
+            "qualifyingRedLight": false,
+            "valid": true
+          },
+          "tech": {
+            "stu_leonard_850": {
+              "ok": true
+            }
+          },
+          "inspection": {
+            "supercharger": false,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_f_27.5_4_15_drag",
+                "source": "installed-part-label",
+                "slot": "/burnside_frame/burnside_suspension_f/wheel_f_5/tire_f_15x4/tire_f_27.5_4_15_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_r_28_9_15_drag",
+                "source": "installed-part-label",
+                "slot": "/burnside_frame/burnside_suspension_r/wheel_r_5/tire_r_15x9/tire_r_28_9_15_drag"
+              }
+            ],
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": true,
+            "tireTypes": [
+              "drag"
+            ],
+            "configId": "burnside/rls_stu_loworbit_04",
+            "drivetrain": "RWD",
+            "rollCage": false,
+            "truck": false,
+            "turbocharger": true,
+            "sportTires": false,
+            "manual": false,
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.26,
+                  "wheel": "FL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.26,
+                  "wheel": "FR"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 40,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 40,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RR"
+                }
+              ]
+            },
+            "year": 1953,
+            "diesel": false,
+            "model": "burnside",
+            "tireType": "drag"
+          }
+        },
+        {
+          "side": "left",
+          "mode": "paired",
+          "time": 8.8206797405521,
+          "clean": true,
+          "flags": {},
+          "result": {
+            "reaction": 0.35106459470101,
+            "finishOrder": 741.97743896964,
+            "nativeValid": true,
+            "time": 8.8206797405521,
+            "boundaryViolation": false,
+            "entrantId": "burnside/rls_stu_loworbit_04:left",
+            "qualifyingRedLight": false,
+            "valid": true
+          },
+          "tech": {
+            "stu_leonard_850": {
+              "ok": true
+            }
+          },
+          "inspection": {
+            "supercharger": false,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_f_27.5_4_15_drag",
+                "source": "installed-part-label",
+                "slot": "/burnside_frame/burnside_suspension_f/wheel_f_5/tire_f_15x4/tire_f_27.5_4_15_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_r_28_9_15_drag",
+                "source": "installed-part-label",
+                "slot": "/burnside_frame/burnside_suspension_r/wheel_r_5/tire_r_15x9/tire_r_28_9_15_drag"
+              }
+            ],
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": true,
+            "tireTypes": [
+              "drag"
+            ],
+            "configId": "burnside/rls_stu_loworbit_04",
+            "drivetrain": "RWD",
+            "rollCage": false,
+            "truck": false,
+            "turbocharger": true,
+            "sportTires": false,
+            "manual": false,
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.26,
+                  "wheel": "FL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.26,
+                  "wheel": "FR"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 40,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 40,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RR"
+                }
+              ]
+            },
+            "year": 1953,
+            "diesel": false,
+            "model": "burnside",
+            "tireType": "drag"
+          }
+        }
+      ]
+    },
+    {
+      "id": "nine/rls_stu_haulmark_04",
+      "sourceConfigSHA256": "2750fb95fb4e28158ecfbdec17056f2b3c766b2fc1b7dc44ef7e2cea169b4ce4",
+      "approvedClassIds": [
+        "stu_leonard_850"
+      ],
+      "sourceAudit": "drag-behavior-repair-20261026d",
+      "modules": {
+        "lua/ge/extensions/overhaul/events/motorsportEvents/drag/laneZones.lua": "be0ee0729c9bd3f7ecae7fcbad3250a97cb0994ad1bfa183176cb7e01de0d547",
+        "lua/vehicle/extensions/overhaulMotorsportLaunch.lua": "57e57508c43cde7cffa681429fbb112e9d0e9199c2fc3473db7be25f0d64140d",
+        "lua/vehicle/extensions/overhaulMotorsportCooldown.lua": "f7cba3699c96d8505e6ccf113994ba8931cf1e9a271e14029433e90f6d9a5fc4",
+        "settings/motorsportEvents/competition.json": "447953cf5079041e59efb5c2acd152dfe1c5cd1c5486685ad111bbb36910b7da",
+        "lua/ge/extensions/overhaul/events/motorsportEvents/definitions.lua": "471747e20b0d89ac5001fc88b9ce5c4276f8e2860c6ab453695173429e1508ed",
+        "lua/ge/extensions/overhaul/events/motorsportEvents/drag/runner.lua": "d750afdb8d39825c87a8d66d7ed19e5eacb92f2a914e0c8ab1c8d0782d640117",
+        "lua/ge/extensions/overhaul/events/motorsportEvents/drag/classes.lua": "d60141ceb34aa601bb1535b81fef2ecfd17e405595dcade76a8d2bc5613ff20e"
+      },
+      "cageWaiver": false,
+      "runs": [
+        {
+          "side": "left",
+          "mode": "paired",
+          "clean": false,
+          "flags": [
+            "missions.dragRace.gameplay.disqualified.jumping"
+          ],
+          "result": {
+            "reaction": 0,
+            "nativeValid": false,
+            "reason": "missions.dragRace.gameplay.disqualified.jumping",
+            "time": 0,
+            "boundaryViolation": false,
+            "entrantId": "nine/rls_stu_haulmark_04:left",
+            "qualifyingRedLight": false,
+            "nativeReason": "missions.dragRace.gameplay.disqualified.jumping",
+            "valid": false
+          },
+          "tech": {},
+          "inspection": {
+            "supercharger": true,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_f_26_4_15_drag",
+                "source": "installed-part-label",
+                "slot": "/nine_frame/nine_suspension_f_custom/nine_spindles_f_custom/wheel_f_5/tire_f_15x4/tire_f_26_4_15_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_r_28_9_15_drag",
+                "source": "installed-part-label",
+                "slot": "/nine_frame/nine_suspension_r_custom_4link/wheel_r_5/tire_r_15x9/tire_r_28_9_15_drag"
+              }
+            ],
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": true,
+            "tireTypes": [
+              "drag"
+            ],
+            "configId": "nine/rls_stu_haulmark_04",
+            "drivetrain": "RWD",
+            "rollCage": false,
+            "truck": false,
+            "turbocharger": false,
+            "sportTires": false,
+            "manual": true,
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.26,
+                  "wheel": "FL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.26,
+                  "wheel": "FR"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 40,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 40,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RR"
+                }
+              ]
+            },
+            "year": 1934,
+            "diesel": false,
+            "model": "nine",
+            "tireType": "drag"
+          }
+        },
+        {
+          "side": "right",
+          "mode": "paired",
+          "clean": false,
+          "flags": [
+            "missions.dragRace.gameplay.disqualified.jumping"
+          ],
+          "result": {
+            "reaction": 0,
+            "nativeValid": false,
+            "reason": "missions.dragRace.gameplay.disqualified.jumping",
+            "time": 0,
+            "boundaryViolation": false,
+            "entrantId": "nine/rls_stu_haulmark_04:right",
+            "qualifyingRedLight": false,
+            "nativeReason": "missions.dragRace.gameplay.disqualified.jumping",
+            "valid": false
+          },
+          "tech": {},
+          "inspection": {
+            "supercharger": true,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_f_26_4_15_drag",
+                "source": "installed-part-label",
+                "slot": "/nine_frame/nine_suspension_f_custom/nine_spindles_f_custom/wheel_f_5/tire_f_15x4/tire_f_26_4_15_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_r_28_9_15_drag",
+                "source": "installed-part-label",
+                "slot": "/nine_frame/nine_suspension_r_custom_4link/wheel_r_5/tire_r_15x9/tire_r_28_9_15_drag"
+              }
+            ],
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": true,
+            "tireTypes": [
+              "drag"
+            ],
+            "configId": "nine/rls_stu_haulmark_04",
+            "drivetrain": "RWD",
+            "rollCage": false,
+            "truck": false,
+            "turbocharger": false,
+            "sportTires": false,
+            "manual": true,
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.26,
+                  "wheel": "FL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.26,
+                  "wheel": "FR"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 40,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 40,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RR"
+                }
+              ]
+            },
+            "year": 1934,
+            "diesel": false,
+            "model": "nine",
+            "tireType": "drag"
+          }
+        },
+        {
+          "side": "left",
+          "mode": "solo",
+          "time": 9.1639964654397,
+          "clean": true,
+          "flags": {},
+          "result": {
+            "reaction": 0.58073542359947,
+            "finishOrder": 605.5373263063,
+            "nativeValid": true,
+            "time": 9.1639964654397,
+            "boundaryViolation": false,
+            "entrantId": "nine/rls_stu_haulmark_04:left",
+            "qualifyingRedLight": false,
+            "valid": true
+          },
+          "tech": {
+            "stu_leonard_850": {
+              "ok": true
+            }
+          },
+          "inspection": {
+            "supercharger": true,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_f_26_4_15_drag",
+                "source": "installed-part-label",
+                "slot": "/nine_frame/nine_suspension_f_custom/nine_spindles_f_custom/wheel_f_5/tire_f_15x4/tire_f_26_4_15_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_r_28_9_15_drag",
+                "source": "installed-part-label",
+                "slot": "/nine_frame/nine_suspension_r_custom_4link/wheel_r_5/tire_r_15x9/tire_r_28_9_15_drag"
+              }
+            ],
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": true,
+            "tireTypes": [
+              "drag"
+            ],
+            "configId": "nine/rls_stu_haulmark_04",
+            "drivetrain": "RWD",
+            "rollCage": false,
+            "truck": false,
+            "turbocharger": false,
+            "sportTires": false,
+            "manual": true,
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.26,
+                  "wheel": "FL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.26,
+                  "wheel": "FR"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 40,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 40,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RR"
+                }
+              ]
+            },
+            "year": 1934,
+            "diesel": false,
+            "model": "nine",
+            "tireType": "drag"
+          }
+        },
+        {
+          "side": "right",
+          "mode": "solo",
+          "time": 9.1106406984584,
+          "clean": true,
+          "flags": {},
+          "result": {
+            "reaction": 0.69407992007213,
+            "finishOrder": 601.85732752216,
+            "nativeValid": true,
+            "time": 9.1106406984584,
+            "boundaryViolation": false,
+            "entrantId": "nine/rls_stu_haulmark_04:right",
+            "qualifyingRedLight": false,
+            "valid": true
+          },
+          "tech": {
+            "stu_leonard_850": {
+              "ok": true
+            }
+          },
+          "inspection": {
+            "supercharger": true,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_f_26_4_15_drag",
+                "source": "installed-part-label",
+                "slot": "/nine_frame/nine_suspension_f_custom/nine_spindles_f_custom/wheel_f_5/tire_f_15x4/tire_f_26_4_15_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_r_28_9_15_drag",
+                "source": "installed-part-label",
+                "slot": "/nine_frame/nine_suspension_r_custom_4link/wheel_r_5/tire_r_15x9/tire_r_28_9_15_drag"
+              }
+            ],
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": true,
+            "tireTypes": [
+              "drag"
+            ],
+            "configId": "nine/rls_stu_haulmark_04",
+            "drivetrain": "RWD",
+            "rollCage": false,
+            "truck": false,
+            "turbocharger": false,
+            "sportTires": false,
+            "manual": true,
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.26,
+                  "wheel": "FL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.26,
+                  "wheel": "FR"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 40,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 40,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RR"
+                }
+              ]
+            },
+            "year": 1934,
+            "diesel": false,
+            "model": "nine",
+            "tireType": "drag"
+          }
+        }
+      ]
+    },
+    {
+      "id": "burnside/rls_stu_loworbit_03",
+      "sourceConfigSHA256": "a7ead79d5a7c0603e8de46c784a8dbad65946c609f06515393b1228940ffc55b",
+      "approvedClassIds": [
+        "stu_leonard_850"
+      ],
+      "sourceAudit": "drag-behavior-repair-20261026p",
+      "modules": {
+        "lua/ge/extensions/overhaul/events/motorsportEvents/drag/laneZones.lua": "be0ee0729c9bd3f7ecae7fcbad3250a97cb0994ad1bfa183176cb7e01de0d547",
+        "lua/vehicle/extensions/overhaulMotorsportLaunch.lua": "57e57508c43cde7cffa681429fbb112e9d0e9199c2fc3473db7be25f0d64140d",
+        "lua/ge/extensions/overhaul/events/motorsportEvents/drag/staging.lua": "83daad73ceec094930f1129db0dd49bb60e6362da110d4e1f1fffe4630a6f6a2",
+        "lua/ge/extensions/overhaul/events/motorsportEvents/drag/classes.lua": "d60141ceb34aa601bb1535b81fef2ecfd17e405595dcade76a8d2bc5613ff20e",
+        "lua/ge/extensions/overhaul/events/motorsportEvents/drag/recovery.lua": "cf912da5ab871b79665fd31ee556adbf7121a18de22867c2187899a9a55a5eaf",
+        "lua/ge/extensions/overhaul/events/motorsportEvents/drag/approach.lua": "98ff3c873a5093abff033bc7400ce9d13ea023a102c4e59b9207a656c9cbb81b",
+        "lua/vehicle/extensions/overhaulMotorsportStagingHold.lua": "844ee87a22a5a186632b1c1edd9fc5149e9cb66e21c6d60829adede3d76e562c",
+        "lua/vehicle/extensions/overhaulMotorsportApproach.lua": "37974e9a78942faf2419cf8e8ae91c30cd6cb8cd518676886e5003736ef137b7",
+        "lua/vehicle/extensions/overhaulMotorsportCooldown.lua": "f7cba3699c96d8505e6ccf113994ba8931cf1e9a271e14029433e90f6d9a5fc4",
+        "settings/motorsportEvents/competition.json": "447953cf5079041e59efb5c2acd152dfe1c5cd1c5486685ad111bbb36910b7da",
+        "lua/vehicle/extensions/overhaulMotorsportStartup.lua": "8563549932b60b78eb3b282f8f0bb738b8d3783096342e3b6c04af34c066bef4",
+        "lua/ge/extensions/overhaul/events/motorsportEvents/drag/runner.lua": "5c20c23fd68900b627e65cafac456f58d1711ea84cfd6c074d0e7fff68273483",
+        "lua/ge/extensions/overhaul/events/motorsportEvents/definitions.lua": "471747e20b0d89ac5001fc88b9ce5c4276f8e2860c6ab453695173429e1508ed"
+      },
+      "cageWaiver": false,
+      "repair": "Only empty burnside_rollcage slot changed to vanilla burnside_rollcage; coupe body, tune, paints and other parts preserved.",
+      "priorEvidence": {
+        "sourceConfigSHA256": "2c491198d198bb0597026647dac4ff4757536656fe0a550afe46bcf472853057",
+        "performance": {
+          "quarterMileSeconds": 8.9026379297883,
+          "runId": "STU-081",
+          "evidenceConfigSHA256": "2c491198d198bb0597026647dac4ff4757536656fe0a550afe46bcf472853057",
+          "configHashMatches": true,
+          "status": "recorded-pass-matching-config"
+        }
+      },
+      "runs": [
+        {
+          "side": "left",
+          "mode": "mixed_paired",
+          "time": 8.7039922544362,
+          "clean": true,
+          "flags": {},
+          "result": {
+            "reaction": 0.91632245697543,
+            "finishOrder": 751.78226021506,
+            "nativeValid": true,
+            "time": 8.7039922544362,
+            "boundaryViolation": false,
+            "entrantId": "burnside/rls_stu_loworbit_03:left",
+            "qualifyingRedLight": false,
+            "valid": true
+          },
+          "tech": {
+            "stu_leonard_850": {
+              "ok": true
+            }
+          },
+          "inspection": {
+            "supercharger": true,
+            "tires": [
+              {
+                "type": "drag",
+                "part": "tire_f_27.5_4_15_drag",
+                "source": "installed-part-label",
+                "slot": "/burnside_frame/burnside_suspension_f/wheel_f_5/tire_f_15x4/tire_f_27.5_4_15_drag"
+              },
+              {
+                "type": "drag",
+                "part": "tire_r_28_9_15_drag",
+                "source": "installed-part-label",
+                "slot": "/burnside_frame/burnside_suspension_r/wheel_r_5/tire_r_15x9/tire_r_28_9_15_drag"
+              }
+            ],
+            "tireFrictionCoefMax": 1.3,
+            "nitrous": true,
+            "tireTypes": [
+              "drag"
+            ],
+            "configId": "burnside/rls_stu_loworbit_03",
+            "drivetrain": "RWD",
+            "rollCage": true,
+            "truck": false,
+            "turbocharger": false,
+            "sportTires": false,
+            "manual": false,
+            "tireFriction": {
+              "complete": true,
+              "source": "compiled-tread-nodes",
+              "wheels": [
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.26,
+                  "wheel": "FL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 32,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.26,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.26,
+                  "wheel": "FR"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 40,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RL"
+                },
+                {
+                  "frictionCoefMin": 1.3,
+                  "nodeCount": 40,
+                  "source": "compiled-tread-nodes",
+                  "slidingFrictionCoefMin": 1.3,
+                  "frictionCoefMax": 1.3,
+                  "slidingFrictionCoefMax": 1.3,
+                  "wheel": "RR"
+                }
+              ]
+            },
+            "year": 1952,
+            "diesel": false,
+            "model": "burnside",
+            "tireType": "drag"
+          }
+        }
+      ]
+    }
+  ]
+}

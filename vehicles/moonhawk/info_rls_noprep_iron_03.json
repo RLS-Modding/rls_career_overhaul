@@ -1,0 +1,25 @@
+{
+  "Configuration": "Alba Wynn - No Prep",
+  "Description": "Golden Coupe. Tier 2 boss. Highway no-prep quarter-mile: 10.133s at 145.87mph. Iron Lantern Garage.",
+  "Author": "Iron Lantern Garage",
+  "Name": "Alba Wynn",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": true
+  },
+  "Drag Times": {
+    "time_1000": 8.5636121840864,
+    "time_1_4": 10.133245577438,
+    "time_1_8": 6.6652571798207,
+    "time_330": 4.3956052112803,
+    "time_60": 1.6287980827863,
+    "velAt_1_4": 65.21053203494,
+    "velAt_1_8": 50.081204751589
+  },
+  "Reaction Time": 0.26967613686255,
+  "dragTimesRevalidated": true,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m"
+}

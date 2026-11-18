@@ -3,9 +3,9 @@
      SPDX-License-Identifier: AGPL-3.0-only -->
 
 <template>
-  <ComputerWrapper :title="definition?.label || ''" close @back="back">
+  <ComputerWrapper :title="definition?.label || ''" close :before-navigate="canNavigate" :breadcrumb-filter="isScreenCrumb" @back="back">
     <component v-if="component" :is="component" :computer-function="definition" :computer-id="context.computerId" :inventory-id="context.inventoryId" :call-lua="callModLua" />
-    <div v-else-if="failed" class="computer-function-message">This function is not available.</div>
+    <div v-else-if="failed" class="computer-function-message">This screen is not available right now.</div>
   </ComputerWrapper>
 </template>
 
@@ -16,7 +16,7 @@ import { ref, shallowRef, watch, onUnmounted } from 'vue'
 import { lua } from '@/bridge'
 import { loadRuntimeComponent } from '../utils/runtimeComponent.js'
 import ComputerWrapper from './ComputerWrapper.vue'
-import { ensureComputerFunctions, computerFunctionDefinition } from '../utils/computerFunctionCatalog.js'
+import { ensureComputerFunctions, computerFunctionDefinition, COMPUTER_FUNCTION_ROUTE_GROUP } from '../utils/computerFunctionCatalog.js'
 import { callModLua } from '../utils/installLuaBridgeFallbacks'
 
 const props = defineProps({ functionId: String })
@@ -25,7 +25,12 @@ const context = ref({})
 const component = shallowRef(null)
 const failed = ref(false)
 let generation = 0
-const back = () => lua.extensions.ui_router.navigate('overhaul.computer')
+// The route group has no screen and no title, so the trail would show its raw name ("function") as a dead link.
+const isScreenCrumb = crumb => crumb?.routeName !== COMPUTER_FUNCTION_ROUTE_GROUP
+const canNavigate = async () => !definition.value?.navigation?.canLeave || (await callModLua(definition.value.navigation.canLeave)) === true
+const back = () => definition.value?.navigation?.back
+  ? callModLua(definition.value.navigation.back, context.value.computerId)
+  : lua.extensions.ui_router.navigate('overhaul.computer')
 async function load(id) {
   const token = ++generation
   component.value = null

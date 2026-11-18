@@ -1,0 +1,86 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Configuration": "Jasper Ramsey - Bedtime Bullies",
+  "Description": "Driver: Jasper Ramsey. Builder: Low Orbit Garage. Low Orbit Garage: Sage extended-cab stepside utility custom. 5.5L NA V8, Stage 4 Race block; Naturally aspirated; nitrous Yes. 5-speed manual. Bedtime Bullies: first clean West Coast quarter-mile in the 9.500-10.000 second window: 9.923 s. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Drivetrain": "RWD",
+  "Transmission": "Manual",
+  "Years": {
+    "min": 1992,
+    "max": 1997
+  },
+  "Power": 1385,
+  "Weight": 2327,
+  "Motorsport": {
+    "version": 1,
+    "id": "pickup/rls_bedtime_loworbit_02",
+    "configId": "rls_bedtime_loworbit_02",
+    "model": "pickup",
+    "config": "/vehicles/pickup/rls_bedtime_loworbit_02.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "dominic_toretto",
+    "driverName": "Jasper Ramsey",
+    "builder": "Low Orbit Garage",
+    "classIds": [
+      "bedtime_bullies"
+    ],
+    "approvedClassIds": [
+      "bedtime_bullies"
+    ],
+    "leagueId": "street_kings",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "4e57611e392a6568a3d79decdba78cfc5a2e1f6977a9472ceaf24841918bfa47",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "5-speed manual",
+      "induction": "Naturally aspirated",
+      "nitrous": true,
+      "years": {
+        "min": 1992,
+        "max": 1997
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x9",
+          "part": "tire_F_255_60_15_sport",
+          "typeHint": "sport"
+        },
+        {
+          "slot": "tire_R_15x9",
+          "part": "tire_R_28_9_15_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "pickup_sparetire",
+          "part": "pickup_sparetire_5l",
+          "typeHint": null
+        }
+      ],
+      "selectedRollCageParts": [],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.9230443774441,
+      "runId": "BB-024",
+      "evidenceConfigSHA256": "d0db07a861a9a74fb90ffe8db553faefde74a1b21ed74a77c72c3cca1d55bae0",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/bedtime/final-results.json",
+      "acceptedConfig": "outputs/bedtime/accepted/rls_bedtime_loworbit_02/rls_bedtime_loworbit_02.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_bedtime_bullies"
+  }
+}

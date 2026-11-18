@@ -1,0 +1,873 @@
+{
+  "description": "Description of these Sites. Contains Locations, Zones, and Parking Spots.",
+  "dir": "/mods/unpacked/rls-career-overhaul-dev/levels/west_coast_usa/facilities/",
+  "locations": {},
+  "name": "dragEvent.sites.json",
+  "parkingSpots": [
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": {},
+        "tags": {},
+        "types": {},
+        "values": {}
+      },
+      "isMultiSpot": false,
+      "name": "A1_1",
+      "oldId": 8422,
+      "pos": [
+        -241.79956054688,
+        -209.57850646973,
+        118.90616607666
+      ],
+      "rot": [
+        0,
+        0,
+        -0.2540143430233,
+        0.96720039844513
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Back",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": {},
+        "tags": {},
+        "types": {},
+        "values": {}
+      },
+      "isMultiSpot": false,
+      "name": "A1_2",
+      "oldId": 8438,
+      "pos": [
+        -238.40815553266034,
+        -215.58982703213601,
+        118.90616607666
+      ],
+      "rot": [
+        0,
+        0,
+        -0.2540143430233,
+        0.96720039844513
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Back",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": {},
+        "tags": {},
+        "types": {},
+        "values": {}
+      },
+      "isMultiSpot": false,
+      "name": "A1_3",
+      "oldId": 8439,
+      "pos": [
+        -235.01675051844066,
+        -221.601147594542,
+        118.90616607666
+      ],
+      "rot": [
+        0,
+        0,
+        -0.2540143430233,
+        0.96720039844513
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Back",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": {},
+        "tags": {},
+        "types": {},
+        "values": {}
+      },
+      "isMultiSpot": false,
+      "name": "A1_4",
+      "oldId": 8440,
+      "pos": [
+        -231.625345504221,
+        -227.612468156948,
+        118.90616607666
+      ],
+      "rot": [
+        0,
+        0,
+        -0.2540143430233,
+        0.96720039844513
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Back",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": {},
+        "tags": {},
+        "types": {},
+        "values": {}
+      },
+      "isMultiSpot": false,
+      "name": "A2_1",
+      "oldId": 8421,
+      "pos": [
+        -239.0146484375,
+        -208.15182495117,
+        118.88677978516
+      ],
+      "rot": [
+        0,
+        0,
+        -0.25035429000854,
+        0.96815425157547
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Back",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": {},
+        "tags": {},
+        "types": {},
+        "values": {}
+      },
+      "isMultiSpot": false,
+      "name": "A2_2",
+      "oldId": 8435,
+      "pos": [
+        -235.70226189608348,
+        -214.12827737591962,
+        118.88677978516
+      ],
+      "rot": [
+        0,
+        0,
+        -0.25035429000854,
+        0.96815425157547
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Back",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": {},
+        "tags": {},
+        "types": {},
+        "values": {}
+      },
+      "isMultiSpot": false,
+      "name": "A2_3",
+      "oldId": 8436,
+      "pos": [
+        -232.38987535466697,
+        -220.10472980066925,
+        118.88677978516
+      ],
+      "rot": [
+        0,
+        0,
+        -0.25035429000854,
+        0.96815425157547
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Back",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": {},
+        "tags": {},
+        "types": {},
+        "values": {}
+      },
+      "isMultiSpot": false,
+      "name": "A2_4",
+      "oldId": 8437,
+      "pos": [
+        -229.07748881325045,
+        -226.08118222541887,
+        118.88677978516
+      ],
+      "rot": [
+        0,
+        0,
+        -0.25035429000854,
+        0.96815425157547
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Back",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": {},
+        "tags": {},
+        "types": {},
+        "values": {}
+      },
+      "isMultiSpot": false,
+      "name": "B1_1",
+      "oldId": 8420,
+      "pos": [
+        -236.17994689941,
+        -206.66146850586,
+        118.86898803711
+      ],
+      "rot": [
+        0,
+        0,
+        -0.25370785593987,
+        0.96728086471558
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Back",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": {},
+        "tags": {},
+        "types": {},
+        "values": {}
+      },
+      "isMultiSpot": false,
+      "name": "B1_2",
+      "oldId": 8432,
+      "pos": [
+        -232.8821709443069,
+        -212.51549565775943,
+        118.86898803711
+      ],
+      "rot": [
+        0,
+        0,
+        -0.25370785593987,
+        0.96728086471558
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Back",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": {},
+        "tags": {},
+        "types": {},
+        "values": {}
+      },
+      "isMultiSpot": false,
+      "name": "B1_3",
+      "oldId": 8433,
+      "pos": [
+        -229.58439498920382,
+        -218.3695228096589,
+        118.86898803711
+      ],
+      "rot": [
+        0,
+        0,
+        -0.25370785593987,
+        0.96728086471558
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Back",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": {},
+        "tags": {},
+        "types": {},
+        "values": {}
+      },
+      "isMultiSpot": false,
+      "name": "B1_4",
+      "oldId": 8434,
+      "pos": [
+        -226.2866190341007,
+        -224.22354996155832,
+        118.86898803711
+      ],
+      "rot": [
+        0,
+        0,
+        -0.25370785593987,
+        0.96728086471558
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Back",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": {},
+        "tags": {},
+        "types": {},
+        "values": {}
+      },
+      "isMultiSpot": false,
+      "name": "B2_1",
+      "oldId": 8417,
+      "pos": [
+        -233.52500915527,
+        -205.19674682617,
+        118.87944793701
+      ],
+      "rot": [
+        0,
+        0,
+        -0.25398783923105,
+        0.96720732090316
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Back",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": {},
+        "tags": {},
+        "types": {},
+        "values": {}
+      },
+      "isMultiSpot": false,
+      "name": "B2_2",
+      "oldId": 8423,
+      "pos": [
+        -230.13982955440872,
+        -211.19780145997393,
+        118.87944793701
+      ],
+      "rot": [
+        0,
+        0,
+        -0.25398783923105,
+        0.96720732090316
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Back",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": {},
+        "tags": {},
+        "types": {},
+        "values": {}
+      },
+      "isMultiSpot": false,
+      "name": "B2_3",
+      "oldId": 8424,
+      "pos": [
+        -226.75464995354744,
+        -217.19885609377783,
+        118.87944793701
+      ],
+      "rot": [
+        0,
+        0,
+        -0.25398783923105,
+        0.96720732090316
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Back",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": {},
+        "tags": {},
+        "types": {},
+        "values": {}
+      },
+      "isMultiSpot": false,
+      "name": "B2_4",
+      "oldId": 8425,
+      "pos": [
+        -223.3694703526862,
+        -223.19991072758177,
+        118.87944793701
+      ],
+      "rot": [
+        0,
+        0,
+        -0.25398783923105,
+        0.96720732090316
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Back",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": {},
+        "tags": {},
+        "types": {},
+        "values": {}
+      },
+      "isMultiSpot": false,
+      "name": "C1_1",
+      "oldId": 8418,
+      "pos": [
+        -230.68867492676,
+        -203.4771270752,
+        118.86770629883
+      ],
+      "rot": [
+        0,
+        0,
+        -0.25975078344345,
+        0.96567565202713
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Back",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": {},
+        "tags": {},
+        "types": {},
+        "values": {}
+      },
+      "isMultiSpot": false,
+      "name": "C1_2",
+      "oldId": 8426,
+      "pos": [
+        -227.19755330132514,
+        -209.49707307328129,
+        118.86770629883
+      ],
+      "rot": [
+        0,
+        0,
+        -0.25975078344345,
+        0.96567565202713
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Back",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": {},
+        "tags": {},
+        "types": {},
+        "values": {}
+      },
+      "isMultiSpot": false,
+      "name": "C1_3",
+      "oldId": 8427,
+      "pos": [
+        -223.7064316758903,
+        -215.5170190713626,
+        118.86770629883
+      ],
+      "rot": [
+        0,
+        0,
+        -0.25975078344345,
+        0.96567565202713
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Back",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": {},
+        "tags": {},
+        "types": {},
+        "values": {}
+      },
+      "isMultiSpot": false,
+      "name": "C1_4",
+      "oldId": 8428,
+      "pos": [
+        -220.21531005045543,
+        -221.53696506944388,
+        118.86770629883
+      ],
+      "rot": [
+        0,
+        0,
+        -0.25975078344345,
+        0.96567565202713
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Back",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": {},
+        "tags": {},
+        "types": {},
+        "values": {}
+      },
+      "isMultiSpot": false,
+      "name": "C2_1",
+      "oldId": 8419,
+      "pos": [
+        -228.12782287598,
+        -201.74116516113,
+        118.87857055664
+      ],
+      "rot": [
+        0,
+        0,
+        -0.27321442961693,
+        0.96195310354233
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Back",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": {},
+        "tags": {},
+        "types": {},
+        "values": {}
+      },
+      "isMultiSpot": false,
+      "name": "C2_2",
+      "oldId": 8429,
+      "pos": [
+        -224.42206839515842,
+        -207.73865476439735,
+        118.87857055664
+      ],
+      "rot": [
+        0,
+        0,
+        -0.27321442961693,
+        0.96195310354233
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Back",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": {},
+        "tags": {},
+        "types": {},
+        "values": {}
+      },
+      "isMultiSpot": false,
+      "name": "C2_3",
+      "oldId": 8430,
+      "pos": [
+        -220.7163139143368,
+        -213.7361443676647,
+        118.87857055664
+      ],
+      "rot": [
+        0,
+        0,
+        -0.27321442961693,
+        0.96195310354233
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Back",
+      "spotOffset": 0,
+      "spotRotation": 0
+    },
+    {
+      "color": [
+        1,
+        1,
+        1
+      ],
+      "customFields": {
+        "names": {},
+        "tags": {},
+        "types": {},
+        "values": {}
+      },
+      "isMultiSpot": false,
+      "name": "C2_4",
+      "oldId": 8431,
+      "pos": [
+        -217.01055943351523,
+        -219.73363397093206,
+        118.87857055664
+      ],
+      "rot": [
+        0,
+        0,
+        -0.27321442961693,
+        0.96195310354233
+      ],
+      "scl": [
+        2.5,
+        6,
+        3
+      ],
+      "spotAmount": 1,
+      "spotDirection": "Back",
+      "spotOffset": 0,
+      "spotRotation": 0
+    }
+  ],
+  "zones": {}
+}

@@ -1,0 +1,73 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "midsize/rls_nitro_neon_04",
+    "configId": "rls_nitro_neon_04",
+    "model": "midsize",
+    "config": "/vehicles/midsize/rls_nitro_neon_04.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "rachel_teller",
+    "driverName": "Brielle Gallagher",
+    "builder": "Neon Works",
+    "classIds": [
+      "spray_and_pray"
+    ],
+    "approvedClassIds": [
+      "spray_and_pray"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "1fa9ce47a4fd013e0132eaf4e5cd59c4c860f9e2fb89c119b885ba6e4d061f83",
+    "traits": {
+      "drivetrain": "FWD",
+      "transmission": "6-speed sequential",
+      "induction": "Naturally aspirated + nitrous",
+      "nitrous": true,
+      "years": {
+        "min": 1996,
+        "max": 2000
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x9",
+          "part": "tire_F_26.5_8.5_15_race",
+          "typeHint": null
+        },
+        {
+          "slot": "tire_R_15x7",
+          "part": "tire_R_205_60_15_sport",
+          "typeHint": "sport"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "midsize_rollcage",
+          "part": "midsize_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.4532785327643,
+      "runId": null,
+      "evidenceConfigSHA256": "ae950bf36e164a505323b48312cfdc7574734e1583276c5b21aaa41871883dab",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/nitrous/final-results.json",
+      "acceptedConfig": "outputs/nitrous/accepted/rls_nitro_neon_04/rls_nitro_neon_04.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_nitrous_builders"
+  }
+}

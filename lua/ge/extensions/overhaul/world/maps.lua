@@ -6,9 +6,10 @@ local levelData = require('overhaul/lib/world/levelData')
 local sharedMaterials = require('overhaul/lib/world/sharedMaterials')
 
 -- Level files that map mods ship for Overhaul under /overrides/. A copy in the mod's temp folder is
--- mounted only while Overhaul loads or plays a level.
+-- mounted only while Overhaul loads or plays a level. The folder name is lower case: Linux stores the
+-- paths that writes create in lower case and mounts only the exact name.
 local MOD_OVERRIDES_DIR = '/overrides/'
-local OVERRIDES_ROOT = "/temp/rls_career/mapOverrides/"
+local OVERRIDES_ROOT = "/temp/rls_career/mapoverrides/"
 
 local DEFAULT_MAP_PREVIEW = '/ui/ui-vue/mods/rls_career_overhaul/overhaul/assets/profilePreview_rls_west_coast.jpg'
 local PROFILE_PREVIEW_NAMES = {rls_west_coast = 'WCUSA', west_coast_usa = 'WCUSA'}

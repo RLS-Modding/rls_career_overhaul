@@ -127,6 +127,11 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  // The computer the shop was opened at; the listing flow returns to it.
+  originComputerId: {
+    type: String,
+    default: "",
+  },
 })
 import { lua, useBridge } from "@/bridge"
 import { BngUnit, BngIcon, icons } from "@/common/components/base"
@@ -285,7 +290,9 @@ const listVehicle = async () => {
     }
     return
   }
-  lua.overhaul_career_garage_inventory.openInventoryMenuForChoosingListing()
+  // Send no id rather than "": an empty string is truthy in Lua and would count as a computer.
+  if (props.originComputerId) lua.overhaul_career_garage_inventory.openInventoryMenuForChoosingListing(props.originComputerId)
+  else lua.overhaul_career_garage_inventory.openInventoryMenuForChoosingListing()
 }
 
 const start = () => {

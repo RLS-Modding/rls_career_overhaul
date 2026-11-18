@@ -11,6 +11,7 @@ local devConsole = require("overhaul/lib/lifecycle/devConsolePolicy")
 local capabilities = require("overhaul/lib/platform/capabilities")
 local saveState = require("overhaul/lib/business/saveState")
 local levelData = require("overhaul/lib/world/levelData")
+local recipeRules = require("overhaul/career/parts/engines/enginePackages/packages/recipes")
 
 -- Config ---------------------------------------------------------------------------------------------
 
@@ -258,6 +259,7 @@ local function normalizeState(id, state)
   state.id = tostring(id)
   state.version = config.SAVE_VERSION
   state.blueprints = type(state.blueprints) == "table" and state.blueprints or {}
+  state.deletedBlueprintSignatures = type(state.deletedBlueprintSignatures) == "table" and state.deletedBlueprintSignatures or nil
   state.certificationJobs = type(state.certificationJobs) == "table" and state.certificationJobs or {}
   state.rawStock = type(state.rawStock) == "table" and state.rawStock or {}
   state.reservations = type(state.reservations) == "table" and state.reservations or {}
@@ -283,7 +285,7 @@ local function refreshCertifications(state)
   for _, blueprint in pairs(state.blueprints) do
     blueprint.certification = blueprint.certification or {}
     certifier.refreshAnalysis(blueprint.certification, blueprint.recipe)
-    if blueprint.certification.status ~= "passed" then
+    if blueprint.removed or blueprint.certification.status ~= "passed" then
       blueprint.listed = false
       for _, line in ipairs(state.lines) do
         if tostring(line.blueprintId) == tostring(blueprint.id) then line.running = false end
@@ -399,8 +401,21 @@ function ownerServices.warehouseUsed(id, state)
   return rawCount(state) + reservationCount(state) + #ownerServices.warehousePackages(id)
 end
 
-local function findBlueprintBySignature(state, signature)
-  for _, blueprint in pairs(state.blueprints) do if tostring(blueprint.recipeSignature) == tostring(signature) then return blueprint end end
+-- Saved signatures are lookup hints: different hardware can share a legacy hash.
+local function findBlueprintByRecipe(state, recipe)
+  for _, blueprint in pairs(state.blueprints) do
+    if tostring(blueprint.recipeSignature) == tostring(recipe.signature) and recipeRules.recipesMatch(blueprint.recipe, recipe) then return blueprint end
+  end
+end
+
+local function certificationMatchesRecipe(state, certification, recipe)
+  if not recipe or tostring(recipe.signature) ~= tostring(certification.recipeSignature) then return false end
+  if certification.recipe then return recipeRules.recipesMatch(certification.recipe, recipe) end
+  -- A legacy tag cannot prove a second product beside a colliding recipe.
+  for _, blueprint in pairs(state.blueprints) do
+    if tostring(blueprint.recipeSignature) == tostring(recipe.signature) then return false end
+  end
+  return true
 end
 
 function ownerServices.lineDuration(line) return config.LINE_DURATION_SECONDS[(line.upgrades.speed or 0) + 1] end
@@ -416,6 +431,7 @@ local function assignLineBlueprint(id, lineId, blueprintId)
   local line, blueprint = state.lines[lineId], state.blueprints[tostring(blueprintId)]
   if not line or lineId > ownerServices.lineCapacity(state) then return {success = false, message = "That production line is locked."} end
   if not blueprint then return {success = false, message = "Select a certified engine blueprint."} end
+  if blueprint.removed then return {success = false, message = "Restore this blueprint before assigning it to production."} end
   if blueprint.certification.status ~= "passed" then return {success = false, message = blueprint.certification.reason or "This blueprint no longer passes its torque limit. Keep it and certify a revised engine package."} end
   if line.attemptStarted and tostring(line.blueprintId) ~= tostring(blueprintId) then
     return {success = false, message = "Stop after the current attempt before changing this line's blueprint."}
@@ -433,6 +449,7 @@ local function setLineRunning(id, lineId, running)
   if not line or lineId > ownerServices.lineCapacity(state) then return {success = false, message = "That production line is locked."} end
   if running and line.blueprintId then
     local blueprint = state.blueprints[tostring(line.blueprintId)]
+    if blueprint and blueprint.removed then return {success = false, message = "Restore this blueprint before starting production."} end
     if not blueprint or blueprint.certification.status ~= "passed" then return {success = false, message = "This blueprint needs a passing certification before production can resume."} end
   end
   if running and not line.blueprintId then return {success = false, message = "Choose a certified engine blueprint first."} end
@@ -484,6 +501,7 @@ end
 local function processAttempt(id, state, line, forcedSuccess, forcedBreakdown)
   local blueprintId = tostring(line.blueprintId or "")
   local blueprint = state.blueprints[blueprintId]
+  if blueprint and blueprint.removed then return false end
   if not blueprint or (state.rawStock[blueprintId] or 0) <= 0 then
     line.attemptStarted = false
     line.progressSeconds = 0
@@ -534,7 +552,8 @@ end
 
 -- A passed engine becomes a blueprint once; a repeat pass for the same recipe reuses it.
 local function certifiedBlueprint(state, job, packageId)
-  local blueprint = findBlueprintBySignature(state, job.recipeSignature)
+  services.blueprints.clearRecipeExclusion(state, job.recipe)
+  local blueprint = findBlueprintByRecipe(state, job.recipe)
   if blueprint then
     blueprint.certification = {status = "passed", analysisVersion = job.analysisVersion, contentFingerprint = job.contentFingerprint, peakHorsepower = job.peakHorsepower, peakTorque = job.peakTorque,
       rating = job.rating, torqueLimit = job.torqueLimit, limiterRpm = job.limiterRpm, samples = deepcopy(job.samples)}
@@ -559,7 +578,7 @@ local function completeCertification(id, state, packageId, job)
   local package = overhaul_career_parts_engines_enginePackages.getPackage(packageId)
   if package then
     overhaul_career_parts_engines_enginePackages.setEngineShopCertification(packageId, {status = job.result, businessId = tostring(id),
-      recipeSignature = job.recipeSignature, analysisVersion = job.analysisVersion, contentFingerprint = job.contentFingerprint, reason = job.reason, completedAt = job.completedAt, fee = job.fee, peakHorsepower = job.peakHorsepower,
+      recipeSignature = job.recipeSignature, recipe = deepcopy(job.recipe), analysisVersion = job.analysisVersion, contentFingerprint = job.contentFingerprint, reason = job.reason, completedAt = job.completedAt, fee = job.fee, peakHorsepower = job.peakHorsepower,
       peakTorque = job.peakTorque, rating = job.rating, torqueLimit = job.torqueLimit, limiterRpm = job.limiterRpm, samples = job.samples})
   end
   recordCertification({detail = (job.packageName or "Engine package") .. " / " .. tostring(job.result)
@@ -609,7 +628,7 @@ local function startCertification(id, packageId)
     peakHorsepower = data.peakHorsepower, peakTorque = data.peakTorque, rating = data.rating, torqueLimit = data.torqueLimit, limiterRpm = data.limiterRpm, samples = data.samples}
   state.certificationJobs[tostring(packageId)] = job
   overhaul_career_parts_engines_enginePackages.setEngineShopCertification(packageId, {status = "pending", businessId = tostring(id),
-    recipeSignature = signature, submittedAt = absolute, durationSeconds = config.CERTIFICATION_DURATION_SECONDS, progressSeconds = 0, fee = fee})
+    recipeSignature = signature, recipe = deepcopy(recipe), submittedAt = absolute, durationSeconds = config.CERTIFICATION_DURATION_SECONDS, progressSeconds = 0, fee = fee})
   return {success = true, message = string.format("%s entered certification for $%d. It will finish in 10 active minutes.", package.name, fee)}
 end
 
@@ -718,6 +737,7 @@ local function orderRawMaterials(id, blueprintId, quantity)
   local blueprint = state.blueprints[tostring(blueprintId)]
   quantity = math.max(1, math.floor(tonumber(quantity) or 1))
   if not blueprint then return {success = false, message = "Choose a certified engine blueprint."} end
+  if blueprint.removed then return {success = false, message = "Restore this blueprint before ordering more material."} end
   if blueprint.certification.status ~= "passed" then return {success = false, message = blueprint.certification.reason or "This blueprint needs a passing certification before ordering more material."} end
   if ownerServices.warehouseUsed(id, state) + quantity > ownerServices.warehouseCapacity(state) then return {success = false, message = "The shared warehouse lacks enough unreserved spots."} end
   local facility = ownerServices.currentFacility(id)
@@ -760,6 +780,7 @@ local function installWarehousePackage(id, packageId)
     productRevisionId = package.productRevisionId, blueprintId = package.blueprintId}
   local personal, transferError = overhaul_career_parts_engines_enginePackages.transferBusinessPackageToPersonal(packageId)
   if not personal then return {success = false, message = transferError or "The warehouse engine could not be moved into personal ownership."} end
+  local finishInstall = services.blueprints.beginWarehouseInstall(id, businessFields.blueprintId or businessFields.productRevisionId)
   local started, returned = false, false
   -- A failed install puts the engine back in the warehouse; the message only follows a start that was already announced.
   local function returnToWarehouse()
@@ -774,8 +795,11 @@ local function installWarehousePackage(id, packageId)
   end
   local installError
   started, installError = overhaul_career_parts_engines_enginePackages.installPackageIntoVehicle(personal.id, vehicle.inventoryId,
-    function(success) if not success then returnToWarehouse() end end)
+    function(success)
+      if finishInstall() and not success then returnToWarehouse() end
+    end)
   if not started then
+    finishInstall()
     returnToWarehouse()
     return {success = false, message = installError or "The engine installation could not start."}
   end
@@ -948,11 +972,12 @@ local function packageCard(package, state)
     certification.remainingSeconds = math.max(0, certification.durationSeconds - certification.progressSeconds)
   end
   local recipe = overhaul_career_parts_engines_enginePackages.getRecipeFromPackage(package)
-  local blueprint = recipe and findBlueprintBySignature(state, recipe.signature)
+  local blueprint = recipe and findBlueprintByRecipe(state, recipe)
   return {id = tostring(package.id), name = package.name, engineName = package.rootEngineNiceName or package.rootEngineName,
     status = status, installedInventoryId = installedId, missingCount = missing, stored = status == "stored",
     freshValue = freshValue or 0, certificationFee = math.floor((freshValue or 0) * 0.05 + 0.5),
     certification = certification, certified = blueprint ~= nil and blueprint.certification.status == "passed", blueprintId = blueprint and blueprint.id,
+    blueprintDeleted = recipe and services.blueprints.isRecipeExcluded(state, recipe) or false,
     thumbnail = overhaul_career_parts_engines_enginePackages.getPackageThumbnailPath(package.id),
     dirtyDate = package.thumbnailAt or package.updatedAt or 0}
 end
@@ -961,13 +986,15 @@ end
 local function reconcileCertifiedPackages(state)
   for _, package in ipairs(overhaul_career_parts_engines_enginePackages.listPackages({ownerType = "personal"})) do
     local certification = package.engineShopCertification
+    local recipe = certification and overhaul_career_parts_engines_enginePackages.getRecipeFromPackage(package)
     if certification and certification.status ~= "pending" then
-      overhaul_career_parts_engines_engineCertification.refreshAnalysis(certification, overhaul_career_parts_engines_enginePackages.getRecipeFromPackage(package))
+      overhaul_career_parts_engines_engineCertification.refreshAnalysis(certification, recipe)
     end
     if certification and certification.status == "passed" and certification.recipeSignature and
-        not findBlueprintBySignature(state, certification.recipeSignature) then
-      local freshValue, recipe = overhaul_career_parts_engines_enginePackages.getFreshPackageValue(package)
-      if freshValue and recipe and tostring(recipe.signature) == tostring(certification.recipeSignature) then
+        certificationMatchesRecipe(state, certification, recipe) and
+        not services.blueprints.isRecipeExcluded(state, recipe) and not findBlueprintByRecipe(state, recipe) then
+      local freshValue = overhaul_career_parts_engines_enginePackages.getFreshPackageValue(package)
+      if freshValue then
         local blueprintId = tostring(state.nextBlueprintId)
         state.nextBlueprintId = state.nextBlueprintId + 1
         state.blueprints[blueprintId] = {id = blueprintId, name = package.name, recipe = recipe,
@@ -1017,6 +1044,7 @@ local function blueprintCards(id, state)
     local copy = deepcopy(blueprint)
     copy.finishedCount = #ownerServices.warehousePackages(id, blueprint.id)
     copy.rawCount = state.rawStock[tostring(blueprint.id)] or 0
+    copy.deleteBlockedReason = services.blueprints.deleteBlockedReason(id, state, blueprint)
     copy.landedCost = services.sales.landedCost(blueprint, state.lines)
     copy.marketValue = math.floor((copy.freshValue or 1) * config.FRESH_VALUE_MARKET_MULTIPLIER + 0.5)
     copy.suggestedPrice = math.floor(services.sales.supportedMarketPrice(blueprint, copy.landedCost, state) + 0.5)
@@ -1150,6 +1178,7 @@ end
 -- Parts ----------------------------------------------------------------------------------------------
 
 services.sales = require("overhaul/career/business/engineShop/sales").new({config = config, host = ownerServices})
+services.blueprints = require("overhaul/career/business/engineShop/blueprints").new({host = ownerServices, sales = services.sales, owned = owned})
 
 services.supply = require("overhaul/career/business/engineShop/supply").new({
   shop = shop, host = ownerServices, owned = owned, generator = generator,
@@ -1183,7 +1212,7 @@ local function resetBusinessForSale(id)
   return true
 end
 
-local businessObject = {businessType = config.SHOP_TYPE, resaleMultiplier = 1,
+local businessObject = {businessType = config.SHOP_TYPE,
   features = {bankAccount = true, inventory = false, finances = true, skillTrees = false, personalVehicle = true,
     xpSystem = false, operatingCosts = false},
   getUIData = getUIData, getLiquidationValue = getLiquidationValue, getMaxPulledOutVehicles = function() return 0 end,
@@ -1338,6 +1367,8 @@ M.purchaseLineUpgrade = purchaseLineUpgrade
 M.overhaulLine = overhaulLine
 M.setBlueprintListed = services.sales.setBlueprintListed
 M.setBlueprintPrice = services.sales.setBlueprintPrice
+M.setBlueprintRemoved = services.blueprints.setBlueprintRemoved
+M.deleteBlueprint = services.blueprints.deleteBlueprint
 M.orderRawMaterials = orderRawMaterials
 M.junkWarehousePackage = junkWarehousePackage
 M.installWarehousePackage = installWarehousePackage
@@ -1377,54 +1408,65 @@ function M.onRlsFreeroamRaceResultFinalized(payload)
       if tonumber(vehId) == tonumber(payload.vehicleId) then inventoryId = candidateId break end
     end
   end
+  inventoryId = tonumber(inventoryId)
   if not inventoryId then return end
-  local installed
-  for _, package in ipairs(overhaul_career_parts_engines_enginePackages.listPackages({ownerType = "personal"})) do
-    if tonumber(package.installedInventoryId) == tonumber(inventoryId) then installed = package break end
+  local blueprints = {}
+  for id, state in pairs(shop.states) do
+    if owned(id) then
+      for _, blueprint in pairs(state.blueprints) do
+        if blueprint.listed then blueprints[#blueprints + 1] = blueprint end
+      end
+    end
   end
-  -- A hardware replacement unlinks the old package. Read the raced engine in
-  -- that case so a mismatched build still gets an explanation.
+  if #blueprints == 0 then return end
+  local installed, related, partInventory
+  for _, package in ipairs(overhaul_career_parts_engines_enginePackages.listPackages({ownerType = "personal"})) do
+    local inVehicle = tonumber(package.installedInventoryId) == tonumber(inventoryId)
+    if inVehicle then installed = package end
+    -- A part replacement clears the package link, but its physical root can remain installed.
+    if not inVehicle and package.tree and package.tree.partId then
+      partInventory = partInventory or overhaul_career_parts_partInventory.getInventory()
+      local root = partInventory[tonumber(package.tree.partId) or package.tree.partId]
+      inVehicle = root and tonumber(root.location) == tonumber(inventoryId)
+    end
+    if inVehicle then
+      local packageIdentity = overhaul_career_parts_engines_engineCertification.computeHardwareIdentity(
+        overhaul_career_parts_engines_enginePackages.getRecipeFromPackage(package))
+      for _, blueprint in ipairs(blueprints) do
+        if (blueprint.sourcePackageId and tostring(blueprint.sourcePackageId) == tostring(package.id))
+          or (packageIdentity and refreshHardwareIdentity(blueprint) == packageIdentity) then related = true break end
+      end
+    end
+  end
   local recipe, recipeReason
   if installed then
     recipe, recipeReason = overhaul_career_parts_engines_enginePackages.getRecipeFromPackage(installed)
   else
-    local hasListed = false
-    for id, state in pairs(shop.states) do
-      if owned(id) then
-        for _, blueprint in pairs(state.blueprints) do
-          if blueprint.listed then hasListed = true break end
-        end
-      end
-    end
-    if not hasListed then return end
     recipe, recipeReason = overhaul_career_parts_engines_enginePackages.getInstalledEngineRecipe(inventoryId)
   end
   local identity, reason = overhaul_career_parts_engines_engineCertification.computeHardwareIdentity(recipe)
   if not identity then
-    notify("warning", "Engine promotion unavailable", recipeReason or reason or "Engine hardware could not be identified.")
+    if related then notify("warning", "Engine promotion unavailable", recipeReason or reason or "Engine hardware could not be identified.") end
     return
   end
-  local promoted, listed = false, false
-  for id, state in pairs(shop.states) do
-    if owned(id) then
-      for _, blueprint in pairs(state.blueprints) do
-        if blueprint.listed then
-          listed = true
-          if refreshHardwareIdentity(blueprint) == identity then
-            promoted = true
-            blueprint.awareness = math.min(100, (blueprint.awareness or 0) + 30 * (1 - (blueprint.awareness or 0) / 100))
-            notify("success", "Engine promotion complete", string.format("%s awareness increased to %.0f.", blueprint.name, blueprint.awareness))
-          end
-        end
-      end
+  local promoted = false
+  for _, blueprint in ipairs(blueprints) do
+    if refreshHardwareIdentity(blueprint) == identity then
+      promoted = true
+      blueprint.awareness = math.min(100, (blueprint.awareness or 0) + 30 * (1 - (blueprint.awareness or 0) / 100))
+      notify("success", "Engine promotion complete", string.format("%s awareness increased to %.0f.", blueprint.name, blueprint.awareness))
     end
   end
-  if listed and not promoted then
+  if related and not promoted then
     notify("warning", "Engine promotion unavailable", "Different engine hardware than the certified blueprint.")
   end
 end
 
+-- Engine packages cancel their callback at mission teardown, including map travel.
+M.onClientEndMission = services.blueprints.reset
+
 function M.onCareerActivated()
+  services.blueprints.reset()
   services.supply.reset()
   shopZones = {mapId = nil, byBusiness = {}}
   loadData()

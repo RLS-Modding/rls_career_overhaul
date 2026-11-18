@@ -1,0 +1,44 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "burnside/rls_stu_loworbit_01",
+    "configId": "rls_stu_loworbit_01",
+    "model": "burnside",
+    "config": "/vehicles/burnside/rls_stu_loworbit_01.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "sourcePack": "rls_stu_leonard",
+    "driverId": "dominic_toretto",
+    "driverName": "Julian Jensen",
+    "builder": "loworbit",
+    "classIds": [
+      "stu_leonard_850"
+    ],
+    "approvedClassIds": [
+      "stu_leonard_850"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained after shared-hardware migration. Recorded ETs are historical estimates; the current build has not been retimed or revalidated.",
+    "sourceConfigSHA256": "b9ffcc9b890af5b7e7fec980ebec3e53cc16db8571f6f2795b2911249d888ef0",
+    "traits": {
+      "transmission": "Automatic",
+      "drivetrain": "RWD",
+      "years": {
+        "min": 1954,
+        "max": 1954
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.5832453470713,
+      "runId": "STU-019",
+      "evidenceConfigSHA256": "a70afca014dc13fe378a2b10235f9a9683286ba2478e6740266f53720ca2a82c",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/stu-leonard/final-metadata.json",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    }
+  }
+}

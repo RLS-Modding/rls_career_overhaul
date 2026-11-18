@@ -13,9 +13,9 @@ export function createSaveStatus(publish, timers = window) {
   const receive = payload => {
     if (disposed) return
     const state = payload?.state
-    if (!["saving", "saved", "deferred", "idle"].includes(state)) return
+    if (!["saving", "saved", "deferred", "idle", "failed"].includes(state)) return
     cancel()
-    publish(state === "idle" ? "" : state)
+    publish(state === "idle" || state === "failed" ? "" : state)
     if (state === "saved" || state === "deferred") {
       timeout = timers.setTimeout(() => {
         timeout = undefined

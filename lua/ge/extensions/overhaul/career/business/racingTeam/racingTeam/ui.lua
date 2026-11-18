@@ -476,6 +476,7 @@ local function buildRacingTeamUIDataCore(rtState, parts, racingTeamBuildClass, r
     businessId = businessId,
     businessType = rtState.businessType,
     businessName = businessName,
+    playerRacePayoutMultiplier = rtState.K.RACING_TEAM_PLAYER_RACE_PAYOUT_MULTIPLIER,
   }
   -- Field order below is the order the sibling calls always ran in; the business computer tests pin it.
   mergeFields(data, buildUiLeagueFields(rtState, parts, businessId, goals, offers.lvUiInf))

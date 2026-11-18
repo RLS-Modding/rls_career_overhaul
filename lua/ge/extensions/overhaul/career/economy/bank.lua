@@ -7,6 +7,7 @@ local ensureDir = require("overhaul/lib/save/ensureDir")
 
 local ledgerAuthority = require("overhaul/lib/ledger/authority")
 local moneyCategories = require("overhaul/lib/ledger/categories")
+local financePageIndex = require("overhaul/lib/finance/pageIndex")
 
 -- Config ------------------------------------------------------------------------------------------
 
@@ -895,24 +896,7 @@ local function getAccountTransactions(accountId, limit)
     return {}
   end
 
-  local sorted = {}
-  for _, trans in ipairs(transactions[accountId]) do
-    table.insert(sorted, trans)
-  end
-
-  table.sort(sorted, function(a, b)
-    return a.timestamp > b.timestamp
-  end)
-
-  if limit and limit > 0 then
-    local limited = {}
-    for i = 1, math.min(limit, #sorted) do
-      table.insert(limited, sorted[i])
-    end
-    return limited
-  end
-
-  return sorted
+  return financePageIndex.bankPage(transactions[accountId], limit)
 end
 
 -- Refunds a pending transfer to its sender and drops the pending record.

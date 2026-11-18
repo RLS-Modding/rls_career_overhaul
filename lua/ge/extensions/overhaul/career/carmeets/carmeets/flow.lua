@@ -218,6 +218,7 @@ function lib.create(inputs)
     prepareMeetSale(meetTypeKey)
     local spotCount = meetSpotCount(attendanceLevel, #meet.parkingSpots - 1)
     carMeetState.carMeetVehicles = parts.invites.getCarMeetVehicles(meetType, selectedClub)
+    parts.invites.prepareWinBack(meetType,selectedClub)
     local spawnedVehicles = {}
     local availableSpots = selectPlayerSpot(meet)
     scheduleMeetVehicles(meet, meetType, selectedClub, spotCount, spawnedVehicles, availableSpots)

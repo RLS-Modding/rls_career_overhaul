@@ -11,9 +11,9 @@ import { defineComponent, onBeforeUnmount, useSlots, watch } from "vue"
 import { useRoute } from "vue-router"
 import { openOverhaulPopup } from "../utils/openOverhaulPopup.js"
 
-defineOptions({ inheritAttrs: false })
+defineOptions({ inheritAttrs: false, render: () => null })
 
-const props = defineProps({ active: Boolean, canCancel: { type: Boolean, default: true } })
+const props = defineProps({ active: Boolean, canCancel: { type: Boolean, default: true }, blur: { type: Boolean, default: true } })
 const emit = defineEmits(["cancel", "leave"])
 const slots = useSlots()
 const route = useRoute()
@@ -26,10 +26,10 @@ function close() {
   closing?.return(true)
 }
 
-watch(() => props.active, active => {
+watch(() => [props.active, props.blur], ([active, blur]) => {
   close()
   if (!active) return
-  const opened = popup = openOverhaulPopup(content, {}, { beforeCancel: () => props.canCancel, fullscreen: true })
+  const opened = popup = openOverhaulPopup(content, {}, { beforeCancel: () => props.canCancel, fullscreen: true, blur })
   opened.promise.then(result => {
     if (popup !== opened) return
     popup = null

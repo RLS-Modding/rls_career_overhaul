@@ -1,0 +1,26 @@
+{
+  "Configuration": "Evan Eastwick - No Prep",
+  "Description": "Jade Aspirations. Tier 4 racer. Highway no-prep quarter-mile: 9.704s at 154.29mph. Neon Works. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Neon Works",
+  "Name": "Evan Eastwick",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 8.2266281947968,
+    "time_1_4": 9.7036020615181,
+    "time_1_8": 6.4640096845401,
+    "time_330": 4.3868276833926,
+    "time_60": 1.6684355631626,
+    "velAt_1_4": 68.972811050731,
+    "velAt_1_8": 54.418072733034
+  },
+  "Reaction Time": 0.27708894239879,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

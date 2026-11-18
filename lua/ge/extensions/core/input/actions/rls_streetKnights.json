@@ -1,0 +1,18 @@
+{
+  "streetKnightsOpen": {
+    "title": "Street Knights: sign up / race menu",
+    "desc": "Open the meet when parked at signup, or the active race menu.",
+    "cat": "rlsCareerOverhaul",
+    "onDown": "if overhaul_career_economy_streetKnights then overhaul_career_economy_streetKnights.open() end",
+    "order": 120,
+    "overhaulGroup": "No Prep Knights"
+  },
+  "streetKnightsAbandon": {
+    "title": "Street Knights: abandon race",
+    "desc": "Show a warning before forfeiting a committed race.",
+    "cat": "rlsCareerOverhaul",
+    "onDown": "if overhaul_career_economy_streetKnights then overhaul_career_economy_streetKnights.abandon() end",
+    "order": 121,
+    "overhaulGroup": "No Prep Knights"
+  }
+}

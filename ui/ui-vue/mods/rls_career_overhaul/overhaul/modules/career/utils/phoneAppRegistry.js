@@ -131,6 +131,18 @@ const catalogApps = ref([])
 const availableApps = ref([])
 let catalogCareerActive = false
 
+// One discovered app with its resolved icon image, by id or by display name (case-insensitive); null
+// when no manifest matches. A plain lookup of the reactive definitions, so callers update once discovery
+// lands; whoever shows the results starts that discovery (see loadNotificationApps).
+export function findPhoneApp({ id, name } = {}) {
+  if (id) {
+    const byId = APP_DEFINITIONS.find(app => app.id === id)
+    if (byId) return byId
+  }
+  const wanted = typeof name === 'string' ? name.trim().toLowerCase() : ''
+  return wanted ? APP_DEFINITIONS.find(app => String(app.name || '').toLowerCase() === wanted) || null : null
+}
+
 export const DEFAULT_SKILL_LOCKED_MESSAGE = 'Unlock skill to use this app'
 
 // What a locked app tells the player: its manifest's lockedMessage (which names the skill), else the default.

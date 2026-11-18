@@ -1,0 +1,26 @@
+{
+  "Configuration": "Ellis Shore - No Prep",
+  "Description": "Seafoam Grocery. Tier 1 racer. Highway no-prep quarter-mile: 12.231s at 126.76mph. Coastline Automotive. Historical estimate; restored Stage 4 hardware requires current-build validation. Consolidated supercharger has one current quarter-mile clue pull; selector Drag Times remain historical.",
+  "Author": "Coastline Automotive",
+  "Name": "Ellis Shore",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 10.430568614873,
+    "time_1_4": 12.230574610512,
+    "time_1_8": 8.2606057616857,
+    "time_330": 5.6222328170705,
+    "time_60": 2.1953766279027,
+    "velAt_1_4": 56.665475790558,
+    "velAt_1_8": 43.691927916359
+  },
+  "Reaction Time": 0.33843701589197,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-with-current-supercharger-clue-pull"
+}

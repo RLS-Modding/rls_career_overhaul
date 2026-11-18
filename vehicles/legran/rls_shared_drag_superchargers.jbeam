@@ -1,0 +1,882 @@
+{
+  "rls_legran_intake_v6_stage4_supercharger": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "Stage 4 Supercharger",
+      "value": 25000
+    },
+    "slotType": "legran_intake_v6",
+    "flexbodies": [
+      [
+        "mesh",
+        "[group]:",
+        "nonFlexMaterials"
+      ],
+      [
+        "legran_supercharger",
+        [
+          "legran_engine",
+          "legran_airbox",
+          "legran_supercharger"
+        ]
+      ]
+    ],
+    "powertrainDamage": [
+      [
+        "deviceName",
+        "damageID"
+      ],
+      [
+        "mainEngine",
+        "intake"
+      ]
+    ],
+    "supercharger": {
+      "whineLoopEvent": "event:>Vehicle>Forced_Induction>Supercharger_02>supercharger",
+      "whineVolumePerPSI": 0.019,
+      "whinePitchPer10kRPM": 1.3,
+      "clutchEngageRPM": 0,
+      "pressureRatePSI": 250,
+      "pressurePSIPer1kRPM": 7.2,
+      "crankLossPer1kRPM": 0.06,
+      "type": "roots",
+      "lobes": 3,
+      "twistedLobes": true,
+      "boostController": [
+        [
+          0,
+          0.2
+        ],
+        [
+          100,
+          1
+        ]
+      ],
+      "maxRPM": 15000
+    },
+    "mainEngine": {
+      "torqueModIntake": [
+        [
+          "rpm",
+          "torque"
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          1000,
+          3
+        ],
+        [
+          2000,
+          10
+        ],
+        [
+          3000,
+          22
+        ],
+        [
+          4000,
+          29
+        ],
+        [
+          5000,
+          25
+        ],
+        [
+          6000,
+          15
+        ],
+        [
+          7000,
+          12
+        ],
+        [
+          8000,
+          10
+        ]
+      ],
+      "supercharger": "supercharger",
+      "instantAfterFireSound": "event:>Vehicle>Afterfire>v6_01>single",
+      "sustainedAfterFireSound": "event:>Vehicle>Afterfire>v6_01>multi",
+      "shiftAfterFireSound": "event:>Vehicle>Afterfire>v6_01>shift",
+      "$*instantAfterFireCoef": 3,
+      "$*sustainedAfterFireCoef": 3,
+      "deformGroups_supercharger": [
+        "mainEngine_supercharger"
+      ]
+    },
+    "soundConfig": {
+      "$+intakeMuffling": -0.3
+    },
+    "vehicleController": {},
+    "props": [
+      [
+        "func",
+        "mesh",
+        "idRef:",
+        "idX:",
+        "idY:",
+        "baseRotation",
+        "rotation",
+        "translation",
+        "min",
+        "max",
+        "offset",
+        "multiplier"
+      ],
+      [
+        "rpmspin",
+        "legran_supercharger_sc",
+        "e2r",
+        "e2l",
+        "e4r",
+        {
+          "x": 0,
+          "y": 0,
+          "z": -90
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        -360,
+        360,
+        0,
+        1
+      ]
+    ],
+    "nodes": [
+      [
+        "id",
+        "posX",
+        "posY",
+        "posZ"
+      ],
+      {
+        "selfCollision": false
+      },
+      {
+        "collision": true
+      },
+      {
+        "nodeMaterial": "|NM_METAL"
+      },
+      {
+        "frictionCoef": 0.5
+      },
+      {
+        "group": "legran_airbox"
+      },
+      {
+        "engineGroup": "engine_intake"
+      },
+      {
+        "nodeWeight": 1
+      },
+      [
+        "airb",
+        0.4,
+        -1.72,
+        0.66
+      ],
+      {
+        "nodeWeight": 6
+      },
+      {
+        "group": "legran_supercharger"
+      },
+      [
+        "sc1",
+        0.22,
+        -1.55,
+        0.76
+      ],
+      [
+        "sc2",
+        -0.31,
+        -1.55,
+        0.76
+      ],
+      {
+        "engineGroup": ""
+      },
+      {
+        "group": ""
+      }
+    ],
+    "beams": [
+      [
+        "id1:",
+        "id2:"
+      ],
+      {
+        "beamType": "|NORMAL",
+        "beamLongBound": 1,
+        "beamShortBound": 1
+      },
+      {
+        "beamSpring": 100600,
+        "beamDamp": 150
+      },
+      {
+        "beamDeform": 12000,
+        "beamStrength": 36000
+      },
+      {
+        "deformGroup": "mainEngine_intake",
+        "deformationTriggerRatio": 0.01
+      },
+      [
+        "airb",
+        "e1r"
+      ],
+      [
+        "airb",
+        "e2r"
+      ],
+      [
+        "airb",
+        "e3r"
+      ],
+      [
+        "airb",
+        "e4r"
+      ],
+      [
+        "airb",
+        "e1l"
+      ],
+      [
+        "airb",
+        "e2l"
+      ],
+      [
+        "airb",
+        "e3l"
+      ],
+      [
+        "airb",
+        "e4l"
+      ],
+      {
+        "beamSpring": 1501000,
+        "beamDamp": 100
+      },
+      {
+        "beamDeform": 20000,
+        "beamStrength": "FLT_MAX"
+      },
+      {
+        "deformGroup": "mainEngine_supercharger",
+        "deformationTriggerRatio": 0.001
+      },
+      [
+        "sc1",
+        "e1r"
+      ],
+      [
+        "sc1",
+        "e2r"
+      ],
+      [
+        "sc1",
+        "e3r"
+      ],
+      [
+        "sc1",
+        "e4r"
+      ],
+      [
+        "sc1",
+        "e1l"
+      ],
+      [
+        "sc1",
+        "e2l"
+      ],
+      [
+        "sc1",
+        "e3l"
+      ],
+      [
+        "sc1",
+        "e4l"
+      ],
+      [
+        "sc2",
+        "e1r"
+      ],
+      [
+        "sc2",
+        "e2r"
+      ],
+      [
+        "sc2",
+        "e3r"
+      ],
+      [
+        "sc2",
+        "e4r"
+      ],
+      [
+        "sc2",
+        "e1l"
+      ],
+      [
+        "sc2",
+        "e2l"
+      ],
+      [
+        "sc2",
+        "e3l"
+      ],
+      [
+        "sc2",
+        "e4l"
+      ],
+      [
+        "sc2",
+        "sc1"
+      ],
+      {
+        "deformGroup": "",
+        "deformationTriggerRatio": ""
+      },
+      {
+        "beamPrecompression": 1,
+        "beamType": "|NORMAL",
+        "beamLongBound": 1,
+        "beamShortBound": 1
+      }
+    ],
+    "slots": [
+      [
+        "type",
+        "default",
+        "description"
+      ],
+      [
+        "rls_legran_intake_v6_stage4_pulley",
+        "rls_legran_intake_v6_stage4_pulley_3",
+        "Supercharger Drive Pulley",
+        {
+          "coreSlot": true
+        }
+      ]
+    ]
+  },
+  "rls_legran_intake_v6_stage4_pulley_1": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "0.65:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_legran_intake_v6_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 0.65
+    }
+  },
+  "rls_legran_intake_v6_stage4_pulley_2": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "1.00:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_legran_intake_v6_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 1
+    }
+  },
+  "rls_legran_intake_v6_stage4_pulley_3": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "1.25:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_legran_intake_v6_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 1.25
+    }
+  },
+  "rls_legran_intake_v6_stage4_pulley_4": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "1.40:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_legran_intake_v6_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 1.4
+    }
+  },
+  "rls_legran_intake_v6_stage4_pulley_5": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "1.50:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_legran_intake_v6_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 1.5
+    }
+  },
+  "rls_legran_intake_v6_stage4_pulley_6": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "1.80:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_legran_intake_v6_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 1.8
+    }
+  },
+  "rls_legran_intake_i4_stage4_supercharger": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "Stage 4 Supercharger",
+      "value": 20500
+    },
+    "slotType": "legran_intake_i4",
+    "flexbodies": [
+      [
+        "mesh",
+        "[group]:",
+        "nonFlexMaterials"
+      ],
+      [
+        "legran_supercharger_i4",
+        [
+          "legran_engine",
+          "legran_airbox",
+          "legran_supercharger"
+        ]
+      ]
+    ],
+    "powertrainDamage": [
+      [
+        "deviceName",
+        "damageID"
+      ],
+      [
+        "mainEngine",
+        "intake"
+      ]
+    ],
+    "supercharger": {
+      "whineLoopEvent": "event:>Vehicle>Forced_Induction>Supercharger_02>supercharger",
+      "whineVolumePerPSI": 0.017,
+      "whinePitchPer10kRPM": 1.4,
+      "clutchEngageRPM": 0,
+      "pressureRatePSI": 250,
+      "pressurePSIPer1kRPM": 7.2,
+      "crankLossPer1kRPM": 0.065,
+      "type": "roots",
+      "lobes": 3,
+      "twistedLobes": true,
+      "boostController": [
+        [
+          0,
+          0.2
+        ],
+        [
+          100,
+          1
+        ]
+      ],
+      "maxRPM": 15000
+    },
+    "mainEngine": {
+      "torqueModIntake": [
+        [
+          "rpm",
+          "torque"
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          1000,
+          0
+        ],
+        [
+          2000,
+          1
+        ],
+        [
+          3000,
+          3
+        ],
+        [
+          4000,
+          6
+        ],
+        [
+          5000,
+          10
+        ],
+        [
+          6000,
+          16
+        ],
+        [
+          7000,
+          20
+        ],
+        [
+          8000,
+          25
+        ]
+      ],
+      "supercharger": "supercharger",
+      "instantAfterFireSound": "event:>Vehicle>Afterfire>i4_01>single",
+      "sustainedAfterFireSound": "event:>Vehicle>Afterfire>i4_01>multi",
+      "shiftAfterFireSound": "event:>Vehicle>Afterfire>i4_01>shift",
+      "$*instantAfterFireCoef": 3,
+      "$*sustainedAfterFireCoef": 2.5,
+      "deformGroups_supercharger": [
+        "mainEngine_supercharger"
+      ]
+    },
+    "soundConfig": {
+      "$+intakeMuffling": -0.3
+    },
+    "vehicleController": {},
+    "props": [
+      [
+        "func",
+        "mesh",
+        "idRef:",
+        "idX:",
+        "idY:",
+        "baseRotation",
+        "rotation",
+        "translation",
+        "min",
+        "max",
+        "offset",
+        "multiplier"
+      ],
+      [
+        "rpmspin",
+        "legran_supercharger_i4_sc",
+        "e2r",
+        "e2l",
+        "e4r",
+        {
+          "x": 0,
+          "y": 0,
+          "z": -90
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        -360,
+        360,
+        0,
+        1
+      ]
+    ],
+    "nodes": [
+      [
+        "id",
+        "posX",
+        "posY",
+        "posZ"
+      ],
+      {
+        "selfCollision": false
+      },
+      {
+        "collision": true
+      },
+      {
+        "nodeMaterial": "|NM_METAL"
+      },
+      {
+        "frictionCoef": 0.5
+      },
+      {
+        "group": "legran_airbox"
+      },
+      {
+        "engineGroup": "engine_intake"
+      },
+      {
+        "nodeWeight": 1
+      },
+      [
+        "airb",
+        0.4,
+        -1.72,
+        0.66
+      ],
+      {
+        "nodeWeight": 5
+      },
+      {
+        "group": "legran_supercharger"
+      },
+      [
+        "sc1",
+        0.22,
+        -1.3,
+        0.76
+      ],
+      [
+        "sc2",
+        -0.31,
+        -1.3,
+        0.76
+      ],
+      {
+        "engineGroup": ""
+      },
+      {
+        "group": ""
+      }
+    ],
+    "beams": [
+      [
+        "id1:",
+        "id2:"
+      ],
+      {
+        "beamType": "|NORMAL",
+        "beamLongBound": 1,
+        "beamShortBound": 1
+      },
+      {
+        "beamSpring": 100600,
+        "beamDamp": 150
+      },
+      {
+        "beamDeform": 12000,
+        "beamStrength": 36000
+      },
+      {
+        "deformGroup": "mainEngine_intake",
+        "deformationTriggerRatio": 0.01
+      },
+      [
+        "airb",
+        "e1r"
+      ],
+      [
+        "airb",
+        "e2r"
+      ],
+      [
+        "airb",
+        "e3r"
+      ],
+      [
+        "airb",
+        "e4r"
+      ],
+      [
+        "airb",
+        "e1l"
+      ],
+      [
+        "airb",
+        "e2l"
+      ],
+      [
+        "airb",
+        "e3l"
+      ],
+      [
+        "airb",
+        "e4l"
+      ],
+      {
+        "beamSpring": 1501000,
+        "beamDamp": 100
+      },
+      {
+        "beamDeform": 20000,
+        "beamStrength": "FLT_MAX"
+      },
+      {
+        "deformGroup": "mainEngine_supercharger",
+        "deformationTriggerRatio": 0.001
+      },
+      [
+        "sc1",
+        "e1r"
+      ],
+      [
+        "sc1",
+        "e2r"
+      ],
+      [
+        "sc1",
+        "e3r"
+      ],
+      [
+        "sc1",
+        "e4r"
+      ],
+      [
+        "sc1",
+        "e1l"
+      ],
+      [
+        "sc1",
+        "e2l"
+      ],
+      [
+        "sc1",
+        "e3l"
+      ],
+      [
+        "sc1",
+        "e4l"
+      ],
+      [
+        "sc2",
+        "e1r"
+      ],
+      [
+        "sc2",
+        "e2r"
+      ],
+      [
+        "sc2",
+        "e3r"
+      ],
+      [
+        "sc2",
+        "e4r"
+      ],
+      [
+        "sc2",
+        "e1l"
+      ],
+      [
+        "sc2",
+        "e2l"
+      ],
+      [
+        "sc2",
+        "e3l"
+      ],
+      [
+        "sc2",
+        "e4l"
+      ],
+      [
+        "sc2",
+        "sc1"
+      ],
+      {
+        "deformGroup": "",
+        "deformationTriggerRatio": ""
+      },
+      {
+        "beamPrecompression": 1,
+        "beamType": "|NORMAL",
+        "beamLongBound": 1,
+        "beamShortBound": 1
+      }
+    ],
+    "slots": [
+      [
+        "type",
+        "default",
+        "description"
+      ],
+      [
+        "rls_legran_intake_i4_stage4_pulley",
+        "rls_legran_intake_i4_stage4_pulley_4",
+        "Supercharger Drive Pulley",
+        {
+          "coreSlot": true
+        }
+      ]
+    ]
+  },
+  "rls_legran_intake_i4_stage4_pulley_1": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "0.65:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_legran_intake_i4_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 0.65
+    }
+  },
+  "rls_legran_intake_i4_stage4_pulley_2": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "0.90:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_legran_intake_i4_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 0.9
+    }
+  },
+  "rls_legran_intake_i4_stage4_pulley_3": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "1.10:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_legran_intake_i4_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 1.1
+    }
+  },
+  "rls_legran_intake_i4_stage4_pulley_4": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "1.35:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_legran_intake_i4_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 1.35
+    }
+  },
+  "rls_legran_intake_i4_stage4_pulley_5": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "1.50:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_legran_intake_i4_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 1.5
+    }
+  },
+  "rls_legran_intake_i4_stage4_pulley_6": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "1.80:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_legran_intake_i4_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 1.8
+    }
+  }
+}

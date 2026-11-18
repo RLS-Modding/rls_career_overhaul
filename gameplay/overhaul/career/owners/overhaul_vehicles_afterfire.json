@@ -1,0 +1,11 @@
+{
+  "id": "overhaul_vehicles_afterfire",
+  "order": 114,
+  "module": "overhaul/vehicles/afterfire",
+  "scopes": [
+    {
+      "id": "late",
+      "order": 114
+    }
+  ]
+}

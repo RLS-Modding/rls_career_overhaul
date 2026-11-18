@@ -9,7 +9,7 @@
     bng-no-nav="true"
     :bng-no-child-nav="!isEntered || state !== 'open' || phoneOpeningBlocked"
     v-bng-scoped-nav="navScope"
-    :class="{ 'phone-entered': isEntered, 'phone-expanded': expanded, 'no-transition': noTransition }"
+    :class="{ 'phone-entered': isEntered, 'phone-expanded': expanded, 'phone-fullscreen': fullscreen, 'no-transition': noTransition }"
     :style="wrapperStyle">
     <div class="phone-bevel"></div>
     <div class="phone-screen" >
@@ -25,10 +25,14 @@
             <span class="status-time">{{ timeParts.main }}<span class="status-time-period" v-if="timeParts.period">{{ timeParts.period }}</span></span>
           </button>
         </div>
-        <div class="status-bar-cell status-bar-center">
-          <div class="dynamic-island">
+        <!-- Dragging down from the top of the phone, around the island, opens the Notification Center, as on
+             iOS; tapping the island opens it too. A wheel there still scrolls the screen below. -->
+        <div class="status-bar-cell status-bar-center status-pull-area"
+          @pointerdown="onPullStart" @pointermove="onPullMove" @pointerup="onPullEnd" @pointercancel="onPullEnd" @wheel="forwardWheel">
+          <button type="button" class="dynamic-island" bng-no-nav="true" tabindex="-1" :aria-label="islandLabel"
+            @click="openNotificationCenter">
             <span v-if="appName" class="dynamic-island-label">{{ appName }}</span>
-          </div>
+          </button>
         </div>
         <div class="status-bar-cell status-bar-right" v-if="cashDisplay && !hideCash">
           <!-- The app that declares opensFromBalance opens from the balance, once it is on the phone. -->
@@ -67,6 +71,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { lua } from '@/bridge'
 import { usePhoneSettings, getPhoneScale, getPhonePosition } from '../../composables/usePhoneSettings'
 import { usePhoneTutorial } from '../../composables/usePhoneTutorial'
+import { PHONE_SCREEN } from '../../composables/usePhoneScreen.js'
 import { phoneOpeningBlocked } from '../../composables/usePhoneOpeningBlocker'
 import { useScopedNav } from '@/services/scopedNav/api'
 import PhoneHeadsUpBanner from '../../components/phone/PhoneHeadsUpBanner.vue'
@@ -78,6 +83,7 @@ import { readPhoneShellState, setPhoneShellVisible } from '../../utils/phoneShel
 import { getPhoneApps, onPhoneAppsChanged } from '../../utils/phoneAppCatalog'
 import { PREINSTALLED_APP_IDS, SYSTEM_APP_IDS, toIdList } from '../../utils/phoneLayoutUtils'
 import { navigatePhoneRoute } from '../../utils/phoneNavigation'
+import { setNotificationCenterReturn } from '../../composables/usePhoneNotificationCenter'
 import { BUILTIN_PHONE_APP_NAMES } from '../../utils/builtinPhoneRoutes.js'
 import { getFeatureRoutes } from '../../utils/uiRouteCatalog.js'
 import { loadRuntimeComponent } from '../../utils/runtimeComponent.js'
@@ -116,6 +122,7 @@ let iconVisual = null
 
 const read = value => typeof value === 'function' ? value() : unref(value)
 const expanded = computed(() => screen.value?.expanded === undefined ? false : !!read(screen.value.expanded))
+const fullscreen = computed(() => expanded.value && !!read(screen.value?.fullscreen))
 // Screens hide the status-bar cash while their own control sits in that corner (home's Done button).
 const hideCash = computed(() => screen.value?.hideCash === undefined ? false : !!read(screen.value.hideCash))
 const appName = computed(() => {
@@ -172,7 +179,7 @@ const host = {
     return () => { if (iconVisual === reader) iconVisual = null }
   },
 }
-provide(Symbol.for('overhaul.phoneScreen'), host)
+provide(PHONE_SCREEN, host)
 
 function active(owner) { return !destroyed && owner === opening && owner.token === session && !owner.closed }
 function queueMark(action) {
@@ -312,6 +319,59 @@ watch(() => [route.name, state.value === 'open', phoneOpeningBlocked.value], asy
   await nextTick()
   if (isPhoneRoute(route) && state.value === 'open' && !phoneOpeningBlocked.value) navigation.activateScope('phone-shell')
 })
+const NOTIFICATION_CENTER_ROUTE = 'phone-notification-center'
+// The island's spoken name starts with the screen name it shows, then says what it opens.
+const islandLabel = computed(() => (appName.value ? `${appName.value}, open Notification Center` : 'Open Notification Center'))
+const PULL_DOWN_PX = 24
+const PULL_CAPTURE_PX = 4
+let pullStartY = null
+let pullPointerId = null
+
+function openNotificationCenter() {
+  onPullEnd()
+  if (route.name === NOTIFICATION_CENTER_ROUTE) return
+  setNotificationCenterReturn({ name: route.name, params: route.params, query: route.query, hash: route.hash })
+  navigatePhoneRoute(router, NOTIFICATION_CENTER_ROUTE)
+}
+
+function onPullStart(event) {
+  if (event.button != null && event.button !== 0) return
+  pullStartY = event.clientY
+  pullPointerId = event.pointerId
+}
+
+function onPullMove(event) {
+  if (pullStartY == null || event.pointerId !== pullPointerId) return
+  // Released outside the area before the drag took hold: a mouse coming back without its button is no pull.
+  if (event.pointerType === 'mouse' && !(event.buttons & 1)) {
+    onPullEnd()
+    return
+  }
+  const pulled = event.clientY - pullStartY
+  // Capture once a drag starts, so the pull keeps going below the bar and a plain tap still clicks the island.
+  if (pulled > PULL_CAPTURE_PX) {
+    try { event.currentTarget?.setPointerCapture?.(event.pointerId) } catch { /* capture is optional */ }
+  }
+  if (pulled > PULL_DOWN_PX) openNotificationCenter()
+}
+
+// The pull area sits over the top of the screen; a wheel there scrolls whatever is underneath it.
+function forwardWheel(event) {
+  const below = document.elementsFromPoint(event.clientX, event.clientY).find(element => !element.closest('.phone-status-bar'))
+  for (let element = below; element; element = element.parentElement) {
+    const overflow = getComputedStyle(element).overflowY
+    if ((overflow === 'auto' || overflow === 'scroll') && element.scrollHeight > element.clientHeight) {
+      element.scrollBy({ top: event.deltaY, left: event.deltaX })
+      return
+    }
+  }
+}
+
+function onPullEnd() {
+  pullStartY = null
+  pullPointerId = null
+}
+
 async function back() {
   if (phoneTutorial.shouldBlockPhoneBack()) return
   if (screen.value?.onBack?.()) return
@@ -478,6 +538,14 @@ onUnmounted(() => {
   .phone-screen { width: 100%; height: 100%; border-radius: 20px; }
   .phone-bevel { border-radius: 24px; }
 }
+.phone-shell.phone-fullscreen {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: none !important;
+  .phone-screen { border-radius: 0; }
+  .phone-bevel, .phone-status-bar { display: none; }
+}
 .phone-shell {
   position: fixed;
   bottom: 1em;
@@ -635,7 +703,29 @@ onUnmounted(() => {
   margin-left: 0.25em;
 }
 
-/* The status bar passes pointer events through to the screen below; the balance button takes them back. */
+/* The status bar passes pointer events through to the screen below. The area around the island takes them back
+   for the pull down, as tall as the bar; the back and balance buttons sit above it and keep their clicks. */
+.status-bar-left,
+.status-bar-right {
+  position: relative;
+  z-index: 2;
+}
+
+.status-pull-area {
+  z-index: 1;
+  padding: 0.5rem 12px 0.6rem;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+button.dynamic-island {
+  margin: 0;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
 .status-balance-button {
   margin: 0;
   color: inherit;
@@ -652,7 +742,7 @@ onUnmounted(() => {
 .status-cash {
   font-size: 0.95em;
   font-weight: 500;
-  color: #fff;
+  color: var(--money, #fde68a);
 }
 
 .status-back {

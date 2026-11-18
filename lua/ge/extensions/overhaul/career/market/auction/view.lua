@@ -1,4 +1,5 @@
 -- Auction UI state: live lots and counter offers, with owned-car rows cached until their inputs change.
+-- Related: auction.lua publishes the HUD to AuctionStripOverlay.vue; the full route requests its own state.
 local constants = require('overhaul/career/market/auction/constants')
 local pricing = require('overhaul/career/market/auction/pricing')
 local consignment = require('overhaul/career/market/auction/consignment')
@@ -20,6 +21,12 @@ local function same(a, b)
   return true
 end
 
+-- UI requests can arrive while career extensions are loading or stopping.
+local function playerBalance()
+  local attributes = rawget(_G, 'overhaul_career_economy_playerAttributes')
+  return attributes and attributes.getAttributeValue('money') or 0
+end
+
 -- Whole dollars with thousands separators, matching the UI's fee row: 1000 -> "$1,000".
 function view.formatDollars(amount)
   local digits = tostring(math.floor((tonumber(amount) or 0) + 0.5))
@@ -31,6 +38,11 @@ function view.create(deps)
   local api = {}
   local auctionState = deps.auctionState
   local ownedVehicleCache
+
+  -- Payment eligibility also reads money; a UI request must not reach it during unload.
+  local function canAffordEntry()
+    return rawget(_G, 'overhaul_career_economy_playerAttributes') ~= nil and deps.payments.canAffordEntry()
+  end
 
   function api.computeAuctionExitNeedsConfirm()
     if overhaul_career_garage_inventory.getListedVehicleId() ~= nil then return true end
@@ -111,7 +123,7 @@ function view.create(deps)
       if not deps.bidding.hasGarageSpaceForPurchase() and not consignment.hasListedVehicle() then
         return 'You need at least one free garage slot to enter the auction.'
       end
-      if deps.payments.canAffordEntry() then
+      if canAffordEntry() then
         return string.format('Pay %s to enter the auction.', view.formatDollars(fee))
       end
       return string.format('Not enough money. %s required to enter.', view.formatDollars(fee))
@@ -241,7 +253,7 @@ function view.create(deps)
     return {
       sessionActive = auctionState.phase ~= 'idle',
       fullViewOpen = auctionState.uiOpen == true,
-      playerBalance = overhaul_career_economy_playerAttributes.getAttributeValue("money") or 0,
+      playerBalance = playerBalance(),
       hasFreeGarageSlot = deps.bidding.hasGarageSpaceForPurchase(),
       auctionExitNeedsConfirm = api.computeAuctionExitNeedsConfirm(),
       phase = derivePhase(currentLot ~= nil),
@@ -276,7 +288,7 @@ function view.create(deps)
       counterPromptActive = auctionState.counterPromptActive and true or false,
       musicEnabled = auctionState.musicEnabled ~= false,
       entryFee = deps.payments.getEntryFee(),
-      canPayEntryFee = deps.payments.canAffordEntry(),
+      canPayEntryFee = canAffordEntry(),
       canRegisterMoreLots = deps.registration.canRegisterMoreLots(),
       lotsRegisteredThisVisit = auctionState.lotsRegisteredThisVisit or 0,
       entryCreditRemaining = pricing.roundMoney(auctionState.entryCreditRemaining or 0),
@@ -291,7 +303,7 @@ function view.create(deps)
       autoBidEnabled = false,
       autoBidMax = 0,
       bidMessage = bidMessage,
-      playerBalance = overhaul_career_economy_playerAttributes.getAttributeValue("money") or 0,
+      playerBalance = playerBalance(),
       totalLots = #lots,
       lots = lotRows,
       counterOffers = counterOffers,

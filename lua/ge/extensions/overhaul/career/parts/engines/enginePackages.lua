@@ -20,6 +20,14 @@ constants.saveRelativePath = "/career/rls_career/enginePackages.json"
 constants.thumbnailRelativeDir = "/career/rls_career/enginePackages/"
 constants.thumbnailCaptureVersion = 6
 constants.CONDITION_REQUEST_TIMEOUT_S = 15
+-- A failed swap's respawn waits this long for the rebuilt car's damage and pose restore. The restore's
+-- own bounded waits add up to about 75 seconds of unpaused time, so this leaves some headroom.
+constants.ROLLBACK_RESTORE_WAIT_S = 90
+-- How long a rollback respawn may take to answer (its damage capture alone times out after 5 seconds), how often
+-- it is tried, and the pause before each retry.
+constants.ROLLBACK_RESPAWN_REPLY_S = 30
+constants.ROLLBACK_RESPAWN_ATTEMPTS = 3
+constants.ROLLBACK_RESPAWN_RETRY_S = 1
 
 -- State ------------------------------------------------------------------------------------------
 

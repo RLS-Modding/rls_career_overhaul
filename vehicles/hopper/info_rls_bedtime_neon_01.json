@@ -1,0 +1,82 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Name": "Andre Ellis",
+  "Configuration": "Andre Ellis - Bedtime Bullies",
+  "Description": "Driver: Andre Ellis. Builder: Neon Works. Neon Works: Mango orange hardtop street utility; square 15-inch race wheels. 5.5 L V8 with Stage 4 heavy-duty block; Supercharger; nitrous Yes. 3-speed automatic. Bedtime Bullies: first clean West Coast quarter-mile in the 9.500-10.000 second window: 9.716 s. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Transmission": "Automatic",
+  "Drivetrain": "4WD",
+  "Years": {
+    "min": 1989,
+    "max": 2001
+  },
+  "Power": 1212,
+  "Weight": 1618,
+  "Motorsport": {
+    "version": 1,
+    "id": "hopper/rls_bedtime_neon_01",
+    "configId": "rls_bedtime_neon_01",
+    "model": "hopper",
+    "config": "/vehicles/hopper/rls_bedtime_neon_01.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "eddie_easton",
+    "driverName": "Andre Ellis",
+    "builder": "Neon Works",
+    "classIds": [
+      "bedtime_bullies"
+    ],
+    "approvedClassIds": [
+      "bedtime_bullies"
+    ],
+    "leagueId": "street_kings",
+    "eligibilityStatus": "Roster approval retained after shared-hardware migration. Recorded ETs are historical estimates; the current build has not been retimed or revalidated.",
+    "sourceConfigSHA256": "84dd30cb5aee49b830687e87d6b99c76114926c67b1b1cb1fb2b64c1bbe77c62",
+    "traits": {
+      "drivetrain": "4WD",
+      "transmission": "3-speed automatic",
+      "induction": "Supercharger",
+      "nitrous": true,
+      "years": {
+        "min": 1989,
+        "max": 2001
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x10",
+          "part": "tire_F_27_10_15_race",
+          "typeHint": null
+        },
+        {
+          "slot": "tire_R_15x10",
+          "part": "tire_R_27_10_15_race",
+          "typeHint": null
+        }
+      ],
+      "selectedRollCageParts": [],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.7162248570415,
+      "runId": "BB-055",
+      "evidenceConfigSHA256": "eb58dd97f336b801b1a49ceb3a15255d7afd035fafb13ef8ddc5520bf2a3709a",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/bedtime/final-results.json",
+      "acceptedConfig": "outputs/bedtime/accepted/rls_bedtime_neon_01/rls_bedtime_neon_01.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_bedtime_bullies"
+  }
+}

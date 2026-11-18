@@ -120,6 +120,8 @@ local rotationResetThresholdSeconds = 0.25 -- camera is considered actively move
 
 local skipTargetDistanceMeters = 150
 local accelerationTimeSeconds = 1 -- seconds
+local repairSettleSeconds = 0.2 -- lets the queued physics reset land before the route is resent
+local repairDamageThreshold = 1000 -- traffic's own crash threshold (trafficUtils lowDamage); scuffs stay
 
 local hurryUpLevels = {
   -- Restoring legal speed must retain the ride's car-avoidance setting.
@@ -485,15 +487,47 @@ end
 local function onHurryUpCalled() setHurryUpLevel(1) end
 local function onSlowDownCalled() setHurryUpLevel(-1) end
 
+-- A crash flag or crash-sized damage means the cab needs a repair when it is moved.
+local function isTaxiDamaged(vehId)
+  local trafficVeh = gameplay_traffic.getTrafficData()[vehId]
+  if trafficVeh and trafficVeh.activeData and trafficVeh.activeData.tCrash then return true end
+  local mapObject = map.objects and map.objects[vehId]
+  return (mapObject and mapObject.damage or 0) >= repairDamageThreshold
+end
+
+-- A physics reset repairs the cab where the teleport left it, but it also clears
+-- the AI route and the roof sign, so the caller restarts the route afterwards.
+local function repairTaxi(veh)
+  veh:queueLuaCommand('obj:requestReset(RESET_PHYSICS)') -- the teleport already reset the flex mesh
+  -- traffic keeps the crash flag until respawn; clear it so the fixed cab can serve again
+  local trafficVeh = gameplay_traffic.getTrafficData()[veh:getID()]
+  if trafficVeh and trafficVeh.activeData then trafficVeh.activeData.tCrash = nil end
+end
+
+local function restoreTaxiSign(veh)
+  local state = taxiStates[taxis[veh:getID()]]
+  if not (state and state.lightState) then return end
+  veh:queueLuaCommand(string.format('local c = controller.getController("taxiLights") if c then c.setTaxiState("%s") end', state.lightState))
+end
+
+-- Returns true when this call started a skip.
 local function onSkipCalled()
   taxiCore.resetIdleCameraTimer()
-  if player.currentPhase ~= playerRidePhases.driving or player.hasSkipped then return end
+  if player.currentPhase ~= playerRidePhases.driving or player.hasSkipped then return false end
+  -- the UI only offers Skip once the route has a skip point; a crash can arrive earlier
+  if not player.skipPosition then return false end
 
   player.hasSkipped = true
 
   -- snapshot the targets so a route change can't turn them nil while the job runs
   local targetPos = player.skipPosition
   local targetRot = player.skipRotation
+  local taxiId = player.currentTaxiId
+  -- Stop, exit or a despawn during the fade or the repair wait ends the skip there
+  local function rideTaxiIfDriving()
+    if player.currentTaxiId ~= taxiId or player.currentPhase ~= playerRidePhases.driving then return nil end
+    return getObjectByID(taxiId)
+  end
 
   createTaxiJob(function(job)
     -- guarantee physics returns to normal even if the job dies between the 2x and 0 calls
@@ -506,13 +540,26 @@ local function onSkipCalled()
     job.sleep(0.1)
 
     player.disableIdleCamera = true
+    local veh = rideTaxiIfDriving()
+    -- checked at the swap, so damage taken during the fade is repaired too
+    local needsRepair = veh and isTaxiDamaged(taxiId)
     -- destinationPos persists from the original pick, so the private planner rebuilds
     -- the route from the teleport spot without needing the shared ground-marker planner
-    taxiCore.startTaxiWithCurrentRoute(true)
+    if veh and not needsRepair then taxiCore.startTaxiWithCurrentRoute(true) end
 
-    local veh = getObjectByID(player.currentTaxiId)
     if veh then
       spawn.safeTeleport(veh, targetPos, targetRot, true, nil, false)
+      if needsRepair then
+        repairTaxi(veh)
+        job.sleep(repairSettleSeconds)
+        -- the reset clears the roof sign even if the passenger stopped meanwhile
+        local repaired = player.currentTaxiId == taxiId and getObjectByID(taxiId)
+        if repaired then restoreTaxiSign(repaired) end
+        veh = rideTaxiIfDriving()
+        if veh then taxiCore.startTaxiWithCurrentRoute(true) end
+      end
+    end
+    if veh then
       be:setPhysicsSpeedFactor(2) --so that the taxi gets up to speed faster
       job.sleep(accelerationTimeSeconds)
       be:setPhysicsSpeedFactor(0)
@@ -521,6 +568,7 @@ local function onSkipCalled()
     player.disableIdleCamera = false
     ui_fadeScreen.stop(fadeToBlackDurationSeconds)
   end, 1)
+  return true
 end
 
 local function setIdleCameraEnabled(enabled)
@@ -688,6 +736,8 @@ local function onTrafficVehicleCrashed(vehId)
   elseif vehId == player.currentTaxiId then
     taxiCore.setIdleCamera(false)
     player.disableIdleCamera = true
+    -- skip ahead instead of leaving the passenger in a crashed cab (once per ride)
+    if onSkipCalled() then return end -- the skip repairs the cab, so no distress sign
   else
     -- any other traffic taxi: just mark it unavailable so it won't be hailed
     taxiCore.setTaxiState(vehId, "unavailable")

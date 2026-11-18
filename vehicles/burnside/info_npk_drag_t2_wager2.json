@@ -1,0 +1,33 @@
+{
+  "Name": "BURNSIDE / No Prep Knights",
+  "Configuration": "No Prep Knights - Tier 2 racer 2",
+  "Value": 35000,
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Description": "Dedicated No Prep Knights drag build and paint scheme.",
+  "Drag Times": {
+    "time_1000": 8.0575001016259,
+    "time_1_4": 9.5045001171529,
+    "time_1_8": 6.3435000814497,
+    "time_330": 4.3625000566244,
+    "time_60": 1.8145000226796,
+    "velAt_1_4": 70.126252601957,
+    "velAt_1_8": 56.380184874876
+  },
+  "Reaction Time": 0.2660000026226,
+  "Drivetrain": "RWD",
+  "Transmission": "Automatic",
+  "Fuel Type": "Gasoline",
+  "Years": {
+    "max": 1953,
+    "min": 1952
+  },
+  "dragConfigVersion": 3,
+  "dragFitmentVersion": 3,
+  "dragTimesRevalidated": false
+}

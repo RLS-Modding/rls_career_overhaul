@@ -1,0 +1,26 @@
+{
+  "Configuration": "Drew Calder - No Prep",
+  "Description": "Green Tide. Tier 4 racer. Highway no-prep quarter-mile: 9.358s at 157.62mph. Coastline Automotive. Historical estimate; restored Stage 4 hardware requires current-build validation. Consolidated supercharger has one current quarter-mile clue pull; selector Drag Times remain historical.",
+  "Author": "Coastline Automotive",
+  "Name": "Drew Calder",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 7.911316192096,
+    "time_1_4": 9.3576617504513,
+    "time_1_8": 6.1634648038602,
+    "time_330": 4.1179958101834,
+    "time_60": 1.6053237057595,
+    "velAt_1_4": 70.461276579943,
+    "velAt_1_8": 54.570438925251
+  },
+  "Reaction Time": 0.2398591961438,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-with-current-supercharger-clue-pull"
+}

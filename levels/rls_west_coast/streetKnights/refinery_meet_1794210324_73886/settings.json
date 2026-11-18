@@ -1,0 +1,25 @@
+{
+  "canBeReseted":false,
+  "canBeTeleported":false,
+  "context":"streetKnights",
+  "dragType":"headsUpRace",
+  "phases":[
+    {
+      "dependency":true,
+      "name":"stage"
+    },
+    {
+      "dependency":true,
+      "name":"countdown"
+    },
+    {
+      "dependency":false,
+      "name":"race"
+    }
+  ],
+  "streetKnights":{
+    "distance":201.168,
+    "importantTimer":201.168
+  },
+  "stripId":"/levels/rls_west_coast/streetKnights/refinery_meet_1794210324_73886/strip.json"
+}

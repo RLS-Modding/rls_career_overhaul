@@ -1,0 +1,463 @@
+{
+  "rls_scintilla_intake_v8_stage4_supercharger": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "Stage 4 Supercharger",
+      "value": 20000
+    },
+    "slotType": "scintilla_intake_v8",
+    "supercharger": {
+      "clutchEngageRPM": 0,
+      "pressureRatePSI": 250,
+      "pressurePSIPer1kRPM": 5.8,
+      "crankLossPer1kRPM": 0.03,
+      "type": "roots",
+      "whineLoopEvent": "event:>Vehicle>Forced_Induction>Supercharger_05>supercharger_rear",
+      "whineVolumePerPSI": 0.02,
+      "whinePitchPer10kRPM": 0.7,
+      "boostController": [
+        [
+          0,
+          0.2
+        ],
+        [
+          100,
+          1
+        ]
+      ]
+    },
+    "mainEngine": {
+      "supercharger": "supercharger",
+      "$*instantAfterFireCoef": 2.5,
+      "$*sustainedAfterFireCoef": 2,
+      "deformGroups_supercharger": [
+        "mainEngine_supercharger"
+      ]
+    },
+    "soundConfig": {
+      "$+maxLoadMix": 0.2,
+      "$+intakeMuffling": -1,
+      "$+offLoadGain": -0.05
+    },
+    "soundConfigExhaust": {
+      "$+maxLoadMix": 0.2,
+      "$+minLoadMix": 0,
+      "$+offLoadGain": -0.05
+    },
+    "vehicleController": {
+      "revMatchThrottle": 0.25
+    },
+    "flexbodies": [
+      [
+        "mesh",
+        "[group]:",
+        "nonFlexMaterials"
+      ],
+      [
+        "scintilla_gavril_v8_supercharger",
+        [
+          "scintilla_engine_intake"
+        ]
+      ],
+      [
+        "scintilla_gavril_v8_supercharger_belts",
+        [
+          "scintilla_engine"
+        ]
+      ]
+    ],
+    "props": [
+      [
+        "func",
+        "mesh",
+        "idRef:",
+        "idX:",
+        "idY:",
+        "baseRotation",
+        "rotation",
+        "translation",
+        "min",
+        "max",
+        "offset",
+        "multiplier"
+      ],
+      [
+        "rpmspin",
+        "scintilla_gavril_v8_pulley7",
+        "e3l",
+        "e3r",
+        "e4l",
+        {
+          "x": -90,
+          "y": 0,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        -360,
+        360,
+        0,
+        1
+      ]
+    ],
+    "nodes": [
+      [
+        "id",
+        "posX",
+        "posY",
+        "posZ"
+      ],
+      {
+        "selfCollision": false
+      },
+      {
+        "collision": true
+      },
+      {
+        "frictionCoef": 0.5
+      },
+      {
+        "nodeMaterial": "|NM_METAL"
+      },
+      {
+        "nodeWeight": 4
+      },
+      {
+        "group": [
+          "scintilla_engine",
+          "scintilla_engine_intake"
+        ]
+      },
+      [
+        "sc1r",
+        -0.12,
+        0.61,
+        0.75
+      ],
+      [
+        "sc1l",
+        0.12,
+        0.61,
+        0.75
+      ],
+      [
+        "sc2r",
+        -0.12,
+        1.24,
+        0.75
+      ],
+      [
+        "sc2l",
+        0.12,
+        1.24,
+        0.75
+      ],
+      {
+        "group": [
+          "scintilla_engine_intake"
+        ]
+      },
+      {
+        "nodeWeight": 2
+      },
+      [
+        "intake2",
+        0,
+        1.5,
+        0.8
+      ],
+      {
+        "engineGroup": ""
+      },
+      {
+        "group": ""
+      }
+    ],
+    "beams": [
+      [
+        "id1:",
+        "id2:"
+      ],
+      {
+        "beamPrecompression": 1,
+        "beamType": "|NORMAL",
+        "beamLongBound": 1,
+        "beamShortBound": 1
+      },
+      {
+        "beamSpring": 4700940,
+        "beamDamp": 235
+      },
+      {
+        "beamDeform": 105000,
+        "beamStrength": "FLT_MAX"
+      },
+      {
+        "deformGroup": "mainEngine_supercharger",
+        "deformationTriggerRatio": 0.001
+      },
+      [
+        "sc1l",
+        "sc1r"
+      ],
+      [
+        "sc2l",
+        "sc2r"
+      ],
+      [
+        "sc1r",
+        "sc2r"
+      ],
+      [
+        "sc1l",
+        "sc2l"
+      ],
+      [
+        "sc1r",
+        "sc2l"
+      ],
+      [
+        "sc1l",
+        "sc2r"
+      ],
+      [
+        "sc2l",
+        "e4l"
+      ],
+      [
+        "sc1l",
+        "e3l"
+      ],
+      [
+        "sc1r",
+        "e3r"
+      ],
+      [
+        "sc2r",
+        "e4r"
+      ],
+      [
+        "sc2l",
+        "e3l"
+      ],
+      [
+        "sc1l",
+        "e4l"
+      ],
+      [
+        "sc2r",
+        "e3r"
+      ],
+      [
+        "sc1r",
+        "e4r"
+      ],
+      [
+        "sc2r",
+        "e4l"
+      ],
+      [
+        "sc2l",
+        "e4r"
+      ],
+      [
+        "sc1r",
+        "e3l"
+      ],
+      [
+        "sc1l",
+        "e3r"
+      ],
+      [
+        "sc1l",
+        "e1l"
+      ],
+      [
+        "sc1r",
+        "e1r"
+      ],
+      [
+        "sc2r",
+        "e2r"
+      ],
+      [
+        "sc2l",
+        "e2l"
+      ],
+      {
+        "beamSpring": 94940,
+        "beamDamp": 470
+      },
+      {
+        "beamDeform": 6150,
+        "beamStrength": "FLT_MAX"
+      },
+      [
+        "intake2",
+        "e2l"
+      ],
+      [
+        "intake2",
+        "e2r"
+      ],
+      [
+        "intake2",
+        "sc2r"
+      ],
+      [
+        "intake2",
+        "sc2l"
+      ],
+      {
+        "deformGroup": "",
+        "deformationTriggerRatio": ""
+      },
+      {
+        "beamPrecompression": 0.85,
+        "beamType": "|SUPPORT",
+        "beamLongBound": 0.7
+      },
+      {
+        "beamSpring": 18800,
+        "beamDamp": 0
+      },
+      {
+        "beamDeform": 350,
+        "beamStrength": 700
+      },
+      [
+        "intake2",
+        "e4l"
+      ],
+      [
+        "intake2",
+        "e4r"
+      ],
+      [
+        "intake2",
+        "e3l"
+      ],
+      {
+        "deformGroup": ""
+      },
+      {
+        "beamPrecompression": 1,
+        "beamType": "|NORMAL",
+        "beamLongBound": 1,
+        "beamShortBound": 1
+      }
+    ],
+    "triangles": [
+      [
+        "id1:",
+        "id2:",
+        "id3:"
+      ],
+      {
+        "groundModel": "metal"
+      },
+      {
+        "dragCoef": 0
+      },
+      [
+        "sc2r",
+        "sc2l",
+        "sc1l"
+      ],
+      [
+        "sc1l",
+        "sc1r",
+        "sc2r"
+      ]
+    ],
+    "slots": [
+      [
+        "type",
+        "default",
+        "description"
+      ],
+      [
+        "rls_scintilla_intake_v8_stage4_pulley",
+        "rls_scintilla_intake_v8_stage4_pulley_4",
+        "Supercharger Drive Pulley",
+        {
+          "coreSlot": true
+        }
+      ]
+    ]
+  },
+  "rls_scintilla_intake_v8_stage4_pulley_1": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "1.60:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_scintilla_intake_v8_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 1.6
+    }
+  },
+  "rls_scintilla_intake_v8_stage4_pulley_2": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "1.80:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_scintilla_intake_v8_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 1.8
+    }
+  },
+  "rls_scintilla_intake_v8_stage4_pulley_3": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "2.00:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_scintilla_intake_v8_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 2
+    }
+  },
+  "rls_scintilla_intake_v8_stage4_pulley_4": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "2.20:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_scintilla_intake_v8_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 2.2
+    }
+  },
+  "rls_scintilla_intake_v8_stage4_pulley_5": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "2.35:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_scintilla_intake_v8_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 2.35
+    }
+  },
+  "rls_scintilla_intake_v8_stage4_pulley_6": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "2.50:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_scintilla_intake_v8_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 2.5
+    }
+  }
+}

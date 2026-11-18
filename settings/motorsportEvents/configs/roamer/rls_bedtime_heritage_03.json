@@ -1,0 +1,74 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "roamer/rls_bedtime_heritage_03",
+    "configId": "rls_bedtime_heritage_03",
+    "model": "roamer",
+    "config": "/vehicles/roamer/rls_bedtime_heritage_03.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "nate_denver",
+    "driverName": "Joseph Ackerman",
+    "builder": "Heritage Speed",
+    "classIds": [
+      "bedtime_bullies"
+    ],
+    "approvedClassIds": [
+      "bedtime_bullies"
+    ],
+    "leagueId": "street_kings",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "4c9c44dfcd3421164848800d72114eedb5eb368e2adbb0a57cc968f09975d26f",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "4-speed automatic",
+      "induction": "Supercharger",
+      "nitrous": true,
+      "years": {
+        "min": 1992,
+        "max": 1998
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x8_alt",
+          "part": "tire_F_235_60_15_alt_sport",
+          "typeHint": "sport"
+        },
+        {
+          "slot": "tire_R_15x12_alt",
+          "part": "tire_R_29_12_15_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "roamer_rollcage",
+          "part": "roamer_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.629459390260566,
+      "runId": "COMPLIANCE-20261026-rls_bedtime_heritage_03",
+      "evidenceConfigSHA256": "bc7fd7aa09e5ddc3e3b3d9e47e6876d96dc157f8b56aa158a8285e33895315eb",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/bedtime/final-results.json",
+      "acceptedConfig": "outputs/bedtime/accepted/rls_bedtime_heritage_03/rls_bedtime_heritage_03.pc",
+      "tuningEvidence": "/settings/motorsportEvents/complianceEvidence-20261026.json",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_bedtime_bullies"
+  }
+}

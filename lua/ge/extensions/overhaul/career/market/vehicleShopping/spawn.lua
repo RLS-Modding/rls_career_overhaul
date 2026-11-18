@@ -305,8 +305,9 @@ function M.new(inputs)
     local record = attempt.financeRecord
     if record and record.finance then
       record.finance.vehicleId = tostring(inventoryId)
-      record.finance = require("overhaul/lib/finance/metadata").capture({finance = record.finance},
-        record.time, record.attributeChange and record.attributeChange.money or 0)
+      local metadata = require("overhaul/lib/finance/metadata")
+      metadata.updateReceipt(record, metadata.capture({finance = record.finance},
+        record.time, record.attributeChange and record.attributeChange.money or 0))
       guihooks.trigger("OverhaulFinancialHistoryChanged")
     end
     attempt.saveHold.release()

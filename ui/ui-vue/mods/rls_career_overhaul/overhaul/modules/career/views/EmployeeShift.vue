@@ -397,7 +397,6 @@ const vehiclePills = (vehicle) => {
   // upstream 804ee2ee8: vehicles issued from the RLS loaner pool say so
   const out = vehicle?.fromLoanerPool ? [{ text: 'Loaner pool', title: 'Issued from the RLS loaner pool' }] : []
   if (!vehicle?.available && vehicle?.disableReason) return [...out, { text: vehicle.disableReason }]
-  if (vehicle?.serviceUnlockLabel) return [...out, { text: vehicle.serviceUnlockLabel }]
   const reputation = Number(vehicle?.reputationLevel)
   const logistics = Number(vehicle?.logisticsLevel)
   if (Number.isFinite(reputation) && reputation > 0) out.push({ icon: icons.star, text: `Lv ${reputation}`, title: `Reputation level ${reputation}` })

@@ -17,6 +17,18 @@
       "label": "Invites",
       "default": true,
       "description": "Meet and club invites"
+    },
+    {
+      "key": "carMeet.knightsLocation",
+      "label": "No Prep Knights location",
+      "default": true,
+      "description": "Tonight\u2019s venue"
+    },
+    {
+      "key": "carMeet.knightsResult",
+      "label": "No Prep Knights results",
+      "default": true,
+      "description": "The previous meet results"
     }
   ],
   "notificationSources": [

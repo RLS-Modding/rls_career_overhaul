@@ -2,6 +2,7 @@
 -- Not auto-loaded by career; it mounts its own input action and only works while the creator key is valid.
 local M = {}
 local optional = require('overhaul/lib/platform/optional')
+local weatherModel = require('overhaul/world/weather/model')
 
 -- Config ------------------------------------------------------------------------------------------
 
@@ -18,8 +19,10 @@ local KEY_CHECK_INTERVAL_SECONDS = 1
 local CONTROL_MAX_LENGTH = 64
 local INPUT_ACTION_TABLE_FIELDS = { "uniqueActions", "normalActions", "activeActions", "actions" }
 
--- The tester action and its shortcut live in the mod's temp folder, mounted while the menu is loaded.
-local OVERLAY_ROOT = '/settings/inputmaps/overhaul/testerInput/'
+-- The tester action and its shortcut live in an overlay folder under settings/inputmaps/overhaul/,
+-- mounted while the menu is loaded.
+-- Lower case: Linux stores the paths that writes create in lower case and mounts only the exact name.
+local OVERLAY_ROOT = '/settings/inputmaps/overhaul/testerinput/'
 local OVERLAY_ACTIONS = "lua/ge/extensions/core/input/actions/rls_tester_menu.json"
 local OVERLAY_INPUTMAPS = "settings/inputmaps/"
 local OVERLAY_INPUTMAP_SUFFIX = "_rls_tester_menu.json"
@@ -99,7 +102,7 @@ local function refreshCreatorKey(force)
   if not force and (now - lastKeyCheck) < KEY_CHECK_INTERVAL_SECONDS then return keyOk end
   lastKeyCheck = now
   keyOk = overhaul_shell_extensionManager and overhaul_shell_extensionManager.isDevKeyValid
-    and overhaul_shell_extensionManager.isDevKeyValid() == true
+    and overhaul_shell_extensionManager.isDevKeyValid(force) == true
   return keyOk
 end
 
@@ -760,6 +763,12 @@ local function dynamicWeather()
   return optional("overhaul_world_weather")
 end
 
+-- Every condition the career forecast can produce, in forecast order, for the weather dropdown.
+local WEATHER_OPTIONS = {}
+for _, condition in ipairs(weatherModel.CONDITION_ORDER) do
+  WEATHER_OPTIONS[#WEATHER_OPTIONS + 1] = {value = condition, label = weatherModel.CONDITION_LABELS[condition] or condition}
+end
+
 local function setWeather(condition, label)
   if not requireCareer() then return end
   local weather = dynamicWeather()
@@ -773,6 +782,59 @@ local function setWeather(condition, label)
     toast("info", "Weather set to a bright sunny noon with no clouds or fog.")
   else
     toast("info", "Weather set to " .. label .. ".")
+  end
+end
+
+-- Drag racing ------------------------------------------------------------------------------------
+
+local function noPrepKnights() return optional("overhaul_career_economy_streetKnights") end
+local function sanctionedDrags() return optional("overhaul_events_motorsportEvents") end
+
+-- Read on every menu refresh so the list follows the map you are on.
+local function noPrepKnightsVenues()
+  local club = noPrepKnights()
+  return club and club.debugVenues and club.debugVenues() or {}
+end
+
+local function sanctionedDragsLeagues()
+  local events = sanctionedDrags()
+  return events and events.devLeagues and events.devLeagues() or {}
+end
+
+local function labelFor(options, value)
+  for _, option in ipairs(options) do
+    if option.value == value then return option.label end
+  end
+  return tostring(value)
+end
+
+local function setNoPrepKnightsVenue(venueId)
+  if not requireCareer() then return end
+  local club = noPrepKnights()
+  if not (club and club.debugRaceInvite) then
+    toast("error", "No Prep Knights is not loaded.")
+    return
+  end
+  local ok, reason = club.debugRaceInvite(false, venueId)
+  if ok then
+    toast("info", "Tonight's No Prep Knights meet is at " .. labelFor(noPrepKnightsVenues(), venueId) .. ".")
+  else
+    toast("error", reason or "Could not move the No Prep Knights meet.")
+  end
+end
+
+local function forceSanctionedDragsLeague(leagueId)
+  if not requireCareer() then return end
+  local events = sanctionedDrags()
+  if not (events and events.devForceLeague) then
+    toast("error", "Sanctioned Drags is not loaded.")
+    return
+  end
+  local result = events.devForceLeague(leagueId) or {}
+  if result.ok then
+    toast("info", "Today's Sanctioned Drags offer is " .. labelFor(sanctionedDragsLeagues(), leagueId) .. ".")
+  else
+    toast("error", result.error or "Could not force the league.")
   end
 end
 
@@ -865,6 +927,51 @@ local function recoverAndRepair()
   toast("info", "Repaired and refueled in place.")
 end
 
+local function openFuelTune()
+  if not requireCareer() then return end
+  if gameplay_walk and gameplay_walk.isWalking and gameplay_walk.isWalking() then
+    toast("error", "Enter a vehicle first.")
+    return
+  end
+  local fuel = rawget(_G, "overhaul_career_maintenance_fuelSystem")
+  if not (fuel and fuel.openDevShortcut) then
+    toast("error", "Fuel system is not loaded.")
+    return
+  end
+  -- Temporary playtest entry. Hide this menu so the tune panel is not covered.
+  if not fuel.openDevShortcut() then
+    toast("error", "Could not open Fuel & Ignition.")
+    return
+  end
+  menuVisible = false
+end
+
+-- Same parking spot the dyno session moves cars to; works on foot or driving.
+local function teleportToDyno()
+  if not requireCareer() then return end
+  local veh = getPlayerVehicle(0)
+  local sites = gameplay_sites_sitesManager
+  local sitePath = veh and sites and sites.getCurrentLevelSitesFileByName and sites.getCurrentLevelSitesFileByName("dynoSession")
+  local loaded = sitePath and sites.loadSites(sitePath)
+  local spot = loaded and loaded.parkingSpots and loaded.parkingSpots.byName and loaded.parkingSpots.byName.dynoSessionParking
+  if not veh then
+    toast("error", "No player vehicle to move.")
+    return
+  end
+  if not spot or spot.missing or not spot.moveResetVehicleTo then
+    toast("error", "This map has no dyno parking spot.")
+    return
+  end
+  local ok, err = pcall(function() spot:moveResetVehicleTo(veh:getID(), nil, nil, nil, nil, true) end)
+  if not ok then
+    toast("error", "Could not move to the dyno: " .. tostring(err))
+    return
+  end
+  core_camera.resetCamera(0)
+  toast("info", "Moved to the dyno.")
+  menuVisible = false
+end
+
 -- The route's final waypoint may be a road node name, an {x, y, z} array or a vec3.
 local function waypointPosition(wp)
   if type(wp) == "string" then
@@ -937,9 +1044,6 @@ end
 -- Action table ------------------------------------------------------------------------------------
 
 local testerActions = {
-  sunny = function() setWeather("clear", "Sunny") end,
-  rain = function() setWeather("storm", "Heavy Rain") end,
-  overcast = function() setWeather("overcast", "Overcast") end,
   sleep6am = function() sleepUntil(SLEEP_PRESETS[1]) end,
   sleep12pm = function() sleepUntil(SLEEP_PRESETS[2]) end,
   sleep9pm = function() sleepUntil(SLEEP_PRESETS[3]) end,
@@ -961,11 +1065,31 @@ local testerActions = {
   own = ownCurrentVehicle,
   switcher = openMapSwitcher,
   repair = recoverAndRepair,
+  fuel = openFuelTune,
+  dyno = teleportToDyno,
   waypoint = teleportToWaypoint,
   save = saveCareer,
   cleanupSpawn = spawnCleanupVehicle,
   cleanupFocus = focusCleanup,
 }
+
+for _, option in ipairs(WEATHER_OPTIONS) do
+  testerActions["weather:" .. option.value] = function() setWeather(option.value, option.label) end
+end
+
+-- Actions that carry a value chosen in a dropdown: "<prefix>:<value>".
+local valueActions = {
+  npkVenue = setNoPrepKnightsVenue,
+  dragLeague = forceSanctionedDragsLeague,
+}
+
+local function findAction(actionId)
+  local handler = testerActions[actionId]
+  if handler then return handler end
+  local prefix, value = actionId:match("^(%w+):(.+)$")
+  local valueAction = prefix and valueActions[prefix]
+  if valueAction then return function() valueAction(value) end end
+end
 
 -- Menu state for the UI ---------------------------------------------------------------------------
 
@@ -979,6 +1103,9 @@ local function pushUi()
     toggleLabel = formatControlLabel(toggleControl, bindDeviceName),
     deviceName = bindDeviceName,
     rebindArmed = rebindArmed == true,
+    weatherOptions = WEATHER_OPTIONS,
+    npkVenues = noPrepKnightsVenues(),
+    dragLeagues = sanctionedDragsLeagues(),
   })
 end
 
@@ -989,7 +1116,7 @@ function M.run(actionId)
     menuVisible = false
     return false
   end
-  local handler = testerActions[tostring(actionId or "")]
+  local handler = findAction(tostring(actionId or ""))
   if not handler then
     toast("error", "Unknown tester action: " .. tostring(actionId))
     pushUi()

@@ -1,0 +1,26 @@
+{
+  "Configuration": "Kiera Maddox - No Prep",
+  "Description": "Gold Standard. Tier 2 racer. Highway no-prep quarter-mile: 11.000s at 134.61mph. Heritage Speed. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Heritage Speed",
+  "Name": "Kiera Maddox",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 9.3045667762587,
+    "time_1_4": 11.000219864442,
+    "time_1_8": 7.2790105817882,
+    "time_330": 4.8835529797188,
+    "time_60": 1.7977592693119,
+    "velAt_1_4": 60.176614518018,
+    "velAt_1_8": 47.697179708181
+  },
+  "Reaction Time": 0.29448222393554,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

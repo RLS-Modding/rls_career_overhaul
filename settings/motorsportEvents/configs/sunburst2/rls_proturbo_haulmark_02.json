@@ -1,0 +1,70 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "sunburst2/rls_proturbo_haulmark_02",
+    "configId": "rls_proturbo_haulmark_02",
+    "model": "sunburst2",
+    "config": "/vehicles/sunburst2/rls_proturbo_haulmark_02.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "luke_hobson",
+    "driverName": "Oscar Conway",
+    "builder": "Haulmark Racing",
+    "classIds": [
+      "pro_turbo"
+    ],
+    "approvedClassIds": [
+      "pro_turbo"
+    ],
+    "leagueId": "pro_league",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "bba40cc99f7097defd3830815ddfd83e4a4f7f013bb9a4cbf0a901ce8bc704af",
+    "traits": {
+      "drivetrain": "AWD",
+      "transmission": "6-speed dct",
+      "induction": "Turbocharger",
+      "nitrous": false,
+      "years": null
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x8_alt",
+          "part": "tire_F_26_8_15_alt_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_15x8_alt",
+          "part": "tire_R_26_8_15_alt_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "sunburst2_rollcage",
+          "part": "sunburst2_rollcage_race"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 7.2001144782262,
+      "runId": "PT-024",
+      "evidenceConfigSHA256": "9ec9c0730ae441966222b6f989af9581ff05765aacbf22e4bf0ad342be477ed5",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/pro-turbo/final-results.json",
+      "acceptedConfig": "outputs/pro-turbo/accepted/rls_proturbo_haulmark_02/rls_proturbo_haulmark_02.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_pro_turbo"
+  }
+}

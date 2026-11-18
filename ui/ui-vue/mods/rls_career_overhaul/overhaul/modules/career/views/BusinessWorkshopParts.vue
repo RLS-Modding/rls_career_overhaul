@@ -21,6 +21,10 @@
           <BngIcon class="category-icon" :type="icons.boxPickUp03" />
           <span class="label">Cargo Parts</span>
         </Button>
+        <Button class="computer-function-tile" :disabled="busy || hasChanges || sessionStore.isDamageLocked" @click="lua.overhaul_career_maintenance_fuelSystem.openPartsHardware(sessionStore.businessId,sessionStore.pulledOutVehicle?.vehicleId)">
+          <BngIcon class="category-icon" :type="icons.wrench" />
+          <span class="label">Fuel Hardware</span>
+        </Button>
       </div>
 
       <div v-else-if="panel === 'slots'" class="slot-list-root">
@@ -68,7 +72,7 @@
             <div class="part-info">
               <span class="part-name">{{ part.label }}</span>
               <div class="part-meta">
-                <span v-if="part.inventory" class="pill">Business inventory</span>
+                <span v-if="part.inventory" class="pill">{{ sessionStore.pulledOutVehicle?.isPersonal ? 'Personal inventory' : 'Business inventory' }}</span>
                 <span v-if="part.mileage != null" class="mileage">{{ formatMileage(part.mileage) }}</span>
                 <span v-if="!part.inventory && !part.remove" class="price">{{ units.beamBucks(part.price) }}</span>
               </div>
@@ -138,7 +142,7 @@ const computerStore = useBusinessComputerStore()
 const partsStore = useBusinessPartsStore()
 const sessionStore = useBusinessSessionStore()
 const events = useEvents()
-const { units } = useBridge()
+const { lua, units } = useBridge()
 const { current, switchScope } = useScopedNav()
 const navBlocker = useUINavBlocker()
 navBlocker.ensureNoBlock(["context"])

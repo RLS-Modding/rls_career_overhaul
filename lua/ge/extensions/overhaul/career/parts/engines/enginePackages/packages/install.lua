@@ -10,7 +10,7 @@ function install.create(inputs)
 
   local sendResult = inputs.sendResult
 
-  -- Rollback ends its transaction before the respawn answers. Its callback must
+  -- A rollback respawn can answer after its transaction ended. Its callback must
   -- remain valid for that owner lifetime, without leaking into the next career.
   local function guardLifetime(callback)
     local generation = inputs.getLifetimeGeneration()
@@ -43,6 +43,7 @@ function install.create(inputs)
         for _, tank in ipairs(data[1]) do
           if tank.energyType ~= "n2o" then
             result[tank.name] = {
+              rlsFuelTank = overhaul_career_maintenance_fuelSystem and overhaul_career_maintenance_fuelSystem.captureTankForRebuild(vehObj:getID(), tank),
               currentEnergy = tank.currentEnergy,
               maxEnergy = tank.maxEnergy,
               energyType = tank.energyType,
@@ -65,7 +66,9 @@ function install.create(inputs)
         if stored and stored.energyType == tank.energyType then
           local amount = math.min(stored.currentEnergy, tank.maxEnergy)
           if tank.maxEnergy > stored.maxEnergy then amount = tank.maxEnergy * stored.relativeFuel end
-          core_vehicleBridge.executeAction(vehObj, "setEnergyStorageEnergy", tank.name, math.max(amount, tank.maxEnergy * 0.05))
+          if not (overhaul_career_maintenance_fuelSystem and overhaul_career_maintenance_fuelSystem.restoreTankAfterRebuild(vehObj, stored)) then
+            core_vehicleBridge.executeAction(vehObj, "setEnergyStorageEnergy", tank.name, math.max(amount, tank.maxEnergy * 0.05))
+          end
         end
       end
     end), "energyStorage")
@@ -216,12 +219,12 @@ function install.create(inputs)
   end
 
   -- Puts the incoming package's engine into the bay, with its parts marked as installed in this vehicle.
-  local function hoistPackageToBay(bay, package, inventory, newConditions, vehicle, inventoryId)
+  local function hoistPackageToBay(bay, package, inventory, newConditions, vehicle, inventoryId, ioCtx)
     local previousEntries = parts.capture.collectTreePartEntries(package.tree, package.rootPath or bay.path)
     for _, entry in ipairs(previousEntries) do
       newConditions[entry.partPath] = nil
     end
-    local config = parts.capture.makeConfigTree(package.tree, bay.path, bay.slotName)
+    local config = parts.capture.makeConfigTree(package.tree, bay.path, bay.slotName, ioCtx)
     bay.node.id = bay.slotName or bay.node.id
     bay.node.chosenPartName = package.tree.name
     bay.node.children = config.children
@@ -247,7 +250,7 @@ function install.create(inputs)
   -- Empties the bay when no replacement is given; otherwise hoists the incoming engine into it.
   local function clearBayOrHoist(bay, opts)
     if opts.incomingPackage then
-      hoistPackageToBay(bay, opts.incomingPackage, opts.inventory, opts.newConditions, opts.vehicle, opts.inventoryId)
+      hoistPackageToBay(bay, opts.incomingPackage, opts.inventory, opts.newConditions, opts.vehicle, opts.inventoryId, opts.ioCtx)
       return
     end
     bay.node.id = bay.slotName or bay.node.id
@@ -309,6 +312,134 @@ function install.create(inputs)
 
   -- Vehicle rebuild and rollback ----------------------------------------------------------------------
 
+  local function restoreIsPending(inventoryId)
+    local inventory = overhaul_career_garage_inventory
+    return inventory.isDamageRestorePending ~= nil and inventory.isDamageRestorePending(inventoryId) == true
+  end
+
+  -- Puts the live car back from its restored record, then ends the transaction and reports.
+  -- A rebuilt car with saved dents or a saved pose is still restoring them when the swap fails, and the
+  -- inventory refuses to replace a car mid-restore. A refused or failed respawn leaves the package engine
+  -- in the live car with no owned parts, so each attempt waits for the restore, a failed attempt is tried
+  -- again, and the transaction stays busy until a respawn answers. Only a confirmed respawn, or the car
+  -- being put away, reports the rollback as done; otherwise the player is told to put the car away and
+  -- take it out.
+  local function respawnRestoredVehicle(opts, message)
+    local constants = inputs.constants
+    local generation = inputs.getLifetimeGeneration()
+    local attempt, settled = 0, false
+    local function current()
+      return not settled and generation == inputs.getLifetimeGeneration() and inputs.isActiveTransaction(opts.transactionId)
+    end
+    -- A save during the rollback reads part conditions from the live car, which still holds the package
+    -- engine (or, for a store, an empty bay). The restored record's own conditions are put back right
+    -- before a respawn replaces the car, and on every ending that does not respawn it.
+    local restoredConditions = deepcopy(opts.vehicleSnapshot.partConditions)
+    local function putBackRestoredConditions()
+      local record = overhaul_career_garage_inventory.getVehicles()[opts.inventoryId]
+      if record == opts.vehicleSnapshot then record.partConditions = deepcopy(restoredConditions) end
+    end
+
+    local function settle(restored, respawned)
+      if not current() then return end
+      settled = true
+      if not respawned then putBackRestoredConditions() end
+      inputs.endTransaction(opts.transactionId)
+      sendResult(false, restored and message or opts.messages.respawnFailed)
+    end
+
+    -- A car put away during the wait has left the world; its saved record is already the restored one.
+    local function carWasPutAway()
+      return not overhaul_career_garage_inventory.getVehicleIdFromInventoryId(opts.inventoryId)
+    end
+
+    -- The restore and the respawn stand still while the game is paused, so paused time is not counted.
+    local function gamePaused()
+      return simTimeAuthority and simTimeAuthority.getPause and simTimeAuthority.getPause() == true
+    end
+
+    local tryAgain
+    local function respawn()
+      if not current() then return end
+      if carWasPutAway() then
+        settle(true)
+        return
+      end
+      attempt = attempt + 1
+      local thisAttempt, answered = attempt, false
+      local function onAnswer(success)
+        if answered then return end
+        answered = true
+        if thisAttempt ~= attempt or not current() then return end
+        if success then settle(true, true) else tryAgain() end
+      end
+      -- A respawn that answers after the transaction ended still repairs the package flags for this owner.
+      local called, spawned = pcall(overhaul_career_garage_inventory.spawnVehicle, opts.inventoryId, 2, guardLifetime(function(success, reason)
+        inputs.repairPackageFlags()
+        if success == false then
+          log("W", constants.logTag, "Engine package rollback respawn failed: " .. tostring(reason))
+        end
+        onAnswer(success ~= false)
+      end), nil, nil, {prepareReplacement = function()
+        -- A respawn landing after teardown, or after the rollback already gave up and told the player to
+        -- reload the car, must not touch it: a new transaction may own the car by then.
+        if settled or generation ~= inputs.getLifetimeGeneration() then return false end
+        putBackRestoredConditions()
+        return true
+      end})
+      if not called then
+        log("E", constants.logTag, "Engine package rollback respawn raised an error: " .. tostring(spawned))
+      end
+      if not called or not spawned then
+        -- A refusal usually answers through the callback first, which logs its reason.
+        inputs.repairPackageFlags()
+        onAnswer(false)
+        return
+      end
+      -- A respawn still running at this limit is called off in its preparation step if it gets that far.
+      core_jobsystem.create(function(job)
+        local waited = 0
+        while not answered and thisAttempt == attempt and current() do
+          if carWasPutAway() then
+            settle(true)
+            return
+          end
+          if waited >= constants.ROLLBACK_RESPAWN_REPLY_S then
+            log("E", constants.logTag, "Engine package rollback respawn did not answer")
+            settle(false)
+            return
+          end
+          job.sleep(1)
+          if not gamePaused() then waited = waited + 1 end
+        end
+      end, 0.1)
+    end
+
+    -- A retry waits a moment first, so a refusal that clears quickly does not use up every attempt.
+    local function respawnWhenRestored()
+      core_jobsystem.create(function(job)
+        if attempt > 0 then job.sleep(constants.ROLLBACK_RESPAWN_RETRY_S) end
+        local waited = 0
+        while current() and not carWasPutAway() and restoreIsPending(opts.inventoryId) do
+          if waited >= constants.ROLLBACK_RESTORE_WAIT_S then
+            log("E", constants.logTag, "Engine package rollback gave up waiting for the car to finish restoring")
+            settle(false)
+            return
+          end
+          job.sleep(0.1)
+          if not gamePaused() then waited = waited + 0.1 end
+        end
+        respawn()
+      end, 0.1)
+    end
+
+    tryAgain = function()
+      if attempt >= constants.ROLLBACK_RESPAWN_ATTEMPTS then settle(false) else respawnWhenRestored() end
+    end
+
+    if restoreIsPending(opts.inventoryId) then respawnWhenRestored() else respawn() end
+  end
+
   -- Restores the snapshots, respawns the vehicle as it was, and reports the failure. Runs at most once per swap.
   local function rollbackSwap(opts, message)
     if opts.progress.finished or not inputs.isActiveTransaction(opts.transactionId) then return end
@@ -317,16 +448,7 @@ function install.create(inputs)
     inputs.packageStore.packages = opts.packagesSnapshot
     opts.vehicles[opts.inventoryId] = opts.vehicleSnapshot
     overhaul_career_parts_partInventory.onOverhaulPartShoppingTransactionComplete()
-    local respawnOk, spawnedVehicle = pcall(overhaul_career_garage_inventory.spawnVehicle, opts.inventoryId, 2, guardLifetime(inputs.repairPackageFlags))
-    if not respawnOk then
-      log("E", inputs.constants.logTag, "Engine package rollback respawn failed: " .. tostring(spawnedVehicle))
-      inputs.repairPackageFlags()
-    elseif not spawnedVehicle then
-      log("E", inputs.constants.logTag, "Engine package rollback respawn returned nil")
-      inputs.repairPackageFlags()
-    end
-    inputs.endTransaction(opts.transactionId)
-    sendResult(false, message or opts.messages.rollback)
+    respawnRestoredVehicle(opts, message or opts.messages.rollback)
   end
 
   -- Runs once the rebuilt vehicle exists: restores fuel, checks the bay, and refreshes the package views.
@@ -476,7 +598,8 @@ function install.create(inputs)
         rollback = "Storing the engine failed and was rolled back.",
         completion = "The stored engine transaction could not be finalized and was rolled back.",
         rebuildFailed = "The vehicle could not be rebuilt without the stored engine.",
-        timeout = "The vehicle rebuild timed out and was rolled back."
+        timeout = "The vehicle rebuild timed out and was rolled back.",
+        respawnFailed = "Storing the engine failed and was rolled back, but the car could not be reloaded. Put the car away in your garage and take it out, then try again."
       },
       onRebuilt = function()
         sendResult(true, "Stored " .. tostring(context.package.name) .. ". Use Part Customization to build another engine.")
@@ -542,7 +665,8 @@ function install.create(inputs)
     end
     targetCandidate.node.id = targetCandidate.slotName or targetCandidate.node.id
     targetCandidate.node.chosenPartName = targetPackage.tree.name
-    targetCandidate.node.children = parts.capture.makeConfigTree(targetPackage.tree, targetCandidate.path, targetCandidate.slotName).children
+    targetCandidate.node.children = parts.capture.makeConfigTree(targetPackage.tree, targetCandidate.path,
+      targetCandidate.slotName, swap.runtimeData.ioCtx).children
     targetCandidate.node.path = targetCandidate.path
     targetCandidate.node.partPath = targetCandidate.path .. targetPackage.tree.name
     vehicle.config.partsTree = swap.runtimeData.config.partsTree
@@ -731,7 +855,8 @@ function install.create(inputs)
           rollback = "The engine swap failed and was rolled back.",
           completion = "The rebuilt vehicle could not be finalized; the engine swap was rolled back.",
           rebuildFailed = "The vehicle could not be rebuilt; the engine swap was rolled back.",
-          timeout = "The vehicle rebuild timed out; the engine swap was rolled back."
+          timeout = "The vehicle rebuild timed out; the engine swap was rolled back.",
+          respawnFailed = "The engine swap was rolled back, but the car could not be reloaded. Put the car away in your garage and take it out, then try again."
         },
         onRebuilt = function()
           local successMessage = "Installed " .. tostring(targetPackage.name) .. "."

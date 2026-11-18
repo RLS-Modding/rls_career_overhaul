@@ -18,6 +18,10 @@
       <BngIcon class="icon" :type="icons.boxPickUp03" />
       <span class="label">{{ $translate.instant("ui.career.partShopping.cargoParts") }}</span>
     </Button>
+    <Button class="computer-function-tile" :disabled="tutorialActive" @click="lua.overhaul_career_maintenance_fuelSystem.openPartsHardware()">
+      <BngIcon class="icon" :type="icons.wrench" />
+      <span class="label">Fuel Hardware</span>
+    </Button>
   </div>
 </template>
 

@@ -1,0 +1,74 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "covet/rls_wrongwheel_neon_02",
+    "configId": "rls_wrongwheel_neon_02",
+    "model": "covet",
+    "config": "/vehicles/covet/rls_wrongwheel_neon_02.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "han_lue",
+    "driverName": "Reese Reyes",
+    "builder": "Neon Works",
+    "leagueId": "street_kings",
+    "classIds": [
+      "wrong_wheel_drive"
+    ],
+    "approvedClassIds": [
+      "wrong_wheel_drive"
+    ],
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "679851a1d2c24a3423e08a446e62dec3638812a3a53a12d47ec6c8249c5f133d",
+    "traits": {
+      "drivetrain": "FWD",
+      "transmission": "5-speed Sequential",
+      "induction": "Naturally aspirated",
+      "nitrous": true,
+      "years": {
+        "max": 1992,
+        "min": 1986
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_13x7",
+          "part": "tire_F_24.5_8_13_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_13x5",
+          "part": "tire_R_165_70_13_sport",
+          "typeHint": "sport"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "covet_rollcage",
+          "part": "covet_rollcage"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.691960477371099,
+      "runId": "COMPLIANCE-20261026-rls_wrongwheel_neon_02",
+      "evidenceConfigSHA256": "9ca70bfb72ff5a4371840fb7f16537f7498a7e89b60df29965f87d5d83c8cf04",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/wrongwheel/final-results.json",
+      "acceptedConfig": "outputs/wrongwheel/accepted/rls_wrongwheel_neon_02/rls_wrongwheel_neon_02.pc",
+      "tuningEvidence": "/settings/motorsportEvents/complianceEvidence-20261026.json",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_wrongwheel_drive"
+  }
+}

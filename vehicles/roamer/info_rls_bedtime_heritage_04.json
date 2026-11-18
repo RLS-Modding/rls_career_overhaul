@@ -1,0 +1,88 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Configuration": "Josie Aldridge - Bedtime Bullies",
+  "Description": "Driver: Josie Aldridge. Builder: Heritage Speed. Heritage Speed: Deep forest green extended-body sport SUV; small-displacement AWD sleeper with a Stage 2 blower. 4.5 L V8, Stage 4 race block; Supercharger; nitrous Yes. 4-speed automatic. Bedtime Bullies: first clean West Coast quarter-mile in the 9.500-10.000 second window: 9.968 s. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Transmission": "Automatic",
+  "Drivetrain": "AWD",
+  "Induction Type": "Supercharger + nitrous",
+  "Years": {
+    "min": 1992,
+    "max": 1998
+  },
+  "Value": 65000,
+  "Power": 1199,
+  "Weight": 2539,
+  "Motorsport": {
+    "version": 1,
+    "id": "roamer/rls_bedtime_heritage_04",
+    "configId": "rls_bedtime_heritage_04",
+    "model": "roamer",
+    "config": "/vehicles/roamer/rls_bedtime_heritage_04.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "tobey_marshall",
+    "driverName": "Josie Aldridge",
+    "builder": "Heritage Speed",
+    "classIds": [
+      "bedtime_bullies"
+    ],
+    "approvedClassIds": [
+      "bedtime_bullies"
+    ],
+    "leagueId": "street_kings",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "3f95d6a320cc899a63b02e406ed0cf9e16b51fea3451cc9e41d84ea42cfc001d",
+    "traits": {
+      "drivetrain": "AWD",
+      "transmission": "4-speed automatic",
+      "induction": "Supercharger",
+      "nitrous": true,
+      "years": {
+        "min": 1992,
+        "max": 1998
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_R_17x9",
+          "part": "tire_R_255_60_17_sport",
+          "typeHint": "sport"
+        },
+        {
+          "slot": "pickup_sparetire",
+          "part": "pickup_sparetire_5l",
+          "typeHint": null
+        },
+        {
+          "slot": "tire_F_17x9",
+          "part": "tire_F_255_60_17_sport",
+          "typeHint": "sport"
+        }
+      ],
+      "selectedRollCageParts": [],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.9678924643617,
+      "runId": "BB-040",
+      "evidenceConfigSHA256": "a0911d13f112946b857bdd1a26046ed7175fe7957ed0c881de53be886bf119ed",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/bedtime/final-results.json",
+      "acceptedConfig": "outputs/bedtime/accepted/rls_bedtime_heritage_04/rls_bedtime_heritage_04.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_bedtime_bullies"
+  }
+}

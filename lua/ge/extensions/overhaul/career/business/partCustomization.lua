@@ -150,6 +150,30 @@ M.getVehiclePowerWeight = parts.cart.getVehiclePowerWeight
 M.getPreviewVehicleConfig = parts.cart.getPreviewVehicleConfig
 M.updatePreviewVehicleConfig = parts.cart.updatePreviewVehicleConfig
 M.getInitialVehicleState = parts.cart.getInitialVehicleState
+M.getFuelHardwareContext = function(businessId,vehicleId)
+  local session=getActiveSession(businessId)
+  if not session or not sessionMatches(businessId,vehicleId) or session.operationInProgress or session.discarding or session.resetInProgress then return nil end
+  for _, selection in ipairs(session.replacementParts or {}) do
+    if selection.fromInventory then return nil end
+  end
+  for _,key in ipairs({'partList','vars'}) do
+    local initial=session.initial[key] or {}
+    local preview=key=='vars' and session.preview.config.vars or session.preview.partList
+    for name,value in pairs(initial) do if (preview or {})[name]~=value then return nil end end
+    for name,value in pairs(preview or {}) do if initial[name]~=value then return nil end end
+  end
+  local vehicle=parts.baseline.getBusinessVehicleObject(businessId,vehicleId)
+  if not vehicle or not customizationAccess.allow(businessId,vehicleId) then return nil end
+  return {vehicleId=vehicle:getID(),inventoryId=session.inventoryId}
+end
+M.onOverhaulFuelSystemPersisted = function(vehicleId,conditions)
+  local session=runtime.currentSession
+  if not session then return end
+  local context=M.getFuelHardwareContext(session.businessId,session.vehicleId)
+  if not context or context.vehicleId~=vehicleId then return end
+  session.initial.partConditions=deepcopy(conditions)
+  session.preview.partConditions=deepcopy(conditions)
+end
 M.commitSessionInitialFromPreview = parts.cart.commitSessionInitialFromPreview
 M.commitSessionTuning = parts.cart.commitSessionTuning
 M.capturePreviewConditions = function(businessId, vehicleId, onDone)

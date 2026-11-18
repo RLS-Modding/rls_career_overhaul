@@ -28,11 +28,19 @@
       "pending": "drop"
     },
     {
+      "key": "weather.rainEasing",
+      "label": "Rain Easing",
+      "default": true,
+      "description": "Warn one in-game hour before rain or a storm eases or stops",
+      "order": 2,
+      "pending": "drop"
+    },
+    {
       "key": "weather.fogSoon",
       "label": "Fog Forming",
       "default": true,
       "description": "Warn one in-game hour before morning fog",
-      "order": 2,
+      "order": 3,
       "pending": "drop"
     }
   ],

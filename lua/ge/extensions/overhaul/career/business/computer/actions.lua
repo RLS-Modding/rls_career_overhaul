@@ -24,7 +24,7 @@ function installer.new(inputs)
     "assignLineBlueprint", "debugAddRaw", "debugAdvanceCalendar", "debugForceCertification", "debugForceProduction",
     "installWarehousePackage", "junkWarehousePackage", "openEnginePackages", "openMyParts", "openParts", "openRepair",
     "openTuning", "orderRawMaterials", "overhaulLine", "purchaseLineUpgrade", "purchaseUpgrade", "selectBayVehicle",
-    "setBlueprintListed", "setBlueprintPrice", "setLineRunning", "startCertification",
+    "setBlueprintListed", "setBlueprintPrice", "setBlueprintRemoved", "deleteBlueprint", "setLineRunning", "startCertification",
   })
 
   function api.performEngineShopAction(methodName, businessId, ...)

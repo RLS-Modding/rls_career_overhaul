@@ -1,0 +1,25 @@
+{
+  "Configuration": "Caden Rusk - No Prep",
+  "Description": "Icebox Cruiser. Tier 2 racer. Highway no-prep quarter-mile: 11.448s at 121.08mph. Blacktop Engineering.",
+  "Author": "Blacktop Engineering",
+  "Name": "Caden Rusk",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 9.5917044112824,
+    "time_1_4": 11.44751275431,
+    "time_1_8": 7.3998877927222,
+    "time_330": 4.8291012675108,
+    "time_60": 1.7947845150377,
+    "velAt_1_4": 54.127705201265,
+    "velAt_1_8": 43.761274684571
+  },
+  "Reaction Time": 0.30884953237574,
+  "dragTimesRevalidated": true,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m"
+}

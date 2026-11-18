@@ -1,0 +1,13 @@
+{
+  "Name": "Iron Saint",
+  "Configuration": "sk_t4_boss",
+  "Value": 85000,
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": true
+  },
+  "Description": "KCG ETK800 \u2014 No Prep Knights boss."
+}

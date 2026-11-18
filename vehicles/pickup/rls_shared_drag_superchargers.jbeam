@@ -1,0 +1,567 @@
+{
+  "rls_pickup_intake_v8_stage4_supercharger": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "Stage 4 Supercharger",
+      "value": 22000
+    },
+    "slotType": "pickup_intake_v8",
+    "supercharger": {
+      "clutchEngageRPM": 0,
+      "pressureRatePSI": 250,
+      "pressurePSIPer1kRPM": 6.8,
+      "crankLossPer1kRPM": 0.027,
+      "type": "roots",
+      "whineLoopEvent": "event:>Vehicle>Forced_Induction>Supercharger_02>supercharger",
+      "whineVolumePerPSI": 0.02,
+      "whinePitchPer10kRPM": 0.8,
+      "boostController": [
+        [
+          0,
+          0.2
+        ],
+        [
+          100,
+          1
+        ]
+      ]
+    },
+    "mainEngine": {
+      "supercharger": "supercharger",
+      "$*instantAfterFireCoef": 2.5,
+      "$*sustainedAfterFireCoef": 2,
+      "deformGroups_supercharger": [
+        "mainEngine_supercharger"
+      ]
+    },
+    "soundConfig": {
+      "$+maxLoadMix": 0.2,
+      "$+intakeMuffling": -1,
+      "$+offLoadGain": -0.05
+    },
+    "soundConfigExhaust": {
+      "$+maxLoadMix": 0.2,
+      "$+minLoadMix": 0,
+      "$+offLoadGain": -0.05
+    },
+    "vehicleController": {
+      "revMatchThrottle": 0.25
+    },
+    "components": {
+      "intake": {
+        "disableAccessoryDriveTri": true
+      }
+    },
+    "flexbodies": [
+      [
+        "mesh",
+        "[group]:",
+        "nonFlexMaterials"
+      ],
+      [
+        "pickup_supercharger",
+        [
+          "pickup_engine_intake"
+        ],
+        [],
+        {
+          "pos": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rot": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        }
+      ],
+      [
+        "pickup_supercharger_belts",
+        [
+          "pickup_engine"
+        ],
+        [],
+        {
+          "pos": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rot": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        }
+      ]
+    ],
+    "props": [
+      [
+        "func",
+        "mesh",
+        "idRef:",
+        "idX:",
+        "idY:",
+        "baseRotation",
+        "rotation",
+        "translation",
+        "min",
+        "max",
+        "offset",
+        "multiplier"
+      ],
+      [
+        "rpmspin",
+        "pickup_supercharger_pulley",
+        "e3l",
+        "e3r",
+        "e4l",
+        {
+          "x": -90,
+          "y": 0,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        -360,
+        360,
+        0,
+        1
+      ]
+    ],
+    "nodes": [
+      [
+        "id",
+        "posX",
+        "posY",
+        "posZ"
+      ],
+      {
+        "selfCollision": true
+      },
+      {
+        "collision": true
+      },
+      {
+        "frictionCoef": 0.5
+      },
+      {
+        "nodeMaterial": "|NM_METAL"
+      },
+      {
+        "nodeWeight": 3.76
+      },
+      {
+        "group": [
+          "pickup_engine",
+          "pickup_engine_intake"
+        ]
+      },
+      [
+        "sc1r",
+        -0.12,
+        -1.25,
+        1.12
+      ],
+      [
+        "sc1l",
+        0.12,
+        -1.25,
+        1.12
+      ],
+      [
+        "sc2r",
+        -0.12,
+        -1.75,
+        1.12
+      ],
+      [
+        "sc2l",
+        0.12,
+        -1.75,
+        1.12
+      ],
+      {
+        "group": [
+          "pickup_engine_intake"
+        ]
+      },
+      {
+        "nodeWeight": 1.88
+      },
+      {
+        "selfCollision": true
+      },
+      [
+        "intake2",
+        0.51,
+        -1.82,
+        1.04
+      ],
+      {
+        "engineGroup": ""
+      },
+      {
+        "group": ""
+      }
+    ],
+    "beams": [
+      [
+        "id1:",
+        "id2:"
+      ],
+      {
+        "beamPrecompression": 1,
+        "beamType": "|NORMAL",
+        "beamLongBound": 1,
+        "beamShortBound": 1
+      },
+      {
+        "beamSpring": 4700940,
+        "beamDamp": 235
+      },
+      {
+        "beamDeform": 30000,
+        "beamStrength": "FLT_MAX"
+      },
+      {
+        "deformGroup": "mainEngine_supercharger",
+        "deformationTriggerRatio": 0.001
+      },
+      {
+        "deformLimit": 0.1
+      },
+      [
+        "sc1l",
+        "sc1r"
+      ],
+      [
+        "sc2l",
+        "sc2r"
+      ],
+      [
+        "sc1r",
+        "sc2r"
+      ],
+      [
+        "sc1l",
+        "sc2l"
+      ],
+      [
+        "sc1r",
+        "sc2l"
+      ],
+      [
+        "sc1l",
+        "sc2r"
+      ],
+      [
+        "sc2l",
+        "e4l"
+      ],
+      [
+        "sc1l",
+        "e3l"
+      ],
+      [
+        "sc1r",
+        "e3r"
+      ],
+      [
+        "sc2r",
+        "e4r"
+      ],
+      [
+        "sc2l",
+        "e3l"
+      ],
+      [
+        "sc1l",
+        "e4l"
+      ],
+      [
+        "sc2r",
+        "e3r"
+      ],
+      [
+        "sc1r",
+        "e4r"
+      ],
+      [
+        "sc2r",
+        "e4l"
+      ],
+      [
+        "sc2l",
+        "e4r"
+      ],
+      [
+        "sc1r",
+        "e3l"
+      ],
+      [
+        "sc1l",
+        "e3r"
+      ],
+      [
+        "sc1l",
+        "e1l"
+      ],
+      [
+        "sc1r",
+        "e1r"
+      ],
+      [
+        "sc2r",
+        "e2r"
+      ],
+      [
+        "sc2l",
+        "e2l"
+      ],
+      {
+        "deformGroup": "",
+        "deformationTriggerRatio": ""
+      },
+      {
+        "deformLimit": ""
+      },
+      {
+        "beamSpring": 94940,
+        "beamDamp": 470
+      },
+      {
+        "beamDeform": 6150,
+        "beamStrength": "FLT_MAX"
+      },
+      [
+        "intake2",
+        "e3l"
+      ],
+      [
+        "intake2",
+        "e4r"
+      ],
+      [
+        "intake2",
+        "sc1l"
+      ],
+      [
+        "intake2",
+        "sc2l"
+      ],
+      {
+        "deformGroup": ""
+      },
+      {
+        "beamPrecompression": 0.85,
+        "beamType": "|SUPPORT",
+        "beamLongBound": 0.7
+      },
+      {
+        "beamSpring": 18800,
+        "beamDamp": 0
+      },
+      {
+        "beamDeform": 350,
+        "beamStrength": 700
+      },
+      [
+        "intake2",
+        "e4l"
+      ],
+      [
+        "intake2",
+        "e4r"
+      ],
+      [
+        "intake2",
+        "e3l"
+      ],
+      {
+        "deformGroup": ""
+      },
+      {
+        "beamPrecompression": 1,
+        "beamType": "|NORMAL",
+        "beamLongBound": 1,
+        "beamShortBound": 1
+      }
+    ],
+    "triangles": [
+      [
+        "id1:",
+        "id2:",
+        "id3:"
+      ],
+      {
+        "dragCoef": 1
+      },
+      {
+        "triangleType": "NORMALTYPE"
+      },
+      {
+        "externalCollisionBias": "out"
+      },
+      [
+        "sc2r",
+        "sc2l",
+        "sc1l"
+      ],
+      [
+        "sc1l",
+        "sc1r",
+        "sc2r"
+      ],
+      [
+        "sc2r",
+        "e3r",
+        "e4r"
+      ],
+      [
+        "sc2r",
+        "sc1r",
+        "e3r"
+      ],
+      [
+        "e3l",
+        "sc2l",
+        "e4l"
+      ],
+      [
+        "sc1l",
+        "sc2l",
+        "e3l"
+      ],
+      [
+        "sc2r",
+        "e4r",
+        "eacc"
+      ],
+      [
+        "sc2r",
+        "eacc",
+        "sc2l"
+      ],
+      [
+        "e4l",
+        "sc2l",
+        "eacc"
+      ],
+      [
+        "sc1r",
+        "sc1l",
+        "e3l"
+      ],
+      [
+        "e3l",
+        "e3r",
+        "sc1r"
+      ],
+      {
+        "externalCollisionBias": ""
+      }
+    ],
+    "slots": [
+      [
+        "type",
+        "default",
+        "description"
+      ],
+      [
+        "rls_pickup_intake_v8_stage4_pulley",
+        "rls_pickup_intake_v8_stage4_pulley_3",
+        "Supercharger Drive Pulley",
+        {
+          "coreSlot": true
+        }
+      ]
+    ]
+  },
+  "rls_pickup_intake_v8_stage4_pulley_1": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "2.20:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_pickup_intake_v8_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 2.2
+    }
+  },
+  "rls_pickup_intake_v8_stage4_pulley_2": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "2.40:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_pickup_intake_v8_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 2.4
+    }
+  },
+  "rls_pickup_intake_v8_stage4_pulley_3": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "2.65:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_pickup_intake_v8_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 2.65
+    }
+  },
+  "rls_pickup_intake_v8_stage4_pulley_4": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "2.80:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_pickup_intake_v8_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 2.8
+    }
+  },
+  "rls_pickup_intake_v8_stage4_pulley_5": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "3.00:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_pickup_intake_v8_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 3
+    }
+  },
+  "rls_pickup_intake_v8_stage4_pulley_6": {
+    "information": {
+      "authors": "RLS Career Overhaul",
+      "name": "3.20:1 Drive Pulley",
+      "value": 500
+    },
+    "slotType": "rls_pickup_intake_v8_stage4_pulley",
+    "supercharger": {
+      "gearRatio": 3.2
+    }
+  }
+}

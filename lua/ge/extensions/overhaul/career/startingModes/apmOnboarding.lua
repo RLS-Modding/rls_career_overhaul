@@ -41,7 +41,7 @@ return {
     setup.tutorialVehicleId = veh:getID()
     core_vehicleBridge.requestValue(veh, function()
       core_vehicleBridge.executeAction(veh, "setGearboxMode", "realistic")
-      core_vehicleBridge.executeAction(veh, "setFreeze", true)
+      require('overhaul/lib/vehicles/freeze').setVehicle('overhaul_career_career', veh, true, {surviveReset = false})
       core_vehicleBridge.executeAction(veh, "setIgnitionLevel", 0)
       gameplay_walk.setWalkingMode(true, playerPose.pos, playerPose.rot, true)
       setup.vehicleSetupComplete = true

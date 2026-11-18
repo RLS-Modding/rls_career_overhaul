@@ -1,0 +1,74 @@
+{
+  "Motorsport": {
+    "version": 1,
+    "id": "pickup/rls_bedtime_loworbit_01",
+    "configId": "rls_bedtime_loworbit_01",
+    "model": "pickup",
+    "config": "/vehicles/pickup/rls_bedtime_loworbit_01.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "memphis_raines",
+    "driverName": "Jade Porter",
+    "builder": "Low Orbit Garage",
+    "classIds": [
+      "bedtime_bullies"
+    ],
+    "approvedClassIds": [
+      "bedtime_bullies"
+    ],
+    "leagueId": "street_kings",
+    "eligibilityStatus": "Assigned primary build class; approved from completed collection records and exact current config hash.",
+    "sourceConfigSHA256": "ee4fb4d1b5b394856ad9498e2e18af929c6a071d9f10e283a0d74b30ce431921",
+    "traits": {
+      "drivetrain": "RWD",
+      "transmission": "4-speed automatic",
+      "induction": "Supercharger",
+      "nitrous": true,
+      "years": {
+        "min": 1992,
+        "max": 1997
+      }
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x8_alt",
+          "part": "tire_F_235_60_15_alt_sport",
+          "typeHint": "sport"
+        },
+        {
+          "slot": "tire_R_15x14",
+          "part": "tire_R_31_14_15_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "pickup_rollcage",
+          "part": "pickup_rollcage"
+        },
+        {
+          "slot": "pickup_rollcage_bedbars",
+          "part": "pickup_rollcage_bedbars"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 9.8355004894775,
+      "runId": "BB-003",
+      "evidenceConfigSHA256": "ee4fb4d1b5b394856ad9498e2e18af929c6a071d9f10e283a0d74b30ce431921",
+      "configHashMatches": true,
+      "status": "recorded-pass-matching-config"
+    },
+    "provenance": {
+      "metadata": "outputs/bedtime/final-results.json",
+      "acceptedConfig": "outputs/bedtime/accepted/rls_bedtime_loworbit_01/rls_bedtime_loworbit_01.pc"
+    },
+    "sourcePack": "rls_bedtime_bullies"
+  }
+}

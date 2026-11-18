@@ -2418,40 +2418,40 @@
       "spotRotation":0
     },
     {
-      "color":[
+      "color": [
         1,
         1,
         1
       ],
-      "customFields":{
-        "names":{},
-        "tags":{},
-        "types":{},
-        "values":{}
+      "customFields": {
+        "names": {},
+        "tags": {},
+        "types": {},
+        "values": {}
       },
-      "isMultiSpot":false,
-      "name":"spot_dragTuningPits_1",
-      "oldId":2348,
-      "pos":[
-        -230.65979,
-        -209.9557343,
-        118.8393021
+      "isMultiSpot": false,
+      "name": "spot_dragTuningPits_1",
+      "oldId": 2348,
+      "pos": [
+        -215.06011962891,
+        -255.6755065918,
+        118.84999847412
       ],
-      "rot":[
+      "rot": [
         0,
         0,
         -0.2769097686,
         0.9608960152
       ],
-      "scl":[
+      "scl": [
         2.5,
         6,
         3
       ],
-      "spotAmount":1,
-      "spotDirection":"Left",
-      "spotOffset":0,
-      "spotRotation":0
+      "spotAmount": 1,
+      "spotDirection": "Left",
+      "spotOffset": 0,
+      "spotRotation": 0
     },
     {
       "color":[
@@ -5611,65 +5611,65 @@
       ]
     },
     {
-      "bot":{
-        "active":false,
-        "normal":[
+      "bot": {
+        "active": false,
+        "normal": [
           0,
           0,
           -1
         ],
-        "pos":[
+        "pos": [
           0,
           0,
           -10
         ]
       },
-      "color":[
+      "color": [
         1,
         1,
         1
       ],
-      "customFields":{
-        "names":{},
-        "tags":{},
-        "types":{},
-        "values":{}
+      "customFields": {
+        "names": {},
+        "tags": {},
+        "types": {},
+        "values": {}
       },
-      "name":"dragTuningPits_1",
-      "oldId":2258,
-      "top":{
-        "active":false,
-        "normal":[
+      "name": "dragTuningPits_1",
+      "oldId": 2258,
+      "top": {
+        "active": false,
+        "normal": [
           0,
           0,
           1
         ],
-        "pos":[
+        "pos": [
           0,
           0,
           10
         ]
       },
-      "vertices":[
+      "vertices": [
         [
-          -228.5771027,
-          -197.2728424,
-          118.942131
+          -215.0799083252,
+          -260.4435357666,
+          118.77967071533
         ],
         [
-          -245.2883911,
-          -206.9649811,
-          118.9224243
+          -197.89919018555,
+          -250.09860412598,
+          118.77380371094
         ],
         [
-          -214.5237427,
-          -260.347229,
-          118.7796707
+          -208.59129528809,
+          -231.53798583984,
+          118.77380371094
         ],
         [
-          -198.2724915,
-          -250.8577423,
-          118.7738037
+          -226.64420581055,
+          -240.50248535156,
+          118.77380371094
         ]
       ]
     },

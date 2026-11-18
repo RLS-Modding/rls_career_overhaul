@@ -13,6 +13,11 @@
 
     <div v-if="tuningLoaded" class="tuning-form" v-bng-ui-nav-scroll>
       <slot name="before-sliders" />
+      <HouseButton class="rls-fuel-entry" @click="lua.overhaul_career_maintenance_fuelSystem.openTuning()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16" /><path d="M3 21h12M4 10h10" /><path d="M14 8h2a2 2 0 0 1 2 2v6a1.5 1.5 0 0 0 3 0V8l-3-3" /></svg>
+        <span class="rls-fuel-entry-copy"><strong>Fuel &amp; Ignition</strong><small>Mixture, timing, boost and tank services</small></span>
+        <svg class="rls-fuel-entry-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+      </HouseButton>
       <div v-if="extraFeatures.length > 0" class="extra-features">
         <BngButton
           v-bng-disabled="!extraFeatures.find(f => f.mirrorsEnabled)"
@@ -623,6 +628,23 @@ defineExpose({
     }
   }
 }
+// RLS Fuel & Ignition entry row (house style: charcoal panel, orange accent, italic title).
+.rls-fuel-entry {
+  appearance: none; border: 0; margin: 0 0 0.75em; width: 100%;
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 0.8em;
+  padding: 0.75em 1em; border-radius: 0.5em; text-align: left; cursor: pointer;
+  font-family: "Overpass", var(--fnt-defs, sans-serif); color: #fff;
+  background: rgba(255, 255, 255, 0.06); box-shadow: inset 0 0 0 1px rgba(255, 102, 0, 0.45);
+  transition: background-color 0.12s;
+  svg { width: 1.5em; height: 1.5em; fill: none; stroke: var(--bng-orange-b400, #ff6600); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  &:hover { background: rgba(255, 255, 255, 0.1); }
+  &.focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(255, 102, 0, 0.7); }
+}
+.rls-fuel-entry-copy { display: grid; gap: 0.15em; min-width: 0;
+  strong { font-weight: 800; font-style: italic; font-size: 1.05em; }
+  small { color: rgba(255, 255, 255, 0.55); font-weight: 600; font-size: 0.8em; }
+}
+.rls-fuel-entry .rls-fuel-entry-chev { width: 1em; height: 1em; stroke-width: 2.4; }
 // ---- career only (house prop): Style Guide captions, translucent .line rows, slim scrollbar and a
 // hairline bottom bar. Tokens come from the career panel's .rls-house; the fallbacks are the same values.
 .innerTuningCard.house {

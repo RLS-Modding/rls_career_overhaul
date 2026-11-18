@@ -1,0 +1,57 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Configuration": "Isla Hale - Stu Leonard",
+  "Description": "Blacktop Engineering: bluebuck, 423 CUI 'Ultra-Thrust' V8 Engine, Stage 3 Supercharger + 350 kW nitrous, 4-Speed Automatic Drag Transmission. Healthy qualifying pass 8.892264 s; identical saved-build confirmation 8.892297 s. West Coast quarter mile. Two passes do not establish all-condition repeatability. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Author": "RLS / Blacktop Engineering",
+  "Config Type": "Custom",
+  "Years": {
+    "min": 1963,
+    "max": 1963
+  },
+  "Transmission": "Manual",
+  "Fuel Type": "Gasoline",
+  "Drivetrain": "RWD",
+  "Motorsport": {
+    "version": 1,
+    "id": "bluebuck/rls_stu_blacktop_03",
+    "configId": "rls_stu_blacktop_03",
+    "model": "bluebuck",
+    "config": "/vehicles/bluebuck/rls_stu_blacktop_03.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "sourcePack": "rls_stu_leonard",
+    "driverId": "marcus_cross",
+    "driverName": "Isla Hale",
+    "builder": "blacktop",
+    "classIds": [
+      "stu_leonard_850"
+    ],
+    "approvedClassIds": [
+      "stu_leonard_850"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "9ebdaf240585eeefba592710079c11286a7f88fee13d28b0e2eca36be5addd68",
+    "traits": {
+      "transmission": "Manual",
+      "drivetrain": "RWD",
+      "years": {
+        "min": 1963,
+        "max": 1963
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.8922974959573,
+      "runId": "STU-060",
+      "evidenceConfigSHA256": "3e3e727719f746b8c9460a609909e971d632e6a07be274386ac3d01d5d4d183d",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/stu-leonard/final-metadata.json",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "Configuration": "Vera Holt - No Prep",
+  "Description": "Burgundy Lounge. Tier 1 racer. Highway no-prep quarter-mile: 12.090s at 123.17mph. Iron Lantern Garage. Historical estimate; restored Stage 4 hardware requires current-build validation. Consolidated supercharger has one current quarter-mile clue pull; selector Drag Times remain historical.",
+  "Author": "Iron Lantern Garage",
+  "Name": "Vera Holt",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 10.23442494192,
+    "time_1_4": 12.089810481706,
+    "time_1_8": 8.0120311553062,
+    "time_330": 5.3846126421615,
+    "time_60": 2.1002539987803,
+    "velAt_1_4": 55.063255199101,
+    "velAt_1_8": 43.611019248133
+  },
+  "Reaction Time": 0.32807938626423,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-with-current-supercharger-clue-pull"
+}

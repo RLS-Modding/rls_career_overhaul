@@ -1,0 +1,15 @@
+{
+  "Configuration": "RLS Drag Tires - Competition Radial",
+  "Description": "15x10 rear rims with RLS drag tires. Automatic/converter starting setup; tune pressure and suspension for the vehicle.",
+  "Config Type": "Custom",
+  "Transmission": "Automatic",
+  "Drivetrain": "RWD",
+  "Value": 165000,
+  "Population": 0,
+  "defaultMultiPaintSetup": {
+    "name": "Drag",
+    "paint1": "Fire Red",
+    "paint2": "White",
+    "paint3": "Chrome"
+  }
+}

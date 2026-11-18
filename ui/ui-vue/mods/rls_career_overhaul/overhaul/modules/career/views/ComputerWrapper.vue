@@ -52,7 +52,7 @@ import { $translate } from "@/services/translation"
 
 const routeDataStore = useRouteDataStore()
 
-defineProps({
+const props = defineProps({
   title: {
     type: String,
     default: () => $translate.instant("ui.career.shared.myComputer"),
@@ -61,9 +61,15 @@ defineProps({
   wallpaperHalf: Boolean,
   back: Boolean,
   close: Boolean,
+  beforeNavigate: Function,
+  // Optional: return false for a trail entry that should not be shown.
+  breadcrumbFilter: Function,
 })
 
-const breadcrumbItems = computed(() => routeDataStore.breadcrumbs || [])
+const breadcrumbItems = computed(() => {
+  const items = routeDataStore.breadcrumbs || []
+  return props.breadcrumbFilter ? items.filter(props.breadcrumbFilter) : items
+})
 
 const elStatus = ref()
 const store = useTasksStore()
@@ -88,6 +94,7 @@ defineExpose({
 
 async function breadcrumbClick(item) {
   if (!item) return
+  if (props.beforeNavigate && !await props.beforeNavigate()) return
   if (item.closeAllMenus) {
     lua.overhaul_career_career.closeAllMenus()
     return
@@ -185,6 +192,10 @@ $money: #fde68a;
       opacity: 0.3;
       font-size: 0.8em;
       align-self: center;
+    }
+    // The page title below is the last entry; a separator after the trail would point at nothing.
+    .bng-path-last + .bng-path-icon {
+      display: none;
     }
   }
 }

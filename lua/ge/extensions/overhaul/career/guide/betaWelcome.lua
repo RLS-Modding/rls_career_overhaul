@@ -7,8 +7,8 @@ M.dependencies = {'overhaul_career_career'}
 -- A new id shows the splash again for everyone; a hotfix keeps the old id to stay silent.
 local currentCycle = {
   enabled = true,
-  id = "2.8.0_public",
-  folder = "2.8.0_public",
+  id = "2.8.1",
+  folder = "2.8.1",
 }
 
 local CONTENT_ROOT = "/ui/modules/whatsnew/"
@@ -110,6 +110,12 @@ end
 local function onCareerActivated()
   decided = false
   currentPlan = nil
+  -- A checked checkpoint return resumes the same session without another intro.
+  if require('overhaul/lib/career/checkpointSessions').isReturning() then
+    requested, decided = false, true
+    guihooks.trigger("RlsCareerIntroHide")
+    return
+  end
   requestSplash(false)
   -- The overlay can outlive this Lua owner when another career is loaded.
   -- Ask the mounted UI for its preference again; onMounted covers a new UI.

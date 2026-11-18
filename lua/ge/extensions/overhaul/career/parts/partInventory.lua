@@ -8,10 +8,14 @@
 -- RLS modifications: Copyright (C) RLS Modding
 -- Fork of stock lua/ge/extensions/career/modules/partInventory.lua (BeamNG 0.40).
 
+-- Owns installed and stored parts. Map: topology, conditions, transactions, UI, async saves, loading and hooks.
 local M = {}
 
 local jbeamIO = require('jbeam/io')
+local serializedTable = require('overhaul/lib/save/serializedTable')
 local saveStore = require('overhaul/lib/save/store')
+local partConditionCompatibility = require('overhaul/lib/parts/conditionCompatibility')
+local uiPublisher = require('overhaul/career/parts/partInventory/ui').newPublisher()
 
 -- SaveStore key over the file this module writes today (metadata only). It completes after
 -- the vehicle data arrives, through the async save extension of the same name.
@@ -92,6 +96,11 @@ local function removeDisconnectedParts(vehicle, removedPartId)
   initialRemovedNode.chosenPartName = ""
   initialRemovedNode.children = {}
   for partId, part in pairs(disconnectedParts) do
+    -- Freeze the last vehicle condition onto the inventory row before forgetting
+    -- the path. Otherwise a later live get can wipe the part's fuel blob.
+    if vehicle.partConditions and vehicle.partConditions[part.partPath] then
+      part.partCondition = deepcopy(vehicle.partConditions[part.partPath])
+    end
     vehicle.partConditions[part.partPath] = nil
     partsAfter[partId] = nil
   end
@@ -241,11 +250,18 @@ end
 -- TODO could even update once every time before removing a part
 local function updatePartConditionsInInventory(inventoryId)
   local vehicles = overhaul_career_garage_inventory.getVehicles()
+  local preserve = overhaul_career_garage_inventory.preserveRlsFuelEngineStates
   local function updatePart(part)
     local vehicle = part and vehicles[part.location]
     local condition = vehicle and vehicle.partConditions and vehicle.partConditions[part.partPath]
     if condition then
-      part.partCondition = condition
+      -- Never let a live get without fuel state erase a part's stored calibration.
+      if preserve and part.partCondition then
+        local merged = preserve({[part.partPath] = part.partCondition}, {[part.partPath] = deepcopy(condition)})
+        part.partCondition = merged[part.partPath]
+      else
+        part.partCondition = condition
+      end
     end
   end
 
@@ -340,10 +356,41 @@ local function addNewPartsToInventory(inventoryId)
   return newParts
 end
 
+local function storedSelectionsForSpawnedParts(newParts, installedParts)
+  local selectedBySlot, selectedIds, spawnedBySlot = {}, {}, {}
+  for _, part in ipairs(newParts) do spawnedBySlot[part.containingSlot] = part end
+  for _, selection in ipairs(installedParts or {}) do
+    if selection.fromInventory then
+      local partId = tonumber(selection.partId) or selection.partId
+      local stored = partInventory[partId]
+      local spawned = spawnedBySlot[selection.slotPath]
+      assert(stored and stored.location == 0 and not stored.enginePackageId and not selectedIds[partId]
+        and stored.name == selection.partName and spawned and stored.name == spawned.name
+        and stored.vehicleModel == spawned.vehicleModel,
+        string.format('Stored part %s no longer available for installation at %s (spawned %s)',
+          tostring(partId), tostring(selection.slotPath), tostring(spawned and spawned.name)))
+      selectedBySlot[selection.slotPath], selectedIds[partId] = stored, true
+    end
+  end
+  return selectedBySlot
+end
+
+-- Checkout validates against the actual respawn before it promotes the paid config or changes inventory.
+local function validateInstalledPartsForVehicle(inventoryId, installedParts)
+  assert(overhaul_career_garage_inventory.getVehicles()[inventoryId], "Personal vehicle no longer available")
+  local spawnedParts = generateAndGetPartsFromVehicle(inventoryId)
+  assert(#spawnedParts > 0, "Personal vehicle parts are not available yet")
+  storedSelectionsForSpawnedParts(spawnedParts, installedParts)
+  return true
+end
+
 -- Re-reads the parts from the currently spawned vehicle and reconciles them with the part inventory.
-local function updatePartsToMatchSpawnedVehicle(inventoryId)
+local function updatePartsToMatchSpawnedVehicle(inventoryId, installedParts, previousConditions)
   local newParts = generateAndGetPartsFromVehicle(inventoryId)
   local vehicle = overhaul_career_garage_inventory.getVehicles()[inventoryId]
+  local selectedBySlot = storedSelectionsForSpawnedParts(newParts, installedParts)
+  -- The committed preview already contains the replacement's condition at shared paths.
+  local removedConditions = previousConditions or (vehicle and vehicle.partConditions)
 
   -- Update the saved vehicle config
   local vehicleId = overhaul_career_garage_inventory.getVehicleIdFromInventoryId(inventoryId)
@@ -385,11 +432,32 @@ local function updatePartsToMatchSpawnedVehicle(inventoryId)
       end
       existing = candidate
     end
-    if existing then
+    local selected = selectedBySlot[newPart.containingSlot]
+    if selected then
+      if existing then
+        matchedSlots[existing.part.containingSlot] = true
+        local condition = removedConditions and removedConditions[existing.part.partPath]
+        if condition then existing.part.partCondition = deepcopy(condition) end
+        if existing.part.partPath ~= newPart.partPath and vehicle and vehicle.partConditions then
+          vehicle.partConditions[existing.part.partPath] = nil
+        end
+        existing.part.location = 0
+        if existing.part.enginePackageId then syncEnginePackageInstallCache(existing.part.enginePackageId) end
+        table.insert(changed, {old = existing.part, new = selected})
+      end
+      selected.location, selected.containingSlot, selected.partPath = inventoryId, newPart.containingSlot, newPart.partPath
+      if vehicle and vehicle.partConditions then
+        vehicle.partConditions[selected.partPath] = selected.partCondition
+      end
+      if vehicle and selected.rlsTireState then
+        vehicle.rlsTireStateByPartPath = vehicle.rlsTireStateByPartPath or {}
+        vehicle.rlsTireStateByPartPath[selected.partPath] = deepcopy(selected.rlsTireState)
+      end
+    elseif existing then
       matchedSlots[existing.part.containingSlot] = true
       if existing.part.name ~= newPart.name then
         table.insert(changed, {old = existing.part, new = newPart})
-        local condition = vehicle and vehicle.partConditions and vehicle.partConditions[existing.part.partPath]
+        local condition = removedConditions and removedConditions[existing.part.partPath]
         if condition then existing.part.partCondition = condition end
         existing.part.location = 0
         if existing.part.enginePackageId then syncEnginePackageInstallCache(existing.part.enginePackageId) end
@@ -403,6 +471,7 @@ local function updatePartsToMatchSpawnedVehicle(inventoryId)
         end
         addPartToInventory(newPart)
       else
+        -- Carry over the player-owned data, not the freshly generated content data.
         newPart.partCondition = existing.part.partCondition or newPart.partCondition
         newPart.tags = existing.part.tags or newPart.tags
         newPart.year = existing.part.year or vehicleYear
@@ -410,12 +479,14 @@ local function updatePartsToMatchSpawnedVehicle(inventoryId)
         newPart.primered = existing.part.primered
         newPart.enginePackageId = existing.part.enginePackageId
         newPart.mainPart = existing.part.mainPart
+        newPart.rlsTireState = existing.part.rlsTireState
         if existing.part.partPath ~= newPart.partPath and vehicle and vehicle.partConditions then
           vehicle.partConditions[existing.part.partPath] = nil
         end
         if vehicle and vehicle.partConditions and newPart.partCondition then
           vehicle.partConditions[newPart.partPath] = newPart.partCondition
         end
+        require("overhaul/lib/save/superchargerMigration").preserveOwnedSplit(existing.part, newPart)
         partInventory[existing.id] = newPart
       end
     else
@@ -432,7 +503,7 @@ local function updatePartsToMatchSpawnedVehicle(inventoryId)
   -- Anything that was in the vehicle but no longer exists in the tree was removed.
   for slot, info in pairs(oldPartsBySlot) do
     if not matchedSlots[slot] then
-      local condition = vehicle and vehicle.partConditions and vehicle.partConditions[info.part.partPath]
+      local condition = removedConditions and removedConditions[info.part.partPath]
       if condition then info.part.partCondition = condition end
       info.part.location = 0
       if info.part.enginePackageId then syncEnginePackageInstallCache(info.part.enginePackageId) end
@@ -539,32 +610,39 @@ local function sendUIData()
   local partList = {}
   local vehicles = overhaul_career_garage_inventory.getVehicles()
   local vehiclesUiData = {}
+  -- Cache only within this publication: labels stay fresh after a locale or catalog reload.
+  local modelLabels, partNames, partLabels = {}, {}, {}
 
   data.brokenVehicleInventoryIds = {}
   for inventoryId, vehicle in pairs(vehicles) do
     data.brokenVehicleInventoryIds[tostring(inventoryId)] = overhaul_career_repair_insurance.inventoryVehNeedsRepair(inventoryId)
 
-    local vehicleUiData = deepcopy(vehicle)
-    vehicleUiData.thumbnail = (overhaul_career_garage_inventory.getVehicleThumbnail(inventoryId) or "") .. "?" .. (vehicleUiData.dirtyDate or "")
-    vehicleUiData.niceName = core_locales.translateWithOrWithoutContext(vehicleUiData.niceName)
+    local vehicleUiData = {
+      thumbnail = (overhaul_career_garage_inventory.getVehicleThumbnail(inventoryId) or "") .. "?" .. (vehicle.dirtyDate or ""),
+      niceName = core_locales.translateWithOrWithoutContext(vehicle.niceName),
+    }
     vehiclesUiData[tostring(inventoryId)] = vehicleUiData
   end
 
   for partId, part in pairs(partInventory) do
     if not part.mainPart and not isHiddenInUI(part) then
-      local newPart = deepcopy(part)
-      newPart.id = partId
-      newPart.name = core_locales.translateWithOrWithoutContext(newPart.name)
-      if newPart.description and newPart.description.description then
-        newPart.description.description = core_vehicle_partmgmt.getTranslation(
-          newPart.description.description,
-          "ui.vehicleconfig.information.name."
-        )
-      else
-        newPart.description = {description = _tr("ui.career.partShopping.noDescriptionFound")}
+      local partName = part.name or ""
+      if not partNames[partName] then
+        partNames[partName] = core_locales.translateWithOrWithoutContext(partName)
       end
-      newPart.vehicleModelDisplayName = getVehicleModelDisplayName(newPart.vehicleModel)
-      newPart.finalValue = overhaul_career_market_valueCalculator.getPartResaleValue(newPart)
+      local description = part.description and part.description.description
+      if description and not partLabels[description] then
+        partLabels[description] = core_vehicle_partmgmt.getTranslation(description, "ui.vehicleconfig.information.name.")
+      end
+      local vehicleModel = part.vehicleModel or ""
+      if not modelLabels[vehicleModel] then modelLabels[vehicleModel] = getVehicleModelDisplayName(part.vehicleModel) end
+      local newPart = {id = partId, name = partNames[partName], location = part.location,
+        vehicleModel = part.vehicleModel, vehicleModelDisplayName = modelLabels[vehicleModel],
+        description = {description = description and partLabels[description] or _tr("ui.career.partShopping.noDescriptionFound")},
+        partCondition = {odometer = part.partCondition and part.partCondition.odometer},
+        missingFile = part.missingFile, repairCount = part.repairCount, primered = part.primered,
+        -- Valuation still sees every physical condition field, including tire wear and age.
+        finalValue = overhaul_career_market_valueCalculator.getPartResaleValue(part)}
       newPart.accessible = not (vehicles[newPart.location] and
           (vehicles[newPart.location].timeToAccess or
           data.brokenVehicleInventoryIds[tostring(newPart.location)] or
@@ -577,7 +655,7 @@ local function sendUIData()
   data.currentVehicle = currentVehicleInventoryIdForMenu
   data.vehicles = vehiclesUiData
 
-  guihooks.trigger('partInventoryData', data)
+  uiPublisher.publish(data)
 end
 
 -- Bound native decoding as well as Lua serialization; decoding one fleet-sized blob cannot yield.
@@ -734,6 +812,7 @@ end
 local function onExtensionLoaded()
   if not overhaul_career_career.isActive() then return false end
   serializedPartChunks = {}
+  uiPublisher.reset()
   local saveSlot, savePath = overhaul_career_saveSystem.getCurrentProfile()
   if not saveSlot then return end
 
@@ -741,8 +820,16 @@ local function onExtensionLoaded()
   local outdated = not saveInfo or saveInfo.version < minimumVersion
 
   local jsonData = savePath and jsonReadFile(savePath .. "/career/partInventory.json")
-  if jsonData and not outdated then
-    partInventory = deserialize(jsonData[1])
+  if not outdated and (jsonData ~= nil or savePath and FS:fileExists(savePath .. "/career/partInventory.json")) then
+    -- A missing file is a new inventory; an unreadable existing file must never become an empty save.
+    assert(type(jsonData) == "table" and type(jsonData[1]) == "string", "Unreadable part inventory")
+    local savedInventory = serializedTable.decode(jsonData[1])
+    assert(type(savedInventory) == "table", "Unreadable part inventory")
+    partInventory = savedInventory
+    -- A stored part keeps the condition of the car it came from, which may hold text gear keys from a JSON save.
+    for _, part in pairs(partInventory) do
+      partConditionCompatibility.sanitizeSynchroWearInConditions({part.partCondition})
+    end
 
     if saveInfo.version < overhaul_career_saveSystem.getSaveSystemVersion() then
       -- Sell all parts that are not in a vehicle
@@ -804,6 +891,7 @@ local originComputerId
 local originReturnRoute
 local menuRequestId = 0
 local function openMenu(_originComputerId, returnRoute)
+  uiPublisher.reset()
   menuRequestId = menuRequestId + 1
   partInventoryOpen = true
   originReturnRoute = type(returnRoute) == "table" and returnRoute.name and returnRoute or nil
@@ -829,7 +917,10 @@ local function requestUIData()
   if not partInventoryOpen then return end
   local requestId = menuRequestId
   local function publish()
-    if partInventoryOpen and requestId == menuRequestId then sendUIData() end
+    if partInventoryOpen and requestId == menuRequestId then
+      uiPublisher.reset()
+      sendUIData()
+    end
   end
   if currentVehicleInventoryIdForMenu then
     overhaul_career_garage_inventory.updatePartConditions(nil, currentVehicleInventoryIdForMenu, publish)
@@ -877,6 +968,7 @@ end
 local function partInventoryClosed()
   menuRequestId = menuRequestId + 1
   partInventoryOpen = false
+  uiPublisher.reset()
 end
 
 local function getSlotToPartIdMap()
@@ -910,6 +1002,7 @@ end
 
 M.generateAndGetPartsFromVehicle = generateAndGetPartsFromVehicle
 M.updatePartsToMatchSpawnedVehicle = updatePartsToMatchSpawnedVehicle
+M.validateInstalledPartsForVehicle = validateInstalledPartsForVehicle
 M.changedPartsCallback = changedPartsCallback
 M.initConditionsCallback = initConditionsCallback
 M.sendUIData = sendUIData

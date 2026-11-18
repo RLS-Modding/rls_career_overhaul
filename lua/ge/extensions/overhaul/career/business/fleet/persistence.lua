@@ -68,9 +68,14 @@ function part.new(inputs)
       for index, stored in ipairs(vehicles) do
         local spawnedId = inputs.getSpawnedVehicleId(businessId, stored.vehicleId)
         local object = spawnedId and getObjectByID(spawnedId)
-        if object then
+        local dyno = overhaul_career_parts_dyno_dynoSession
+        local override = dyno and dyno.getBusinessVehicleSaveOverride and dyno.getBusinessVehicleSaveOverride(businessId, stored.vehicleId)
+        if override then
+          for key, value in pairs(override) do task.snapshot[businessId][index][key] = deepcopy(value) end
+        elseif object then
           requests[#requests + 1] = {businessId = businessId, stored = stored, spawnedId = spawnedId,
-            object = object, snapshot = task.snapshot[businessId][index]}
+            object = object, snapshot = task.snapshot[businessId][index],
+            replacement = fleetState.dynoReplacements and fleetState.dynoReplacements[stored]}
         end
       end
     end
@@ -81,7 +86,12 @@ function part.new(inputs)
     if request.finished or not isCurrent(task) then return end
     request.finished = true
     local stored = request.stored
-    if inputs.getVehicleById(request.businessId, stored.vehicleId) == stored
+    local dyno = overhaul_career_parts_dyno_dynoSession
+    local override = dyno and dyno.getBusinessVehicleSaveOverride and dyno.getBusinessVehicleSaveOverride(request.businessId, stored.vehicleId)
+    if override then
+      for key, value in pairs(override) do request.snapshot[key] = deepcopy(value) end
+    elseif inputs.getVehicleById(request.businessId, stored.vehicleId) == stored
+      and (not fleetState.dynoReplacements or fleetState.dynoReplacements[stored] == request.replacement)
       and inputs.getSpawnedVehicleId(request.businessId, stored.vehicleId) == request.spawnedId
       and getObjectByID(request.spawnedId) == request.object
       and response and type(response.result) == 'table' then

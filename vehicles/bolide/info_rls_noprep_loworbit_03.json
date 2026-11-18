@@ -1,0 +1,26 @@
+{
+  "Configuration": "Lena Ortega - No Prep",
+  "Description": "Cream Horizon. Tier 3 racer. Highway no-prep quarter-mile: 10.652s at 131.78mph. Low Orbit Garage. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Low Orbit Garage",
+  "Name": "Lena Ortega",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 8.9308478011534,
+    "time_1_4": 10.652400078659,
+    "time_1_8": 6.9086758043207,
+    "time_330": 4.5325034526953,
+    "time_60": 1.589296675327,
+    "velAt_1_4": 58.90993479848,
+    "velAt_1_8": 47.121350841477
+  },
+  "Reaction Time": 0.26714954342271,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

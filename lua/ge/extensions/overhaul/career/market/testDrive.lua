@@ -8,6 +8,7 @@
 -- Runs one test drive from handing over the car until it is returned, abandoned or times out.
 
 local M = {}
+local vehicleFreeze = require('overhaul/lib/vehicles/freeze')
 
 -- Config ------------------------------------------------------------------------------------------
 
@@ -141,7 +142,7 @@ local function placeWalkerBesideVehicle(job, vehicle)
     gameplay_walk.getInVehicle(vehicle) -- hack
   end
   core_vehicleBridge.executeAction(vehicle, 'setIgnitionLevel', 0)
-  core_vehicleBridge.executeAction(vehicle, 'setFreeze', true)
+  vehicleFreeze.set('overhaul_career_market_testDrive', state.vehicleId, true)
 
   local vehicleData = map.objects[state.vehicleId]
   if not vehicleData then
@@ -174,6 +175,7 @@ local function finishReturnAfterFade(vehicle)
   ui_fadeScreen.stop(1)
   -- fade screen changes the ui state, so we need to change it back here
   extensions.hook('onOverhaulTestDriveEndedAfterFade')
+  vehicleFreeze.releaseOwner('overhaul_career_market_testDrive')
 end
 
 -- Ends the drive. Teleport (tp) returns the car to the dealership; otherwise it is despawned by its owner.
@@ -243,6 +245,7 @@ local function start(newVehicleId, info)
   setTestDriveInfo(info)
   state.vehicleId = newVehicleId
   local vehObj = getObjectByID(state.vehicleId)
+  setActive(true)
   gameplay_walk.getInVehicle(vehObj)
   state.startPosRot = {pos = vehObj:getPosition(), rot = quat(0, 0, 1, 0) * quat(vehObj:getRefNodeRotation())}
 
@@ -250,8 +253,7 @@ local function start(newVehicleId, info)
   core_vehicleBridge.executeAction(vehObj, 'createPartConditionSnapshot', "beforeTestDrive")
   core_vehicleBridge.executeAction(vehObj, 'setPartConditionResetSnapshotKey', "beforeTestDrive")
 
-  setActive(true)
-  core_vehicleBridge.executeAction(vehObj, 'setFreeze', false)
+  vehicleFreeze.releaseOwner('overhaul_career_market_testDrive')
   extensions.hook('onOverhaulTestDriveStarted')
   gameplay_rawPois.clear()
   overhaul_career_career.setAutosaveEnabled(false)

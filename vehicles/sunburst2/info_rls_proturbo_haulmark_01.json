@@ -1,0 +1,79 @@
+{
+  "isAuxiliary": true,
+  "Configuration": "Oliver Collins - Pro Turbo",
+  "Description": "Olive and cream 2.5L AWD sequential sedan. Driver seat only, full glazing and cage; independent Stage 4 race block and progressive gear-based turbo. First healthy sub-8-second pass freezes. ETs are historical estimates from before the shared-hardware migration; current-build performance requires fresh validation.",
+  "Config Type": "Custom",
+  "Transmission": "Sequential",
+  "Drivetrain": "AWD",
+  "Induction Type": "Turbo",
+  "Population": -1,
+  "Value": 85000,
+  "Motorsport": {
+    "version": 1,
+    "id": "sunburst2/rls_proturbo_haulmark_01",
+    "configId": "rls_proturbo_haulmark_01",
+    "model": "sunburst2",
+    "config": "/vehicles/sunburst2/rls_proturbo_haulmark_01.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "bo_darrow",
+    "driverName": "Oliver Collins",
+    "builder": "Haulmark Racing",
+    "classIds": [
+      "pro_turbo"
+    ],
+    "approvedClassIds": [
+      "pro_turbo"
+    ],
+    "leagueId": "pro_league",
+    "eligibilityStatus": "Roster approval retained during Stage 4 hardware rebuild. Recorded ETs are historical estimates pending current-build validation.",
+    "sourceConfigSHA256": "4406ca8bf409731a487946313828b62ec86b244d9afc091f7241e0b30138e448",
+    "traits": {
+      "drivetrain": "AWD",
+      "transmission": "6-speed sequential",
+      "induction": "Turbocharger",
+      "nitrous": false,
+      "years": null
+    },
+    "equipment": {
+      "evidence": "Completed collection records; selected parts below are not new live inspection.",
+      "selectedTires": [
+        {
+          "slot": "tire_F_15x8_alt",
+          "part": "tire_F_26_8_15_alt_drag",
+          "typeHint": "drag"
+        },
+        {
+          "slot": "tire_R_15x8_alt",
+          "part": "tire_R_26_8_15_alt_drag",
+          "typeHint": "drag"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "sunburst2_rollcage",
+          "part": "sunburst2_rollcage_race"
+        }
+      ],
+      "tireFriction": {
+        "frictionCoef": null,
+        "slidingFrictionCoef": null,
+        "source": null
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 6.7828134115327,
+      "runId": "PT-005",
+      "evidenceConfigSHA256": "8ae46de375590814c1f3ae22364ba5b12c2541544ec85891ff0dcc69b2255965",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/pro-turbo/final-results.json",
+      "acceptedConfig": "outputs/pro-turbo/accepted/rls_proturbo_haulmark_01/rls_proturbo_haulmark_01.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json"
+    },
+    "sourcePack": "rls_pro_turbo"
+  }
+}

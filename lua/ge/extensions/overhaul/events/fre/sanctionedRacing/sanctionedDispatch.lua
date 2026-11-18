@@ -11,28 +11,12 @@ function lib.create(ownerServices)
     return optional("overhaul_events_competitiveTrackFlow")
   end
 
-  --- Reference curb weight (kg) for converting sanctioned P/W bracket → HP numbers on the phone / UI.
-  local function playerRefWeightKgForOfferDisplay()
+  local function playerLivePowerWeightForOfferDisplay()
     local ar = overhaul_events_aiRacers
-    if ar and type(ar.getPlayerVehicleWeightKg) == "function" then
-      local w = ar.getPlayerVehicleWeightKg()
-      if type(w) == "number" and w > 0 then return w end
+    if ar and type(ar.getPlayerVehicleLivePowerWeight) == "function" then
+      return ar.getPlayerVehicleLivePowerWeight()
     end
-    return nil
-  end
-
-  --- Player HP for offer/staging readouts: live dyno-style sample when trusted, else sync (matches competitiveTrackFlow staging payload).
-  local function playerCatalogHpForOfferDisplay()
-    local ar = overhaul_events_aiRacers
-    if ar and type(ar.getPlayerVehiclePowerForStagingUi) == "function" then
-      local hp = select(1, ar.getPlayerVehiclePowerForStagingUi())
-      if type(hp) == "number" and hp > 0 then return math.floor(hp + 0.5) end
-    end
-    if ar and type(ar.getPlayerVehiclePower) == "function" then
-      local hp = ar.getPlayerVehiclePower()
-      if type(hp) == "number" and hp > 0 then return math.floor(hp + 0.5) end
-    end
-    return nil
+    return nil, nil
   end
 
   --- HP range implied by hp/kg class limits at the given curb weight (display only; bracket logic stays P/W).
@@ -47,7 +31,7 @@ function lib.create(ownerServices)
   --- Mutates offer table in-place with displayClassHpMin/Max for business board payloads (optional).
   function M.attachSanctionedOfferDisplayHp(offer)
     if type(offer) ~= "table" then return end
-    local wkg = playerRefWeightKgForOfferDisplay()
+    local _, wkg = playerLivePowerWeightForOfferDisplay()
     local dmin, dmax, dbg = displayHpBandFromPwBracket(offer.classPwMin, offer.classPwMax, wkg)
     offer.displayClassHpMin = dmin
     offer.displayClassHpMax = dmax
@@ -69,9 +53,8 @@ function lib.create(ownerServices)
         dispatchActive = true
       end
     end
-    local wkg = playerRefWeightKgForOfferDisplay()
+    local playerHp, wkg = playerLivePowerWeightForOfferDisplay()
     local dmin, dmax, dbg = displayHpBandFromPwBracket(offer.classPwMin, offer.classPwMax, wkg)
-    local playerHp = playerCatalogHpForOfferDisplay()
     return {
       id = offer.id,
       disciplineId = offer.disciplineId,
@@ -89,7 +72,7 @@ function lib.create(ownerServices)
       displayClassHpMin = dmin,
       displayClassHpMax = dmax,
       displayHpBasisWeightKg = dbg,
-      playerCatalogHp = playerHp,
+      playerCatalogHp = playerHp and math.floor(playerHp + 0.5) or nil,
       lapCount = tonumber(offer.lapCount) or 3,
       payoutFirst = offer.payoutFirst,
       payoutSecond = offer.payoutSecond,

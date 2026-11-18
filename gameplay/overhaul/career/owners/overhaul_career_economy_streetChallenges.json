@@ -1,0 +1,12 @@
+{
+  "id": "overhaul_career_economy_streetChallenges",
+  "order": 451,
+  "module": "overhaul/career/economy/streetChallenges",
+  "scopes": [],
+  "policyOnly": true,
+  "modulePolicy": {
+    "privateFolders": [
+      "overhaul/career/economy/streetChallenges/"
+    ]
+  }
+}

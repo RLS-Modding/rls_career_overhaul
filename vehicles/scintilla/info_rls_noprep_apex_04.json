@@ -1,0 +1,26 @@
+{
+  "Configuration": "Theo Soren - No Prep",
+  "Description": "Pearl Meridian. Tier 4 boss. Highway no-prep quarter-mile: 8.733s at 192.94mph. Apex Yard. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Apex Yard",
+  "Name": "Theo Soren",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": true
+  },
+  "Drag Times": {
+    "time_1000": 7.5448877427543,
+    "time_1_4": 8.732839877667,
+    "time_1_8": 6.0824294922093,
+    "time_330": 4.2419307607862,
+    "time_60": 1.7170458725058,
+    "velAt_1_4": 86.249935360241,
+    "velAt_1_8": 64.025502217515
+  },
+  "Reaction Time": 0.27991577397268,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

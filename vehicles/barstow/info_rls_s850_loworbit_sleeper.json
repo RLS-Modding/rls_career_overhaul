@@ -1,0 +1,344 @@
+{
+  "Population": -1,
+  "isAuxiliary": true,
+  "Configuration": "Connor Campbell - Super Stick",
+  "Description": "Driver: Connor Campbell. Builder: Low Orbit Garage. Current inspected build: 5-speed H-pattern manual; RWD; Supercharger; nitrous Yes. ETs are historical estimates; current-build qualification is separately recorded from an assessor-accepted quarter-mile result (8.5-9.25 s original class window).",
+  "Config Type": "Custom",
+  "Transmission": "Manual",
+  "Drivetrain": "RWD",
+  "Years": {
+    "min": 1971,
+    "max": 1971
+  },
+  "Value": 65000,
+  "Induction Type": "Supercharger + N2O",
+  "Motorsport": {
+    "version": 1,
+    "id": "barstow/rls_s850_loworbit_sleeper",
+    "configId": "rls_s850_loworbit_sleeper",
+    "model": "barstow",
+    "config": "/vehicles/barstow/rls_s850_loworbit_sleeper.pc",
+    "requiredMod": "rls-career-overhaul-dev",
+    "driverId": "letty_ortiz",
+    "driverName": "Connor Campbell",
+    "builder": "Low Orbit Garage",
+    "classIds": [
+      "super_stick"
+    ],
+    "approvedClassIds": [
+      "super_stick"
+    ],
+    "leagueId": "slra",
+    "eligibilityStatus": "Roster approval retained. Current build has separate assessor-accepted quarter-mile qualification evidence; recorded historical ETs remain historical estimates.",
+    "sourceConfigSHA256": "5b8486e313756eefc5ef24c4842b226e1635578eebbec8950a8ded01607d1e19",
+    "traits": {
+      "configId": "barstow/rls_s850_loworbit_sleeper",
+      "diesel": false,
+      "drivetrain": "RWD",
+      "manual": true,
+      "model": "barstow",
+      "nitrous": true,
+      "rollCage": true,
+      "sportTires": false,
+      "supercharger": true,
+      "tireFriction": {
+        "complete": true,
+        "source": "compiled-tread-nodes",
+        "wheels": [
+          {
+            "frictionCoefMax": 1.3,
+            "frictionCoefMin": 1.3,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1.26,
+            "slidingFrictionCoefMin": 1.26,
+            "source": "compiled-tread-nodes",
+            "wheel": "FL"
+          },
+          {
+            "frictionCoefMax": 1.3,
+            "frictionCoefMin": 1.3,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1.26,
+            "slidingFrictionCoefMin": 1.26,
+            "source": "compiled-tread-nodes",
+            "wheel": "FR"
+          },
+          {
+            "frictionCoefMax": 1.3,
+            "frictionCoefMin": 1.3,
+            "nodeCount": 40,
+            "slidingFrictionCoefMax": 1.3,
+            "slidingFrictionCoefMin": 1.3,
+            "source": "compiled-tread-nodes",
+            "wheel": "RL"
+          },
+          {
+            "frictionCoefMax": 1.3,
+            "frictionCoefMin": 1.3,
+            "nodeCount": 40,
+            "slidingFrictionCoefMax": 1.3,
+            "slidingFrictionCoefMin": 1.3,
+            "source": "compiled-tread-nodes",
+            "wheel": "RR"
+          }
+        ]
+      },
+      "tireFrictionCoefMax": 1.3,
+      "tireType": "drag",
+      "tireTypes": [
+        "drag"
+      ],
+      "tires": [
+        {
+          "part": "tire_f_26_4_15_drag",
+          "slot": "/barstow_body/barstow_subframe_f/barstow_suspension_f/wheel_f_5/tire_f_15x4/tire_f_26_4_15_drag",
+          "source": "installed-part-label",
+          "type": "drag"
+        },
+        {
+          "part": "tire_r_26_10_15_drag",
+          "slot": "/barstow_body/barstow_suspension_r/wheel_r_5/tire_r_15x10/tire_r_26_10_15_drag",
+          "source": "installed-part-label",
+          "type": "drag"
+        }
+      ],
+      "truck": false,
+      "turbocharger": false,
+      "year": 1971,
+      "transmission": "5-speed H-pattern manual",
+      "induction": "Supercharger",
+      "years": {
+        "min": 1971,
+        "max": 1971
+      }
+    },
+    "equipment": {
+      "evidence": "Hash-matched live class inspection and installed-parts tree; no new timing approval is asserted.",
+      "selectedTires": [
+        {
+          "slot": "/barstow_body/barstow_subframe_f/barstow_suspension_f/wheel_f_5/tire_f_15x4/tire_f_26_4_15_drag",
+          "part": "tire_f_26_4_15_drag",
+          "typeHint": "drag",
+          "source": "installed-part-label"
+        },
+        {
+          "slot": "/barstow_body/barstow_suspension_r/wheel_r_5/tire_r_15x10/tire_r_26_10_15_drag",
+          "part": "tire_r_26_10_15_drag",
+          "typeHint": "drag",
+          "source": "installed-part-label"
+        }
+      ],
+      "selectedRollCageParts": [
+        {
+          "slot": "/barstow_body/barstow_rollcage/",
+          "part": "barstow_rollcage"
+        }
+      ],
+      "rollCage": true,
+      "tireFriction": {
+        "complete": true,
+        "source": "compiled-tread-nodes",
+        "wheels": [
+          {
+            "frictionCoefMax": 1.3,
+            "frictionCoefMin": 1.3,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1.26,
+            "slidingFrictionCoefMin": 1.26,
+            "source": "compiled-tread-nodes",
+            "wheel": "FL"
+          },
+          {
+            "frictionCoefMax": 1.3,
+            "frictionCoefMin": 1.3,
+            "nodeCount": 32,
+            "slidingFrictionCoefMax": 1.26,
+            "slidingFrictionCoefMin": 1.26,
+            "source": "compiled-tread-nodes",
+            "wheel": "FR"
+          },
+          {
+            "frictionCoefMax": 1.3,
+            "frictionCoefMin": 1.3,
+            "nodeCount": 40,
+            "slidingFrictionCoefMax": 1.3,
+            "slidingFrictionCoefMin": 1.3,
+            "source": "compiled-tread-nodes",
+            "wheel": "RL"
+          },
+          {
+            "frictionCoefMax": 1.3,
+            "frictionCoefMin": 1.3,
+            "nodeCount": 40,
+            "slidingFrictionCoefMax": 1.3,
+            "slidingFrictionCoefMin": 1.3,
+            "source": "compiled-tread-nodes",
+            "wheel": "RR"
+          }
+        ]
+      },
+      "nitrous": {
+        "addedPower": 100,
+        "cutInRPM": 3500,
+        "minimumGear": 2,
+        "purgeValves_nodes": [
+          106,
+          111
+        ],
+        "addedPowerUnits": "kW"
+      }
+    },
+    "performance": {
+      "quarterMileSeconds": 8.718248921279,
+      "runId": "S850-037",
+      "evidenceConfigSHA256": "de27ac8e8a6e2401092374a1c522f25e55ce246507e7ac04a433f584b7e4e222",
+      "configHashMatches": false,
+      "status": "historical-estimate",
+      "rosterApprovalRetained": true,
+      "requiresRetiming": true
+    },
+    "provenance": {
+      "metadata": "outputs/stick850/final-results.json",
+      "acceptedConfig": "outputs/stick850/accepted/rls_s850_loworbit_sleeper/rls_s850_loworbit_sleeper.pc",
+      "sharedHardwareMigration": "docs/vehicles/shared-drag-hardware.json",
+      "indexRecoveryMetadata": {
+        "sourceProofFile": "outputs/drag-rebuild-20261028/continuation-ledger/attempts/38bcd3664cfa08d587b816393271cfe02b314d3ee5157db520907581556faea3.json",
+        "sourceProofSHA256": "38bcd3664cfa08d587b816393271cfe02b314d3ee5157db520907581556faea3",
+        "attemptId": "barstow__rls_s850_loworbit_sleeper-L1-P1-index-recovery-06-0f891f94",
+        "configSHA256": "5b8486e313756eefc5ef24c4842b226e1635578eebbec8950a8ded01607d1e19",
+        "evidenceScope": "Hardware declarations only; historical ET receipts and class approvals retained. PC identity is guarded; native/VFS dependency freshness and performance are not certified here.",
+        "replacementOf": "moonhawk/rls_s850_loworbit_sleeper"
+      }
+    },
+    "sourcePack": "rls_stickshift850",
+    "currentQualification": {
+      "schema": "rls.index-recovery.current-qualification/1",
+      "status": "assessor-accepted",
+      "originalKey": "moonhawk/rls_s850_loworbit_sleeper",
+      "testedKey": "barstow/rls_s850_loworbit_sleeper",
+      "configSHA256": "5b8486e313756eefc5ef24c4842b226e1635578eebbec8950a8ded01607d1e19",
+      "quarterMileSeconds": 9.081077226847,
+      "attemptId": "barstow__rls_s850_loworbit_sleeper-L1-P1-index-recovery-06-0f891f94",
+      "capturedAt": "2026-10-28T19:23:31Z",
+      "classId": "super_stick",
+      "lower": 8.5,
+      "upper": 9.25,
+      "classProof": {
+        "classEntryAllowed": true,
+        "classId": "super_stick",
+        "classResultAllowed": true,
+        "leagueId": "slra",
+        "lower": 8.5,
+        "nitrousAddedPower": 100,
+        "nitrousMinimumGear": 2,
+        "traits": {
+          "configId": "barstow/rls_s850_loworbit_sleeper",
+          "diesel": false,
+          "drivetrain": "RWD",
+          "manual": true,
+          "model": "barstow",
+          "nitrous": true,
+          "rollCage": true,
+          "sportTires": false,
+          "supercharger": true,
+          "tireFriction": {
+            "complete": true,
+            "source": "compiled-tread-nodes",
+            "wheels": [
+              {
+                "frictionCoefMax": 1.3,
+                "frictionCoefMin": 1.3,
+                "nodeCount": 32,
+                "slidingFrictionCoefMax": 1.26,
+                "slidingFrictionCoefMin": 1.26,
+                "source": "compiled-tread-nodes",
+                "wheel": "FL"
+              },
+              {
+                "frictionCoefMax": 1.3,
+                "frictionCoefMin": 1.3,
+                "nodeCount": 32,
+                "slidingFrictionCoefMax": 1.26,
+                "slidingFrictionCoefMin": 1.26,
+                "source": "compiled-tread-nodes",
+                "wheel": "FR"
+              },
+              {
+                "frictionCoefMax": 1.3,
+                "frictionCoefMin": 1.3,
+                "nodeCount": 40,
+                "slidingFrictionCoefMax": 1.3,
+                "slidingFrictionCoefMin": 1.3,
+                "source": "compiled-tread-nodes",
+                "wheel": "RL"
+              },
+              {
+                "frictionCoefMax": 1.3,
+                "frictionCoefMin": 1.3,
+                "nodeCount": 40,
+                "slidingFrictionCoefMax": 1.3,
+                "slidingFrictionCoefMin": 1.3,
+                "source": "compiled-tread-nodes",
+                "wheel": "RR"
+              }
+            ]
+          },
+          "tireFrictionCoefMax": 1.3,
+          "tireType": "drag",
+          "tireTypes": [
+            "drag"
+          ],
+          "tires": [
+            {
+              "part": "tire_f_26_4_15_drag",
+              "slot": "/barstow_body/barstow_subframe_f/barstow_suspension_f/wheel_f_5/tire_f_15x4/tire_f_26_4_15_drag",
+              "source": "installed-part-label",
+              "type": "drag"
+            },
+            {
+              "part": "tire_r_26_10_15_drag",
+              "slot": "/barstow_body/barstow_suspension_r/wheel_r_5/tire_r_15x10/tire_r_26_10_15_drag",
+              "source": "installed-part-label",
+              "type": "drag"
+            }
+          ],
+          "truck": false,
+          "turbocharger": false,
+          "year": 1971
+        },
+        "upper": 9.25
+      },
+      "health": {
+        "status": "no-observed-faults",
+        "engineFaults": [],
+        "maxTurboPsi": null,
+        "capViolation": false,
+        "telemetryDropped": 0
+      },
+      "physical": {
+        "issues": [],
+        "newBroken": [],
+        "deformed": [],
+        "partDamage": [],
+        "triggered": [],
+        "damageDelta": 3.392942429,
+        "scope": "Sparse getBeamDeformation delta >0.01, broken beam IDs, tires, part damage and native trigger changes. beamstate.damage/energy delta is reported, not treated as damage proof."
+      },
+      "source": {
+        "status": "current-in-covered-sources",
+        "scope": "Saved repository source list and compiled chosen parts only; native/game/VFS dependencies and runtime cache are not certified. Additional current inventory is not evidence of historical changes."
+      },
+      "evidence": {
+        "assessmentFile": "outputs/drag-rebuild-20261028/index-recovery/latest.json",
+        "assessmentSHA256": "03d04ab7739919d0e455f3afaf7e9e794f200f4698433f6cbffa1f7acd663b89",
+        "rawFile": "outputs/drag-rebuild-20261028/continuation-ledger/attempts/38bcd3664cfa08d587b816393271cfe02b314d3ee5157db520907581556faea3.json",
+        "rawSHA256": "38bcd3664cfa08d587b816393271cfe02b314d3ee5157db520907581556faea3",
+        "ledgerFile": "outputs/drag-rebuild-20261028/continuation-ledger/latest.json",
+        "ledgerSHA256": "a05efb2449df6019312ea0c14ae689f46be53147fa47dd7024f788869686f80b"
+      },
+      "scope": "One assessor-accepted current-build quarter-mile result in the original index through index+0.75 window. Health and source coverage retain the assessor/ledger scope; no repeatability guarantee or complete native/VFS certification. Historical performance and approval remain separate."
+    }
+  },
+  "Weight": 1767.207457,
+  "Year": 1971
+}

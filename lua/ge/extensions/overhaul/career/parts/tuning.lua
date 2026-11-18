@@ -30,64 +30,22 @@ local switchingVehicle = false
 local savedTuneApplyInProgress = false
 local returnRoute = nil
 local sessionMode = nil
+local function getDynoAccess()
+  local session = sessionMode == "dyno" and capabilities.peek("businessSession")
+  return session and session.getVehicleAccess and session.getVehicleAccess(inventoryId) or nil
+end
+local function getInventory()
+  local access = getDynoAccess()
+  return access and access.inventory or overhaul_career_garage_inventory
+end
 
 local SAVED_TUNES_ROOT = "settings/RLS/"
 local SAVED_TUNES_FILE = SAVED_TUNES_ROOT .. "savedTunes.json"
 local savedTunesState
 
-local prices = {
-  Suspension = {
-    Front = {
-      price = 100
-    },
-    Rear = {
-      price = 100
-    }
-  },
-
-  Wheels = {
-    Front = {
-      price = 100
-    },
-    Rear = {
-      price = 100
-    }
-  },
-
-  Transmission = {
-    price = 500,
-    default = {
-      default = true,
-      variables = {
-        ["$gear_1"] = { price = 100},
-        ["$gear_2"] = { price = 100},
-        ["$gear_3"] = { price = 100},
-        ["$gear_4"] = { price = 100},
-        ["$gear_5"] = { price = 100},
-        ["$gear_6"] = { price = 100},
-        ["$gear_R"] = { price = 100},
-      }
-    }
-  },
-
-  ["Wheel Alignment"] = {
-    Front = {
-      price = 100
-    },
-    Rear = {
-      price = 100
-    }
-  },
-
-  Chassis = {
-    price = 100
-  },
-
-  default = {
-    default = true,
-    price = 200
-  }
-}
+-- Calibration edits (engine/trans/suspension/tires) stay free by design for Fuels 2.0.
+-- Installed hardware still costs money through part shopping; do not reintroduce
+-- a local price table here unless paid tuning is intentionally restored.
 
 local shoppingCartBlackList = {
   {name = "$$ffbstrength", category = "Chassis"},
@@ -117,41 +75,19 @@ local function isOnBlackList(varData)
 end
 
 local function getPrice(category, subCategory, varName)
-  if prices[category] then
-    if prices[category][subCategory] then
-      if prices[category][subCategory].variables and prices[category][subCategory].variables[varName] then
-        return prices[category][subCategory].variables[varName].price or 0
-      end
-    elseif prices[category].default then
-      if prices[category].default.variables and prices[category].default.variables[varName] then
-        return prices[category].default.variables[varName].price or 0
-      end
-    end
-  elseif prices.default then
-    if prices.default.variables and prices.default.variables[varName] then
-      return prices.default.variables[varName].price or 0
-    end
-  end
-  return 0
+  return 0 -- Weepy calibration is free; hardware is billed separately.
 end
 
 local function getPriceCategory(category)
-  if prices[category] then return prices[category].price or 0 end
-  return prices.default.price
+  return 0 -- Weepy calibration is free; hardware is billed separately.
 end
 
 local function getPriceSubCategory(category, subCategory)
-  if prices[category] then
-    if prices[category][subCategory] then
-      return prices[category][subCategory].price or 0
-    end
-    return prices[category].default and prices[category].default.price or 0
-  end
-  return 0
+  return 0 -- Weepy calibration is free; hardware is billed separately.
 end
 
 local function setupTether()
-  local vehId = overhaul_career_garage_inventory.getVehicleIdFromInventoryId(inventoryId)
+  local vehId = getInventory().getVehicleIdFromInventoryId(inventoryId)
   local veh = vehId and getObjectByID(vehId) or nil
   local computer = originComputerId and overhaul_world_facilities.getFacility("computer", originComputerId) or nil
   if not veh or not computer then return false end
@@ -176,32 +112,39 @@ local function applyShopping()
   if not shoppingCart or not inventoryId then
     return {success = false, reason = "no_active_tuning"}
   end
-  if not overhaul_career_logistics_general.validateLogisticsContainers(inventoryId) then return {success = false, reason = 'loaded_cargo_incompatible'} end
+  local access = getDynoAccess()
+  if not access and not overhaul_career_logistics_general.validateLogisticsContainers(inventoryId) then return {success = false, reason = 'loaded_cargo_incompatible'} end
   if switchingVehicle or savedTuneApplyInProgress then
     return {success = false, reason = "tuning_operation_in_progress"}
   end
 
   local total = tonumber(shoppingCart.total) or 0
-  if total > 0 and not overhaul_career_economy_payment.canPay({money = {amount = total, canBeNegative = false}}) then
+  if total > 0 and ((access and not access.canPay(total, {inventoryId = inventoryId})) or
+      (not access and not overhaul_career_economy_payment.canPay({money = {amount = total, canBeNegative = false}}))) then
     guihooks.trigger('toastrMsg', {type = "error", title = "Not enough money", msg = "You cannot afford this tune."})
     return {success = false, reason = "insufficient_funds"}
   end
 
-  overhaul_career_parts_vehiclePerformance.invalidateCertification(inventoryId)
-  overhaul_career_garage_inventory.setVehicleDirty(inventoryId)
+  if not access then overhaul_career_parts_vehiclePerformance.invalidateCertification(inventoryId) end
+  getInventory().setVehicleDirty(inventoryId)
   -- The cart is paid once; a repeated or late apply finds no cart.
-  shoppingCart = nil
   local checkout = require("overhaul/lib/checkout/operations")
   local operation = checkout.begin("tuning", {amount = total, target = {inventoryId = inventoryId}})
-  checkout.settle(operation, function()
+  local paid = checkout.settle(operation, function()
+    if access then
+      if total <= 0 then return true end
+      return access.pay(total, require('overhaul/lib/finance/metadata').tag({label = 'Dyno tuning'}, 'purchase'), {inventoryId = inventoryId})
+    end
     checkout.money.execute(overhaul_career_economy_playerAttributes.addAttributes, {money=-total}, {category = "purchase", finance = {vehicleId = inventoryId}, tags={"tuning", "buying"}, label = "ui.career.tuning.tunedVehicle"})
   end)
+  if paid == false then return {success = false, reason = "payment_failed"} end
+  shoppingCart = nil
 
   -- The live inventory config is also the dyno's temporary hub config. Mark
   -- the current variables as purchased before autosave starts so the dyno save
   -- view persists the paid tune, while unpaid previews continue to use the
   -- session baseline.
-  local vehicleData = overhaul_career_garage_inventory.getVehicles()[inventoryId]
+  local vehicleData = getInventory().getVehicles()[inventoryId]
   local purchasedVars = vehicleData and vehicleData.config and deepcopy(vehicleData.config.vars or {}) or {}
   vehicleVarsBefore = deepcopy(purchasedVars)
   changedVars = {}
@@ -372,7 +315,7 @@ local function filterDynoTuningVars(variables, vehData)
 end
 
 local function getVehicleTuningContext()
-  local vehId = overhaul_career_garage_inventory.getVehicleIdFromInventoryId(inventoryId)
+  local vehId = getInventory().getVehicleIdFromInventoryId(inventoryId)
   if not vehId then return end
   local vehData = core_vehicle_manager.getVehicleData(vehId)
   if not vehData then return end
@@ -425,7 +368,7 @@ local function isValueInRawRange(value, varData)
 end
 
 local function getActiveModelKey()
-  local vehicleInfo = inventoryId and overhaul_career_garage_inventory.getVehicles()[inventoryId] or nil
+  local vehicleInfo = inventoryId and getInventory().getVehicles()[inventoryId] or nil
   if not vehicleInfo then return nil end
   local config = vehicleInfo.config or {}
   return savedTunesLibrary.normalizeModelKey(
@@ -518,6 +461,21 @@ local function saveTune(name, snapshot, replaceExisting)
   return result
 end
 
+local function renameSavedTune(tuneId, name)
+  if savedTuneApplyInProgress or switchingVehicle then
+    return {success = false, reason = "tuning_operation_in_progress"}
+  end
+  local modelKey = getActiveModelKey()
+  if not modelKey then return {success = false, reason = "no_active_tuning_session"} end
+  local state = getSavedTunesState()
+  if state.readOnly then return {success = false, reason = state.error} end
+  local candidate, result = savedTunesLibrary.renameTune(state.data, modelKey, tostring(tuneId or ""), name)
+  if not result.success then return result end
+  if not commitSavedTunes(candidate) then return {success = false, reason = "write_failed"} end
+  result.tunes = savedTunesLibrary.listTunes(candidate, modelKey)
+  return result
+end
+
 local function deleteSavedTune(tuneId)
   if savedTuneApplyInProgress or switchingVehicle then
     return {success = false, reason = "tuning_operation_in_progress"}
@@ -554,8 +512,7 @@ for _, reason in pairs(BLOCKED) do BLOCKED_MESSAGE_BY_LABEL[reason.label] = reas
 
 -- start() refuses the same broken-part case.
 local function getBlockedReason(candidateId, vehicleInfo)
-  if overhaul_career_market_valueCalculator.getNumberOfBrokenParts(vehicleInfo.partConditions) > 0
-      or overhaul_career_repair_insurance.inventoryVehNeedsRepair(candidateId) then
+  if overhaul_career_repair_insurance.inventoryVehNeedsRepair(candidateId) then
     return BLOCKED.needsRepair.label
   end
   if vehicleInfo.owned == false then return BLOCKED.loaned.label end
@@ -586,7 +543,7 @@ local function getTuningSessionData()
   if not data.isTuningTent then return data end
 
   for _, candidateId in ipairs(getTuneableVehicleIds()) do
-    local vehicleInfo = overhaul_career_garage_inventory.getVehicles()[candidateId]
+    local vehicleInfo = getInventory().getVehicles()[candidateId]
     if vehicleInfo then
       local niceName = vehicleInfo.niceName
       niceName = core_locales.translateWithOrWithoutContext(niceName)
@@ -612,7 +569,7 @@ local function prepareVehicleSession(targetInventoryId)
   local previousInventoryId = inventoryId
   inventoryId = targetInventoryId
   local tuningData = getTuningData()
-  local vehicleInfo = overhaul_career_garage_inventory.getVehicles()[inventoryId]
+  local vehicleInfo = getInventory().getVehicles()[inventoryId]
   if not tuningData or not vehicleInfo then
     inventoryId = previousInventoryId
     return false
@@ -825,9 +782,9 @@ local function applySavedTune(tuneId)
     sessionMode == "dyno",
     function(varName, varData) return isDynoVariableAllowed(varName, varData, effectMap) end)
 
-  local vehId = overhaul_career_garage_inventory.getVehicleIdFromInventoryId(inventoryId)
+  local vehId = getInventory().getVehicleIdFromInventoryId(inventoryId)
   local oldVehicle = vehId and getObjectByID(vehId) or nil
-  local vehicleInfo = overhaul_career_garage_inventory.getVehicles()[inventoryId]
+  local vehicleInfo = getInventory().getVehicles()[inventoryId]
   if not oldVehicle or not vehicleInfo or not vehicleInfo.config then
     return {success = false, reason = "vehicle_unavailable"}
   end
@@ -858,11 +815,11 @@ local function applySavedTune(tuneId)
       return
     end
     if sessionMode ~= "dyno" then overhaul_career_repair_damageManager.saveDamageState(inventoryId) end
-    local currentVehicleId = overhaul_career_garage_inventory.getVehicleIdFromInventoryId(inventoryId)
+    local currentVehicleId = getInventory().getVehicleIdFromInventoryId(inventoryId)
     local currentVehicle = currentVehicleId and getObjectByID(currentVehicleId) or nil
     if currentVehicle then
       spawn.safeTeleport(currentVehicle, transform.pos, transform.rot, nil, nil, nil, nil, false)
-      core_vehicleBridge.executeAction(currentVehicle, "setFreeze", true)
+      require('overhaul/lib/vehicles/freeze').setVehicle('overhaul_career_parts_tuning', currentVehicle, true)
     end
     changedVars = getChangedVars(application.targetVars, vehicleVarsBefore)
     createShoppingCart()
@@ -877,13 +834,13 @@ local function applySavedTune(tuneId)
     })
   end
 
-  local spawnOk, spawnedVehicle = pcall(
-    overhaul_career_garage_inventory.spawnVehicle, inventoryId, 2, finishSuccess, nil, nil,
+  local spawnOk, spawnAccepted = pcall(
+    getInventory().spawnVehicle, inventoryId, 2, finishSuccess, nil, nil,
     {prepareReplacement = function()
       if sessionMode ~= "dyno" then overhaul_career_repair_damageManager.clearDamageState(inventoryId) end
       return true
     end})
-  if not completionSent and (not spawnOk or not spawnedVehicle) then
+  if not completionSent and (not spawnOk or not spawnAccepted) then
     completionSent = true
     vehicleInfo.config.vars = previousConfigVars
     changedVars = previousChangedVars
@@ -900,8 +857,8 @@ local function applySavedTune(tuneId)
     return {success = false, reason = "vehicle_respawn_failed"}
   end
 
-  spawn.safeTeleport(spawnedVehicle, transform.pos, transform.rot, nil, nil, nil, nil, false)
-  core_vehicleBridge.executeAction(spawnedVehicle, "setFreeze", true)
+  -- Damage capture can defer spawning and return true. Completion owns placement
+  -- for both immediate and deferred spawns once the inventory binding is ready.
   return {success = true, pending = true}
 end
 
@@ -917,9 +874,9 @@ local function startActual(_originComputerId, _returnRoute)
   extensions.ui_router.navigate("overhaul.computer.tuning")
   extensions.hook("onOverhaulTuningStarted")
   createShoppingCart()
-  local veh = getObjectByID(overhaul_career_garage_inventory.getVehicleIdFromInventoryId(inventoryId))
+  local veh = getObjectByID(getInventory().getVehicleIdFromInventoryId(inventoryId))
   if veh then
-    core_vehicleBridge.executeAction(veh, 'setFreeze', true)
+    require('overhaul/lib/vehicles/freeze').setVehicle('overhaul_career_parts_tuning', veh, true)
   end
   if originComputerId then
     setupTether()
@@ -930,13 +887,18 @@ end
 local function start(_inventoryId, _originComputerId, _returnRoute, options)
   local requestedMode = type(options) == "table" and options.mode or nil
   sessionMode = requestedMode
-  local targetInventoryId = _inventoryId or overhaul_career_garage_inventory.getInventoryIdsInClosestGarage(true)
-  if not targetInventoryId or not overhaul_career_garage_inventory.getMapInventoryIdToVehId()[targetInventoryId] then
+  local previousInventoryId = inventoryId
+  inventoryId = _inventoryId
+  local access = getDynoAccess()
+  inventoryId = previousInventoryId
+  local ownerInventory = access and access.inventory or getInventory()
+  local targetInventoryId = _inventoryId or getInventory().getInventoryIdsInClosestGarage(true)
+  if not targetInventoryId or not ownerInventory.getMapInventoryIdToVehId()[targetInventoryId] then
     sessionMode = nil
     return false
   end
-  local target = overhaul_career_garage_inventory.getVehicles()[targetInventoryId]
-  if not target or overhaul_career_market_valueCalculator.getNumberOfBrokenParts(target.partConditions) > 0 then
+  local target = ownerInventory.getVehicles()[targetInventoryId]
+  if not target or overhaul_career_market_valueCalculator.partConditionsNeedRepair(target.partConditions) then
     sessionMode = nil
     return false
   end
@@ -947,14 +909,12 @@ local function start(_inventoryId, _originComputerId, _returnRoute, options)
   switchingVehicle = false
   savedTuneApplyInProgress = false
 
-  local numberOfBrokenParts = overhaul_career_market_valueCalculator.getNumberOfBrokenParts(overhaul_career_garage_inventory.getVehicles()[inventoryId].partConditions)
-  -- Every build-changing service requires repairs before entry.
-  if numberOfBrokenParts > 0 then
+  if overhaul_career_market_valueCalculator.partConditionsNeedRepair(getInventory().getVehicles()[inventoryId].partConditions) then
     sessionMode = nil
     return false
   end
   core_jobsystem.create(function(job)
-    overhaul_career_repair_damageManager.saveDamageState(inventoryId)
+    if sessionMode ~= 'dyno' then overhaul_career_repair_damageManager.saveDamageState(inventoryId) end
     job.sleep(0.1)
     startActual(_originComputerId, _returnRoute)
   end, 2)
@@ -981,9 +941,9 @@ local function apply(tuningValues, callback, allowDuringVehicleSwitch)
     end
   end
 
-  local vehId = overhaul_career_garage_inventory.getVehicleIdFromInventoryId(inventoryId)
+  local vehId = getInventory().getVehicleIdFromInventoryId(inventoryId)
   local oldVeh = vehId and getObjectByID(vehId)
-  local invVehicle = overhaul_career_garage_inventory.getVehicles()[inventoryId]
+  local invVehicle = getInventory().getVehicles()[inventoryId]
   if not oldVeh or not (invVehicle and invVehicle.config) then
     return {success = false, reason = "vehicle_missing"}
   end
@@ -1006,11 +966,11 @@ local function apply(tuningValues, callback, allowDuringVehicleSwitch)
       return
     end
     if sessionMode ~= "dyno" then overhaul_career_repair_damageManager.saveDamageState(inventoryId) end
-    local currentId = overhaul_career_garage_inventory.getVehicleIdFromInventoryId(inventoryId)
+    local currentId = getInventory().getVehicleIdFromInventoryId(inventoryId)
     local veh = currentId and getObjectByID(currentId)
     if veh then
       spawn.safeTeleport(veh, vehicleTransform.pos, vehicleTransform.rot, nil, nil, nil, nil, false)
-      core_vehicleBridge.executeAction(veh, 'setFreeze', true)
+      require('overhaul/lib/vehicles/freeze').setVehicle('overhaul_career_parts_tuning', veh, true)
     end
     extensions.hook("onOverhaulTuningApplied")
     tableMerge(changedVars, tuningValues)
@@ -1019,7 +979,7 @@ local function apply(tuningValues, callback, allowDuringVehicleSwitch)
     result = {success = true}
     if callback then callback() end
   end
-  local ok = pcall(overhaul_career_garage_inventory.spawnVehicle, inventoryId, 2, complete, nil, nil,
+  local ok = pcall(getInventory().spawnVehicle, inventoryId, 2, complete, nil, nil,
     {prepareReplacement = function()
       if sessionMode ~= "dyno" then overhaul_career_repair_damageManager.clearDamageState(inventoryId) end
       return true
@@ -1091,10 +1051,10 @@ local function switchVehicle(targetInventoryId)
   local previousInventoryId = inventoryId
 
   local function finishSwitch()
-    local previousVehicleId = overhaul_career_garage_inventory.getVehicleIdFromInventoryId(previousInventoryId)
+    local previousVehicleId = getInventory().getVehicleIdFromInventoryId(previousInventoryId)
     local previousVehicle = previousVehicleId and getObjectByID(previousVehicleId) or nil
     if previousVehicle then
-      core_vehicleBridge.executeAction(previousVehicle, 'setFreeze', false)
+      require('overhaul/lib/vehicles/freeze').setVehicle('overhaul_career_parts_tuning', previousVehicle, false)
     end
     if tether then
       tether.remove = true
@@ -1106,10 +1066,10 @@ local function switchVehicle(targetInventoryId)
       job.sleep(0.1)
       if not prepareVehicleSession(targetInventoryId) then
         prepareVehicleSession(previousInventoryId)
-        local previousVehicleId = overhaul_career_garage_inventory.getVehicleIdFromInventoryId(previousInventoryId)
+        local previousVehicleId = getInventory().getVehicleIdFromInventoryId(previousInventoryId)
         local previousVehicle = previousVehicleId and getObjectByID(previousVehicleId) or nil
         if previousVehicle then
-          core_vehicleBridge.executeAction(previousVehicle, 'setFreeze', true)
+          require('overhaul/lib/vehicles/freeze').setVehicle('overhaul_career_parts_tuning', previousVehicle, true)
           setupTether()
         end
         switchingVehicle = false
@@ -1121,10 +1081,10 @@ local function switchVehicle(targetInventoryId)
       end
 
       createShoppingCart()
-      local targetVehicleId = overhaul_career_garage_inventory.getVehicleIdFromInventoryId(inventoryId)
+      local targetVehicleId = getInventory().getVehicleIdFromInventoryId(inventoryId)
       local targetVehicle = targetVehicleId and getObjectByID(targetVehicleId) or nil
       if targetVehicle then
-        core_vehicleBridge.executeAction(targetVehicle, 'setFreeze', true)
+        require('overhaul/lib/vehicles/freeze').setVehicle('overhaul_career_parts_tuning', targetVehicle, true)
       end
       setupTether()
       switchingVehicle = false
@@ -1150,10 +1110,10 @@ local function close()
   if switchingVehicle or savedTuneApplyInProgress then return end
 
   local computer = getOriginComputer()
-  local vehicleId = inventoryId and overhaul_career_garage_inventory.getVehicleIdFromInventoryId(inventoryId) or nil
+  local vehicleId = inventoryId and getInventory().getVehicleIdFromInventoryId(inventoryId) or nil
   local vehicle = vehicleId and getObjectByID(vehicleId) or nil
   if vehicle then
-    core_vehicleBridge.executeAction(vehicle, 'setFreeze', false)
+    require('overhaul/lib/vehicles/freeze').setVehicle('overhaul_career_parts_tuning', vehicle, false)
   end
   if tether then
     tether.remove = true
@@ -1239,8 +1199,7 @@ local function onOverhaulComputerAddFunctions(menuData, computerFunctions)
       order = 10
     }
     -- vehicle broken
-    local vehicle = overhaul_career_garage_inventory.getVehicles()[vehicleData.inventoryId]
-    if vehicle and overhaul_career_market_valueCalculator.getNumberOfBrokenParts(vehicle.partConditions) > 0 then
+    if vehicleData.needsRepair then
       computerFunctionData.disabled = true
       computerFunctionData.reason = overhaul_career_garage_computer.reasons.needsRepair
     end
@@ -1268,6 +1227,8 @@ M.start = start
 M.startAtTent = startAtTent
 M.apply = apply
 M.getTuningData = getTuningData
+M.getFuelMapContext = function() return {inventoryId=inventoryId,computerId=originComputerId} end
+M.getFuelMapPrice = function() return getPriceCategory('Engine') end
 M.close = close
 M.applyShopping = applyShopping
 M.cancelShopping = cancelShopping
@@ -1280,6 +1241,7 @@ M.getSavedTunes = getSavedTunes
 M.saveTune = saveTune
 M.applySavedTune = applySavedTune
 M.deleteSavedTune = deleteSavedTune
+M.renameSavedTune = renameSavedTune
 M.isVariableAllowedForDyno = isDynoVariableAllowed
 M.collectDynoJBeamVariableEffects = collectDynoJBeamVariableEffects
 M.buildSavedTuneApplication = buildSavedTuneApplication

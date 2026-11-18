@@ -20,7 +20,7 @@ function vehicleControl.create(deps)
   function api.setVehicleFreezeSafe(veh, shouldFreeze)
     if not veh then return end
     local freezeValue = shouldFreeze and true or false
-    core_vehicleBridge.executeAction(veh, 'setFreeze', freezeValue)
+    require('overhaul/lib/vehicles/freeze').setVehicle('overhaul_career_market_auction_auction', veh, freezeValue)
   end
 
   local function getDefaultGearboxBehavior()
@@ -116,6 +116,8 @@ function vehicleControl.create(deps)
     local vehId = veh:getID()
     local token = (pendingFreezeTokens[vehId] or 0) + 1
     pendingFreezeTokens[vehId] = token
+    veh:queueLuaCommand('if ai then ai.setMode("disabled") end')
+    api.setVehicleFreezeSafe(veh, true)
     veh:queueLuaCommand(string.format([[
     if overhaulDriver and overhaulDriver.cancelExactPathAssist then ]] .. vehicleCommands.call("overhaulDriver", "cancelExactPathAssist") .. [[ end
     if ai then ai.setMode("disabled") end
@@ -125,7 +127,6 @@ function vehicleControl.create(deps)
     end
     input.event("throttle", 0, 1)
     input.event("steering", 0, 1)
-    if controller and controller.setFreeze then controller.setFreeze(1) end
     obj:queueGameEngineLua(require('vehicle/overhaul/geCallback').reply(%d, 'auctionFreezeReady', '%d, %d'))
   ]], require('overhaul/lib/vehicles/callbacks').open('auctionFreezeReady', {owner = 'usedCarAuction', vehId = vehId}), vehId, token))
   end
@@ -180,7 +181,6 @@ function vehicleControl.create(deps)
     api.setVehicleFreezeSafe(veh, false)
     api.setLotVehicleDriveLock(veh, 'transit')
     veh:queueLuaCommand([[
-    if controller and controller.setFreeze then controller.setFreeze(0) end
     if overhaulDriver and overhaulDriver.cancelExactPathAssist then ]] .. vehicleCommands.call("overhaulDriver", "cancelExactPathAssist") .. [[ end
     if ai then ai.setMode("disabled") end
     if electrics and electrics.setIgnitionLevel then electrics.setIgnitionLevel(3) end
@@ -219,7 +219,6 @@ function vehicleControl.create(deps)
     veh:queueLuaCommand(string.format([[
     if overhaulDriver and overhaulDriver.cancelExactPathAssist then ]] .. vehicleCommands.call("overhaulDriver", "cancelExactPathAssist") .. [[ end
     if ai then ai.setMode("disabled") end
-    if controller and controller.setFreeze then controller.setFreeze(0) end
     if electrics and electrics.setIgnitionLevel then electrics.setIgnitionLevel(3) end
     input.event("throttle", 0, 1)
     input.event("brake", 0, 1)

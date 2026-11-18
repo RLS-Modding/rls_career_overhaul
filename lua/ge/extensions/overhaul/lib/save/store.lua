@@ -89,6 +89,11 @@ function M.writer()
   return overhaul_career_saveSystem.getSaveWriter()
 end
 
+-- Global recovery records and generated assets must survive independently of a slot capture.
+function M.immediateWriter()
+  return overhaul_career_saveSystem.getImmediateWriter()
+end
+
 -- Owners invoke the adapter at their existing save and restore boundaries.
 function M.feature(key, descriptor)
   return require('overhaul/lib/save/feature').create(overhaul_career_saveSystem, key, descriptor)

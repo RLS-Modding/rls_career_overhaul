@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <asset>
+    <contributor>
+      <author>Blender User</author>
+      <authoring_tool>Blender 4.5.5 LTS commit date:2025-11-17, commit time:16:03, hash:836beaaf597a</authoring_tool>
+    </contributor>
+    <created>2026-10-10T12:42:48</created>
+    <modified>2026-10-10T12:42:48</modified>
+    <unit name="meter" meter="1"/>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_effects>
+    <effect id="vertexColor_glow-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">1 1 1 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.5</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
+  <library_images/>
+  <library_materials>
+    <material id="vertexColor_glow-material" name="vertexColor_glow">
+      <instance_effect url="#vertexColor_glow-effect"/>
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="npk_light_stage_low-mesh" name="npk_light_stage_low">
+      <mesh>
+        <source id="npk_light_stage_low-mesh-positions">
+          <float_array id="npk_light_stage_low-mesh-positions-array" count="36">0.04249995 -0.08199995 0 0.06299996 -0.07599997 0 0.04249995 -0.07599997 0.0205 0.02199995 -0.07599997 0 0.04249995 -0.07599997 -0.0205 0.04249995 -0.06999999 0 -0.04249989 -0.08199995 0 -0.02199989 -0.07599997 0 -0.04249989 -0.07599997 0.0205 -0.06299996 -0.07599997 0 -0.04249989 -0.07599997 -0.0205 -0.04249989 -0.06999999 0</float_array>
+          <technique_common>
+            <accessor source="#npk_light_stage_low-mesh-positions-array" count="12" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="npk_light_stage_low-mesh-normals">
+          <float_array id="npk_light_stage_low-mesh-normals-array" count="36">1 0 0 2.00385e-7 0 1 0 -1 0 -1 0 0 2.00385e-7 0 -1 0 1 0 1 -4.0077e-7 0 1.3359e-7 -2.6718e-7 1 0 -1 0 -1 -1.3359e-7 0 1.3359e-7 -2.6718e-7 -1 0 1 0</float_array>
+          <technique_common>
+            <accessor source="#npk_light_stage_low-mesh-normals-array" count="12" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="npk_light_stage_low-mesh-colors-Col" name="Col">
+          <float_array id="npk_light_stage_low-mesh-colors-Col-array" count="192">1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1</float_array>
+          <technique_common>
+            <accessor source="#npk_light_stage_low-mesh-colors-Col-array" count="48" stride="4">
+              <param name="R" type="float"/>
+              <param name="G" type="float"/>
+              <param name="B" type="float"/>
+              <param name="A" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="npk_light_stage_low-mesh-vertices">
+          <input semantic="POSITION" source="#npk_light_stage_low-mesh-positions"/>
+        </vertices>
+        <triangles material="vertexColor_glow-material" count="16">
+          <input semantic="VERTEX" source="#npk_light_stage_low-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#npk_light_stage_low-mesh-normals" offset="1"/>
+          <input semantic="COLOR" source="#npk_light_stage_low-mesh-colors-Col" offset="2" set="0"/>
+          <p>1 0 0 2 1 1 0 2 2 2 1 3 3 3 4 0 2 5 3 3 6 4 4 7 0 2 8 4 4 9 1 0 10 0 2 11 5 5 12 2 1 13 1 0 14 5 5 15 3 3 16 2 1 17 5 5 18 4 4 19 3 3 20 5 5 21 1 0 22 4 4 23 7 6 24 8 7 25 6 8 26 8 7 27 9 9 28 6 8 29 9 9 30 10 10 31 6 8 32 10 10 33 7 6 34 6 8 35 11 11 36 8 7 37 7 6 38 11 11 39 9 9 40 8 7 41 11 11 42 10 10 43 9 9 44 11 11 45 7 6 46 10 10 47</p>
+        </triangles>
+      </mesh>
+    </geometry>
+    <geometry id="npk_light_stage-mesh" name="npk_light_stage">
+      <mesh>
+        <source id="npk_light_stage-mesh-positions">
+          <float_array id="npk_light_stage-mesh-positions-array" count="156">0.04249995 -0.08199995 0 0.06299996 -0.07899993 0 0.06025344 -0.07899993 0.01024997 0.05274993 -0.07899993 0.01775348 0.04249995 -0.07899993 0.0205 0.03224998 -0.07899993 0.01775348 0.02474647 -0.07899993 0.01024997 0.02199995 -0.07899993 0 0.02474647 -0.07899993 -0.01024997 0.03224998 -0.07899993 -0.01775348 0.04249995 -0.07899993 -0.0205 0.05274993 -0.07899993 -0.01775348 0.06025344 -0.07899993 -0.01024997 0.06299996 -0.07299995 0 0.06025344 -0.07299995 0.01024997 0.05274993 -0.07299995 0.01775348 0.04249995 -0.07299995 0.0205 0.03224998 -0.07299995 0.01775348 0.02474647 -0.07299995 0.01024997 0.02199995 -0.07299995 0 0.02474647 -0.07299995 -0.01024997 0.03224998 -0.07299995 -0.01775348 0.04249995 -0.07299995 -0.0205 0.05274993 -0.07299995 -0.01775348 0.06025344 -0.07299995 -0.01024997 0.04249995 -0.06999999 0 -0.04249989 -0.08199995 0 -0.02199989 -0.07899993 0 -0.02474641 -0.07899993 0.01024997 -0.03224992 -0.07899993 0.01775348 -0.04249989 -0.07899993 0.0205 -0.05274993 -0.07899993 0.01775348 -0.06025344 -0.07899993 0.01024997 -0.06299996 -0.07899993 0 -0.06025344 -0.07899993 -0.01024997 -0.05274993 -0.07899993 -0.01775348 -0.04249989 -0.07899993 -0.0205 -0.03224992 -0.07899993 -0.01775348 -0.02474641 -0.07899993 -0.01024997 -0.02199989 -0.07299995 0 -0.02474641 -0.07299995 0.01024997 -0.03224992 -0.07299995 0.01775348 -0.04249989 -0.07299995 0.0205 -0.05274993 -0.07299995 0.01775348 -0.06025344 -0.07299995 0.01024997 -0.06299996 -0.07299995 0 -0.06025344 -0.07299995 -0.01024997 -0.05274993 -0.07299995 -0.01775348 -0.04249989 -0.07299995 -0.0205 -0.03224992 -0.07299995 -0.01775348 -0.02474641 -0.07299995 -0.01024997 -0.04249989 -0.06999999 0</float_array>
+          <technique_common>
+            <accessor source="#npk_light_stage-mesh-positions-array" count="52" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="npk_light_stage-mesh-normals">
+          <float_array id="npk_light_stage-mesh-normals-array" count="156">0.7962462 -0.6049729 -1.32755e-6 0.6895701 -0.6049729 0.3981217 0 -1 0 0.3981248 -0.604973 0.6895683 1.35188e-6 -0.604973 0.7962461 -0.3981221 -0.6049729 0.6895699 -0.6895688 -0.6049729 0.3981241 -0.7962461 -0.604973 1.21982e-6 -0.6895702 -0.604973 -0.3981215 -0.3981245 -0.604973 -0.6895685 -1.34493e-6 -0.6049729 -0.7962461 0.3981222 -0.6049729 -0.6895698 0.689569 -0.6049728 -0.3981238 0.6895688 0.604973 0.398124 0.7962462 0.6049729 1.3345e-6 0.3981224 0.604973 0.6895697 -1.35535e-6 0.604973 0.796246 -0.3981245 0.604973 0.6895685 -0.6895701 0.6049729 0.3981217 -0.7962461 0.604973 -1.42486e-6 -0.6895688 0.6049729 -0.3981239 -0.3981221 0.604973 -0.6895698 1.35535e-6 0.604973 -0.796246 0.3981245 0.604973 -0.6895685 0.6895703 0.6049729 -0.3981215 0 1 0 0.7962461 -0.604973 -1.32755e-6 0.6895699 -0.604973 0.3981219 0 -1 0 0.3981243 -0.604973 0.6895686 1.47003e-6 -0.6049728 0.7962461 -0.3981217 -0.6049729 0.6895701 -0.6895685 -0.6049729 0.3981245 -0.7962461 -0.604973 1.33102e-6 -0.6895698 -0.6049729 -0.3981221 -0.3981239 -0.6049729 -0.6895689 -1.46308e-6 -0.604973 -0.7962461 0.3981218 -0.6049729 -0.6895701 0.6895688 -0.6049729 -0.3981241 0.6895685 0.604973 0.3981245 0.7962461 0.604973 1.3345e-6 0.3981218 0.604973 0.68957 -1.25109e-6 0.6049728 0.7962461 -0.3981239 0.604973 0.6895686 -0.6895698 0.604973 0.3981221 -0.7962461 0.604973 -1.3345e-6 -0.6895685 0.604973 -0.3981244 -0.3981214 0.604973 -0.6895701 1.25109e-6 0.6049728 -0.7962461 0.398124 0.604973 -0.6895688 0.68957 0.604973 -0.3981219 0 1 0</float_array>
+          <technique_common>
+            <accessor source="#npk_light_stage-mesh-normals-array" count="52" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="npk_light_stage-mesh-map">
+          <float_array id="npk_light_stage-mesh-map-array" count="576">0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1 1 0 1</float_array>
+          <technique_common>
+            <accessor source="#npk_light_stage-mesh-map-array" count="288" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="npk_light_stage-mesh-colors-Col" name="Col">
+          <float_array id="npk_light_stage-mesh-colors-Col-array" count="1152">1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1 1 1 0 1</float_array>
+          <technique_common>
+            <accessor source="#npk_light_stage-mesh-colors-Col-array" count="288" stride="4">
+              <param name="R" type="float"/>
+              <param name="G" type="float"/>
+              <param name="B" type="float"/>
+              <param name="A" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="npk_light_stage-mesh-vertices">
+          <input semantic="POSITION" source="#npk_light_stage-mesh-positions"/>
+        </vertices>
+        <triangles material="vertexColor_glow-material" count="96">
+          <input semantic="VERTEX" source="#npk_light_stage-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#npk_light_stage-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#npk_light_stage-mesh-map" offset="2" set="0"/>
+          <input semantic="COLOR" source="#npk_light_stage-mesh-colors-Col" offset="3" set="0"/>
+          <p>1 0 0 0 2 1 1 1 0 2 2 2 2 1 3 3 3 3 4 4 0 2 5 5 3 3 6 6 4 4 7 7 0 2 8 8 4 4 9 9 5 5 10 10 0 2 11 11 5 5 12 12 6 6 13 13 0 2 14 14 6 6 15 15 7 7 16 16 0 2 17 17 7 7 18 18 8 8 19 19 0 2 20 20 8 8 21 21 9 9 22 22 0 2 23 23 9 9 24 24 10 10 25 25 0 2 26 26 10 10 27 27 11 11 28 28 0 2 29 29 11 11 30 30 12 12 31 31 0 2 32 32 12 12 33 33 1 0 34 34 0 2 35 35 14 13 36 36 1 0 37 37 13 14 38 38 15 15 39 39 2 1 40 40 14 13 41 41 16 16 42 42 3 3 43 43 15 15 44 44 17 17 45 45 4 4 46 46 16 16 47 47 18 18 48 48 5 5 49 49 17 17 50 50 19 19 51 51 6 6 52 52 18 18 53 53 20 20 54 54 7 7 55 55 19 19 56 56 21 21 57 57 8 8 58 58 20 20 59 59 22 22 60 60 9 9 61 61 21 21 62 62 23 23 63 63 10 10 64 64 22 22 65 65 24 24 66 66 11 11 67 67 23 23 68 68 13 14 69 69 12 12 70 70 24 24 71 71 25 25 72 72 14 13 73 73 13 14 74 74 25 25 75 75 15 15 76 76 14 13 77 77 25 25 78 78 16 16 79 79 15 15 80 80 25 25 81 81 17 17 82 82 16 16 83 83 25 25 84 84 18 18 85 85 17 17 86 86 25 25 87 87 19 19 88 88 18 18 89 89 25 25 90 90 20 20 91 91 19 19 92 92 25 25 93 93 21 21 94 94 20 20 95 95 25 25 96 96 22 22 97 97 21 21 98 98 25 25 99 99 23 23 100 100 22 22 101 101 25 25 102 102 24 24 103 103 23 23 104 104 25 25 105 105 13 14 106 106 24 24 107 107 27 26 108 108 28 27 109 109 26 28 110 110 28 27 111 111 29 29 112 112 26 28 113 113 29 29 114 114 30 30 115 115 26 28 116 116 30 30 117 117 31 31 118 118 26 28 119 119 31 31 120 120 32 32 121 121 26 28 122 122 32 32 123 123 33 33 124 124 26 28 125 125 33 33 126 126 34 34 127 127 26 28 128 128 34 34 129 129 35 35 130 130 26 28 131 131 35 35 132 132 36 36 133 133 26 28 134 134 36 36 135 135 37 37 136 136 26 28 137 137 37 37 138 138 38 38 139 139 26 28 140 140 38 38 141 141 27 26 142 142 26 28 143 143 40 39 144 144 27 26 145 145 39 40 146 146 41 41 147 147 28 27 148 148 40 39 149 149 42 42 150 150 29 29 151 151 41 41 152 152 43 43 153 153 30 30 154 154 42 42 155 155 44 44 156 156 31 31 157 157 43 43 158 158 45 45 159 159 32 32 160 160 44 44 161 161 46 46 162 162 33 33 163 163 45 45 164 164 47 47 165 165 34 34 166 166 46 46 167 167 48 48 168 168 35 35 169 169 47 47 170 170 49 49 171 171 36 36 172 172 48 48 173 173 50 50 174 174 37 37 175 175 49 49 176 176 39 40 177 177 38 38 178 178 50 50 179 179 51 51 180 180 40 39 181 181 39 40 182 182 51 51 183 183 41 41 184 184 40 39 185 185 51 51 186 186 42 42 187 187 41 41 188 188 51 51 189 189 43 43 190 190 42 42 191 191 51 51 192 192 44 44 193 193 43 43 194 194 51 51 195 195 45 45 196 196 44 44 197 197 51 51 198 198 46 46 199 199 45 45 200 200 51 51 201 201 47 47 202 202 46 46 203 203 51 51 204 204 48 48 205 205 47 47 206 206 51 51 207 207 49 49 208 208 48 48 209 209 51 51 210 210 50 50 211 211 49 49 212 212 51 51 213 213 39 40 214 214 50 50 215 215 14 13 216 216 2 1 217 217 1 0 218 218 15 15 219 219 3 3 220 220 2 1 221 221 16 16 222 222 4 4 223 223 3 3 224 224 17 17 225 225 5 5 226 226 4 4 227 227 18 18 228 228 6 6 229 229 5 5 230 230 19 19 231 231 7 7 232 232 6 6 233 233 20 20 234 234 8 8 235 235 7 7 236 236 21 21 237 237 9 9 238 238 8 8 239 239 22 22 240 240 10 10 241 241 9 9 242 242 23 23 243 243 11 11 244 244 10 10 245 245 24 24 246 246 12 12 247 247 11 11 248 248 13 14 249 249 1 0 250 250 12 12 251 251 40 39 252 252 28 27 253 253 27 26 254 254 41 41 255 255 29 29 256 256 28 27 257 257 42 42 258 258 30 30 259 259 29 29 260 260 43 43 261 261 31 31 262 262 30 30 263 263 44 44 264 264 32 32 265 265 31 31 266 266 45 45 267 267 33 33 268 268 32 32 269 269 46 46 270 270 34 34 271 271 33 33 272 272 47 47 273 273 35 35 274 274 34 34 275 275 48 48 276 276 36 36 277 277 35 35 278 278 49 49 279 279 37 37 280 280 36 36 281 281 50 50 282 282 38 38 283 283 37 37 284 284 39 40 285 285 27 26 286 286 38 38 287 287</p>
+        </triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="Scene" name="Scene">
+      <node id="base00" name="base00" type="NODE">
+        <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
+        <node id="start01" name="start01" type="NODE">
+          <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
+          <node id="npk_light_stage_a30" name="npk_light_stage_a30" type="NODE">
+            <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
+            <instance_geometry url="#npk_light_stage-mesh" name="npk_light_stage_a30">
+              <bind_material>
+                <technique_common>
+                  <instance_material symbol="vertexColor_glow-material" target="#vertexColor_glow-material"/>
+                </technique_common>
+              </bind_material>
+            </instance_geometry>
+          </node>
+          <node id="npk_light_stage_a3" name="npk_light_stage_a3" type="NODE">
+            <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
+            <instance_geometry url="#npk_light_stage_low-mesh" name="npk_light_stage_a3">
+              <bind_material>
+                <technique_common>
+                  <instance_material symbol="vertexColor_glow-material" target="#vertexColor_glow-material"/>
+                </technique_common>
+              </bind_material>
+            </instance_geometry>
+          </node>
+        </node>
+        <node id="nulldetail1" name="nulldetail1" type="NODE">
+          <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix>
+        </node>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#Scene"/>
+  </scene>
+</COLLADA>

@@ -1,0 +1,26 @@
+{
+  "Configuration": "Jace Rowan - No Prep",
+  "Description": "Copper Flat-Four. Tier 5 boss. Highway no-prep quarter-mile: 7.799s at 204.04mph. Heritage Speed. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Heritage Speed Shop",
+  "Name": "Jace Rowan",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": true
+  },
+  "Drag Times": {
+    "time_1000": 6.6672961979787,
+    "time_1_4": 7.7985692302745,
+    "time_1_8": 5.2442114091354,
+    "time_330": 3.5644996643932,
+    "time_60": 1.3962230567544,
+    "velAt_1_4": 91.214848869939,
+    "velAt_1_8": 66.132678867481
+  },
+  "Reaction Time": 0.23807479920617,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

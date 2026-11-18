@@ -10,7 +10,7 @@ function lib.create(ownerServices)
   local DEFAULT_CONFIG = ownerServices.DEFAULT_CONFIG
   local racerState = ownerServices.racerState
 
-  -- Build script path: first point = vehicle position + dir + up (so game does not move the car). Then track points from nearest, close loop.
+  -- Preserve the launch pose, then loop only through the course points.
   local function nearestScriptPathNode(path, px, py, pz)
     local bestI, bestD = 1, 1e30
     for i, node in ipairs(path) do
@@ -69,13 +69,14 @@ function lib.create(ownerServices)
       )
       table.insert(out, addRadius({ x = px + dirx * bootstrap, y = py + diry * bootstrap, z = pz + dirz * bootstrap }))
     end
+    out.loopStartIndex = #out + 1
     for i = bestI, #path do
       table.insert(out, addRadius(path[i]))
     end
     for i = 1, bestI - 1 do
       table.insert(out, addRadius(path[i]))
     end
-    table.insert(out, out[1])
+    table.insert(out, out[out.loopStartIndex])
     return out
   end
 

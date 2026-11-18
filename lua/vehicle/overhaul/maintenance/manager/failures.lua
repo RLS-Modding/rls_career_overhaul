@@ -170,6 +170,11 @@ function M.create(inputs)
       return false
     end
 
+    local powertrainState = rootEntry.integrityState and rootEntry.integrityState.powertrain
+    for _, deviceState in pairs(type(powertrainState) == 'table' and powertrainState or {}) do
+      if type(deviceState) == 'table' and type(deviceState.rlsFuelEngineState) == 'table' then return false end
+    end
+
     local didSanitize = false
     local integrityValue = tonumber(rootEntry.integrityValue)
     if integrityValue ~= nil and integrityValue < 1 then
@@ -220,8 +225,8 @@ function M.create(inputs)
 
     for _, partId in ipairs(getCategoryCandidatePartIds(categoryName)) do
       local rootEntry = partConditions[partId]
-      local looksLikeOurFailure = isMaintenanceFailureType(categoryName, categoryState.lastFailureType) or
-                                      hasMaintenanceFailureState(categoryName, rootEntry, rootDevice)
+      local looksLikeOurFailure = hasMaintenanceFailureState(categoryName, rootEntry, rootDevice) or
+                                      (categoryName ~= 'engine' and isMaintenanceFailureType(categoryName, categoryState.lastFailureType))
 
       if sanitizeMaintenanceConditionEntry(rootEntry, looksLikeOurFailure) then
         partConditions[partId] = rootEntry

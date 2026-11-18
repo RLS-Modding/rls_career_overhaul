@@ -1,0 +1,26 @@
+{
+  "Configuration": "Kai Ren - No Prep",
+  "Description": "Crimson Afterhours. Tier 5 racer. Highway no-prep quarter-mile: 8.738s at 192.39mph. Neon Works. Historical estimate; restored Stage 4 hardware requires current-build validation.",
+  "Author": "Neon Works",
+  "Name": "Kai Ren",
+  "Population": 0,
+  "Config Type": "StreetKnights",
+  "isAuxiliary": true,
+  "streetKnights": {
+    "eventOnly": true,
+    "pinkSlipPrizeOnly": false
+  },
+  "Drag Times": {
+    "time_1000": 7.530212436248,
+    "time_1_4": 8.7381183071402,
+    "time_1_8": 5.9972668025818,
+    "time_330": 4.1067498895661,
+    "time_60": 1.5706087423032,
+    "velAt_1_4": 86.006018904743,
+    "velAt_1_8": 59.899193798368
+  },
+  "Reaction Time": 0.27128129374076,
+  "dragTimesRevalidated": false,
+  "dragTimingCourse": "West Coast USA Highway no-prep 402.336m",
+  "dragTimingStatus": "historical-estimate-pending-stage4-validation"
+}

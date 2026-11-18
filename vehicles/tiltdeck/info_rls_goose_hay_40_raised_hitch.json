@@ -1,0 +1,17 @@
+{
+  "Configuration": "40ft Gooseneck Raised Hitch (Hay Bales 9600kg)",
+  "Description": "40ft Hydraulic tilt gooseneck trailer with heavy duty suspension and a raised hitch, loaded with 9600kg of haybales",
+  "Value": 31000,
+  "Weight": 13680,
+  "hasLoad": true,
+  "thumbnailConfig": {
+    "modelCamEnabled": false,
+    "configCamEnabled": false
+  },
+  "defaultMultiPaintSetup": {
+    "name": "rls_goose_hay_40_raised_hitch Multi Paint Setup",
+    "paint1": "Machinery Dark Blue",
+    "paint2": "Machinery Dark Blue",
+    "paint3": "Machinery Dark Blue"
+  }
+}
