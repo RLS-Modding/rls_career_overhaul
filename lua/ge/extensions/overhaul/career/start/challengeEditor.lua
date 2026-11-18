@@ -5,6 +5,7 @@
 
 local challengeRounding = require('overhaul/lib/career/challengeRounding')
 local challengeCatalog = require('overhaul/career/start/challengeCatalog')
+local challengeStartRules = require('overhaul/career/start/challengeStartRules')
 local activityTaxonomy = require('overhaul/lib/career/activityTaxonomy')
 
 local M = {}
@@ -176,7 +177,9 @@ local function editorDefaults()
     loanInterest = DEFAULT_LOAN_INTEREST,
     loanPayments = DEFAULT_LOAN_PAYMENTS,
     targetMoney = DEFAULT_TARGET_MONEY,
-    startingGarages = {}
+    startingGarages = {},
+    startingGarageMode = "default",
+    starterVehicles = {}
   }
 end
 
@@ -191,6 +194,7 @@ local function getChallengeEditorData(state)
     activityTypesBySource = activityTypesBySource,
     currentMultipliers = currentMultipliers,
     availableGarages = availableGarages,
+    availableStarterVehicles = challengeStartRules.getAvailableStarterVehicles(),
     loanTerms = {6, 12, 18, 24, 36, 48, 60},
     defaults = editorDefaults(),
     stats = {
@@ -216,6 +220,7 @@ local function getEditorDataLight(state)
     winConditions = winConditions,
     activityTypes = activityTypes,
     availableGarages = getAvailableGarages(),
+    availableStarterVehicles = challengeStartRules.getAvailableStarterVehicles(),
     defaults = {
       startingCapital = DEFAULT_STARTING_CAPITAL,
       loanAmount = DEFAULT_LOAN_AMOUNT,
@@ -294,6 +299,14 @@ local function buildChallengeRecord(state, challengeData)
 
   if challengeData.startingGarages and type(challengeData.startingGarages) == "table" and #challengeData.startingGarages > 0 then
     newChallenge.startingGarages = challengeData.startingGarages
+  end
+
+  if challengeData.startingGarageMode == "none" then
+    newChallenge.startingGarageMode = "none"
+  end
+
+  if type(challengeData.starterVehicles) == "table" and #challengeData.starterVehicles > 0 then
+    newChallenge.starterVehicles = challengeData.starterVehicles
   end
 
   if challengeData.map then
@@ -406,6 +419,8 @@ local function getChallengeOptionsForCareerCreation(state)
       winConditionDescription = winConditionInfo.description,
       variables = variables,
       startingGarages = challenge.startingGarages or {},
+      startingGarageMode = challenge.startingGarageMode or "default",
+      starterVehicles = challenge.starterVehicles or {},
       economyAdjuster = challenge.economyAdjuster or {},
       allActivityTypes = allActivityTypes,
       currentMultipliers = currentMultipliers,
@@ -493,7 +508,10 @@ local function getSingleChallengeForUI(state, challengeId)
     winConditionName = winConditionInfo.name,
     winConditionDescription = winConditionInfo.description,
     isLocal = challenge.isLocal or false,
-    map = challenge.map
+    map = challenge.map,
+    startingGarages = challenge.startingGarages or {},
+    startingGarageMode = challenge.startingGarageMode or "default",
+    starterVehicles = challenge.starterVehicles or {}
   }
 end
 
@@ -773,6 +791,7 @@ function M.create(ctx, catalog)
 
   return {
     getAvailableGarages = getAvailableGarages,
+    getAvailableStarterVehicles = challengeStartRules.getAvailableStarterVehicles,
     getChallengeEditorData = bind(getChallengeEditorData),
     createChallengeFromUI = bind(createChallengeFromUI),
     getChallengeOptionsForCareerCreation = bind(getChallengeOptionsForCareerCreation),

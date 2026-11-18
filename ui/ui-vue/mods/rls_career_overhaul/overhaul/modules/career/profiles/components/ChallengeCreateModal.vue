@@ -18,10 +18,11 @@
   Parts (challengeCreate/)
     ChallengeBasicFields    name, ID, description, difficulty and map dropdowns (both teleported menus)
     ChallengeStartingTab    starting capital, win condition select, debt block
+    ChallengeStarterVehiclesTab  starter vehicle search and selection
     ChallengeMultiselectModal  teleported multiselect picker
   The seed section, the win-condition variable fields, the garages tab and the economy tab are in this template;
-  their inputs write the form state with v-model. ChallengeBasicFields and ChallengeStartingTab take values as
-  props and report changes as events; neither writes a prop.
+  their inputs write the form state with v-model. ChallengeBasicFields, ChallengeStartingTab and
+  ChallengeStarterVehiclesTab take values as props and report changes as events; none writes a prop.
 
   Modules (challengeCreate/)
     useChallengeForm        form state and writes
@@ -189,11 +190,19 @@
                   class="ccm-garage-default-btn"
                   type="button"
                   @click.stop="onUseDefaultGarages()"
-                  :class="{ 'ccm-garage-default-active': formStartingGarages.length === 0 }"
+                  :class="{ 'ccm-garage-default-active': formStartingGarages.length === 0 && formStartingGarageMode !== 'none' }"
                 >
                   Default
                 </button>
-                <div class="ccm-hint">Default starter garage (free)</div>
+                <button
+                  class="ccm-garage-default-btn"
+                  type="button"
+                  @click.stop="onUseNoGarage()"
+                  :class="{ 'ccm-garage-default-active': formStartingGarageMode === 'none' }"
+                >
+                  No garage
+                </button>
+                <div class="ccm-hint">{{ formStartingGarageMode === 'none' ? 'You start without a garage and have to buy your first one.' : 'Default starter garage (free)' }}</div>
               </div>
 
               <div v-if="formStartingGarages.length > 0" class="ccm-garage-selection">
@@ -223,6 +232,7 @@
                       :value="garage.id"
                       type="checkbox"
                       class="ccm-garage-checkbox"
+                      :disabled="formStartingGarageMode === 'none'"
                     />
                     <div class="ccm-garage-info">
                       <div class="ccm-garage-name">{{ garage.name }}</div>
@@ -236,6 +246,12 @@
                 </div>
               </div>
             </div>
+
+            <ChallengeStarterVehiclesTab
+              v-if="activeTab === 'starterVehicles'"
+              v-model:starterVehicles="formStarterVehicles"
+              :available-starter-vehicles="activeEditorData.availableStarterVehicles"
+            />
 
             <div v-if="activeTab === 'economy'" class="ccm-tab-panel">
               <div class="ccm-econ-section">
@@ -298,6 +314,7 @@ import { safeLua } from '../../utils/safeLua.js'
 import HouseButton from '../../components/house/HouseButton.vue'
 import ChallengeBasicFields from './challengeCreate/ChallengeBasicFields.vue'
 import ChallengeStartingTab from './challengeCreate/ChallengeStartingTab.vue'
+import ChallengeStarterVehiclesTab from './challengeCreate/ChallengeStarterVehiclesTab.vue'
 import ChallengeMultiselectModal from './challengeCreate/ChallengeMultiselectModal.vue'
 import { useChallengeForm } from './challengeCreate/useChallengeForm.js'
 import { createSeedCodec } from './challengeCreate/seedCodec.js'
@@ -340,12 +357,13 @@ const activeEditorData = computed(() => {
 const {
   formId, formName, formDescription, formDifficulty, formStartingCapital, formWinCondition, formVariables,
   formLoanAmount, formLoanInterest, formLoanPayments, formEconomyAdjuster, formStartingGarages, formMap,
+  formStartingGarageMode, formStarterVehicles,
   multiselectQueries, isApplyingSeed, seedPayload, canSave,
   winConditionOptions, variableDefinitions, loansRequired, activeVariables, variableRows,
   paymentsMinutes, perPaymentDisplay, interestPercent,
   markInitialSnapshot, initializeVariables, resetFormDefaults, applySeedDataToForm,
   roundVariableToStep, roundEconomyMultiplier, roundLoanAmount, roundStartingCapital,
-  removeGarage, onUseDefaultGarages,
+  removeGarage, onUseDefaultGarages, onUseNoGarage,
 } = useChallengeForm({ activeEditorData, seedError, onSeedApplied: () => updateSeedFromPayload() })
 
 const events = useEvents()
@@ -410,11 +428,11 @@ const {
   multiselectModalOpen, currentMultiselectVariableId, currentMultiselectVariable,
   getFilteredMultiselectOptions, getMultiselectItemName, removeMultiselectItem,
   setMultiselectSelection, setMultiselectQuery, openMultiselectModal, closeMultiselectModal,
-} = useMultiselectVariables({ activeVariables, formVariables, multiselectQueries, overlayRef })
+} = useMultiselectVariables({ activeVariables, formVariables, multiselectQueries, overlayRef, formMap })
 
-// The starting-garages tab's list: the editor's garages filtered by the search box, and the selected ids as
-// { id, name } chips. The selection itself stays in the parent.
-function useStartingGarages({ activeEditorData, garageQuery, formStartingGarages }) {
+// The starting-garages tab's list: the editor's garages on the chosen map, filtered by the search box, and the
+// selected ids as { id, name } chips. The selection itself stays in the parent.
+function useStartingGarages({ activeEditorData, garageQuery, formStartingGarages, formMap }) {
   const availableGarages = computed(() => {
     const raw = activeEditorData.value && activeEditorData.value.availableGarages
     return Array.isArray(raw) ? raw : []
@@ -422,7 +440,8 @@ function useStartingGarages({ activeEditorData, garageQuery, formStartingGarages
 
   const filteredGarages = computed(() => {
     const q = garageQuery.value.trim().toLowerCase()
-    const garages = availableGarages.value
+    const mapId = formMap.value
+    const garages = mapId ? availableGarages.value.filter(g => !g.mapId || g.mapId === mapId) : availableGarages.value
     if (!q) return garages
     return garages.filter(g => ((g.name || g.id || '').toLowerCase().includes(q)))
   })
@@ -455,7 +474,7 @@ function useEconomyMultipliers({ activeEditorData, econQuery }) {
   return { filteredActivityTypes, economyRows }
 }
 
-const { filteredGarages, selectedGarageRows, getGarageName } = useStartingGarages({ activeEditorData, garageQuery, formStartingGarages })
+const { filteredGarages, selectedGarageRows, getGarageName } = useStartingGarages({ activeEditorData, garageQuery, formStartingGarages, formMap })
 const { filteredActivityTypes, economyRows } = useEconomyMultipliers({ activeEditorData, econQuery })
 
 const tabs = computed(() => {
@@ -464,6 +483,7 @@ const tabs = computed(() => {
     tabList.push({ id: 'winCondition', label: 'Win Condition Settings' })
   }
   tabList.push({ id: 'garages', label: 'Starting Garages' })
+  tabList.push({ id: 'starterVehicles', label: 'Starter Car' })
   tabList.push({ id: 'economy', label: 'Economy Multipliers' })
   return tabList
 })
@@ -647,6 +667,8 @@ async function onSave() {
     winCondition: formWinCondition.value,
     economyAdjuster: Object.keys(formEconomyAdjuster).length > 0 ? formEconomyAdjuster : undefined,
     startingGarages: formStartingGarages.value.length > 0 ? formStartingGarages.value : undefined,
+    startingGarageMode: formStartingGarageMode.value === 'none' ? 'none' : undefined,
+    starterVehicles: formStarterVehicles.value.length > 0 ? formStarterVehicles.value : undefined,
     map: formMap.value || undefined
   }
 
@@ -969,7 +991,7 @@ watch(() => props.editChallengeId, (newId, oldId) => {
 
 /* Checkboxes: the house .check box (dark square, orange with a white tick when on) */
 .ccm-checkbox,
-.ccm-garage-checkbox {
+:deep(.ccm-garage-checkbox) {
   appearance: none;
   flex: 0 0 auto;
   width: 1.15em;
@@ -1070,7 +1092,8 @@ watch(() => props.editChallengeId, (newId, oldId) => {
   color: var(--accent-soft);
 }
 
-.ccm-garage-selected {
+/* The selection chips and checkbox list are shared with ChallengeStarterVehiclesTab, so they reach into it. */
+:deep(.ccm-garage-selected) {
   padding: var(--inset);
   border-radius: var(--radius-panel);
   background: var(--panel);
@@ -1078,7 +1101,7 @@ watch(() => props.editChallengeId, (newId, oldId) => {
   gap: 0.6em;
 }
 
-.ccm-garage-selected-title {
+:deep(.ccm-garage-selected-title) {
   color: var(--faint);
   font-size: 0.78em;
   font-weight: 700;
@@ -1086,13 +1109,13 @@ watch(() => props.editChallengeId, (newId, oldId) => {
   letter-spacing: 0.06em;
 }
 
-.ccm-garage-selected-list {
+:deep(.ccm-garage-selected-list) {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4em;
 }
 
-.ccm-garage-selected-item {
+:deep(.ccm-garage-selected-item) {
   display: flex;
   align-items: center;
   gap: 0.45em;
@@ -1103,7 +1126,7 @@ watch(() => props.editChallengeId, (newId, oldId) => {
   font-weight: 600;
 }
 
-.ccm-garage-remove {
+:deep(.ccm-garage-remove) {
   appearance: none;
   display: grid;
   place-items: center;
@@ -1121,12 +1144,12 @@ watch(() => props.editChallengeId, (newId, oldId) => {
   @include house-focus;
 }
 
-.ccm-garage-remove:hover {
+:deep(.ccm-garage-remove:hover) {
   background: var(--panel-hover);
   color: #fff;
 }
 
-.ccm-garages {
+:deep(.ccm-garages) {
   display: grid;
   gap: 0.15em;
   padding: 0.35em;
@@ -1134,7 +1157,7 @@ watch(() => props.editChallengeId, (newId, oldId) => {
   background: var(--panel);
 }
 
-.ccm-garage-label {
+:deep(.ccm-garage-label) {
   display: flex;
   align-items: center;
   gap: 0.75em;
@@ -1144,11 +1167,11 @@ watch(() => props.editChallengeId, (newId, oldId) => {
   cursor: pointer;
 }
 
-.ccm-garage-label:hover {
+:deep(.ccm-garage-label:hover) {
   background: rgba(255, 255, 255, 0.04);
 }
 
-.ccm-garage-info {
+:deep(.ccm-garage-info) {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -1156,11 +1179,11 @@ watch(() => props.editChallengeId, (newId, oldId) => {
   min-width: 0;
 }
 
-.ccm-garage-name {
+:deep(.ccm-garage-name) {
   font-weight: 600;
 }
 
-.ccm-garage-details {
+:deep(.ccm-garage-details) {
   display: flex;
   gap: 0.75em;
   font-size: 0.85em;

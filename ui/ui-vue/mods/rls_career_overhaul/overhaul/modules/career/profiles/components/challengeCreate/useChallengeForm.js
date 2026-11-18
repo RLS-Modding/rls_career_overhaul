@@ -57,6 +57,9 @@ export function useChallengeForm({ activeEditorData, seedError, onSeedApplied })
   const formLoanPayments = ref(12)
   const formEconomyAdjuster = reactive({})
   const formStartingGarages = ref([])
+  // 'none' starts the challenge without any garage; 'default' keeps the normal starting-garage choice.
+  const formStartingGarageMode = ref('default')
+  const formStarterVehicles = ref([])
   const formMap = ref(null)
   const multiselectQueries = reactive({})
   const isApplyingSeed = ref(false)
@@ -77,6 +80,8 @@ export function useChallengeForm({ activeEditorData, seedError, onSeedApplied })
     },
     economyAdjuster: formEconomyAdjuster,
     startingGarages: formStartingGarages.value,
+    startingGarageMode: formStartingGarageMode.value,
+    starterVehicles: formStarterVehicles.value,
     map: formMap.value || undefined
   }))
 
@@ -95,6 +100,8 @@ export function useChallengeForm({ activeEditorData, seedError, onSeedApplied })
         : undefined,
       economyAdjuster: Object.keys(formEconomyAdjuster).length > 0 ? formEconomyAdjuster : undefined,
       startingGarages: formStartingGarages.value.length > 0 ? formStartingGarages.value : undefined,
+      startingGarageMode: formStartingGarageMode.value === 'none' ? 'none' : undefined,
+      starterVehicles: formStarterVehicles.value.length > 0 ? formStarterVehicles.value : undefined,
       map: formMap.value || undefined
     }
     for (const [key, value] of Object.entries(formVariables)) {
@@ -151,6 +158,8 @@ export function useChallengeForm({ activeEditorData, seedError, onSeedApplied })
     formLoanInterest.value = activeEditorData.value?.defaults?.loanInterest ?? 0.10
     formLoanPayments.value = activeEditorData.value?.defaults?.loanPayments ?? 12
     formStartingGarages.value = []
+    formStartingGarageMode.value = 'default'
+    formStarterVehicles.value = []
     formMap.value = null
 
     Object.keys(formEconomyAdjuster).forEach(k => delete formEconomyAdjuster[k])
@@ -206,6 +215,8 @@ export function useChallengeForm({ activeEditorData, seedError, onSeedApplied })
     } else {
       formStartingGarages.value = []
     }
+    formStartingGarageMode.value = challenge.startingGarageMode === 'none' ? 'none' : 'default'
+    formStarterVehicles.value = Array.isArray(challenge.starterVehicles) ? [...challenge.starterVehicles] : []
 
     Object.keys(formEconomyAdjuster).forEach(k => delete formEconomyAdjuster[k])
     if (challenge.economyAdjuster) {
@@ -278,16 +289,23 @@ export function useChallengeForm({ activeEditorData, seedError, onSeedApplied })
 
   function onUseDefaultGarages() {
     formStartingGarages.value = []
+    formStartingGarageMode.value = 'default'
+  }
+
+  function onUseNoGarage() {
+    formStartingGarages.value = []
+    formStartingGarageMode.value = 'none'
   }
 
   return {
     formId, formName, formDescription, formDifficulty, formStartingCapital, formWinCondition, formVariables,
     formLoanAmount, formLoanInterest, formLoanPayments, formEconomyAdjuster, formStartingGarages, formMap,
+    formStartingGarageMode, formStarterVehicles,
     multiselectQueries, isApplyingSeed, form, seedPayload, canSave, isDirty,
     winConditionOptions, variableDefinitions, loansRequired, activeVariables, variableRows,
     paymentsMinutes, perPaymentDisplay, interestPercent,
     markInitialSnapshot, initializeVariables, resetFormDefaults, applySeedDataToForm,
     roundVariableToStep, roundEconomyMultiplier, roundLoanAmount, roundStartingCapital,
-    removeGarage, onUseDefaultGarages,
+    removeGarage, onUseDefaultGarages, onUseNoGarage,
   }
 }

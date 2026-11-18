@@ -11,6 +11,7 @@ local setup = {}
 local serializedTable = require('overhaul/lib/save/serializedTable')
 local vehicleMap = require('overhaul/career/garage/inventory/vehicleMap')
 local levelData = require('overhaul/lib/world/levelData')
+local challengeStarterGift = require('overhaul/career/garage/inventory/challengeStarter')
 
 function setup.new(inputs)
   -- State -----------------------------------------------------------------------------------------
@@ -220,6 +221,7 @@ function setup.new(inputs)
     inputs.state.inventorySetupDone = false
     inputs.state.lastFailedSpawnPos = nil
     inputs.state.hardcoreStarterGranted = false
+    inputs.state.challengeStarterGranted = false
 
     local saveSlot, savePath = overhaul_career_saveSystem.getCurrentProfile()
     if not saveSlot or not savePath then return end
@@ -410,6 +412,14 @@ function setup.new(inputs)
     return helpers.teleportWalkFallback(getCurrentLevelIdentifier(), placement.pos, placement.rot)
   end
 
+  -- teleportWalkFallback is bound after construction, so the gift reaches it through this closure.
+  local starterGift = challengeStarterGift.new({
+    M = M,
+    state = inputs.state,
+    teleportPlayerToStartingGarage = teleportPlayerToStartingGarage,
+    positionPlayer = function(placement) return positionHardcorePlayer(placement) end,
+  })
+
   local function pickHardcoreStarterInfo()
     local eligibleVehicles = util_configListGenerator.getEligibleVehicles(false, false)
     local hardcoreFilter = {
@@ -451,21 +461,9 @@ function setup.new(inputs)
   end
 
   local function addHardcoreStarterToInventory(veh)
-    local mileage = 900000 * 1609.344
-    veh:queueLuaCommand(string.format("partCondition.initConditions(nil, %d, nil, %f)", mileage, 0.5))
-    local inventoryId = M.addVehicle(veh:getID(), nil, {
-      starter = true
-    })
-    if not inventoryId then
+    if not starterGift.addStarterToInventory(veh) then
       log("E", "career.inventory", "Hardcore starter vehicle spawned but failed to enter inventory")
-      return
     end
-    -- Starter cars are gifts, not insured purchases.
-    extensions.hook("onOverhaulVehicleAddedToInventory", {
-      inventoryId = inventoryId,
-      purchaseData = {insuranceId = -1},
-    })
-    overhaul_career_career.setBoughtStarterVehicle(true)
   end
 
   local function grantHardcoreStarter(playerSpawn, vehicleSpawn)
@@ -512,7 +510,9 @@ function setup.new(inputs)
         teleportPlayerToStartingGarage(levelName)
       end
     else
-      teleportPlayerToStartingGarage(levelName)
+      if not starterGift.finalize(levelName) then
+        teleportPlayerToStartingGarage(levelName)
+      end
       overhaul_career_garage_garageManager.purchaseDefaultGarage()
     end
   end
